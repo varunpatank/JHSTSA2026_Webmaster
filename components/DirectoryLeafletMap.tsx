@@ -241,7 +241,7 @@ export default function DirectoryLeafletMap({
           applyViewMode(isThreeD);
         }}
         cooperativeGestures
-        minZoom={15}
+        minZoom={-1}
         maxZoom={20}
         style={{ height: 600, width: "100%" }}
       >

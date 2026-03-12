@@ -6,12 +6,10 @@ import dynamic from "next/dynamic";
 import { chapters } from "@/lib/data";
 import { getLocationScopeKey } from "@/lib/location";
 import { inferDay, matchesSize } from "@/lib/directoryConstants";
-import ClubMatchQuiz from "@/components/directory/ClubMatchQuiz";
 import DirectoryFilters, {
   type DirectoryFilterState,
 } from "@/components/directory/DirectoryFilters";
 import ClubGrid from "@/components/directory/ClubGrid";
-import TrendingClubs from "@/components/directory/TrendingClubs";
 import AIChatbot from "@/components/directory/AIChatbot";
 import DiscussionForums from "@/components/directory/DiscussionForums";
 
@@ -177,12 +175,6 @@ function DirectoryPageContent() {
                 totalCount={chapters.length}
               />
             </div>
-          </div>
-
-          {/* Trending + Quiz Row */}
-          <div className="mt-4 grid lg:grid-cols-2 gap-4">
-            <TrendingClubs />
-            <ClubMatchQuiz />
           </div>
         </section>
 

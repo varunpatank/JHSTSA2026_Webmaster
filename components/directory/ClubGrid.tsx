@@ -6,7 +6,7 @@ import type { Chapter } from "@/types";
 import { formatChapterLocation } from "@/lib/location";
 import { CATEGORY_COLORS } from "@/lib/directoryConstants";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 interface ClubGridProps {
   clubs: Chapter[];
@@ -39,7 +39,35 @@ export default function ClubGrid({ clubs }: ClubGridProps) {
 
   return (
     <div>
-      <div className="grid md:grid-cols-2 gap-3">
+      {/* Quiz Card */}
+      <Link
+        href="/directory/quiz"
+        className="bg-gradient-to-r from-primary-700 via-primary-600 to-primary-800 border border-primary-800 p-5 md:p-6 rounded-xl hover:shadow-lg transition-shadow group mb-4 block"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="text-white flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-3xl">🎯</span>
+              <h2 className="text-2xl font-heading font-bold">
+                Club Match Quiz
+              </h2>
+            </div>
+            <p className="text-white/85 leading-relaxed">
+              Not sure which club is right for you? Take our quick personality
+              quiz to discover clubs that match your interests, goals, and
+              schedule.
+            </p>
+            <p className="text-white/60 text-sm mt-2">
+              5 questions · Takes about 1 minute
+            </p>
+          </div>
+          <div className="text-white/60 group-hover:text-white transition-colors shrink-0 text-4xl">
+            →
+          </div>
+        </div>
+      </Link>
+
+      <div className="grid md:grid-cols-3 gap-3">
         {visible.map((chapter, idx) => (
           <Link
             href={`/directory/${chapter.id}`}
