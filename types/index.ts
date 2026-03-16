@@ -641,3 +641,154 @@ export type NotificationType =
   | "Achievement Unlocked"
   | "Collaboration Request"
   | "Announcement";
+
+// ==========================================
+// EXPANDED TYPES FOR COMPREHENSIVE FEATURES
+// ==========================================
+
+// Club History / Timeline
+export interface ClubHistoryEvent {
+  id: string;
+  orgId: string;
+  eventType: "founded" | "achievement" | "milestone" | "leadership_change" | "event_highlight" | "membership_milestone" | "competition_result";
+  title: string;
+  description?: string;
+  eventDate: string;
+}
+
+// Project Showcase
+export interface Project {
+  id: string;
+  orgId: string;
+  title: string;
+  description?: string;
+  status: "planning" | "in_progress" | "completed" | "on_hold";
+  startDate?: string;
+  endDate?: string;
+  imageUrl?: string;
+  externalUrl?: string;
+  createdBy?: string;
+}
+
+// Sponsor / Partnership
+export interface Sponsor {
+  id: string;
+  orgId?: string;
+  name: string;
+  description?: string;
+  logoUrl?: string;
+  website?: string;
+  tier: "supporter" | "bronze" | "silver" | "gold" | "platinum";
+  active: boolean;
+}
+
+// Meeting Notes
+export interface MeetingNote {
+  id: string;
+  orgId: string;
+  meetingId?: string;
+  title?: string;
+  content: string;
+  recordedBy?: string;
+  meetingDate: string;
+  attendeeCount?: number;
+  actionItems?: { task: string; assignee?: string; completed: boolean }[];
+}
+
+// Event Registration
+export interface EventRegistration {
+  id: string;
+  eventId: string;
+  userId: string;
+  status: "registered" | "waitlisted" | "cancelled" | "attended";
+  registeredAt: string;
+}
+
+// Service Hours
+export interface ServiceHour {
+  id: string;
+  userId: string;
+  orgId?: string;
+  eventId?: string;
+  hours: number;
+  description?: string;
+  date: string;
+  verified: boolean;
+}
+
+// Donation
+export interface Donation {
+  id: string;
+  orgId?: string;
+  donorName?: string;
+  donorEmail?: string;
+  amount: number;
+  message?: string;
+  isRecurring: boolean;
+  status: "pending" | "completed" | "refunded" | "failed";
+  createdAt: string;
+}
+
+// Club Proposal (DB-backed)
+export interface ClubProposalDB {
+  id: string;
+  submittedBy: string;
+  clubName: string;
+  missionStatement: string;
+  category?: string;
+  proposedAdvisor?: string;
+  advisorEmail?: string;
+  justification?: string;
+  constitutionDraft?: string;
+  firstYearPlan?: string;
+  budgetRequirements?: string;
+  meetingSpaceNeeds?: string;
+  interestedMembers?: string;
+  status: "submitted" | "under_review" | "approved" | "denied" | "needs_revision";
+  adminNotes?: string;
+  submittedAt: string;
+}
+
+// Org Analytics Snapshot
+export interface OrgAnalyticsSnapshot {
+  id: string;
+  orgId: string;
+  snapshotDate: string;
+  totalMembers: number;
+  activeMembers: number;
+  eventsHeld: number;
+  avgAttendance: number;
+  newMembers: number;
+  retentionRate: number;
+  engagementScore: number;
+}
+
+// FAQ Item
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+}
+
+// Guide
+export interface Guide {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  sections: { heading: string; content: string }[];
+}
+
+// School-wide Stats
+export interface SchoolStats {
+  totalClubs: number;
+  totalMembers: number;
+  totalEvents: number;
+  totalServiceHours: number;
+  totalDonations: number;
+  clubCategories: { category: string; count: number }[];
+  monthlyGrowth: { month: string; members: number; events: number }[];
+  topClubs: { name: string; members: number; events: number; score: number }[];
+}

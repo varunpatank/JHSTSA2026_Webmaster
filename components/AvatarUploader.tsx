@@ -17,19 +17,12 @@ export default function AvatarUploader({ userId, currentUrl, onUpdate }: Props) 
   const handleFile = async (file?: File | null) => {
     setError(null);
     if (!file) return;
-    // if (file.size > 1024 * 1024) {
-    //   setError("File too large (max 1 MB)");
-    //   return;
-    // }
-
     try {
       setLoading(true);
       const res = await storageApi.uploadAvatar(userId, file);
       if (res.error) throw res.error;
       const path = res.data.path;
       const publicUrl = res.data.publicUrl;
-
-      // Save avatar URL to profile
       await profilesApi.update(userId, { avatar_url: publicUrl });
 
       setPreview(publicUrl);
@@ -46,7 +39,6 @@ export default function AvatarUploader({ userId, currentUrl, onUpdate }: Props) 
       <div className="flex items-center gap-4">
         <div className="w-20 h-20 bg-neutral-100 rounded overflow-hidden flex items-center justify-center">
           {preview ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={preview} alt="Avatar" className="w-full h-full object-cover" />
           ) : (
             <div className="text-neutral-400">No avatar</div>

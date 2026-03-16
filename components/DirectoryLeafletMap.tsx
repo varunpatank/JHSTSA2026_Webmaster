@@ -1,5 +1,6 @@
 "use client";
 
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import MapView, {
   Marker,
@@ -25,6 +26,17 @@ type ClubMarker = {
   coordinates: [number, number];
 };
 
+const categoryColors: Record<string, string> = {
+  Academic: "bg-blue-500",
+  STEM: "bg-emerald-500",
+  Service: "bg-orange-500",
+  Arts: "bg-pink-500",
+  Cultural: "bg-purple-500",
+  Media: "bg-cyan-500",
+  Sports: "bg-red-500",
+  Leadership: "bg-amber-500",
+};
+
 type BuildingGroup = {
   id: string;
   building: string;
@@ -32,7 +44,7 @@ type BuildingGroup = {
   clubs: ClubMarker[];
 };
 
-const campusCenter: [number, number] = [47.67695, -122.12078];
+const campusCenter: [number, number] = [47.67720, -122.12080];
 
 function getClubMarkerLabel(name: string) {
   const parts = name
@@ -73,7 +85,7 @@ export default function DirectoryLeafletMap({
   const [viewState, setViewState] = useState<ViewState>({
     latitude: campusCenter[0],
     longitude: campusCenter[1],
-    zoom: 17.9,
+    zoom: 16.8,
     bearing: -18,
     pitch: 58,
     padding: { top: 0, bottom: 0, left: 0, right: 0 },
@@ -141,7 +153,7 @@ export default function DirectoryLeafletMap({
     (item) => item.id === popupBuildingId,
   );
 
-  const allowExpandedDots = isThreeD && viewState.zoom >= 18.5;
+  const allowExpandedDots = viewState.zoom >= 18.5;
 
   const ensureThreeDimensionalLayer = () => {
     const map = mapRef.current?.getMap();
@@ -228,7 +240,7 @@ export default function DirectoryLeafletMap({
         }}
         minZoom={15}
         maxZoom={20}
-        style={{ height: 420, width: "100%" }}
+        style={{ height: 520, width: "100%" }}
       >
         <NavigationControl position="top-right" showCompass={false} />
         {groupedBuildings.map((buildingGroup) => {
@@ -292,6 +304,7 @@ export default function DirectoryLeafletMap({
 
           const [singleClub] = buildingGroup.clubs;
           const isActive = singleClub.room === activeRoom;
+          const catColor = categoryColors[singleClub.chapter.category] || "bg-primary-500";
           return (
             <Marker
               key={singleClub.chapter.id}
@@ -304,7 +317,7 @@ export default function DirectoryLeafletMap({
                   onSelectRoom(isActive ? "Any" : singleClub.room);
                   setPopupChapterId(singleClub.chapter.id);
                 }}
-                className={`min-w-8 h-8 px-1 border-2 border-white shadow-lg text-[10px] font-bold text-white ${isActive ? "bg-secondary-500" : "bg-primary-500"}`}
+                className={`min-w-8 h-8 px-1 border-2 border-white shadow-lg text-[10px] font-bold text-white ${isActive ? "bg-secondary-500 ring-2 ring-secondary-300 ring-offset-1" : catColor} transition-all hover:scale-110`}
                 aria-label={`Filter by ${singleClub.room}`}
               >
                 {getClubMarkerLabel(singleClub.chapter.name)}
@@ -400,6 +413,17 @@ export default function DirectoryLeafletMap({
       </div>
       <div className="pointer-events-none absolute bottom-3 left-3 border border-neutral-700/80 bg-neutral-900/85 px-2 py-1 text-[11px] font-semibold tracking-wide text-neutral-100">
         {isThreeD ? "3D CAMPUS VIEW" : "FLAT CAMPUS VIEW"}
+      </div>
+      <div className="absolute bottom-3 right-3 z-10 bg-neutral-900/85 border border-neutral-700/80 px-3 py-2 text-[10px]">
+        <p className="font-bold text-neutral-200 mb-1">LEGEND</p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+          {Object.entries(categoryColors).map(([cat, color]) => (
+            <div key={cat} className="flex items-center gap-1.5">
+              <span className={`w-2.5 h-2.5 ${color} inline-block`} />
+              <span className="text-neutral-300">{cat}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -56,11 +56,10 @@ export default function ClubBuilder({ onCreate }: { onCreate?: (club: any) => vo
 
   function copyToClipboard(text: string) {
     navigator.clipboard?.writeText(text);
-    // lightweight feedback could be added later
   }
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
+    <div className="bg-white border border-neutral-200  p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-neutral-800 mb-2">Club Builder — personalized suggestions</h3>
       <p className="text-sm text-neutral-500 mb-4">Tell us what you want to create and we'll suggest a name, logo, mission statement, and a ready-to-send proposal message.</p>
 
@@ -91,7 +90,7 @@ export default function ClubBuilder({ onCreate }: { onCreate?: (club: any) => vo
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <div className="p-4 border border-neutral-100 rounded-lg">
+        <div className="p-4 border border-neutral-100 ">
           <div className="text-xs text-neutral-500 mb-2">Name suggestions</div>
           <div className="space-y-2">
             {suggestions.map(s => (
@@ -106,9 +105,9 @@ export default function ClubBuilder({ onCreate }: { onCreate?: (club: any) => vo
           </div>
         </div>
 
-        <div className="p-4 border border-neutral-100 rounded-lg text-center">
+        <div className="p-4 border border-neutral-100  text-center">
           <div className="text-xs text-neutral-500 mb-2">Logo preview</div>
-          <div className="mx-auto w-24 h-24 rounded-lg flex items-center justify-center" style={{ background: color }}>
+          <div className="mx-auto w-24 h-24  flex items-center justify-center" style={{ background: color }}>
             <div style={{ fontSize: 48 }}>{emoji}</div>
           </div>
           <div className="mt-3 flex justify-center gap-2">
@@ -117,7 +116,7 @@ export default function ClubBuilder({ onCreate }: { onCreate?: (club: any) => vo
           </div>
         </div>
 
-        <div className="p-4 border border-neutral-100 rounded-lg">
+        <div className="p-4 border border-neutral-100 ">
           <div className="text-xs text-neutral-500 mb-2">Mission statement</div>
           <div className="text-sm text-neutral-700 mb-3">{mission}</div>
           <div className="flex gap-2">
