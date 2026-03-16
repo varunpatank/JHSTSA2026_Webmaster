@@ -169,11 +169,9 @@ export interface Stats {
   newMembersThisMonth: number;
 }
 
-// ==========================================
-// COMMUNITY RESOURCE HUB - Extended Types
-// ==========================================
 
-// Club Starter Toolkit Types
+
+
 export interface StarterGuide {
   id: string;
   title: string;
@@ -211,7 +209,7 @@ export interface GuideStep {
   resources?: { title: string; url: string }[];
 }
 
-// Club Ideas Generator Types
+
 export interface ClubIdea {
   id: string;
   name: string;
@@ -243,7 +241,7 @@ export interface ClubIdeaSubmission {
   submitterGrade: string;
 }
 
-// Competition Hub Types
+
 export interface Competition {
   id: string;
   name: string;
@@ -290,12 +288,12 @@ export interface CompetitionTracker {
   dateAdded: string;
 }
 
-// Club Health Dashboard Types
+
 export interface ClubHealthMetrics {
   chapterId: string;
   clubId: string;
   clubName: string;
-  overallScore: number; // 0-100
+  overallScore: number;
   metrics: {
     memberEngagement: number;
     eventFrequency: number;
@@ -304,7 +302,7 @@ export interface ClubHealthMetrics {
     communityImpact: number;
     financialHealth: number;
   };
-  // Additional metrics used by dashboard
+
   memberRetention: number;
   eventAttendance: number;
   memberSatisfaction: number;
@@ -334,7 +332,7 @@ export interface ClubBenchmark {
   topPerformers: string[];
 }
 
-// Mentorship Network Types
+
 export interface Mentor {
   id: string;
   name: string;
@@ -375,7 +373,7 @@ export interface MentorshipRequest {
   dateSubmitted: string;
 }
 
-// Collaboration Finder Types
+
 export interface CollaborationOpportunity {
   id: string;
   title: string;
@@ -425,7 +423,7 @@ export interface CollaborationProposal {
   chapterName: string;
 }
 
-// Success Stories Types
+
 export interface SuccessStory {
   id: string;
   title: string;
@@ -471,7 +469,7 @@ export interface StorySubmission {
   impactMetrics?: { label: string; value: string }[];
 }
 
-// Resource Request Types
+
 export interface ResourceRequest {
   id: string;
   title: string;
@@ -500,7 +498,7 @@ export interface ResourceRequest {
   upvoters: string[];
 }
 
-// Club Comparison Types
+
 export interface ComparisonCriteria {
   id: string;
   label: string;
@@ -508,7 +506,7 @@ export interface ComparisonCriteria {
   category: "Basic Info" | "Commitment" | "Opportunities" | "Culture";
 }
 
-// Achievement System Types
+
 export interface Achievement {
   id: string;
   name: string;
@@ -518,7 +516,7 @@ export interface Achievement {
   points: number;
   rarity: "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary";
   requirements: string[];
-  unlockedBy: number; // percentage of users
+  unlockedBy: number;
 }
 
 export type AchievementCategory =
@@ -548,7 +546,7 @@ export interface LeaderboardEntry {
   level: number;
 }
 
-// Calendar Integration Types
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -578,7 +576,7 @@ export interface CalendarSubscription {
   lastSynced: string;
 }
 
-// Quiz and Assessment Types
+
 export interface ClubFinderQuiz {
   id: string;
   question: string;
@@ -600,7 +598,7 @@ export interface QuizResult {
   suggestedActivities: string[];
 }
 
-// Analytics Types (for database-ready features)
+
 export interface PageAnalytics {
   pageId: string;
   pageName: string;
@@ -621,7 +619,7 @@ export interface UserEngagement {
   engagementScore: number;
 }
 
-// Notification System Types
+
 export interface Notification {
   id: string;
   userId: string;
@@ -642,11 +640,9 @@ export type NotificationType =
   | "Collaboration Request"
   | "Announcement";
 
-// ==========================================
-// EXPANDED TYPES FOR COMPREHENSIVE FEATURES
-// ==========================================
 
-// Club History / Timeline
+
+
 export interface ClubHistoryEvent {
   id: string;
   orgId: string;
@@ -656,7 +652,7 @@ export interface ClubHistoryEvent {
   eventDate: string;
 }
 
-// Project Showcase
+
 export interface Project {
   id: string;
   orgId: string;
@@ -670,7 +666,7 @@ export interface Project {
   createdBy?: string;
 }
 
-// Sponsor / Partnership
+
 export interface Sponsor {
   id: string;
   orgId?: string;
@@ -682,7 +678,7 @@ export interface Sponsor {
   active: boolean;
 }
 
-// Meeting Notes
+
 export interface MeetingNote {
   id: string;
   orgId: string;
@@ -695,7 +691,7 @@ export interface MeetingNote {
   actionItems?: { task: string; assignee?: string; completed: boolean }[];
 }
 
-// Event Registration
+
 export interface EventRegistration {
   id: string;
   eventId: string;
@@ -704,7 +700,7 @@ export interface EventRegistration {
   registeredAt: string;
 }
 
-// Service Hours
+
 export interface ServiceHour {
   id: string;
   userId: string;
@@ -716,7 +712,7 @@ export interface ServiceHour {
   verified: boolean;
 }
 
-// Donation
+
 export interface Donation {
   id: string;
   orgId?: string;
@@ -729,7 +725,7 @@ export interface Donation {
   createdAt: string;
 }
 
-// Club Proposal (DB-backed)
+
 export interface ClubProposalDB {
   id: string;
   submittedBy: string;
@@ -749,7 +745,7 @@ export interface ClubProposalDB {
   submittedAt: string;
 }
 
-// Org Analytics Snapshot
+
 export interface OrgAnalyticsSnapshot {
   id: string;
   orgId: string;
@@ -763,7 +759,7 @@ export interface OrgAnalyticsSnapshot {
   engagementScore: number;
 }
 
-// FAQ Item
+
 export interface FAQItem {
   id: string;
   question: string;
@@ -771,7 +767,7 @@ export interface FAQItem {
   category: string;
 }
 
-// Guide
+
 export interface Guide {
   id: string;
   slug: string;
@@ -781,7 +777,7 @@ export interface Guide {
   sections: { heading: string; content: string }[];
 }
 
-// School-wide Stats
+
 export interface SchoolStats {
   totalClubs: number;
   totalMembers: number;

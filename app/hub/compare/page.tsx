@@ -84,7 +84,7 @@ export default function ComparePage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Club Selector */}
+        {}
         <Reveal>
           <div className="card p-5 mb-6">
             <h2 className="font-bold text-primary-700 mb-3">Select Clubs to Compare (up to 4)</h2>
@@ -127,7 +127,7 @@ export default function ComparePage() {
           </div>
         ) : (
           <Reveal>
-            {/* Comparison Table */}
+            {}
             <div className="card overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -166,7 +166,7 @@ export default function ComparePage() {
               </table>
             </div>
 
-            {/* Visual Comparison Bars */}
+            {}
             <div className="card p-5 mt-6">
               <h3 className="font-bold text-primary-700 mb-4">Visual Comparison</h3>
               <div className="space-y-4">

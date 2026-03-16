@@ -11,7 +11,7 @@ import {
   Users, X, Zap, Gift, TrendingUp, Clock,
 } from "lucide-react";
 
-/* -- Rocket Launch Stage System -- */
+
 const ROCKET_STAGES = [
   {
     id: "ignition", phase: 1, title: "Ignition", subtitle: "Getting Started",
@@ -99,7 +99,7 @@ type ResourceItem = (typeof ROCKET_STAGES)[number]["resources"][number];
 const typeIcons: Record<string, React.ReactNode> = { guide: <BookOpen size={12} />, template: <FileText size={12} />, checklist: <Lightbulb size={12} />, handbook: <Users size={12} /> };
 const typeColors: Record<string, string> = { guide: "bg-primary-100 text-primary-700", template: "bg-secondary-100 text-secondary-700", checklist: "bg-primary-100 text-primary-700", handbook: "bg-secondary-100 text-secondary-700" };
 
-/* -- Hardcoded PDF document content for preview & download -- */
+
 const PDF_CONTENT: Record<string, { pages: { title: string; body: string }[] }> = {
   "ig-1": {
     pages: [
@@ -181,7 +181,7 @@ const PDF_CONTENT: Record<string, { pages: { title: string; body: string }[] }> 
   },
 };
 
-/* helper to generate a downloadable text-based PDF-like file from hardcoded content */
+
 function downloadResource(id: string, title: string, format: string) {
   const pdf = PDF_CONTENT[id];
   if (pdf) {
@@ -206,47 +206,6 @@ function downloadResource(id: string, title: string, format: string) {
   }
 }
 
-/* -- AI Chat -- */
-interface ChatMsg { role: "user" | "assistant"; text: string }
-
-function useAIChat() {
-  const [messages, setMessages] = useState<ChatMsg[]>([
-    { role: "assistant", text: "Hi! I'm the ClubConnect Resource Assistant. Ask me anything about clubs, resources, or getting involved!" },
-  ]);
-  const [loading, setLoading] = useState(false);
-
-  const send = useCallback(async (input: string) => {
-    const userMsg: ChatMsg = { role: "user", text: input };
-    setMessages(prev => [...prev, userMsg]);
-    setLoading(true);
-    try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      const context = `You are a helpful school club resource assistant for ClubConnect. Be concise (2-3 sentences). Resources are organized into 5 Rocket Launch stages: ${ROCKET_STAGES.map(s => `${s.title} (${s.subtitle})`).join(", ")}. Available clubs: ${chapters.map(c => c.name).join(", ")}. Hub pages include mentors, competitions, discussions, achievements, and more.`;
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              { role: "user", parts: [{ text: context }] },
-              ...messages.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.text }] })),
-              { role: "user", parts: [{ text: input }] },
-            ],
-          }),
-        }
-      );
-      const data = await res.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Try browsing the rocket stages for relevant resources!";
-      setMessages(prev => [...prev, { role: "assistant", text: reply }]);
-    } catch {
-      setMessages(prev => [...prev, { role: "assistant", text: "Check the Ignition stage for getting started guides!" }]);
-    }
-    setLoading(false);
-  }, [messages]);
-
-  return { messages, loading, send };
-}
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -260,7 +219,83 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
   return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
 }
 
-/* -- Large Animated Rocket SVG per Stage -- */
+
+interface AIChatMsg { role: "user" | "assistant"; text: string; link?: { label: string; href: string } }
+
+function useResourceAI() {
+  const [messages, setMessages] = useState<AIChatMsg[]>([
+    { role: "assistant", text: "Hi! I'm the ClubConnect Resource Assistant. Ask me what you need help with and I'll find the best resource for you!\n\nTry: \"How do I start a club?\" or \"I need help with fundraising\"\n\n⚠️ Note: Some linked resources may be sample data and not link to real pages." },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [pendingResource, setPendingResource] = useState<ResourceItem | null>(null);
+
+  const allResources = ROCKET_STAGES.flatMap(s => s.resources);
+
+  const send = useCallback(async (input: string) => {
+    setMessages(prev => [...prev, { role: "user", text: input }]);
+    setLoading(true);
+
+    if (pendingResource && /yes|yeah|sure|yep|ok|go|take me|please/i.test(input)) {
+      const r = pendingResource;
+      const stage = ROCKET_STAGES.find(s => s.resources.some(res => res.id === r.id));
+      setPendingResource(null);
+      setMessages(prev => [...prev, { role: "assistant", text: `Taking you to "${r.title}" in the ${stage?.title ?? ""} stage!`, link: { label: `Open ${r.title}`, href: `#resource-${r.id}` } }]);
+      setLoading(false);
+      return;
+    }
+    if (pendingResource && /no|nah|nope|different|other/i.test(input)) {
+      setPendingResource(null);
+    }
+
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
+      const resourceList = ROCKET_STAGES.map(s =>
+        `Stage ${s.phase} "${s.title}" (${s.subtitle}): ${s.resources.map(r => `"${r.title}" [id:${r.id}, ${r.type}, ${r.format}] — ${r.details}`).join("; ")}`
+      ).join("\n");
+      const hubPages = ROCKET_STAGES.flatMap(s => s.hubLinks.map(l => `${l.label} (${l.href})`)).join(", ");
+      const context = `You are the ClubConnect Resource Assistant. When recommending a resource, respond with EXACTLY this format:\nRECOMMEND: <resource_id>\n<Your 2-3 sentence explanation of why this resource fits and what stage it's in. End by asking: "Would you like me to take you there?">\n\nIf no resource matches, just give a helpful answer without RECOMMEND.\n\nAll resources:\n${resourceList}\n\nHub pages: ${hubPages}\n\nAvailable clubs: ${chapters.map(c => c.name).join(", ")}.`;
+      const conversationHistory = messages.filter((_, i) => i > 0).map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.text }] }));
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              { role: "user", parts: [{ text: context }] },
+              { role: "model", parts: [{ text: "Got it! I'll recommend the best resource and ask if you want to navigate there." }] },
+              ...conversationHistory,
+              { role: "user", parts: [{ text: input }] },
+            ],
+          }),
+        }
+      );
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data = await res.json();
+      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!raw) throw new Error("Empty response");
+      const recommendMatch = raw.match(/RECOMMEND:\s*(\S+)/);
+      let cleanText = raw.replace(/RECOMMEND:\s*\S+\n?/, "").trim();
+      if (recommendMatch) {
+        const found = allResources.find(r => r.id === recommendMatch[1]);
+        if (found) {
+          setPendingResource(found);
+          if (!/would you like|want me to take|shall i/i.test(cleanText)) {
+            cleanText += " Would you like me to take you there?";
+          }
+        }
+      }
+      setMessages(prev => [...prev, { role: "assistant", text: cleanText }]);
+    } catch {
+      setMessages(prev => [...prev, { role: "assistant", text: "Something went wrong. Try browsing the rocket stages!" }]);
+    }
+    setLoading(false);
+  }, [messages, pendingResource, allResources]);
+
+  return { messages, loading, send, pendingResource };
+}
+
+
 const stageRocketColors: Record<string, { body: string; nose: string; flame1: string; flame2: string; fin: string; window: string }> = {
   ignition: { body: "#1e3a5f", nose: "#152d4a", flame1: "#3a6b9f", flame2: "#7ba3cc", fin: "#1a3352", window: "#5b8db8" },
   liftoff: { body: "#254a72", nose: "#1e3a5f", flame1: "#4a7fac", flame2: "#8bb5d5", fin: "#1e3a5f", window: "#6b9fc4" },
@@ -274,41 +309,41 @@ function StageRocket({ stageId, phase }: { stageId: string; phase: number }) {
   return (
     <div className={`stage-rocket stage-rocket-${phase}`}>
       <svg width="100" height="140" viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Stars */}
+        {}
         <circle className="rocket-stars" cx="10" cy="20" r="1.5" fill="white" opacity="0.6" />
         <circle className="rocket-stars" cx="90" cy="15" r="1" fill="white" opacity="0.5" style={{ animationDelay: "0.5s" }} />
         <circle className="rocket-stars" cx="15" cy="80" r="1.2" fill="white" opacity="0.4" style={{ animationDelay: "1s" }} />
         <circle className="rocket-stars" cx="88" cy="70" r="1.5" fill="white" opacity="0.5" style={{ animationDelay: "0.7s" }} />
         <circle className="rocket-stars" cx="25" cy="45" r="0.8" fill="white" opacity="0.3" style={{ animationDelay: "1.3s" }} />
-        {/* Smoke */}
+        {}
         <circle className="rocket-smoke" cx="44" cy="120" r="6" fill={c.flame2} opacity="0.3" />
         <circle className="rocket-smoke" cx="56" cy="122" r="5" fill={c.flame2} opacity="0.2" style={{ animationDelay: "0.5s" }} />
         <circle className="rocket-smoke" cx="50" cy="125" r="7" fill={c.flame2} opacity="0.15" style={{ animationDelay: "1s" }} />
         <g className="rocket-body">
-          {/* Rocket body */}
+          {}
           <rect x="35" y="35" width="30" height="55" rx="4" fill={c.body} />
-          {/* Body shine */}
+          {}
           <rect x="35" y="35" width="12" height="55" rx="4" fill="white" opacity="0.15" />
-          {/* Nose cone */}
+          {}
           <path d="M35 38 L50 10 L65 38Z" fill={c.nose} />
           <path d="M35 38 L50 10 L50 38Z" fill="white" opacity="0.12" />
-          {/* Window */}
+          {}
           <circle cx="50" cy="50" r="8" fill={c.nose} stroke="white" strokeWidth="2" opacity="0.9" />
           <circle cx="50" cy="50" r="5.5" fill={c.window} />
           <ellipse cx="48" cy="48" rx="2" ry="2.5" fill="white" opacity="0.4" />
-          {/* Body stripe */}
+          {}
           <rect x="35" y="65" width="30" height="3" fill="white" opacity="0.3" />
-          {/* Fins */}
+          {}
           <path d="M35 80 L20 100 L35 90Z" fill={c.fin} />
           <path d="M65 80 L80 100 L65 90Z" fill={c.fin} />
           <path d="M35 80 L28 95 L35 90Z" fill="white" opacity="0.15" />
-          {/* Bottom nozzle */}
+          {}
           <rect x="40" y="88" width="20" height="6" rx="2" fill={c.nose} />
           <rect x="42" y="93" width="16" height="3" rx="1.5" fill={c.fin} />
-          {/* Phase number on body */}
+          {}
           <text x="50" y="80" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold" fontFamily="sans-serif">{phase}</text>
         </g>
-        {/* Flame */}
+        {}
         <g className="rocket-flame">
           <ellipse cx="50" cy="105" rx="10" ry="14" fill={c.flame1} opacity="0.9" />
           <ellipse cx="50" cy="105" rx="6" ry="10" fill={c.flame2} opacity="0.95" />
@@ -319,21 +354,21 @@ function StageRocket({ stageId, phase }: { stageId: string; phase: number }) {
   );
 }
 
-/* ====== PAGE ====== */
+
 export default function ResourcesPage() {
   const [activeStage, setActiveStage] = useState("ignition");
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [popup, setPopup] = useState<ResourceItem | null>(null);
-  const [showAI, setShowAI] = useState(true);
-  const [aiInput, setAiInput] = useState("");
   const [previewPage, setPreviewPage] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
+  const [showAI, setShowAI] = useState(true);
+  const [aiInput, setAiInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
-  const { messages: aiMessages, loading: aiLoading, send: aiSend } = useAIChat();
+  const { messages: aiMessages, loading: aiLoading, send: aiSend, pendingResource } = useResourceAI();
 
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [aiMessages]);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "instant", block: "nearest" }); }, [aiMessages]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -368,7 +403,7 @@ export default function ResourcesPage() {
 
   return (
     <div className="bg-neutral-50">
-      {/* Hero */}
+      {}
       <section className="relative bg-gradient-to-br from-slate-800 via-primary-800 to-slate-900 text-white border-b-4 border-secondary-500 overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px)" }} />
@@ -401,14 +436,14 @@ export default function ResourcesPage() {
         </div>
       </section>
 
-      {/* Two-Column Layout */}
+      {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex flex-col lg:flex-row gap-5">
 
-          {/* LEFT: Content */}
+          {}
           <div className="flex-1 min-w-0 space-y-4">
 
-                {/* Rocket Stage Selector (horizontal) */}
+                {}
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {ROCKET_STAGES.map(stage => {
                     const Icon = stage.icon;
@@ -425,7 +460,7 @@ export default function ResourcesPage() {
                   })}
                 </div>
 
-                {/* Stage Header with Large Rocket */}
+                {}
                 <div className={` overflow-hidden border ${currentStage.borderColor}`}>
                   <div className={`bg-gradient-to-r ${currentStage.color} text-white p-5 flex items-center gap-4`}>
                     <div className="shrink-0">
@@ -439,7 +474,7 @@ export default function ResourcesPage() {
                   </div>
                 </div>
 
-                {/* Hub Links for Stage */}
+                {}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {currentStage.hubLinks.map(link => {
                     const Icon = link.icon;
@@ -455,7 +490,7 @@ export default function ResourcesPage() {
                   })}
                 </div>
 
-                {/* Global search results */}
+                {}
                 {searchQuery.trim() && globalSearch.length > 0 && (
                   <div className="card  p-3 border border-secondary-200 bg-secondary-50/50">
                     <h3 className="font-bold text-xs text-yellow-800 mb-2 flex items-center gap-1"><Search size={12} /> Results across all stages ({globalSearch.length})</h3>
@@ -470,7 +505,7 @@ export default function ResourcesPage() {
                   </div>
                 )}
 
-                {/* Stage Resources Grid */}
+                {}
                 <div>
                   <h3 className={`text-sm font-bold ${currentStage.textColor} mb-2 flex items-center gap-1`}><FileText size={14} /> Downloadable Resources</h3>
                   <div className="grid sm:grid-cols-2 gap-3">
@@ -497,7 +532,7 @@ export default function ResourcesPage() {
                   )}
                 </div>
 
-                {/* Partners */}
+                {}
                 <Reveal>
                   <div className="card  p-4">
                     <h3 className="text-sm font-bold text-primary-700 mb-2 flex items-center gap-1"><Star size={14} className="text-secondary-500" /> Community Partners</h3>
@@ -517,7 +552,7 @@ export default function ResourcesPage() {
                   </div>
                 </Reveal>
 
-            {/* CTA */}
+            {}
             <div className="card  p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gradient-to-r from-primary-50 to-secondary-50 border border-primary-200">
               <div>
                 <h3 className="text-base font-heading font-bold text-primary-600">Ready to Launch Your Club?</h3>
@@ -529,7 +564,7 @@ export default function ResourcesPage() {
               </div>
             </div>
 
-            {/* Suggest a Resource CTA */}
+            {}
             <div className="card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
               <div>
                 <h3 className="text-base font-heading font-bold text-green-700 flex items-center gap-2"><Upload size={16} /> Know a Community Resource?</h3>
@@ -541,11 +576,11 @@ export default function ResourcesPage() {
             </div>
           </div>
 
-          {/* RIGHT: Sidebar -- Upload, AI Bot, Filtering */}
+          {}
           <aside className="lg:w-80 shrink-0">
             <div className="sticky top-20 space-y-4">
 
-              {/* Search & Filter */}
+              {}
               <div className="card  p-3">
                 <h3 className="font-bold text-xs text-primary-700 mb-2 flex items-center gap-1"><Search size={12} /> Search &amp; Filter</h3>
                 <div className="relative mb-2">
@@ -558,7 +593,7 @@ export default function ResourcesPage() {
                 <p className="text-[10px] text-neutral-400 mt-1.5">{filteredResources.length} results in {currentStage.title}</p>
               </div>
 
-              {/* AI Assistant */}
+              {}
               <div className="card  overflow-hidden">
                 <button onClick={() => setShowAI(v => !v)}
                   className={`w-full flex items-center gap-2 p-3 font-semibold text-xs transition-all ${showAI ? "bg-primary-600 text-white" : "bg-white text-primary-700 hover:bg-primary-50"}`}>
@@ -576,13 +611,30 @@ export default function ResourcesPage() {
                 {showAI && (
                   <div>
                     <div className="max-h-56 overflow-y-auto p-3 space-y-2 bg-neutral-50">
-                      {aiMessages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[88%] px-3 py-1.5  text-xs leading-relaxed ${msg.role === "user" ? "bg-primary-600 text-white rounded-br-sm" : "bg-white text-neutral-700 border border-neutral-200 rounded-bl-sm shadow-sm"}`}>
-                            {msg.text}
+                      {aiMessages.map((msg, i) => {
+                        const formatted = msg.role === "assistant" ? msg.text.replace(/(Would you like me to take you there\??)/gi, "<strong>$1</strong>").replace(/\n/g, "<br/>") : msg.text;
+                        return (
+                        <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                          <div className={`max-w-[88%] px-3 py-1.5 text-xs leading-relaxed ${msg.role === "user" ? "bg-primary-600 text-white rounded-br-sm" : "bg-white text-neutral-700 border border-neutral-200 rounded-bl-sm shadow-sm"}`}>
+                            {msg.role === "assistant" ? <span dangerouslySetInnerHTML={{ __html: formatted }} /> : msg.text}
                           </div>
+                          {msg.link && (
+                            <button
+                              onClick={() => { const rid = msg.link!.href.replace("#resource-", ""); const allRes = ROCKET_STAGES.flatMap(s => s.resources); const found = allRes.find(r => r.id === rid); if (found) { const stage = ROCKET_STAGES.find(s => s.resources.some(r => r.id === rid)); if (stage) setActiveStage(stage.id); setPopup(found); } }}
+                              className="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-primary-600 text-white text-[10px] font-semibold hover:bg-primary-700 transition-colors">
+                              <ArrowRight size={10} /> {msg.link.label}
+                            </button>
+                          )}
+                          {!msg.link && i === aiMessages.length - 1 && pendingResource && msg.role === "assistant" && (
+                            <button
+                              onClick={() => { const r = pendingResource; const stage = ROCKET_STAGES.find(s => s.resources.some(res => res.id === r.id)); if (stage) setActiveStage(stage.id); setPopup(r); }}
+                              className="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-primary-600 text-white text-[10px] font-semibold hover:bg-primary-700 transition-colors">
+                              <ArrowRight size={10} /> Go to {pendingResource.title}
+                            </button>
+                          )}
                         </div>
-                      ))}
+                        );
+                      })}
                       {aiLoading && (
                         <div className="flex justify-start">
                           <div className="bg-white border border-neutral-200  rounded-bl-sm px-3 py-1.5 shadow-sm">
@@ -593,7 +645,7 @@ export default function ResourcesPage() {
                       <div ref={chatEndRef} />
                     </div>
                     <form onSubmit={e => { e.preventDefault(); if (aiInput.trim()) { aiSend(aiInput.trim()); setAiInput(""); } }} className="flex items-center gap-1.5 p-2 border-t border-neutral-200 bg-white">
-                      <input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="Ask anything..." className="flex-1 px-2.5 py-1.5  border border-neutral-200 text-xs focus:border-primary-400 focus:outline-none" />
+                      <input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="Ask for a resource..." className="flex-1 px-2.5 py-1.5  border border-neutral-200 text-xs focus:border-primary-400 focus:outline-none" />
                       <button type="submit" className="px-2.5 py-1.5 bg-primary-600 text-white  text-xs hover:bg-primary-700 disabled:opacity-50" disabled={aiLoading || !aiInput.trim()}>
                         <Send size={12} />
                       </button>
@@ -602,7 +654,7 @@ export default function ResourcesPage() {
                 )}
               </div>
 
-              {/* All Hub Pages */}
+              {}
               <div className="card  p-3">
                 <h3 className="font-bold text-xs text-primary-700 mb-2 flex items-center gap-1"><Folder size={12} /> All Hub Pages</h3>
                 <div className="space-y-0.5">
@@ -638,7 +690,7 @@ export default function ResourcesPage() {
         </div>
       </div>
 
-      {/* Resource Popup */}
+      {}
       {popup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-up">
           <div ref={popupRef} className="bg-white  shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -657,7 +709,7 @@ export default function ResourcesPage() {
                 <div className="bg-secondary-50  p-2"><p className="text-base font-bold text-secondary-700">{popup.fileSize}</p><p className="text-[10px] text-neutral-500">Size</p></div>
               </div>
 
-              {/* PDF Preview Section */}
+              {}
               {popup.format === "PDF" && PDF_CONTENT[popup.id] && (
                 <div className="mt-4">
                   {!showPreview ? (
@@ -667,7 +719,7 @@ export default function ResourcesPage() {
                     </button>
                   ) : (
                     <div className="border-2 border-neutral-200  overflow-hidden">
-                      {/* Preview Header */}
+                      {}
                       <div className="bg-neutral-800 text-white px-4 py-2 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-xs">
                           <FileText size={14} />
@@ -678,10 +730,10 @@ export default function ResourcesPage() {
                           <button onClick={() => { setShowPreview(false); setPreviewPage(0); }} className="p-0.5 rounded hover:bg-neutral-700"><X size={12} /></button>
                         </div>
                       </div>
-                      {/* Preview Content — styled like a PDF page */}
+                      {}
                       <div className="bg-neutral-100 p-4">
                         <div className="bg-white shadow-lg mx-auto max-w-lg p-6 min-h-[300px] border border-neutral-200" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
-                          {/* Page header */}
+                          {}
                           <div className="flex items-center justify-between border-b-2 border-primary-600 pb-2 mb-4">
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 bg-primary-600 rounded flex items-center justify-center text-white text-[8px] font-bold">CC</div>
@@ -689,18 +741,18 @@ export default function ResourcesPage() {
                             </div>
                             <span className="text-[9px] text-neutral-400">Page {previewPage + 1}</span>
                           </div>
-                          {/* Page title */}
+                          {}
                           <h3 className="text-base font-bold text-primary-800 mb-3">{PDF_CONTENT[popup.id].pages[previewPage].title}</h3>
-                          {/* Page body */}
+                          {}
                           <div className="text-xs text-neutral-700 leading-relaxed whitespace-pre-line">{PDF_CONTENT[popup.id].pages[previewPage].body}</div>
-                          {/* Page footer */}
+                          {}
                           <div className="border-t border-neutral-200 mt-6 pt-2 flex items-center justify-between text-[8px] text-neutral-400">
                             <span>ClubConnect &copy; {new Date().getFullYear()}</span>
                             <span>{popup.fileSize} &middot; {popup.format}</span>
                           </div>
                         </div>
                       </div>
-                      {/* Page Navigation */}
+                      {}
                       <div className="bg-neutral-800 px-4 py-2 flex items-center justify-between">
                         <button onClick={() => setPreviewPage(p => Math.max(0, p - 1))}
                           disabled={previewPage === 0}

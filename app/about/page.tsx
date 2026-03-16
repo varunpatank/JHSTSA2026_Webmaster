@@ -46,7 +46,7 @@ const TEAM = [
 export default function AboutPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* HERO */}
+      {}
       <section className="bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white border-b-4 border-secondary-500 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-white/5 blur-2xl" />
@@ -79,7 +79,7 @@ export default function AboutPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-12">
-        {/* MISSION */}
+        {}
         <Reveal>
           <div className="card p-8">
             <h2 className="text-2xl font-heading font-bold text-primary-600">Mission & Vision</h2>
@@ -96,7 +96,7 @@ export default function AboutPage() {
           </div>
         </Reveal>
 
-        {/* VALUES */}
+        {}
         <Reveal>
           <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Core Values</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -113,7 +113,7 @@ export default function AboutPage() {
           </div>
         </Reveal>
 
-        {/* TIMELINE */}
+        {}
         <Reveal>
           <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Our Journey</h2>
           <div className="relative">
@@ -132,7 +132,7 @@ export default function AboutPage() {
           </div>
         </Reveal>
 
-        {/* FEATURES */}
+        {}
         <Reveal>
           <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Platform Features</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -158,7 +158,7 @@ export default function AboutPage() {
           </div>
         </Reveal>
 
-        {/* TEAM */}
+        {}
         <Reveal>
           <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Development Team</h2>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -178,7 +178,7 @@ export default function AboutPage() {
           </div>
         </Reveal>
 
-        {/* TECH STACK */}
+        {}
         <Reveal>
           <div className="card p-6">
             <h2 className="text-2xl font-heading font-bold text-primary-600">Tech Stack</h2>
@@ -198,7 +198,7 @@ export default function AboutPage() {
           </div>
         </Reveal>
 
-        {/* PARTNERS */}
+        {}
         <Reveal>
           <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Partners & Sponsors</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -217,7 +217,7 @@ export default function AboutPage() {
           </div>
         </Reveal>
 
-        {/* CTA */}
+        {}
         <Reveal>
           <div className="card p-8 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-center">
             <h2 className="text-2xl font-heading font-bold">Ready to Get Involved?</h2>

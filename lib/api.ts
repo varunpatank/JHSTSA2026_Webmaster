@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import type { Profile, Membership, Organization, OrganizationTag, Meeting, Event, EventTag, Location, Resource, ResourceTag, ChatChannel, ChatMessage } from './apiTypes'
-import type { } from './apiTypes' // all other types used via table queries
+import type { Profile, Membership, Organization, OrganizationTag, Meeting, Event, EventTag, Location, Resource, ResourceTag } from './apiTypes'
+import type { } from './apiTypes'
 import webpfy from 'webpfy'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -19,22 +19,19 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabasePublis
 })
 
 export const authApi = {
-    /** Email + password sign in (native) */
+
     signInWithEmail: (email: string, password: string) =>
         supabase.auth.signInWithPassword({ email, password }),
 
-    /** Sign in using an OIDC id_token (provider like "google", "azure", etc.) */
+
     signInWithIdToken: (provider: string, idToken: string) =>
         supabase.auth.signInWithIdToken({ provider: provider as any, token : idToken }),
 
-    /** OAuth / social login (redirect-based) */
+
     signInWithOAuth: (provider: string, options?: { redirectTo?: string }) =>
         supabase.auth.signInWithOAuth({ provider: provider as any, options }),
 
-    /** Create a new user in auth and a corresponding public profile row.
-     *  Accepts: name (full name), email, grade (required for non-adults), optional password,
-     *  bio, phone, school. Returns both auth and profile responses.
-     */
+
     createUser: async (data: {
         name: string
         email: string
@@ -71,104 +68,81 @@ export const authApi = {
         return { auth: authRes, profile: profileRes }
     },
 
-    /** Returns true if a user is currently logged in */
+
     isLoggedIn: async () => !!(await supabase.auth.getUser().then(({ data }) => data.user)),
 
-    /**
-     * SSO helper: uses idToken when available (OIDC) otherwise falls back to OAuth redirect.
-     * provider examples: "google", "github", custom OIDC provider id.
-     */
+
     signInWithSSO: (provider: string, idToken?: string, options?: { redirectTo?: string }) =>
         idToken
             ? supabase.auth.signInWithIdToken({ provider: provider as any, token : idToken })
             : supabase.auth.signInWithOAuth({ provider: provider as any, options }),
 
-    /** Sign out current session */
+
     signOut: () => supabase.auth.signOut(),
 }
 
-// -----------------------------------------------------------------------
-// Profiles
-// Policy: viewable by everyone; updatable by the profile owner
-// -----------------------------------------------------------------------
+
 
 export const profilesApi = {
-    /** Viewable by everyone (authenticated + anon) */
+
     getAll: () =>
         supabase.from('profiles').select('*').limit(50),
 
     getById: (id: string) =>
         supabase.from('profiles').select('*').limit(50).eq('id', id).single(),
 
-    /** Only the authenticated user can update their own profile */
+
     update: (id: string, data: Partial<Profile>) =>
         supabase.from('profiles').update(data).eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Memberships
-// Policy: members see own rows; officers/admins see org rows;
-//         officers can update non-permission/position fields;
-//         admins can update all fields;
-//         members can delete own; admins can delete any in their org
-// -----------------------------------------------------------------------
+
 
 export const membershipsApi = {
-    /** Returns all memberships visible to the current user (RLS filters automatically) */
+
     getForCurrentUser: () =>
         supabase.from('memberships').select('*').limit(50),
 
-    /** All memberships for a given org (RLS ensures only officers/admins see them) */
+
     getByOrg: (orgId: string) =>
         supabase.from('memberships').select('*').limit(50).eq('org_id', orgId),
 
     getById: (id: string) =>
         supabase.from('memberships').select('*').limit(50).eq('id', id).single(),
 
-    /**
-     * Officers: update fields other than user_permissions and position.
-     * Admins: update any field including user_permissions and position.
-     * RLS enforces the distinction — pass only the fields you are allowed to change.
-     */
+
     update: (id: string, data: Partial<Membership>) =>
         supabase.from('memberships').update(data).eq('id', id),
 
-    /** Members delete their own; admins delete any in their org (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('memberships').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Organizations
-// Policy: selectable by everyone; creatable by authenticated users;
-//         updatable/deletable by admins
-// -----------------------------------------------------------------------
+
 
 export const organizationsApi = {
-    /** Selectable by everyone */
+
     getAll: () =>
         supabase.from('organizations').select('*').limit(50),
 
     getById: (id: string) =>
         supabase.from('organizations').select('*').limit(50).eq('id', id).single(),
 
-    /** Creatable by any authenticated user */
+
     create: (data: Partial<Organization>) =>
         supabase.from('organizations').insert(data).select().single(),
 
-    /** Only admins of the org can update (RLS enforced) */
+
     update: (id: string, data: Partial<Organization>) =>
         supabase.from('organizations').update(data).eq('id', id),
 
-    /** Only admins of the org can delete (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('organizations').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Organization Tags
-// Policy: selectable by everyone; insert/update/delete by org admins
-// -----------------------------------------------------------------------
+
 
 export const organizationTagsApi = {
     getAll: () =>
@@ -177,23 +151,20 @@ export const organizationTagsApi = {
     getByOrg: (orgId: string) =>
         supabase.from('organizations_tags').select('*').limit(50).eq('org_id', orgId),
 
-    /** Only org admins can create (RLS enforced) */
+
     create: (data: Partial<OrganizationTag>) =>
         supabase.from('organizations_tags').insert(data).select().single(),
 
-    /** Only org admins can update (RLS enforced) */
+
     update: (id: string, data: Partial<OrganizationTag>) =>
         supabase.from('organizations_tags').update(data).eq('id', id),
 
-    /** Only org admins can delete (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('organizations_tags').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Meetings
-// Policy: selectable by everyone; insert/update/delete by org admins
-// -----------------------------------------------------------------------
+
 
 export const meetingsApi = {
     getAll: () =>
@@ -205,23 +176,20 @@ export const meetingsApi = {
     getById: (id: string) =>
         supabase.from('meetings').select('*').limit(50).eq('id', id).single(),
 
-    /** Only org admins can create (RLS enforced) */
+
     create: (data: Partial<Meeting>) =>
         supabase.from('meetings').insert(data).select().single(),
 
-    /** Only org admins can update (RLS enforced) */
+
     update: (id: string, data: Partial<Meeting>) =>
         supabase.from('meetings').update(data).eq('id', id),
 
-    /** Only org admins can delete (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('meetings').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Events
-// Policy: selectable by everyone; insert/update/delete by org admins
-// -----------------------------------------------------------------------
+
 
 export const eventsApi = {
     getAll: () =>
@@ -233,24 +201,20 @@ export const eventsApi = {
     getById: (id: string) =>
         supabase.from('events').select('*').eq('id', id).single(),
 
-    /** Only org admins can create (RLS enforced) */
+
     create: (data: Partial<Event>) =>
         supabase.from('events').insert(data).select().single(),
 
-    /** Only org admins can update (RLS enforced) */
+
     update: (id: string, data: Partial<Event>) =>
         supabase.from('events').update(data).eq('id', id),
 
-    /** Only org admins can delete (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('events').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Event Tags
-// Policy: selectable by everyone; insert/update/delete by org admins
-//         (via join on events → memberships)
-// -----------------------------------------------------------------------
+
 
 export const eventTagsApi = {
     getAll: () =>
@@ -259,23 +223,20 @@ export const eventTagsApi = {
     getByEvent: (eventId: string) =>
         supabase.from('event_tags').select('*').limit(50).eq('event_id', eventId),
 
-    /** Only org admins of the related event's org can create (RLS enforced) */
+
     create: (data: Partial<EventTag>) =>
         supabase.from('event_tags').insert(data).select().single(),
 
-    /** Only org admins of the related event's org can update (RLS enforced) */
+
     update: (id: string, data: Partial<EventTag>) =>
         supabase.from('event_tags').update(data).eq('id', id),
 
-    /** Only org admins of the related event's org can delete (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('event_tags').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Locations
-// Policy: selectable by everyone; insert/update/delete by org admins
-// -----------------------------------------------------------------------
+
 
 export const locationsApi = {
     getAll: () =>
@@ -287,24 +248,20 @@ export const locationsApi = {
     getById: (id: string) =>
         supabase.from('locations').select('*').eq('id', id).single(),
 
-    /** Only org admins can create (RLS enforced) */
+
     create: (data: Partial<Location>) =>
         supabase.from('locations').insert(data).select().single(),
 
-    /** Only org admins can update (RLS enforced) */
+
     update: (id: string, data: Partial<Location>) =>
         supabase.from('locations').update(data).eq('id', id),
 
-    /** Only org admins can delete (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('locations').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Resources
-// Policy: selectable by everyone; creatable by authenticated users;
-//         update/delete by uploader OR org admin
-// -----------------------------------------------------------------------
+
 
 export const resourcesApi = {
     getAll: () =>
@@ -316,24 +273,20 @@ export const resourcesApi = {
     getById: (id: string) =>
         supabase.from('resources').select('*').eq('id', id).single(),
 
-    /** Any authenticated user can create a resource */
+
     create: (data: Partial<Resource>) =>
         supabase.from('resources').insert(data).select().single(),
 
-    /** Uploader or org admin can update (RLS enforced) */
+
     update: (id: string, data: Partial<Resource>) =>
         supabase.from('resources').update(data).eq('id', id),
 
-    /** Uploader or org admin can delete (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('resources').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Resource Tags
-// Policy: selectable by everyone;
-//         insert/update/delete by uploader OR org admin
-// -----------------------------------------------------------------------
+
 
 export const resourceTagsApi = {
     getAll: () =>
@@ -342,30 +295,25 @@ export const resourceTagsApi = {
     getByResource: (resourceId: string) =>
         supabase.from('resource_tags').select('*').limit(50).eq('resource_id', resourceId),
 
-    /** Uploader of the resource or org admin can create (RLS enforced) */
+
     create: (data: Partial<ResourceTag>) =>
         supabase.from('resource_tags').insert(data).select().single(),
 
-    /** Uploader of the resource or org admin can update (RLS enforced) */
+
     update: (id: string, data: Partial<ResourceTag>) =>
         supabase.from('resource_tags').update(data).eq('id', id),
 
-    /** Uploader of the resource or org admin can delete (RLS enforced) */
+
     delete: (id: string) =>
         supabase.from('resource_tags').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Storage helpers (avatars)
-// -----------------------------------------------------------------------
+
 
 export const storageApi = {
-    /**
-     * Upload a user's avatar to the `avatars` bucket.
-     * Returns `{ path, publicUrl }` on success.
-     */
+
     uploadAvatar: async (userId: string, file: File | Blob) => {
-        // Attempt to convert image files to webp in-browser for smaller, consistent uploads.
+
         let uploadBlob : Blob = file as Blob;
         const isImage = (file as any).type && String((file as any).type).startsWith('image/')
         if (isImage) {
@@ -388,10 +336,10 @@ export const storageApi = {
 
         const publicUrl = supabase.storage.from('avatars').getPublicUrl(data.path).data.publicUrl
 
-        // After a successful upload, attempt to delete the user's previous avatar
-        // (if any). We read the `avatar_url` from the profiles table, derive the
-        // storage object path from the public URL, and remove it. Failures here
-        // are non-fatal (we still return the new avatar info).
+
+
+
+
         try {
             const prevProfile = await supabase.from('profiles').select('avatar_url').eq('id', userId).single()
             if (!prevProfile.error && prevProfile.data && prevProfile.data.avatar_url) {
@@ -410,19 +358,14 @@ export const storageApi = {
         return { data: { path: data.path, publicUrl }, error: null }
     },
 
-    /**
-     * Get a public URL for an avatar path. If your bucket is private,
-     * replace this with `createSignedUrl` usage.
-     */
+
     getAvatarPublicUrl: (path: string | null) => {
         if (!path) return null
         return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
     },
 }
 
-// -----------------------------------------------------------------------
-// Comments
-// -----------------------------------------------------------------------
+
 
 export const commentsApi = {
     getByOrg: (orgId: string) =>
@@ -444,9 +387,7 @@ export const commentsApi = {
         supabase.from('comments').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Announcements
-// -----------------------------------------------------------------------
+
 
 export const announcementsApi = {
     getAll: () =>
@@ -465,9 +406,7 @@ export const announcementsApi = {
         supabase.from('announcements').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Discussions
-// -----------------------------------------------------------------------
+
 
 export const discussionsApi = {
     getAll: () =>
@@ -489,9 +428,7 @@ export const discussionsApi = {
         supabase.from('discussion_replies').insert(data).select('*, profiles(name, avatar_url)').single(),
 }
 
-// -----------------------------------------------------------------------
-// Notifications
-// -----------------------------------------------------------------------
+
 
 export const notificationsApi = {
     getForUser: () =>
@@ -507,9 +444,7 @@ export const notificationsApi = {
         supabase.from('notifications').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Quizzes
-// -----------------------------------------------------------------------
+
 
 export const quizzesApi = {
     getAll: () =>
@@ -528,9 +463,7 @@ export const quizzesApi = {
         supabase.from('quiz_results').select('*').eq('quiz_id', quizId).eq('user_id', userId).single(),
 }
 
-// -----------------------------------------------------------------------
-// Uploads
-// -----------------------------------------------------------------------
+
 
 export const uploadsApi = {
     getAll: () =>
@@ -546,9 +479,7 @@ export const uploadsApi = {
         supabase.from('uploads').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Event Registrations (RSVP)
-// -----------------------------------------------------------------------
+
 
 export const eventRegistrationsApi = {
     getByEvent: (eventId: string) =>
@@ -567,9 +498,7 @@ export const eventRegistrationsApi = {
         supabase.from('event_registrations').update({ status: 'cancelled' }).eq('event_id', eventId).eq('user_id', userId),
 }
 
-// -----------------------------------------------------------------------
-// Club Proposals
-// -----------------------------------------------------------------------
+
 
 export const clubProposalsApi = {
     getByUser: (userId: string) =>
@@ -588,9 +517,7 @@ export const clubProposalsApi = {
         supabase.from('club_proposals').select('*').eq('id', id).single(),
 }
 
-// -----------------------------------------------------------------------
-// Donations
-// -----------------------------------------------------------------------
+
 
 export const donationsApi = {
     getByOrg: (orgId: string) =>
@@ -604,9 +531,7 @@ export const donationsApi = {
         supabase.from('donations').insert(data).select().single(),
 }
 
-// -----------------------------------------------------------------------
-// Service Hours
-// -----------------------------------------------------------------------
+
 
 export const serviceHoursApi = {
     getByUser: (userId: string) =>
@@ -622,9 +547,7 @@ export const serviceHoursApi = {
         supabase.from('service_hours').update({ verified: true, verified_by: verifiedBy }).eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Ratings
-// -----------------------------------------------------------------------
+
 
 export const ratingsApi = {
     getByOrg: (orgId: string) =>
@@ -644,9 +567,7 @@ export const ratingsApi = {
         supabase.from('ratings').delete().eq('org_id', orgId).eq('user_id', userId),
 }
 
-// -----------------------------------------------------------------------
-// Bookmarks
-// -----------------------------------------------------------------------
+
 
 export const bookmarksApi = {
     getByUser: () =>
@@ -659,9 +580,7 @@ export const bookmarksApi = {
         supabase.from('bookmarks').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Activity Log
-// -----------------------------------------------------------------------
+
 
 export const activityLogApi = {
     getByUser: (userId: string) =>
@@ -674,9 +593,7 @@ export const activityLogApi = {
         supabase.from('activity_log').insert(data),
 }
 
-// -----------------------------------------------------------------------
-// Org Analytics
-// -----------------------------------------------------------------------
+
 
 export const orgAnalyticsApi = {
     getByOrg: (orgId: string) =>
@@ -694,9 +611,7 @@ export const orgAnalyticsApi = {
         supabase.from('org_analytics').upsert(data, { onConflict: 'org_id,snapshot_date' }).select().single(),
 }
 
-// -----------------------------------------------------------------------
-// Projects
-// -----------------------------------------------------------------------
+
 
 export const projectsApi = {
     getByOrg: (orgId: string) =>
@@ -709,9 +624,7 @@ export const projectsApi = {
         supabase.from('projects').update(data).eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Sponsors
-// -----------------------------------------------------------------------
+
 
 export const sponsorsApi = {
     getByOrg: (orgId: string) =>
@@ -721,9 +634,7 @@ export const sponsorsApi = {
         supabase.from('sponsors').insert(data).select().single(),
 }
 
-// -----------------------------------------------------------------------
-// Meeting Notes
-// -----------------------------------------------------------------------
+
 
 export const meetingNotesApi = {
     getByOrg: (orgId: string) =>
@@ -733,9 +644,7 @@ export const meetingNotesApi = {
         supabase.from('meeting_notes').insert(data).select().single(),
 }
 
-// -----------------------------------------------------------------------
-// Club History
-// -----------------------------------------------------------------------
+
 
 export const clubHistoryApi = {
     getByOrg: (orgId: string) =>
@@ -745,9 +654,7 @@ export const clubHistoryApi = {
         supabase.from('club_history').insert(data).select().single(),
 }
 
-// -----------------------------------------------------------------------
-// Advisors
-// -----------------------------------------------------------------------
+
 
 export const advisorsApi = {
     getByOrg: (orgId: string) =>
@@ -763,9 +670,7 @@ export const advisorsApi = {
         supabase.from('advisors').delete().eq('id', id),
 }
 
-// -----------------------------------------------------------------------
-// Club Ideas
-// -----------------------------------------------------------------------
+
 
 export const clubIdeasApi = {
     getAll: () =>
@@ -781,9 +686,7 @@ export const clubIdeasApi = {
         supabase.from('club_idea_votes').delete().eq('idea_id', ideaId).eq('user_id', userId),
 }
 
-// -----------------------------------------------------------------------
-// Mentors
-// -----------------------------------------------------------------------
+
 
 export const mentorsApi = {
     getAll: () =>
@@ -796,9 +699,7 @@ export const mentorsApi = {
         supabase.from('mentorship_requests').insert(data).select().single(),
 }
 
-// -----------------------------------------------------------------------
-// Success Stories
-// -----------------------------------------------------------------------
+
 
 export const successStoriesApi = {
     getAll: () =>
@@ -811,9 +712,7 @@ export const successStoriesApi = {
         supabase.from('success_stories').insert(data).select().single(),
 }
 
-// -----------------------------------------------------------------------
-// Collaborations
-// -----------------------------------------------------------------------
+
 
 export const collaborationsApi = {
     getAll: () =>
@@ -826,9 +725,7 @@ export const collaborationsApi = {
         supabase.from('collaboration_participants').insert({ collaboration_id: collaborationId, org_id: orgId }),
 }
 
-// -----------------------------------------------------------------------
-// Upload Likes
-// -----------------------------------------------------------------------
+
 
 export const uploadLikesApi = {
     like: (uploadId: string, userId: string) =>
@@ -843,9 +740,7 @@ export const uploadLikesApi = {
     },
 }
 
-// -----------------------------------------------------------------------
-// Achievements
-// -----------------------------------------------------------------------
+
 
 export const achievementsApi = {
     getAll: () =>
@@ -858,132 +753,37 @@ export const achievementsApi = {
         supabase.from('user_achievements').insert({ user_id: userId, achievement_id: achievementId }),
 }
 
-// -----------------------------------------------------------------------
-// Chat Channels & Messages (Real-time)
-// -----------------------------------------------------------------------
 
-export const chatChannelsApi = {
-    getAll: () =>
-        supabase.from('chat_channels').select('*').eq('is_archived', false).order('created_at', { ascending: false }).limit(50),
 
-    getByOrg: (orgId: string) =>
-        supabase.from('chat_channels').select('*').eq('org_id', orgId).eq('is_archived', false).order('created_at').limit(20),
+export const myClubsApi = {
 
-    getById: (id: string) =>
-        supabase.from('chat_channels').select('*').eq('id', id).single(),
+    getMyClubs: () =>
+        supabase.from('my_clubs').select('*'),
 
-    create: (data: { name: string; description?: string; org_id?: string; channel_type?: string; created_by: string }) =>
-        supabase.from('chat_channels').insert(data).select().single(),
 
-    update: (id: string, data: Partial<ChatChannel>) =>
-        supabase.from('chat_channels').update(data).eq('id', id),
+    getDirectory: () =>
+        supabase.from('club_directory').select('*').order('created_at', { ascending: false }).limit(100),
 
-    archive: (id: string) =>
-        supabase.from('chat_channels').update({ is_archived: true }).eq('id', id),
+
+    createClub: (data: Partial<Organization> & { created_by: string }) =>
+        supabase.from('organizations').insert(data).select().single(),
+
+
+    publish: (orgId: string) =>
+        supabase.from('organizations').update({ is_published: true }).eq('id', orgId),
 }
 
-export const chatMessagesApi = {
-    getByChannel: (channelId: string, limit = 100) =>
-        supabase.from('chat_messages').select('*, profiles(name, avatar_url)')
-            .eq('channel_id', channelId).eq('is_deleted', false)
-            .order('created_at', { ascending: true }).limit(limit),
 
-    send: (data: { channel_id: string; sender_id: string; content: string; reply_to?: string }) =>
-        supabase.from('chat_messages').insert(data).select('*, profiles(name, avatar_url)').single(),
 
-    edit: (id: string, content: string) =>
-        supabase.from('chat_messages').update({ content, is_edited: true, updated_at: new Date().toISOString() }).eq('id', id),
+export const communityApi = {
 
-    softDelete: (id: string) =>
-        supabase.from('chat_messages').update({ is_deleted: true, content: '[deleted]' }).eq('id', id),
-
-    /** Subscribe to real-time messages in a channel */
-    subscribe: (channelId: string, callback: (msg: ChatMessage) => void) => {
-        return supabase
-            .channel(`chat:${channelId}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'chat_messages',
-                filter: `channel_id=eq.${channelId}`,
-            }, (payload) => callback(payload.new as ChatMessage))
-            .subscribe()
-    },
-}
-
-export const chatMembersApi = {
-    getByChannel: (channelId: string) =>
-        supabase.from('chat_channel_members').select('*, profiles(name, avatar_url)').eq('channel_id', channelId),
-
-    join: (channelId: string, userId: string) =>
-        supabase.from('chat_channel_members').insert({ channel_id: channelId, user_id: userId }),
-
-    leave: (channelId: string, userId: string) =>
-        supabase.from('chat_channel_members').delete().eq('channel_id', channelId).eq('user_id', userId),
-
-    updateLastRead: (channelId: string, userId: string) =>
-        supabase.from('chat_channel_members').update({ last_read_at: new Date().toISOString() })
-            .eq('channel_id', channelId).eq('user_id', userId),
-}
-
-// -----------------------------------------------------------------------
-// Statistics Views (read-only)
-// -----------------------------------------------------------------------
-
-export const statisticsApi = {
-    /** Get aggregated stats for a specific user */
-    getUserStats: (userId: string) =>
-        supabase.from('user_statistics').select('*').eq('user_id', userId).single(),
-
-    /** Get aggregated stats for a specific club */
-    getClubStats: (orgId: string) =>
-        supabase.from('club_statistics').select('*').eq('org_id', orgId).single(),
-
-    /** Get all club stats (for directory/leaderboard) */
-    getAllClubStats: () =>
-        supabase.from('club_statistics').select('*').eq('is_active', true).order('total_members', { ascending: false }).limit(100),
-
-    /** Get clubs a user is enrolled in */
-    getUserClubs: (userId: string) =>
-        supabase.from('user_club_enrollments').select('*').eq('user_id', userId).order('joined_at', { ascending: false }),
-
-    /** Get member list for a club */
-    getClubMembers: (orgId: string) =>
-        supabase.from('club_member_list').select('*').eq('org_id', orgId).order('joined_at'),
-
-    /** Get community uploads with author info */
-    getCommunityUploads: () =>
+    getUploads: () =>
         supabase.from('community_uploads').select('*').limit(50),
 
-    /** Get discussion threads with details */
-    getDiscussionThreads: (orgId?: string) => {
+
+    getThreads: (orgId?: string) => {
         let query = supabase.from('discussion_threads').select('*').limit(50)
         if (orgId) query = query.eq('org_id', orgId)
         return query
-    },
-}
-
-// -----------------------------------------------------------------------
-// Membership (join a club)
-// -----------------------------------------------------------------------
-
-export const membershipJoinApi = {
-    /** Join a club (creates membership with 'member' role) */
-    joinClub: (orgId: string, userId: string) =>
-        supabase.from('memberships').insert({
-            org_id: orgId,
-            user_id: userId,
-            user_permissions: 'member',
-        }).select().single(),
-
-    /** Leave a club */
-    leaveClub: (orgId: string, userId: string) =>
-        supabase.from('memberships').delete().eq('org_id', orgId).eq('user_id', userId),
-
-    /** Check if user is member of a club */
-    isMember: async (orgId: string, userId: string) => {
-        const { data } = await supabase.from('memberships')
-            .select('id').eq('org_id', orgId).eq('user_id', userId).maybeSingle()
-        return !!data
     },
 }

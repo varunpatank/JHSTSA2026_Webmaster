@@ -15,7 +15,7 @@ import {
  Shield, Target, X, BookMarked,
 } from "lucide-react";
 
-/* ---- Pixelated 3D Club Icons ---- */
+
 const CLUB_ICONS: Record<string, { emoji: string; pixels: string }> = {
  "Model United Nations": { emoji: "\u{1F30D}", pixels: "#1e3a5f" },
  "Robotics Engineering Club": { emoji: "\u{1F916}", pixels: "#4a90d9" },
@@ -46,7 +46,7 @@ function PixelIcon3D({ name, size = 48 }: { name: string; size?: number }) {
  );
 }
 
-/* ---- helpers ---- */
+
 const ROTATING_WORDS = ["Clubs", "Events", "Mentors", "Resources", "Community"];
 
 function RotatingWord({ className = "" }: { className?: string }) {
@@ -56,7 +56,7 @@ function RotatingWord({ className = "" }: { className?: string }) {
  return () => clearInterval(t);
  }, []);
  return (
- <span className={`inline-grid overflow-hidden align-bottom ${className}`} style={{ height: "1.15em" }}>
+ <span className={`inline-grid overflow-hidden ${className}`} style={{ height: "1.15em", lineHeight: "1.15em", verticalAlign: "baseline" }}>
  {ROTATING_WORDS.map((word, i) => (
  <span key={word} className={`col-start-1 row-start-1 transition-all duration-500 ease-in-out text-secondary-600 ${
   i === idx ? "translate-y-0 opacity-100" : i === (idx - 1 + ROTATING_WORDS.length) % ROTATING_WORDS.length ? "-translate-y-full opacity-0" : "translate-y-full opacity-0"
@@ -98,15 +98,23 @@ function GuideAccordion({ icon, title, children }: { icon: string; title: string
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
  const [count, setCount] = useState(0);
  const ref = useRef<HTMLSpanElement>(null);
+ const started = useRef(false);
  useEffect(() => {
  const el = ref.current;
  if (!el) return;
  const obs = new IntersectionObserver(([e]) => {
- if (e.isIntersecting) {
- let v = 0;
- const step = target / 60;
- const t = setInterval(() => { v += step; if (v >= target) { setCount(target); clearInterval(t); } else setCount(Math.floor(v)); }, 16);
- obs.unobserve(el);
+ if (e.isIntersecting && !started.current) {
+ started.current = true;
+ const duration = 800;
+ const start = performance.now();
+ const tick = (now: number) => {
+  const progress = Math.min((now - start) / duration, 1);
+  setCount(Math.floor(progress * target));
+  if (progress < 1) requestAnimationFrame(tick);
+  else setCount(target);
+ };
+ requestAnimationFrame(tick);
+ obs.disconnect();
  }
  }, { threshold: 0.5 });
  obs.observe(el);
@@ -115,36 +123,12 @@ function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
 }
 
-/* Rotating hero banners */
-const HERO_BANNERS = [
- {
- title: "Your Community Resource Hub",
- subtitle: "Browse 30+ clubs, access guides & templates, attend events, connect with mentors, and find resources for every stage of your journey.",
- image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
- cta: { label: "Explore Clubs", href: "/directory", icon: Search },
- cta2: { label: "Student Community", href: "/students", icon: Users },
- },
- {
- title: "Launch Your Own Club Today",
- subtitle: "Step-by-step wizard with constitution editor, logo tools, poster designer, and gamified progress tracking.",
- image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
- cta: { label: "Start Creating", href: "/start-a-club", icon: Rocket },
- cta2: { label: "View Resources", href: "/resources", icon: BookOpen },
- },
- {
- title: "Events, Competitions & Workshops",
- subtitle: "Stay on top of upcoming events, RSVP with one click, and never miss an opportunity to get involved.",
- image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
- cta: { label: "View Events", href: "/events", icon: CalendarCheck },
- cta2: { label: "Competitions", href: "/hub/competitions", icon: Target },
- },
- {
- title: "Guidance, Mentors & Resources",
- subtitle: "Professional mentors, 30+ downloadable resources, peer connections, and a rocket-launch system to track your progress.",
- image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80",
- cta: { label: "Student Community", href: "/students", icon: Users },
- cta2: { label: "Find a Mentor", href: "/hub/mentors", icon: GraduationCap },
- },
+
+const HERO_IMAGES = [
+ "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
+ "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+ "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
+ "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80",
 ];
 
 const clubImages: Record<string, string> = {
@@ -170,7 +154,7 @@ const testimonials = [
  { name: "David L.", role: "Alumni, Class of 2024", text: "Being part of clubs through ClubConnect shaped my college applications and leadership skills. Highly recommend!", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80" },
 ];
 
-/* No more step-based guide — replaced with overview panel */
+
 
 export default function HomePage() {
  const [bannerIdx, setBannerIdx] = useState(0);
@@ -179,7 +163,7 @@ export default function HomePage() {
  const [testimonialIdx, setTestimonialIdx] = useState(0);
  const upcomingEvents = events.slice(0, 4);
 
- /* ── Judge Guide state ── */
+
  const [guideOpen, setGuideOpen] = useState(false);
  const [guideDismissed, setGuideDismissed] = useState(false);
 
@@ -201,18 +185,14 @@ export default function HomePage() {
  }, []);
 
  useEffect(() => {
- const t = setInterval(() => setBannerIdx(i => (i + 1) % HERO_BANNERS.length), 6000);
+ let tick = 0;
+ const t = setInterval(() => {
+  tick++;
+  if (tick % 3 === 0) setBannerIdx(i => (i + 1) % HERO_IMAGES.length);
+  if (tick % 2 === 0) setTestimonialIdx(i => (i + 1) % testimonials.length);
+ }, 3000);
  return () => clearInterval(t);
  }, []);
-
- useEffect(() => {
- const t = setInterval(() => setTestimonialIdx(i => (i + 1) % testimonials.length), 5000);
- return () => clearInterval(t);
- }, []);
-
- const banner = HERO_BANNERS[bannerIdx];
- const BannerCta = banner.cta.icon;
- const BannerCta2 = banner.cta2.icon;
 
  const visibleClubs = chapters.slice(carouselIdx, carouselIdx + 3).length === 3
  ? chapters.slice(carouselIdx, carouselIdx + 3)
@@ -226,42 +206,44 @@ export default function HomePage() {
  <div className="absolute top-[20%] left-[40%] h-64 w-64 rounded-full bg-primary-300/20 blur-3xl animate-drift-slower" />
  </div>
 
- {/* ═══ HERO BANNER (Rotating) ═══ */}
+ {}
  <section id="guide-hero" className="relative z-10 border-b border-blue-200 overflow-hidden bg-gradient-to-br from-blue-600/[0.07] via-transparent to-primary-600/[0.05]">
- <div className="absolute inset-0 transition-opacity duration-700">
- <Image src={banner.image} alt="" fill className="object-cover opacity-10" priority />
+ <div className="absolute inset-0">
+ {HERO_IMAGES.map((src, i) => (
+  <Image key={src} src={src} alt="" fill className={`object-cover transition-opacity duration-1000 ease-in-out ${i === bannerIdx ? "opacity-[0.12]" : "opacity-0"}`} priority={i === 0} />
+ ))}
  </div>
- <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-7 md:py-10">
- <div className="max-w-4xl mx-auto text-center animate-fade-up">
- <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold rounded-full mb-3 animate-scale-bounce">
+ <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+ <div className="max-w-3xl mx-auto text-center">
+ <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold rounded-full mb-2 animate-scale-bounce">
  <Sparkles size={12} /> Community Resource Hub &mdash; Clubs &middot; Mentors &middot; Events &middot; Social
  </div>
- <h1 key={bannerIdx} className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-primary-800 leading-tight animate-fade-up">
+ <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-primary-800 leading-tight text-center">
  Your Hub for <RotatingWord className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold" />
  </h1>
- <p className="mt-2 max-w-2xl mx-auto text-neutral-600 text-sm md:text-base leading-relaxed animate-fade-up" style={{ animationDelay: "180ms" }}>
- {banner.subtitle}
+ <p className="mt-1.5 max-w-2xl mx-auto text-neutral-600 text-sm md:text-base leading-relaxed">
+ Browse 30+ clubs, access guides &amp; templates, attend events, connect with mentors, and find resources for every stage of your journey.
  </p>
- <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center animate-fade-up" style={{ animationDelay: "240ms" }}>
- <Link href={banner.cta.href} className="btn-primary btn-ripple btn-magnetic inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm">
- <BannerCta size={16} /> {banner.cta.label} <ArrowRight size={16} />
+ <div className="mt-3 flex flex-col sm:flex-row gap-2 justify-center">
+ <Link href="/directory" className="btn-primary btn-ripple btn-magnetic inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm">
+ <Search size={16} /> Explore Clubs <ArrowRight size={16} />
  </Link>
- <Link href={banner.cta2.href} className="btn-outline btn-magnetic inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm">
- <BannerCta2 size={16} /> {banner.cta2.label}
+ <Link href="/students" className="btn-outline btn-magnetic inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm">
+ <Users size={16} /> Student Community
  </Link>
  </div>
- <div className="mt-3 flex gap-4 text-xs justify-center flex-wrap">
+ <div className="mt-2 flex gap-4 text-xs justify-center flex-wrap">
  <div className="flex items-center gap-1 text-neutral-600"><CheckCircle size={12} className="text-green-600" /> Open to all students</div>
  <div className="flex items-center gap-1 text-neutral-600"><Clock size={12} className="text-blue-600" /> Updated daily</div>
  <div className="flex items-center gap-1 text-neutral-600"><Play size={12} className="text-purple-600" /> Student-Powered Community</div>
  </div>
- <div className="mt-3 flex justify-center gap-2">
- {HERO_BANNERS.map((_, i) => (
+ <div className="mt-2 flex justify-center gap-1.5">
+ {HERO_IMAGES.map((_, i) => (
  <button key={i} onClick={() => setBannerIdx(i)}
- className={`h-2 rounded-full transition-all ${i === bannerIdx ? "bg-primary-600 w-5" : "bg-primary-300 w-2 hover:bg-primary-400"}`} />
+ className={`h-1.5 rounded-full transition-all duration-500 ${i === bannerIdx ? "bg-primary-600 w-5" : "bg-primary-300 w-1.5 hover:bg-primary-400"}`} />
  ))}
  </div>
- <div className="mt-4 flex justify-center gap-3 animate-fade-up" style={{ animationDelay: "350ms" }}>
+ <div className="mt-3 flex justify-center gap-3">
  <Link href="/references" className="inline-flex items-center gap-2 px-4 py-2 bg-white/90 text-primary-700 text-xs font-semibold border border-primary-200 hover:bg-white hover:border-primary-400 transition-all">
  <BookOpen size={14} /> References &amp; Citations
  </Link>
@@ -273,7 +255,7 @@ export default function HomePage() {
  </div>
  </section>
 
- {/* ═══ STATS ═══ */}
+ {}
  <Reveal>
  <section id="guide-stats" className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 stagger-children">
@@ -300,7 +282,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ WHAT IS CLUBCONNECT ═══ */}
+ {}
  <Reveal>
  <section className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
  <div className="card p-5 md:p-6 bg-gradient-to-r from-primary-50 via-white to-secondary-50/30 border-primary-200">
@@ -325,7 +307,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ FEATURED CLUBS CAROUSEL with 3D Pixel Icons ═══ */}
+ {}
  <Reveal>
  <section id="guide-clubs" className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
  <div className="flex items-end justify-between mb-3">
@@ -378,7 +360,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ WHAT WE OFFER ═══ */}
+ {}
  <Reveal>
  <section id="guide-offer" className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
  <div className="text-center max-w-3xl mx-auto mb-4">
@@ -411,7 +393,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ ABOUT / PHILOSOPHY (Expandable) ═══ */}
+ {}
  <Reveal>
  <section id="guide-about" className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
  <div className="card overflow-hidden">
@@ -448,7 +430,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ RATINGS & REVIEWS ═══ */}
+ {}
  <Reveal>
  <section id="guide-reviews" className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
  <div className="text-center max-w-3xl mx-auto mb-3">
@@ -498,7 +480,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ SPOTLIGHT ═══ */}
+ {}
  <Reveal>
  <section id="guide-spotlight" className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
  <div className="flex items-end justify-between mb-3">
@@ -527,7 +509,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ UPCOMING EVENTS with RSVP ═══ */}
+ {}
  <Reveal>
  <section id="guide-events" className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
  <div className="grid lg:grid-cols-3 gap-4">
@@ -575,7 +557,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ SUPPORT / DONATIONS ═══ */}
+ {}
  <Reveal>
  <section id="guide-donate" className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
  <div className="card overflow-hidden bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
@@ -608,7 +590,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ QUICK LINKS ═══ */}
+ {}
  <Reveal>
  <section id="guide-quicklinks" className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
  <div className="text-center max-w-3xl mx-auto mb-3">
@@ -641,7 +623,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ PARTNERSHIPS ═══ */}
+ {}
  <Reveal>
  <section id="guide-partners" className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
  <div className="text-center max-w-3xl mx-auto mb-3">
@@ -664,7 +646,7 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ FINAL CTA ═══ */}
+ {}
  <Reveal>
  <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-5">
  <div className=" border border-primary-200 bg-gradient-to-r from-primary-700 via-primary-600 to-secondary-600 p-4 md:p-6 text-center ux-hover-lift-sm animate-gradient-shift overflow-hidden relative">
@@ -685,20 +667,20 @@ export default function HomePage() {
  </section>
  </Reveal>
 
- {/* ═══ JUDGE GUIDE — App Overview Panel ═══ */}
- {/* Trigger button — always visible */}
+ {}
+ {}
  <button onClick={startGuide}
   className="fixed top-1/3 right-0 z-50 bg-secondary-600 hover:bg-secondary-700 text-white px-3 py-3 shadow-lg flex items-center gap-2 text-xs font-bold transition-all hover:pr-5 group animate-pulse"
   style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}>
   <BookMarked size={16} className="rotate-90" /> <span>JUDGE GUIDE</span>
  </button>
 
- {/* Overview Panel — slides in from right, non-blocking */}
+ {}
  {guideOpen && (
   <>
   <div className="fixed inset-0 z-[55] bg-black/20 transition-opacity" onClick={dismissGuide} />
   <div className="fixed top-0 right-0 z-[60] h-full w-[28rem] max-w-[92vw] bg-white border-l-4 border-secondary-500 shadow-2xl flex flex-col animate-slide-in-right">
-   {/* Header */}
+   {}
    <div className="bg-gradient-to-r from-primary-700 to-primary-800 text-white px-5 py-5 shrink-0">
     <div className="flex items-center justify-between">
      <h3 className="font-bold text-lg flex items-center gap-2"><BookMarked size={18} /> Judge&rsquo;s Guide</h3>
@@ -709,9 +691,9 @@ export default function HomePage() {
     </p>
    </div>
 
-   {/* Scrollable content */}
+   {}
    <div className="flex-1 overflow-y-auto">
-    {/* Welcome */}
+    {}
     <div className="px-5 py-4 border-b border-neutral-100 bg-gradient-to-b from-secondary-50/40 to-white">
      <p className="text-xs text-neutral-700 leading-relaxed">
       <strong className="text-primary-800">ClubConnect</strong> is a full-featured <strong>community resource hub</strong> for school clubs and student organizations. It connects students to <strong>30+ active clubs</strong>, mentors, events, downloadable resources, and tools to create their own organizations. School clubs are one of the most impactful community resources available to students.
@@ -725,7 +707,7 @@ export default function HomePage() {
      </div>
     </div>
 
-    {/* Accordion sections */}
+    {}
     {[
      { id: "tech", icon: "🛠️", title: "Tech Stack & Architecture", content: (
       <div className="space-y-2.5">
@@ -885,7 +867,7 @@ export default function HomePage() {
      </GuideAccordion>
     ))}
 
-    {/* Closing thank you */}
+    {}
     <div className="px-5 py-4 bg-gradient-to-b from-secondary-50/40 to-primary-50/30">
      <p className="text-xs text-neutral-700 leading-relaxed">
       <strong className="text-primary-800">Thank you for taking the time to review ClubConnect.</strong> We put tremendous effort into making this a comprehensive, functional, and accessible platform. We hope you enjoy exploring every feature &mdash; from the interactive club directory and AI-powered agents, to the donation system and video conferencing. We sincerely appreciate your evaluation.
@@ -896,7 +878,7 @@ export default function HomePage() {
     </div>
    </div>
 
-   {/* Footer */}
+   {}
    <div className="border-t border-neutral-200 px-5 py-3 flex items-center justify-between shrink-0 bg-neutral-50">
     <p className="text-[10px] text-neutral-400">ClubConnect &mdash; JHSTSA Webmaster 2026</p>
     <button onClick={dismissGuide} className="px-5 py-2 text-xs font-bold bg-secondary-600 text-white hover:bg-secondary-700">

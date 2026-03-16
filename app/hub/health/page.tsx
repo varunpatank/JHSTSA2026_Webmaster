@@ -82,7 +82,7 @@ export default function HealthPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Legend + Sort */}
+        {}
         <div className="card p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-3 text-xs">
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500" /> 90-100 Excellent</span>
@@ -95,14 +95,14 @@ export default function HealthPage() {
           </select>
         </div>
 
-        {/* Club Health Cards */}
+        {}
         <div className="space-y-4">
           {sorted.map(club => (
             <Reveal key={club.id}>
               <div className="card overflow-hidden ux-hover-lift-sm">
                 <button onClick={() => setExpandedId(expandedId === club.id ? null : club.id)} className="w-full p-5 text-left hover:bg-neutral-50/50 transition-colors">
                   <div className="flex items-center gap-4">
-                    {/* Score Circle */}
+                    {}
                     <div className="relative w-16 h-16 shrink-0">
                       <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
                         <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="5" />
@@ -117,7 +117,7 @@ export default function HealthPage() {
                         {club.overallScore < 80 && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">⚠ Needs Attention</span>}
                       </div>
                       <h3 className="font-bold text-primary-800 text-lg">{club.name}</h3>
-                      {/* Mini metric bars */}
+                      {}
                       <div className="mt-2 grid grid-cols-5 gap-2">
                         {club.metrics.map(m => (
                           <div key={m.label} className="text-center">
@@ -131,7 +131,7 @@ export default function HealthPage() {
                 </button>
                 {expandedId === club.id && (
                   <div className="px-5 pb-5 border-t border-neutral-100 space-y-4">
-                    {/* Detailed Metrics */}
+                    {}
                     <div className="mt-3 grid sm:grid-cols-5 gap-3">
                       {club.metrics.map(m => (
                         <div key={m.label} className="bg-neutral-50 p-3  text-center">
@@ -141,7 +141,7 @@ export default function HealthPage() {
                         </div>
                       ))}
                     </div>
-                    {/* Strengths & Concerns */}
+                    {}
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
                         <h4 className="text-xs font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-1"><CheckCircle size={12} /> Strengths</h4>
@@ -152,7 +152,7 @@ export default function HealthPage() {
                         <ul className="space-y-1">{club.concerns.map(c => <li key={c} className="text-sm text-neutral-600 flex items-start gap-2"><span className="text-yellow-500 mt-0.5">!</span> {c}</li>)}</ul>
                       </div>
                     </div>
-                    {/* Recommendations */}
+                    {}
                     <div>
                       <h4 className="text-xs font-bold text-primary-700 uppercase tracking-wider mb-2 flex items-center gap-1"><Zap size={12} /> Recommendations</h4>
                       <ul className="space-y-1">{club.recommendations.map(r => <li key={r} className="text-sm text-neutral-600 flex items-start gap-2"><span className="text-primary-400 mt-0.5">→</span> {r}</li>)}</ul>

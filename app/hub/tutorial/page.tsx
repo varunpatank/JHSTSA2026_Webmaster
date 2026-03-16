@@ -199,7 +199,7 @@ export default function TutorialPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Header */}
+      {}
       <section className="bg-primary-500 text-white py-4">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-between">
@@ -213,7 +213,7 @@ export default function TutorialPage() {
         </div>
       </section>
 
-      {/* Progress Bar */}
+      {}
       <section className="bg-white border-b border-neutral-200 py-4 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex gap-1">
@@ -240,11 +240,11 @@ export default function TutorialPage() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {}
       <section className="py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="card overflow-hidden">
-            {/* Step Image */}
+            {}
             <div className="relative h-64">
               <Image
                 src={step.image}
@@ -262,7 +262,7 @@ export default function TutorialPage() {
               </div>
             </div>
 
-            {/* Step Content */}
+            {}
             <div className="p-8">
               <div className="space-y-4 mb-8">
                 {step.content.map((paragraph, index) => (
@@ -272,7 +272,7 @@ export default function TutorialPage() {
                 ))}
               </div>
 
-              {/* Tips */}
+              {}
               <div className="bg-secondary-50 border-l-4 border-secondary-500 p-4 mb-8">
                 <h3 className="font-bold text-secondary-700 mb-2">💡 Pro Tips</h3>
                 <ul className="space-y-1">
@@ -285,7 +285,7 @@ export default function TutorialPage() {
                 </ul>
               </div>
 
-              {/* Action Button */}
+              {}
               {step.action && (
                 <div className="bg-primary-50 p-4 mb-8 flex items-center justify-between">
                   <div>
@@ -298,7 +298,7 @@ export default function TutorialPage() {
                 </div>
               )}
 
-              {/* Navigation */}
+              {}
               <div className="flex items-center justify-between pt-6 border-t border-neutral-200">
                 <button
                   onClick={prevStep}
@@ -344,7 +344,7 @@ export default function TutorialPage() {
             </div>
           </div>
 
-          {/* Quick Navigation */}
+          {}
           <div className="mt-8 card p-6">
             <h3 className="font-bold text-neutral-700 mb-4">Jump to Section</h3>
             <div className="grid grid-cols-3 gap-2">

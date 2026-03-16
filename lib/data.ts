@@ -1,6 +1,6 @@
 import { Chapter, Event, Resource, Spotlight, Stats } from "@/types";
 
-// Mock data for admin dashboard
+
 const pendingProposals = [
   {
     id: "prop-1",
@@ -63,7 +63,7 @@ const chapterHealth = [
   },
 ];
 
-// Mock alumni data
+
 export const featuredAlumni = [
   {
     id: 1,
@@ -154,7 +154,7 @@ const internships = [
   },
 ];
 
-// Mock funding data
+
 const budgetAllocations = [
   {
     chapter: "Model United Nations",
@@ -234,7 +234,7 @@ const grants = [
   },
 ];
 
-// Mock officer data
+
 
 const memberRoster = [
   {
@@ -320,7 +320,7 @@ const pendingJoinRequests = [
   },
 ];
 
-// Mock user data
+
 
 const upcomingDeadlines = [
   {
@@ -367,7 +367,7 @@ export const quizQuestions = [
   },
 ];
 
-// Mock Statistics
+
 export const stats: Stats = {
   activeChapters: 47,
   totalMembers: 1283,
@@ -1212,11 +1212,9 @@ export const announcements: Announcement[] = [
   },
 ];
 
-// ==========================================
-// EXPANDED SEED DATA
-// ==========================================
 
-// Club History / Timeline Events
+
+
 export const clubHistoryData: Record<string, { id: string; eventType: string; title: string; description: string; eventDate: string }[]> = {
   "model-un": [
     { id: "h1", eventType: "founded", title: "Club Founded", description: "Model UN was established by a group of 12 passionate students interested in international affairs.", eventDate: "2008-09-15" },
@@ -1242,7 +1240,7 @@ export const clubHistoryData: Record<string, { id: string; eventType: string; ti
   ],
 };
 
-// Projects / Showcases
+
 export const projectsData: Record<string, { id: string; title: string; description: string; status: string; startDate: string; endDate?: string }[]> = {
   "robotics": [
     { id: "p1", title: "Phoenix V - Competition Robot", description: "2026 competition robot featuring advanced swerve drive and autonomous scoring capabilities.", status: "in_progress", startDate: "2025-09-01" },
@@ -1263,7 +1261,7 @@ export const projectsData: Record<string, { id: string; title: string; descripti
   ],
 };
 
-// Meeting Notes (sample)
+
 export const meetingNotesData: Record<string, { id: string; title: string; meetingDate: string; attendeeCount: number; content: string; actionItems: { task: string; assignee: string; completed: boolean }[] }[]> = {
   "model-un": [
     {
@@ -1297,7 +1295,7 @@ export const meetingNotesData: Record<string, { id: string; title: string; meeti
   ],
 };
 
-// Sponsors / Partners
+
 export const sponsorsData = [
   { id: "s1", name: "TechForward Inc.", description: "Local technology company supporting STEM education initiatives.", website: "https://techforward.example.com", tier: "gold", logoUrl: null },
   { id: "s2", name: "Community First Bank", description: "Supporting student organizations through annual grants.", website: "https://communityfirst.example.com", tier: "silver", logoUrl: null },
@@ -1307,7 +1305,7 @@ export const sponsorsData = [
   { id: "s6", name: "Local Arts Council", description: "Grant funding for Drama Club productions and art programs.", website: "https://artscouncil.example.com", tier: "silver", logoUrl: null },
 ];
 
-// FAQ Data
+
 export const faqData = [
   { id: "faq-1", category: "Getting Started", question: "How do I join a club?", answer: "Browse our directory, find a club that interests you, and click 'Join Club' on its detail page. Some clubs have open enrollment (instant join), while others require an application or tryout. You'll be notified about next steps after applying." },
   { id: "faq-2", category: "Getting Started", question: "Can I join multiple clubs?", answer: "Absolutely! Many students participate in 2-4 clubs. Just make sure you can commit to each club's meeting schedule and requirements. Check for time conflicts before joining." },
@@ -1326,7 +1324,7 @@ export const faqData = [
   { id: "faq-15", category: "Technical", question: "I forgot my password. What do I do?", answer: "Click 'Forgot Password' on the login page. Enter your school email, and you'll receive a reset link. If you continue having issues, contact the Activities Office." },
 ];
 
-// Guides Data
+
 export const guidesData = [
   {
     id: "guide-joining", slug: "joining", title: "How to Join a Club", description: "Complete guide to finding and joining the right club for you.", category: "Getting Started",
@@ -1371,7 +1369,7 @@ export const guidesData = [
   },
 ];
 
-// School-wide Stats for Analytics
+
 export const schoolWideStats = {
   totalClubs: 47,
   totalMembers: 1283,
@@ -1407,7 +1405,7 @@ export const schoolWideStats = {
   ],
 };
 
-// Student Stories / Testimonials (expanded)
+
 export const studentStories = [
   {
     id: "story-1",
@@ -1465,7 +1463,7 @@ export const studentStories = [
   },
 ];
 
-// Weekly Opportunities Feed
+
 export const weeklyOpportunities = [
   { id: "opp-1", type: "event", title: "Model UN Practice Session", date: "2026-01-14", club: "Model United Nations", urgent: false },
   { id: "opp-2", type: "deadline", title: "Robotics Competition Registration Due", date: "2026-01-18", club: "Robotics Team", urgent: true },
@@ -1477,7 +1475,7 @@ export const weeklyOpportunities = [
   { id: "opp-8", type: "deadline", title: "Spring Budget Requests Due", date: "2026-01-31", club: "All Clubs", urgent: true },
 ];
 
-// Safety Guidelines
+
 export const safetyGuidelines = [
   { title: "Conduct Standards", content: "All club members must follow the school's Student Code of Conduct. Bullying, harassment, and discrimination are not tolerated." },
   { title: "Supervision Requirements", content: "A faculty advisor must be present at all official club meetings and events. Off-campus events require additional approval and parent permission slips." },

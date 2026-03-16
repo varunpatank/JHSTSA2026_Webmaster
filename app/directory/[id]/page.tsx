@@ -83,7 +83,7 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
   const [clickSpark, setClickSpark] = useState(false);
   const lastPos = useRef({ x: 0, y: 0 });
 
-  /* Auto-rotate when not dragging */
+
   useEffect(() => {
     if (isDragging) return;
     let frame: number;
@@ -118,14 +118,14 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
     setTimeout(() => setClickSpark(false), 600);
   };
 
-  /* Build pixel grid based on club color */
+
   const baseColor = clubIcons[clubId]?.emoji === "🌍" ? "#1e3a5f" : clubIcons[clubId]?.emoji === "🤖" ? "#4a90d9" : clubIcons[clubId]?.emoji === "🤝" ? "#e74c3c" : clubIcons[clubId]?.emoji === "🎭" ? "#9b59b6" : clubIcons[clubId]?.emoji === "⚖️" ? "#e67e22" : clubIcons[clubId]?.emoji === "🌎" ? "#27ae60" : clubIcons[clubId]?.emoji === "🌱" ? "#2ecc71" : clubIcons[clubId]?.emoji === "📰" ? "#34495e" : "#b8860b";
 
   return (
     <div className="relative mx-auto lg:mx-0 shrink-0 select-none" style={{ width: 180, height: 180 }}>
-      {/* Glow */}
+      {}
       <div className="absolute inset-2 blur-2xl animate-pulse" style={{ background: `radial-gradient(circle, ${baseColor}55, transparent 70%)` }} />
-      {/* Spark on click */}
+      {}
       {clickSpark && (
         <div className="absolute inset-0 z-20 pointer-events-none">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -138,7 +138,7 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
           ))}
         </div>
       )}
-      {/* Interactive 3D container */}
+      {}
       <div
         ref={containerRef}
         className="relative w-full h-full cursor-grab active:cursor-grabbing"
@@ -162,12 +162,12 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
             imageRendering: "pixelated",
           }}
         >
-          {/* Pixelated grid overlay */}
+          {}
           <div className="absolute inset-0 pointer-events-none" style={{
             backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 11px, rgba(255,255,255,0.08) 11px, rgba(255,255,255,0.08) 12px), repeating-linear-gradient(90deg, transparent, transparent 11px, rgba(255,255,255,0.08) 11px, rgba(255,255,255,0.08) 12px)`,
             imageRendering: "pixelated",
           }} />
-          {/* Inner face shine */}
+          {}
           <div className="absolute inset-0 pointer-events-none" style={{
             background: `linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.15) 100%)`,
           }} />
@@ -351,7 +351,7 @@ export default function ClubDetailPage() {
           <Link href="/directory" className="text-sm text-neutral-200 hover:underline inline-flex items-center gap-1">
             <ChevronRight size={14} className="rotate-180" /> Directory
           </Link>
-          {/* Big interactive pixelated logo - centered hero */}
+          {}
           <div className="mt-4 flex flex-col items-center text-center">
             <SpinningClubIcon clubId={chapter.id} name={chapter.name} />
           </div>
@@ -511,7 +511,7 @@ export default function ClubDetailPage() {
 
           {activeTab === "stats" && (
             <div className="grid grid-cols-2 gap-3">
-              {/* Row 1: Quick Stats */}
+              {}
               {[
                 { label: "Meetings", value: "18", icon: Calendar, color: "text-primary-600" },
                 { label: "Service Hrs", value: chapter.id === "community-service" ? "2,450" : "120", icon: Heart, color: "text-accent-600" },
@@ -528,7 +528,7 @@ export default function ClubDetailPage() {
                 );
               })}
 
-              {/* Row 2: Donut Charts */}
+              {}
               <div className="card p-3 col-span-2">
                 <h3 className="text-xs font-bold text-primary-600 mb-2 flex items-center gap-1"><BarChart3 size={12} /> Performance</h3>
                 <div className="grid grid-cols-3 gap-2">
@@ -538,7 +538,7 @@ export default function ClubDetailPage() {
                 </div>
               </div>
 
-              {/* Row 3 Left: Bar Chart (Membership Growth) */}
+              {}
               <div className="card p-3">
                 <h3 className="text-xs font-bold text-primary-600 mb-1 flex items-center gap-1"><TrendingUp size={12} /> Growth</h3>
                 <div className="flex items-end gap-1 h-24">
@@ -553,7 +553,7 @@ export default function ClubDetailPage() {
                 </div>
               </div>
 
-              {/* Row 3 Right: Radar Chart */}
+              {}
               <div className="card p-3">
                 <h3 className="text-xs font-bold text-primary-600 mb-1 flex items-center gap-1"><Compass size={12} /> Radar</h3>
                 <RadarChart data={[
@@ -566,7 +566,7 @@ export default function ClubDetailPage() {
                 ]} />
               </div>
 
-              {/* Row 4: Key Metrics (spans 2) */}
+              {}
               <div className="card p-3 col-span-2">
                 <h3 className="text-xs font-bold text-primary-600 mb-2 flex items-center gap-1"><Award size={12} /> Key Metrics</h3>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
@@ -578,7 +578,7 @@ export default function ClubDetailPage() {
                 </div>
               </div>
 
-              {/* Row 5 Left: Demographics */}
+              {}
               <div className="card p-3">
                 <h3 className="text-xs font-bold text-primary-600 mb-1.5 flex items-center gap-1"><Users size={12} /> Demographics</h3>
                 {[
@@ -599,7 +599,7 @@ export default function ClubDetailPage() {
                 ))}
               </div>
 
-              {/* Row 5 Right: Attendance Trend */}
+              {}
               <div className="card p-3">
                 <h3 className="text-xs font-bold text-primary-600 mb-1.5 flex items-center gap-1"><Calendar size={12} /> Attendance</h3>
                 <div className="flex items-end gap-0.5 h-20">
@@ -614,7 +614,7 @@ export default function ClubDetailPage() {
                 </div>
               </div>
 
-              {/* Row 6: Activity Heatmap */}
+              {}
               <div className="card p-3 col-span-2">
                 <h3 className="text-xs font-bold text-primary-600 mb-1.5 flex items-center gap-1"><Zap size={12} /> Activity Heatmap</h3>
                 <ActivityHeatmap clubId={chapter.id} />

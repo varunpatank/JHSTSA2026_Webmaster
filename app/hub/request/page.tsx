@@ -66,7 +66,7 @@ export default function ResourceRequestPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
+      {}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0">
           <Image
@@ -86,11 +86,11 @@ export default function ResourceRequestPage() {
             📝 Resource Requests
           </h1>
           <p className="text-xl text-white/90 mb-8 max-w-2xl">
-            Can&apos;t find what you need? Request new resources and vote on what the community 
+            Can&apos;t find what you need? Request new resources and vote on what the community
             needs most. Help us build the ultimate club toolkit!
           </p>
           <div className="flex flex-wrap gap-4">
-            <button 
+            <button
               onClick={() => setShowRequestForm(true)}
               className="btn-secondary"
             >
@@ -103,7 +103,7 @@ export default function ResourceRequestPage() {
         </div>
       </section>
 
-      {/* Stats */}
+      {}
       <section className="bg-white py-6 border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
@@ -127,7 +127,7 @@ export default function ResourceRequestPage() {
         </div>
       </section>
 
-      {/* How It Works */}
+      {}
       <section className="py-12 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="section-title mb-8 text-center">How It Works</h2>
@@ -156,7 +156,7 @@ export default function ResourceRequestPage() {
         </div>
       </section>
 
-      {/* Filters */}
+      {}
       <section id="requests" className="py-6 bg-white border-y border-neutral-200">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -195,7 +195,7 @@ export default function ResourceRequestPage() {
         </div>
       </section>
 
-      {/* Requests List */}
+      {}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
           <p className="text-neutral-600 mb-6">{filteredRequests.length} requests</p>
@@ -208,13 +208,13 @@ export default function ResourceRequestPage() {
               return (
                 <div key={request.id} className="card p-6">
                   <div className="flex gap-6">
-                    {/* Vote Button */}
+                    {}
                     <div className="flex-shrink-0">
                       <button
                         onClick={() => handleVote(request.id)}
                         className={`w-16 h-20 flex flex-col items-center justify-center border-2 transition-all
-                          ${hasVoted 
-                            ? 'bg-rose-50 border-rose-400 text-rose-600' 
+                          ${hasVoted
+                            ? 'bg-rose-50 border-rose-400 text-rose-600'
                             : 'border-neutral-200 text-neutral-400 hover:border-rose-300 hover:text-rose-500'}`}
                       >
                         <span className="text-2xl">▲</span>
@@ -222,7 +222,7 @@ export default function ResourceRequestPage() {
                       </button>
                     </div>
 
-                    {/* Content */}
+                    {}
                     <div className="flex-grow">
                       <div className="flex flex-wrap items-center gap-2 mb-2">
                         <span className={`px-2 py-0.5 text-xs font-semibold ${statusColors[request.status as StatusKey]}`}>
@@ -274,15 +274,15 @@ export default function ResourceRequestPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      {}
       <section className="py-16 bg-gradient-to-r from-rose-600 to-pink-600 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold font-heading mb-4">Have an Idea?</h2>
           <p className="text-lg text-white/90 mb-8">
-            Don&apos;t see what you need? Submit a request and let the community vote on it. 
+            Don&apos;t see what you need? Submit a request and let the community vote on it.
             The most wanted resources get created first!
           </p>
-          <button 
+          <button
             onClick={() => setShowRequestForm(true)}
             className="btn-secondary"
           >
@@ -291,13 +291,13 @@ export default function ResourceRequestPage() {
         </div>
       </section>
 
-      {/* Request Form Modal */}
+      {}
       {showRequestForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-primary-500 font-heading">Submit Resource Request</h2>
-              <button 
+              <button
                 onClick={() => setShowRequestForm(false)}
                 className="text-neutral-500 hover:text-neutral-700 text-2xl"
               >
@@ -308,11 +308,11 @@ export default function ResourceRequestPage() {
             <form className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Resource Title *</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="e.g., 'Club Meeting Agenda Template'" 
-                  required 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="e.g., 'Club Meeting Agenda Template'"
+                  required
                 />
               </div>
 
@@ -328,8 +328,8 @@ export default function ResourceRequestPage() {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Description *</label>
-                <textarea 
-                  className="input-field min-h-[100px]" 
+                <textarea
+                  className="input-field min-h-[100px]"
                   placeholder="Describe the resource you need in detail. What should it include? How would it help clubs?"
                   required
                 ></textarea>
@@ -337,8 +337,8 @@ export default function ResourceRequestPage() {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Why is this needed? *</label>
-                <textarea 
-                  className="input-field min-h-[80px]" 
+                <textarea
+                  className="input-field min-h-[80px]"
                   placeholder="Explain the problem this resource would solve. What challenges are clubs facing without it?"
                   required
                 ></textarea>
@@ -348,8 +348,8 @@ export default function ResourceRequestPage() {
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Priority</label>
                 <div className="grid grid-cols-4 gap-2">
                   {Object.keys(priorityColors).map((priority) => (
-                    <label 
-                      key={priority} 
+                    <label
+                      key={priority}
                       className={`p-2 border-2 text-center cursor-pointer transition-all hover:border-primary-300 ${priorityColors[priority as PriorityKey]}`}
                     >
                       <input type="radio" name="priority" value={priority} className="sr-only" />
@@ -361,10 +361,10 @@ export default function ResourceRequestPage() {
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Similar Resources (Optional)</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  placeholder="Link to similar resources you've seen elsewhere" 
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Link to similar resources you've seen elsewhere"
                 />
               </div>
 
@@ -395,8 +395,8 @@ export default function ResourceRequestPage() {
                 <button type="submit" className="btn-primary flex-1">
                   Submit Request
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowRequestForm(false)}
                   className="btn-outline"
                 >

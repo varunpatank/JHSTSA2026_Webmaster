@@ -96,7 +96,7 @@ export default function AchievementsPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Tabs */}
+        {}
         <div className="flex flex-wrap gap-2 mb-6">
           {(["all", "unlocked", "progress", "leaderboard"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)} className={`px-4 py-2  text-sm font-semibold transition-all ${tab === t ? "bg-primary-600 text-white" : "bg-white text-neutral-600 hover:bg-primary-50"}`}>
@@ -127,7 +127,7 @@ export default function AchievementsPage() {
           </Reveal>
         ) : (
           <>
-            {/* Filters */}
+            {}
             <div className="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
               <select value={category} onChange={e => setCategory(e.target.value)} className="select-field text-sm">{categories.map(c => <option key={c}>{c}</option>)}</select>
               <select value={rarity} onChange={e => setRarity(e.target.value)} className="select-field text-sm">
@@ -136,7 +136,7 @@ export default function AchievementsPage() {
               </select>
             </div>
 
-            {/* Badge Grid */}
+            {}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filtered.map(badge => {
                 const rc = RARITY_COLORS[badge.rarity];
@@ -151,7 +151,7 @@ export default function AchievementsPage() {
                       <h3 className="font-bold text-primary-800">{badge.name}</h3>
                       <p className="text-xs text-neutral-600 mt-1">{badge.description}</p>
                       <p className="text-[11px] text-neutral-400 mt-1">{badge.requirement}</p>
-                      {/* Progress bar */}
+                      {}
                       {badge.progress !== undefined && (
                         <div className="mt-2">
                           <div className="flex justify-between text-[10px] text-neutral-500"><span>{badge.progress}%</span><span>{badge.earnedBy} earned</span></div>

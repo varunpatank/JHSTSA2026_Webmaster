@@ -61,7 +61,7 @@ export default function AlumniPage() {
         </div>
       </section>
 
-      {/* Tabs */}
+      {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex gap-1 overflow-x-auto border-b border-neutral-200 mt-6 -mb-px">
           {tabs.map(tab => {

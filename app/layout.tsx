@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import ClientChatWrapper from "@/components/ClientChatWrapper";
 import ScrollToTop from "@/components/ScrollToTop";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -27,7 +26,6 @@ export default function RootLayout({
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />
-        <ClientChatWrapper />
       </body>
     </html>
   );

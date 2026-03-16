@@ -127,7 +127,7 @@ export default function ExplorePage() {
 
       const systemPrompt = `You are a helpful assistant for ClubConnect, a school community hub for Juanita High School. You help students find clubs, learn about events, and get involved. Here are the available clubs:\n${clubSummary}\n\nBe concise, friendly, and always encourage students to explore. If they ask about something you don't know, guide them to the relevant page on ClubConnect.`;
 
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyA7_t94hTmqEa1anx_AkID9ChvrBM16SW8";
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
 
       const conversationHistory: { role: string; parts: { text: string }[] }[] = [];
       conversationHistory.push({ role: "user", parts: [{ text: systemPrompt }] });
@@ -142,7 +142,7 @@ export default function ExplorePage() {
       conversationHistory.push({ role: "user", parts: [{ text }] });
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -166,7 +166,7 @@ export default function ExplorePage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Header Banner */}
+      {}
       <section className="bg-primary-500 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 animate-fade-up">
           <p className="eyebrow text-primary-100">Guidance</p>
@@ -177,7 +177,7 @@ export default function ExplorePage() {
             Get AI-powered club recommendations, connect with alumni mentors, access career panels, and join community discussions.
           </p>
 
-          {/* Quick search bar */}
+          {}
           <div className="mt-6 max-w-xl relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
             <input
@@ -191,7 +191,7 @@ export default function ExplorePage() {
         </div>
       </section>
 
-      {/* Search results (show only when actively searching) */}
+      {}
       {search.trim() && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="flex items-center justify-between mb-4">
@@ -220,7 +220,7 @@ export default function ExplorePage() {
         </section>
       )}
 
-      {/* Tab Navigation */}
+      {}
       <div className="sticky top-[57px] z-30 bg-white border-b border-neutral-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <nav className="flex overflow-x-auto gap-1 py-2" aria-label="Explore tabs">
@@ -248,9 +248,9 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      {/* Tab Content */}
+      {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* ====== QUIZ TAB ====== */}
+        {}
         {activeTab === "quiz" && (
           <div className="animate-fade-up max-w-2xl mx-auto">
             <h2 className="text-2xl font-heading font-bold text-primary-700 mb-2 text-center">
@@ -334,7 +334,7 @@ export default function ExplorePage() {
           </div>
         )}
 
-        {/* ====== CHATBOT TAB ====== */}
+        {}
         {activeTab === "chatbot" && (
           <div className="animate-fade-up max-w-2xl mx-auto">
             <h2 className="text-2xl font-heading font-bold text-primary-700 mb-2 text-center">
@@ -392,7 +392,7 @@ export default function ExplorePage() {
           </div>
         )}
 
-        {/* ====== ALUMNI TAB ====== */}
+        {}
         {activeTab === "alumni" && (
           <div className="animate-fade-up">
             <h2 className="text-2xl font-heading font-bold text-primary-700 mb-2">
@@ -440,7 +440,7 @@ export default function ExplorePage() {
           </div>
         )}
 
-        {/* ====== DISCUSSIONS TAB ====== */}
+        {}
         {activeTab === "discussions" && (
           <div className="animate-fade-up">
             <h2 className="text-2xl font-heading font-bold text-primary-700 mb-2">
@@ -450,7 +450,7 @@ export default function ExplorePage() {
               Share ideas, ask questions, and connect with fellow student leaders.
             </p>
 
-            {/* New discussion form */}
+            {}
             <div className="card p-5 bg-white mb-6">
               <h3 className="font-semibold text-primary-700 mb-3">Start a Discussion</h3>
               <input
@@ -502,7 +502,7 @@ export default function ExplorePage() {
           </div>
         )}
 
-        {/* ====== RESOURCES TAB ====== */}
+        {}
         {activeTab === "resources" && (
           <div className="animate-fade-up">
             <h2 className="text-2xl font-heading font-bold text-primary-700 mb-2">

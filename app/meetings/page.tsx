@@ -96,7 +96,7 @@ export default function MeetingsPage() {
               <div className="card overflow-hidden ux-hover-lift-sm">
                 <button onClick={() => setExpandedId(expandedId === meeting.id ? null : meeting.id)} className="w-full p-5 text-left hover:bg-neutral-50/30 transition-colors">
                   <div className="flex items-start gap-4">
-                    {/* Date Column */}
+                    {}
                     <div className="text-center min-w-[50px] shrink-0">
                       <p className="text-xs text-neutral-400 uppercase">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(meeting.date + "T12:00:00").getDay()]}</p>
                       <p className="text-2xl font-bold text-primary-700">{new Date(meeting.date + "T12:00:00").getDate()}</p>

@@ -78,7 +78,7 @@ export default function CollaboratePage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Quick Benefits */}
+        {}
         <Reveal>
           <div className="grid sm:grid-cols-4 gap-3 mb-6">
             {[
@@ -96,7 +96,7 @@ export default function CollaboratePage() {
           </div>
         </Reveal>
 
-        {/* Filters */}
+        {}
         <div className="card p-4 mb-6 grid sm:grid-cols-3 gap-3">
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -109,7 +109,7 @@ export default function CollaboratePage() {
           </select>
         </div>
 
-        {/* Collaboration Cards */}
+        {}
         <div className="space-y-4">
           {filtered.map(collab => (
             <Reveal key={collab.id}>
@@ -131,7 +131,7 @@ export default function CollaboratePage() {
                   <span className="flex items-center gap-1"><Users size={14} className="text-primary-400" /> {collab.filled}/{collab.spots} clubs joined</span>
                 </div>
 
-                {/* Progress bar */}
+                {}
                 <div className="mt-3">
                   <div className="h-2 bg-neutral-200 rounded-full"><div className="h-2 bg-indigo-500 rounded-full transition-all" style={{ width: `${(collab.filled / collab.spots) * 100}%` }} /></div>
                   <p className="text-xs text-neutral-400 mt-1">{collab.spots - collab.filled} spots remaining</p>

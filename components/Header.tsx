@@ -8,39 +8,39 @@ import { supabase, profilesApi, storageApi } from "../lib/api";
 function ClubConnectLogo({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      {/* Background shield shape */}
+      {}
       <rect width="40" height="40" rx="8" fill="url(#logo-bg)" />
       <rect x="1" y="1" width="38" height="38" rx="7" fill="none" stroke="white" strokeOpacity="0.15" strokeWidth="0.5" />
-      {/* Subtle grid pattern */}
+      {}
       <line x1="0" y1="20" x2="40" y2="20" stroke="white" strokeOpacity="0.04" strokeWidth="0.5" />
       <line x1="20" y1="0" x2="20" y2="40" stroke="white" strokeOpacity="0.04" strokeWidth="0.5" />
-      {/* Rocket body with proper proportions */}
+      {}
       <path d="M20 5.5L17 18.5h6L20 5.5z" fill="white" />
       <path d="M20 5.5L18.5 18.5h-1.5L20 5.5z" fill="white" fillOpacity="0.7" />
-      {/* Nose cone highlight */}
+      {}
       <ellipse cx="20" cy="7" rx="1.8" ry="2.2" fill="white" />
       <ellipse cx="19.5" cy="6.5" rx="0.8" ry="1.2" fill="white" fillOpacity="0.5" />
-      {/* Porthole window */}
+      {}
       <circle cx="20" cy="12" r="2.2" fill="#152d4a" stroke="white" strokeWidth="0.6" />
       <circle cx="20" cy="12" r="1.4" fill="#5b9bd5" />
       <ellipse cx="19.3" cy="11.3" rx="0.5" ry="0.6" fill="white" fillOpacity="0.5" />
-      {/* Body detail stripe */}
+      {}
       <rect x="17.2" y="15" width="5.6" height="0.8" rx="0.4" fill="#b8860b" fillOpacity="0.7" />
-      {/* Left fin */}
+      {}
       <path d="M17 17l-4.5 7.5L17 22z" fill="white" fillOpacity="0.9" />
       <path d="M17 17l-3 5.5L17 20.5z" fill="white" fillOpacity="0.6" />
-      {/* Right fin */}
+      {}
       <path d="M23 17l4.5 7.5L23 22z" fill="white" fillOpacity="0.9" />
-      {/* Rocket base / nozzle */}
+      {}
       <rect x="17" y="18.5" width="6" height="3.5" rx="0.8" fill="white" fillOpacity="0.95" />
       <rect x="18" y="21.5" width="4" height="1.5" rx="0.5" fill="#d4d4d8" fillOpacity="0.6" />
-      {/* Flame - outer */}
+      {}
       <path d="M18.2 23c-.8 3-1 5.5 1.8 8 2.8-2.5 2.6-5 1.8-8h-3.6z" fill="#FF6B35" fillOpacity="0.9" />
-      {/* Flame - middle */}
+      {}
       <path d="M18.8 23c-.5 2.5-.5 4.5 1.2 6.5 1.7-2 1.7-4 1.2-6.5h-2.4z" fill="#FFD700" />
-      {/* Flame - core */}
+      {}
       <path d="M19.3 23c-.3 1.8-.2 3.5 0.7 5 0.9-1.5 1-3.2 0.7-5h-1.4z" fill="white" fillOpacity="0.8" />
-      {/* Stars */}
+      {}
       <circle cx="7" cy="9" r="1" fill="white" fillOpacity="0.7" />
       <circle cx="7" cy="9" r="0.4" fill="white" />
       <circle cx="34" cy="7" r="0.8" fill="white" fillOpacity="0.6" />
@@ -49,7 +49,7 @@ function ClubConnectLogo({ className = "" }: { className?: string }) {
       <circle cx="35" cy="25" r="0.7" fill="white" fillOpacity="0.5" />
       <circle cx="9" cy="20" r="0.4" fill="white" fillOpacity="0.3" />
       <circle cx="32" cy="15" r="0.5" fill="white" fillOpacity="0.35" />
-      {/* Subtle "CC" letters in lower corner */}
+      {}
       <text x="31" y="37" fill="white" fillOpacity="0.2" fontSize="5" fontWeight="bold" fontFamily="sans-serif">CC</text>
       <defs>
         <linearGradient id="logo-bg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">

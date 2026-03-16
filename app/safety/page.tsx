@@ -47,7 +47,7 @@ export default function SafetyPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {/* Emergency Box */}
+          {}
           <div className="card p-6 border-2 border-red-200 bg-gradient-to-br from-red-50/60 to-white">
             <h2 className="text-xl font-heading font-bold text-red-700 flex items-center gap-2"><AlertTriangle size={20} /> Emergency Contacts</h2>
             <div className="mt-4 space-y-3">
@@ -66,7 +66,7 @@ export default function SafetyPage() {
             </div>
           </div>
 
-          {/* Safety Guidelines */}
+          {}
           <Reveal>
             <div className="card p-6">
               <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2"><Shield size={18} /> Safety Guidelines</h2>
@@ -84,7 +84,7 @@ export default function SafetyPage() {
             </div>
           </Reveal>
 
-          {/* Club Policies */}
+          {}
           <Reveal>
             <div className="card p-6">
               <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2"><BookOpen size={18} /> Club Policies</h2>
@@ -100,7 +100,7 @@ export default function SafetyPage() {
           </Reveal>
         </div>
 
-        {/* Sidebar */}
+        {}
         <aside className="space-y-6">
           <div className="card p-6 bg-gradient-to-br from-red-50 to-white border-red-100">
             <h3 className="font-bold text-red-700 flex items-center gap-2"><AlertTriangle size={16} /> Report a Concern</h3>

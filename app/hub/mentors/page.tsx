@@ -68,7 +68,7 @@ export default function MentorsPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* How It Works */}
+        {}
         <Reveal>
           <div className="grid sm:grid-cols-3 gap-4 mb-8">
             {[
@@ -85,7 +85,7 @@ export default function MentorsPage() {
           </div>
         </Reveal>
 
-        {/* Filters */}
+        {}
         <div className="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -94,7 +94,7 @@ export default function MentorsPage() {
           <select value={category} onChange={e => setCategory(e.target.value)} className="select-field text-sm w-auto">{categories.map(c => <option key={c}>{c}</option>)}</select>
         </div>
 
-        {/* Mentor Cards */}
+        {}
         <div className="space-y-4">
           {filtered.map(mentor => (
             <Reveal key={mentor.id}>

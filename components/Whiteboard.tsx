@@ -12,7 +12,7 @@ export default function Whiteboard({ width = 800, height = 480 }: { width?: numb
 
   useEffect(() => {
     const c = canvasRef.current!;
-    c.width = width * 2; // high DPI
+    c.width = width * 2;
     c.height = height * 2;
     c.style.width = `${width}px`;
     c.style.height = `${height}px`;

@@ -105,7 +105,7 @@ export default function QuizPage() {
         {!showResults ? (
           <Reveal key={current}>
             <div className="card p-8">
-              {/* Progress bar */}
+              {}
               <div className="mb-6">
                 <div className="flex justify-between text-xs text-neutral-400 mb-1"><span>Question {current + 1} of {QUIZ_QUESTIONS.length}</span><span>{Math.round(((current) / QUIZ_QUESTIONS.length) * 100)}%</span></div>
                 <div className="h-2 bg-neutral-200 rounded-full"><div className="h-2 bg-fuchsia-500 rounded-full transition-all" style={{ width: `${(current / QUIZ_QUESTIONS.length) * 100}%` }} /></div>
@@ -135,14 +135,14 @@ export default function QuizPage() {
                     <p className="text-neutral-500 mt-1">Based on your answers, here are your top interests:</p>
                   </div>
 
-                  {/* Top Categories */}
+                  {}
                   <div className="flex justify-center gap-3 mb-6">
                     {results.topCategories.map(cat => (
                       <span key={cat} className="text-sm px-4 py-2  bg-fuchsia-100 text-fuchsia-700 font-bold">{cat}</span>
                     ))}
                   </div>
 
-                  {/* Score Breakdown */}
+                  {}
                   <div className="mb-6 space-y-2">
                     {results.scores.map(([cat, score]) => (
                       <div key={cat}>
@@ -152,7 +152,7 @@ export default function QuizPage() {
                     ))}
                   </div>
 
-                  {/* Matched Clubs */}
+                  {}
                   <h3 className="font-bold text-primary-700 text-lg mb-3">Recommended Clubs For You</h3>
                   {results.matchedClubs.length > 0 ? (
                     <div className="grid sm:grid-cols-2 gap-3 mb-6">

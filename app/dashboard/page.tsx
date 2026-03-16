@@ -9,7 +9,7 @@ import {
   Rocket, Save, Settings, Star, Target, Trophy, Users, Zap, X, Check
 } from 'lucide-react';
 import { chapters, events } from '@/lib/data';
-import { supabase, profilesApi, membershipsApi, organizationsApi } from '@/lib/api';
+import { supabase, profilesApi, myClubsApi } from '@/lib/api';
 
 interface SavedItem {
   id: string;
@@ -120,7 +120,7 @@ export default function DashboardPage() {
           return;
         }
 
-        // Load profile
+
         const profileRes: any = await profilesApi.getById(user.id);
         if (!mounted) return;
         if (!profileRes.error && profileRes.data) {
@@ -133,37 +133,24 @@ export default function DashboardPage() {
           setUserEmail(user.email || '');
         }
 
-        // Load memberships + org names
-        const memRes: any = await membershipsApi.getForCurrentUser();
+
+        const clubRes: any = await myClubsApi.getMyClubs();
         if (!mounted) return;
-        if (!memRes.error && memRes.data) {
-          const mems = memRes.data as any[];
-          const orgIds = [...new Set(mems.map((m: any) => m.org_id))];
-
-          // Fetch org details
-          const orgRes: any = await supabase.from('organizations').select('id, name').in('id', orgIds);
-          const orgMap: Record<string, string> = {};
-          if (!orgRes.error && orgRes.data) {
-            for (const o of orgRes.data) orgMap[o.id] = o.name;
-          }
-
-          // Split joined vs admin
-          const joined: { id: string; name: string }[] = [];
-          const admin: { id: string; name: string; status: 'Draft' | 'Pending approval' | 'Published' }[] = [];
-          for (const m of mems) {
-            const name = orgMap[m.org_id] || 'Unknown Club';
-            joined.push({ id: m.org_id, name });
-            if (m.user_permissions === 'admin') {
-              admin.push({ id: m.org_id, name, status: 'Published' });
-            }
-          }
+        if (!clubRes.error && clubRes.data) {
+          const clubs = clubRes.data as any[];
+          const joined = clubs.map((c: any) => ({ id: c.id, name: c.name }));
+          const admin = clubs.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            status: (c.is_published ? 'Published' : 'Draft') as 'Draft' | 'Pending approval' | 'Published',
+          }));
           if (mounted) {
             setJoinedClubs(joined);
             setAdminClubs(admin);
           }
         }
       } catch {
-        // silently handle
+
       } finally {
         if (mounted) setLoading(false);
       }
@@ -199,7 +186,7 @@ export default function DashboardPage() {
 
   return (
     <div className="bg-neutral-50">
-      {/* Compact profile header */}
+      {}
       <section className="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
         <div className="max-w-6xl mx-auto px-4 py-5">
           <div className="flex items-center gap-4">
@@ -241,7 +228,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Tabs */}
+      {}
       <section className="bg-white border-b border-neutral-200 sticky top-[57px] z-20">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto">
@@ -268,16 +255,16 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Content */}
+      {}
       <section className="py-6">
         <div className="max-w-6xl mx-auto px-4">
 
-          {/* ===================== OVERVIEW TAB ===================== */}
+          {}
           {activeTab === 'overview' && (
             <div className="grid lg:grid-cols-5 gap-5">
-              {/* Main column */}
+              {}
               <div className="lg:col-span-3 space-y-5">
-                {/* Quick Actions Row */}
+                {}
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                   {[
                     { href: '/directory', icon: '🔍', label: 'Clubs' },
@@ -294,9 +281,9 @@ export default function DashboardPage() {
                   ))}
                 </div>
 
-                {/* Activity + Upcoming side-by-side on larger screens */}
+                {}
                 <div className="grid md:grid-cols-2 gap-5">
-                  {/* Recent Activity */}
+                  {}
                   <div className="bg-white  border border-neutral-100 p-4">
                     <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
                       <Zap size={14} className="text-secondary-500" /> Recent Activity
@@ -314,7 +301,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Upcoming Events */}
+                  {}
                   <div className="bg-white  border border-neutral-100 p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5">
@@ -342,7 +329,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Notifications */}
+                {}
                 <div className="bg-white  border border-neutral-100 p-4">
                   <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
                     <Bell size={14} /> Notifications
@@ -378,9 +365,9 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Sidebar */}
+              {}
               <div className="lg:col-span-2 space-y-5">
-                {/* Achievements */}
+                {}
                 <div className="bg-white  border border-neutral-100 p-4">
                   <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
                     <Trophy size={14} className="text-amber-500" /> Achievements
@@ -395,7 +382,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* My Clubs compact */}
+                {}
                 <div className="bg-white  border border-neutral-100 p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5">
@@ -436,7 +423,7 @@ export default function DashboardPage() {
                   </Link>
                 </div>
 
-                {/* Recommended */}
+                {}
                 <div className="bg-white  border border-neutral-100 p-4">
                   <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
                     <Target size={14} /> Recommended
@@ -454,7 +441,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Interests */}
+                {}
                 <div className="bg-white  border border-neutral-100 p-4">
                   <h2 className="text-sm font-bold text-neutral-800 mb-2">Interests</h2>
                   <div className="flex flex-wrap gap-1.5">
@@ -467,7 +454,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ===================== MY CLUBS TAB ===================== */}
+          {}
           {activeTab === 'clubs' && (
             <div className="space-y-5 animate-fade-up">
               <div className="flex items-center justify-between">
@@ -482,7 +469,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Joined */}
+              {}
               <div>
                 <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">Joined</h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -507,7 +494,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Admin / Created Clubs */}
+              {}
               {adminClubs.length > 0 && (
                 <div>
                   <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">Created by You</h3>
@@ -567,7 +554,7 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Suggestions */}
+              {}
               <div className="bg-white  border border-neutral-100 p-4">
                 <h3 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
                   <Star size={14} className="text-secondary-500" /> Clubs You Might Like
@@ -584,7 +571,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ===================== EVENTS TAB ===================== */}
+          {}
           {activeTab === 'events' && (
             <div className="space-y-5 animate-fade-up">
               <div className="flex items-center justify-between">
@@ -623,7 +610,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ===================== SAVED TAB ===================== */}
+          {}
           {activeTab === 'saved' && (
             <div className="space-y-5 animate-fade-up">
               <h2 className="text-lg font-bold text-neutral-800">Saved Items</h2>
@@ -649,7 +636,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ===================== SETTINGS TAB ===================== */}
+          {}
           {activeTab === 'settings' && (
             <div className="max-w-xl mx-auto space-y-5 animate-fade-up">
               <div className="bg-white  border border-neutral-100 p-5">

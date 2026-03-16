@@ -1,6 +1,5 @@
-// -----------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------
+
+
 
 export type UserPermissions = 'admin' | 'officer' | 'parent' | 'teacher' | 'partner' | 'member'
 
@@ -483,36 +482,4 @@ export interface QuizResult {
     [key: string]: unknown
 }
 
-export interface ChatChannel {
-    id: string
-    name: string
-    description?: string
-    org_id?: string
-    channel_type: 'public' | 'club' | 'direct' | 'announcement'
-    created_by?: string
-    is_archived?: boolean
-    created_at?: string
-    [key: string]: unknown
-}
 
-export interface ChatMessage {
-    id: string
-    channel_id: string
-    sender_id: string
-    content: string
-    reply_to?: string
-    is_edited?: boolean
-    is_deleted?: boolean
-    created_at?: string
-    updated_at?: string
-    [key: string]: unknown
-}
-
-export interface ChatChannelMember {
-    channel_id: string
-    user_id: string
-    role: 'member' | 'moderator' | 'admin'
-    last_read_at?: string
-    joined_at?: string
-    [key: string]: unknown
-}

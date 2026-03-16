@@ -57,7 +57,7 @@ function getDaysInMonth(year: number, month: number) { return new Date(year, mon
 function getFirstDayOfWeek(year: number, month: number) { return new Date(year, month, 1).getDay(); }
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1)); // March 2026
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1));
   const [view, setView] = useState<"month" | "list">("month");
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -94,7 +94,7 @@ export default function CalendarPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Controls */}
+        {}
         <div className="card p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button onClick={prevMonth} className="p-2 hover:bg-neutral-100 "><ChevronLeft size={18} /></button>
@@ -112,7 +112,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Legend */}
+        {}
         <div className="flex flex-wrap gap-3 mb-4 text-xs">
           {Object.entries(TYPE_COLORS).map(([type, color]) => (
             <span key={type} className="flex items-center gap-1"><span className={`w-2.5 h-2.5 rounded-full ${color}`} /> {type.charAt(0).toUpperCase() + type.slice(1)}</span>
@@ -121,7 +121,7 @@ export default function CalendarPage() {
 
         {view === "month" ? (
           <div className="lg:grid lg:grid-cols-4 lg:gap-6">
-            {/* Calendar Grid */}
+            {}
             <div className="lg:col-span-3">
               <Reveal>
                 <div className="card overflow-hidden">
@@ -152,7 +152,7 @@ export default function CalendarPage() {
               </Reveal>
             </div>
 
-            {/* Day Detail Sidebar */}
+            {}
             <div className="mt-6 lg:mt-0">
               <div className="card p-4 sticky top-4">
                 {selectedDay ? (

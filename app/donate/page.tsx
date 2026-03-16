@@ -29,7 +29,7 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
       </section>
 
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8 grid md:grid-cols-3 gap-5">
-        {/* Main content - Stripe Form */}
+        {}
         <div className="md:col-span-2">
           {canceled === "true" && (
             <div className="mb-4 p-4 bg-amber-50 border border-amber-200  text-sm text-amber-800">
@@ -39,7 +39,7 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
           <DonationForm selectedClub={selectedClub ? { id: selectedClub.id, name: selectedClub.name } : undefined} initialSuccess={initialSuccess} />
         </div>
 
-        {/* Sidebar */}
+        {}
         <aside className="space-y-5">
           <div className="card p-6 bg-gradient-to-br from-primary-50 to-white">
             <h3 className="text-lg font-heading font-bold text-primary-600">Transparency</h3>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 
-// refrences page for clubconnect websuite
+
 export default function ReferencesPage() {
   const imageLinks = [
     {
@@ -84,7 +84,7 @@ export default function ReferencesPage() {
 
   return (
     <div className="min-h-screen bg-neutral-100">
-      {/* hero section */}
+      {}
       <section className="relative bg-primary-500 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold font-heading mb-4">References</h1>
@@ -93,9 +93,9 @@ export default function ReferencesPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* work log and copyright sectoins */}
+        {}
         <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* work log seciton */}
+          {}
           <div className="bg-white border border-neutral-200 shadow-card">
             <div className="p-6 border-b border-neutral-200">
               <h2 className="text-2xl font-bold font-heading text-neutral-800">Work Log</h2>
@@ -114,7 +114,7 @@ export default function ReferencesPage() {
             </div>
           </div>
 
-          {/* copyright checklist pdf seciton */}
+          {}
           <div className="bg-white border border-neutral-200 shadow-card">
             <div className="p-6 border-b border-neutral-200">
               <h2 className="text-2xl font-bold font-heading text-neutral-800">Copyright Checklist</h2>
@@ -132,7 +132,7 @@ export default function ReferencesPage() {
           </div>
         </div>
 
-        {/* code stack sectoin */}
+        {}
         <div className="bg-white border border-neutral-200 shadow-card mb-12">
           <div className="p-6 border-b border-neutral-200">
             <h2 className="text-2xl font-bold font-heading text-neutral-800">Code Stack</h2>
@@ -144,7 +144,7 @@ export default function ReferencesPage() {
           </div>
         </div>
 
-        {/* additional libaries section */}
+        {}
         <div className="bg-white border border-neutral-200 shadow-card mb-12">
           <div className="p-6 border-b border-neutral-200">
             <h2 className="text-2xl font-bold font-heading text-neutral-800">Additional Libraries Utilized</h2>
@@ -183,7 +183,7 @@ export default function ReferencesPage() {
           </div>
         </div>
 
-        {/* image links sectiion */}
+        {}
         <div className="bg-white border border-neutral-200 shadow-card">
           <div className="p-6 border-b border-neutral-200">
             <h2 className="text-2xl font-bold font-heading text-neutral-800">Image Links</h2>
@@ -195,9 +195,9 @@ export default function ReferencesPage() {
             <div className="grid md:grid-cols-2 gap-4">
               {imageLinks.map((image, index) => (
                 <div key={index} className="border border-neutral-200 p-3 bg-neutral-50">
-                  <a 
-                    href={image.url.split('?')[0]} 
-                    target="_blank" 
+                  <a
+                    href={image.url.split('?')[0]}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary-500 hover:underline text-sm break-all"
                   >

@@ -382,7 +382,7 @@ export default function ProfilePage() {
             </ul>
           </div>
 
-          {/* Achievements & Badges */}
+          {}
           <div className="card p-6">
             <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
               <Award size={18} /> Achievements
@@ -406,7 +406,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Activity Feed */}
+          {}
           <div className="card p-6">
             <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
               <Activity size={18} /> Recent Activity
@@ -434,7 +434,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Saved Resources & AI Outputs */}
+          {}
           <div className="card p-6">
             <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
               <Bookmark size={18} /> Saved Resources &amp; AI Outputs
@@ -459,7 +459,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Interests & Preferences for AI */}
+          {}
           <div className="card p-6 bg-gradient-to-br from-purple-50 to-primary-50 border-purple-200">
             <h2 className="text-xl font-heading font-bold text-purple-700 flex items-center gap-2">
               <Sparkles size={18} /> Interests &amp; Preferences
@@ -482,7 +482,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {}
           <div className="card p-6">
             <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
               <BookOpen size={18} /> Quick Links

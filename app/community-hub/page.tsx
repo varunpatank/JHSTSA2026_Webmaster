@@ -39,7 +39,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-/* ── helpers ─────────────────────────────────────────── */
+
 const categoryColors: Record<string, string> = {
   Academic: "bg-primary-100 text-primary-700 border-primary-200",
   STEM: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -60,7 +60,7 @@ const urgencyIcons: Record<string, { icon: string; color: string }> = {
   social: { icon: "🎉", color: "bg-rose-50 border-rose-200" },
 };
 
-/* ── discussion threads (local data) ─────────────────── */
+
 const discussionThreads = [
   { id: 1, title: "Tips for TSA State Competition?", author: "Maria G.", club: "TSA", avatar: "MG", replies: 23, views: 312, lastActive: "2 hours ago", hot: true, pinned: true },
   { id: 2, title: "Best fundraising ideas for spring semester", author: "James L.", club: "FBLA", avatar: "JL", replies: 18, views: 254, lastActive: "5 hours ago", hot: true, pinned: false },
@@ -70,7 +70,7 @@ const discussionThreads = [
   { id: 6, title: "Community service hour tracking best practices", author: "Priya R.", club: "CSC", avatar: "PR", replies: 9, views: 172, lastActive: "3 days ago", hot: false, pinned: false },
 ];
 
-/* ── collaboration boards ─────────────────────────────── */
+
 const collabBoards = [
   { id: 1, title: "Inter-Club Spring Festival", clubs: ["Drama", "Music", "Art"], members: 24, status: "Planning", color: "bg-gradient-to-br from-purple-500 to-pink-500" },
   { id: 2, title: "STEM Fair 2026", clubs: ["Robotics", "Math", "Science"], members: 18, status: "Active", color: "bg-gradient-to-br from-emerald-500 to-teal-500" },
@@ -78,19 +78,19 @@ const collabBoards = [
   { id: 4, title: "School Spirit Week", clubs: ["Student Gov", "Cheer", "Band"], members: 15, status: "Ideation", color: "bg-gradient-to-br from-primary-500 to-indigo-500" },
 ];
 
-/* ── active polls ─────────────────────────────────────── */
+
 const activePolls = [
   { id: 1, question: "What should we do for the spring social?", options: [{ label: "Movie night", votes: 42 }, { label: "Game tournament", votes: 38 }, { label: "Talent show", votes: 55 }, { label: "Picnic", votes: 27 }], totalVotes: 162, endsIn: "2 days" },
   { id: 2, question: "Best meeting time for cross-club planning?", options: [{ label: "Tues after school", votes: 34 }, { label: "Wed lunch", votes: 51 }, { label: "Thu after school", votes: 28 }, { label: "Fri after school", votes: 19 }], totalVotes: 132, endsIn: "5 days" },
 ];
 
-/* ══════════════════════════════════════════════════════ */
+
 export default function CommunityHubPage() {
   const [activeSection, setActiveSection] = useState<string>("feed");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  /* derived data */
+
   const upcomingEvents = useMemo(
     () => [...events].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5),
     []
@@ -129,9 +129,9 @@ export default function CommunityHubPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* ── Hero ────────────────────────────────────────── */}
+      {}
       <section className="relative bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 text-white overflow-hidden">
-        {/* decorative grid */}
+        {}
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(255,255,255,.15) 48px,rgba(255,255,255,.15) 49px),repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(255,255,255,.15) 48px,rgba(255,255,255,.15) 49px)" }} />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -148,7 +148,7 @@ export default function CommunityHubPage() {
               </p>
             </div>
 
-            {/* live stats strip */}
+            {}
             <div className="flex gap-3 flex-wrap">
               {[
                 { label: "Active Clubs", value: schoolWideStats.totalClubs, icon: Users },
@@ -170,7 +170,7 @@ export default function CommunityHubPage() {
         </div>
       </section>
 
-      {/* ── Navigation Bar ──────────────────────────────── */}
+      {}
       <div className="bg-white border-b-2 border-neutral-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide">
@@ -192,7 +192,7 @@ export default function CommunityHubPage() {
               );
             })}
 
-            {/* search bar at end */}
+            {}
             <div className="ml-auto flex items-center gap-2 py-2">
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -209,14 +209,14 @@ export default function CommunityHubPage() {
         </div>
       </div>
 
-      {/* ── Main Content ────────────────────────────────── */}
+      {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* ═══ ACTIVITY FEED ═══ */}
+        {}
         {activeSection === "feed" && (
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left column — main feed (2 cols) */}
+            {}
             <div className="lg:col-span-2 space-y-8">
-              {/* Announcements banner */}
+              {}
               {announcements.slice(0, 2).map((a) => (
                 <div
                   key={a.id}
@@ -244,7 +244,7 @@ export default function CommunityHubPage() {
                 </div>
               ))}
 
-              {/* Weekly Opportunities */}
+              {}
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-primary-800 flex items-center gap-2">
@@ -284,7 +284,7 @@ export default function CommunityHubPage() {
                 </div>
               </div>
 
-              {/* Upcoming Events */}
+              {}
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-primary-800 flex items-center gap-2">
@@ -331,7 +331,7 @@ export default function CommunityHubPage() {
                 </div>
               </div>
 
-              {/* Active Polls */}
+              {}
               <div>
                 <h2 className="text-xl font-bold text-primary-800 flex items-center gap-2 mb-4">
                   <Target size={20} className="text-secondary-500" />
@@ -373,9 +373,9 @@ export default function CommunityHubPage() {
               </div>
             </div>
 
-            {/* Right sidebar */}
+            {}
             <aside className="space-y-6">
-              {/* Quick Actions */}
+              {}
               <div className="bg-white border-2 border-neutral-200 p-5">
                 <h3 className="font-bold text-primary-800 text-sm mb-3">Quick Actions</h3>
                 <div className="grid grid-cols-2 gap-2">
@@ -397,7 +397,7 @@ export default function CommunityHubPage() {
                 </div>
               </div>
 
-              {/* Trending Clubs */}
+              {}
               <div className="bg-white border-2 border-neutral-200 p-5">
                 <h3 className="font-bold text-primary-800 text-sm mb-3 flex items-center gap-2">
                   <Flame size={15} className="text-secondary-500" /> Trending Clubs
@@ -429,7 +429,7 @@ export default function CommunityHubPage() {
                 </Link>
               </div>
 
-              {/* Leaderboard */}
+              {}
               <div className="bg-white border-2 border-neutral-200 p-5">
                 <h3 className="font-bold text-primary-800 text-sm mb-3 flex items-center gap-2">
                   <Trophy size={15} className="text-secondary-500" /> Top Clubs This Month
@@ -456,7 +456,7 @@ export default function CommunityHubPage() {
                 </div>
               </div>
 
-              {/* Community CTA  */}
+              {}
               <div className="bg-gradient-to-br from-primary-700 to-primary-900 text-white p-5">
                 <Sparkles size={24} className="text-secondary-400 mb-2" />
                 <h3 className="font-bold text-sm mb-1">Have Something to Share?</h3>
@@ -472,7 +472,7 @@ export default function CommunityHubPage() {
           </div>
         )}
 
-        {/* ═══ DISCUSSIONS ═══ */}
+        {}
         {activeSection === "discussions" && (
           <div>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -488,7 +488,7 @@ export default function CommunityHubPage() {
               </Link>
             </div>
 
-            {/* Discussion thread list */}
+            {}
             <div className="space-y-3">
               {filteredDiscussions.map((d) => (
                 <Link
@@ -497,7 +497,7 @@ export default function CommunityHubPage() {
                   className="block bg-white border-2 border-neutral-200 hover:border-primary-300 transition-colors"
                 >
                   <div className="flex items-stretch">
-                    {/* vote / engagement sidebar */}
+                    {}
                     <div className="bg-neutral-50 border-r border-neutral-200 px-4 py-4 flex flex-col items-center justify-center gap-1 min-w-[72px]">
                       <span className="text-lg font-bold text-primary-700">{d.replies}</span>
                       <span className="text-[10px] text-neutral-400 uppercase tracking-wider">replies</span>
@@ -529,7 +529,7 @@ export default function CommunityHubPage() {
               ))}
             </div>
 
-            {/* Discussion stats + CTA */}
+            {}
             <div className="mt-8 grid sm:grid-cols-3 gap-4">
               <div className="bg-primary-50 border-2 border-primary-200 p-5 text-center">
                 <MessageCircle size={28} className="text-primary-600 mx-auto mb-2" />
@@ -550,7 +550,7 @@ export default function CommunityHubPage() {
           </div>
         )}
 
-        {/* ═══ SPOTLIGHTS ═══ */}
+        {}
         {activeSection === "spotlight" && (
           <div>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -566,7 +566,7 @@ export default function CommunityHubPage() {
               </Link>
             </div>
 
-            {/* Featured spotlight */}
+            {}
             {spotlights.length > 0 && (
               <div className="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white p-8 mb-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 -translate-y-1/2 translate-x-1/2" />
@@ -589,7 +589,7 @@ export default function CommunityHubPage() {
               </div>
             )}
 
-            {/* Spotlight grid */}
+            {}
             <div className="grid md:grid-cols-2 gap-6">
               {spotlights.slice(1).map((s) => (
                 <div
@@ -613,7 +613,7 @@ export default function CommunityHubPage() {
                         </span>
                       ))}
                     </div>
-                    {/* Testimonial preview */}
+                    {}
                     {s.testimonials[0] && (
                       <blockquote className="border-l-3 border-secondary-400 pl-3 text-xs text-neutral-500 italic">
                         &ldquo;{s.testimonials[0].quote.slice(0, 120)}…&rdquo;
@@ -629,7 +629,7 @@ export default function CommunityHubPage() {
           </div>
         )}
 
-        {/* ═══ COLLABORATE ═══ */}
+        {}
         {activeSection === "collaborate" && (
           <div>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -645,7 +645,7 @@ export default function CommunityHubPage() {
               </Link>
             </div>
 
-            {/* Collab board cards */}
+            {}
             <div className="grid sm:grid-cols-2 gap-6 mb-8">
               {collabBoards.map((board) => (
                 <Link
@@ -693,7 +693,7 @@ export default function CommunityHubPage() {
               ))}
             </div>
 
-            {/* Cross-club ideas section */}
+            {}
             <div className="bg-primary-50 border-2 border-primary-200 p-6">
               <h3 className="font-bold text-primary-800 mb-2 flex items-center gap-2">
                 <Lightbulb size={18} className="text-secondary-500" />
@@ -724,7 +724,7 @@ export default function CommunityHubPage() {
               </Link>
             </div>
 
-            {/* Connect with mentors */}
+            {}
             <div className="mt-8">
               <h3 className="text-lg font-bold text-primary-800 mb-4 flex items-center gap-2">
                 <Award size={20} className="text-secondary-500" />
@@ -756,7 +756,7 @@ export default function CommunityHubPage() {
           </div>
         )}
 
-        {/* ═══ STUDENT VOICES ═══ */}
+        {}
         {activeSection === "stories" && (
           <div>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -772,7 +772,7 @@ export default function CommunityHubPage() {
               </Link>
             </div>
 
-            {/* Category filter */}
+            {}
             <div className="flex flex-wrap gap-2 mb-6">
               {["All", ...Array.from(new Set(studentStories.map((s) => s.category)))].map((cat) => (
                 <button
@@ -789,7 +789,7 @@ export default function CommunityHubPage() {
               ))}
             </div>
 
-            {/* Stories grid */}
+            {}
             <div className="grid md:grid-cols-2 gap-6">
               {studentStories
                 .filter((s) => selectedCategory === "All" || s.category === selectedCategory)
@@ -828,7 +828,7 @@ export default function CommunityHubPage() {
                 ))}
             </div>
 
-            {/* Impact summary */}
+            {}
             <div className="mt-8 bg-gradient-to-r from-primary-700 to-primary-900 text-white p-8">
               <h3 className="text-xl font-bold mb-4 text-center">Community Impact at a Glance</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -850,7 +850,7 @@ export default function CommunityHubPage() {
         )}
       </div>
 
-      {/* ── Bottom CTA ──────────────────────────────────── */}
+      {}
       <div className="bg-white border-t-2 border-neutral-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="bg-gradient-to-r from-primary-700 to-primary-800 text-white p-8 flex flex-wrap items-center justify-between gap-6">

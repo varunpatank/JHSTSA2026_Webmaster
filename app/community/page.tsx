@@ -38,7 +38,7 @@ export default function CommunityPage() {
     { id: 3, name: 'Amanda Lee', year: '2019', role: 'Broadway Performer', club: 'Drama' },
   ];
 
-  // --- Connect / Meetings (new) ---
+
   const members = [
     { id: 'm1', name: 'Greg Shelton', role: 'Advisor', club: 'Juanita HS Webmaster', email: 'gshelton@lwsd.org', bio: 'Advisor with 10+ years experience mentoring Webmaster teams.', availability: ['Mon 3:30pm','Wed 4:00pm'] },
     { id: 'm2', name: 'Alex Johnson', role: 'Team Captain', club: 'Robotics', email: 'a.johnson@student.edu', bio: 'Lead programmer and mentor for new members.', availability: ['Tue 5:00pm','Thu 3:30pm'] },
@@ -93,7 +93,7 @@ export default function CommunityPage() {
   }
 
   function openLocalPreview() {
-    // open simple local preview modal (handled below)
+
     setShowPreview(true);
   }
 
@@ -122,7 +122,7 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-neutral-100">
-      {/* Hero Section */}
+      {}
       <div className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-4xl font-bold font-heading mb-4">Community</h1>
@@ -132,7 +132,7 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
+      {}
       <div className="bg-white border-b border-neutral-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-0">
@@ -161,12 +161,12 @@ export default function CommunityPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Discussions Tab */}
+        {}
         {activeTab === 'discussions' && (
           <div>
             <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
               <h2 className="text-2xl font-bold text-primary-700">Forum Discussions</h2>
-              <Link 
+              <Link
                 href="/hub/discussions"
                 className="px-4 py-2 bg-secondary-500 text-white hover:bg-secondary-600 transition-colors"
               >
@@ -205,7 +205,7 @@ export default function CommunityPage() {
             <div className="mt-6 p-6 bg-primary-50 border-2 border-primary-200">
               <h3 className="font-bold text-primary-700 mb-2">Join the Conversation!</h3>
               <p className="text-neutral-600 mb-4">Share tips, ask questions, and connect with fellow club members across your school.</p>
-              <Link 
+              <Link
                 href="/hub/discussions"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 transition-colors"
               >
@@ -215,12 +215,12 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {/* Spotlight Tab */}
+        {}
         {activeTab === 'spotlight' && (
           <div>
             <h2 className="text-2xl font-bold text-primary-700 mb-6">Club Spotlight</h2>
 
-            {/* Featured Spotlight */}
+            {}
             {spotlights.filter(s => s.featured).map(spotlight => (
               <div key={spotlight.id} className="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white p-8 mb-8">
                 <div className="flex items-center gap-2 mb-4">
@@ -233,7 +233,7 @@ export default function CommunityPage() {
               </div>
             ))}
 
-            {/* Other Spotlights */}
+            {}
             <div className="grid md:grid-cols-3 gap-6">
               {spotlights.filter(s => !s.featured).map(spotlight => (
                 <div key={spotlight.id} className="bg-white border-2 border-neutral-200 p-6 hover:border-primary-400 transition-colors">
@@ -246,7 +246,7 @@ export default function CommunityPage() {
             </div>
 
             <div className="mt-8 text-center">
-              <Link 
+              <Link
                 href="/spotlight"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
               >
@@ -256,7 +256,7 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {/* Success Stories Tab */}
+        {}
         {activeTab === 'stories' && (
           <div>
             <h2 className="text-2xl font-bold text-primary-700 mb-6">Success Stories</h2>
@@ -278,7 +278,7 @@ export default function CommunityPage() {
             </div>
 
             <div className="mt-8 text-center">
-              <Link 
+              <Link
                 href="/hub/stories"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
               >
@@ -288,7 +288,7 @@ export default function CommunityPage() {
           </div>
         )}
 
-        {/* Alumni Tab */}
+        {}
         {activeTab === 'alumni' && (
           <div>
             <h2 className="text-2xl font-bold text-primary-700 mb-6">Alumni Network</h2>
@@ -315,7 +315,7 @@ export default function CommunityPage() {
             </div>
 
             <div className="mt-8 text-center">
-              <Link 
+              <Link
                 href="/alumni"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
               >
@@ -461,7 +461,7 @@ export default function CommunityPage() {
                 <h2 className="text-2xl font-bold mb-2">Have a story to share?</h2>
                 <p className="text-white/80">Your club achievements deserve recognition. Submit your spotlight or success story.</p>
               </div>
-              <Link 
+              <Link
                 href="/hub/request"
                 className="px-6 py-3 bg-secondary-500 text-white font-medium hover:bg-secondary-600 transition-colors"
               >

@@ -121,7 +121,7 @@ export default function AnalyticsPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-        {/* Top Stats */}
+        {}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: "Total Clubs", value: stats.totalClubs, icon: BarChart3, color: "bg-primary-50 text-primary-600", suffix: "" },
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Club Categories Donut */}
+          {}
           <Reveal>
             <div className="card p-6">
               <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><PieChart size={18} /> Clubs by Category</h2>
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
             </div>
           </Reveal>
 
-          {/* Monthly Growth */}
+          {}
           <Reveal>
             <div className="card p-6">
               <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><TrendingUp size={18} /> Membership Growth</h2>
@@ -180,7 +180,7 @@ export default function AnalyticsPage() {
           </Reveal>
         </div>
 
-        {/* Top Performing Clubs */}
+        {}
         <Reveal>
           <div className="card p-6">
             <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><Award size={18} /> Top Performing Clubs</h2>
@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
           </div>
         </Reveal>
 
-        {/* Category Breakdown */}
+        {}
         <Reveal>
           <div className="card p-6">
             <h2 className="text-lg font-heading font-bold text-primary-600 mb-4">Category Breakdown</h2>
@@ -240,7 +240,7 @@ export default function AnalyticsPage() {
           </div>
         </Reveal>
 
-        {/* Engagement Insights */}
+        {}
         <Reveal>
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="card p-5 bg-gradient-to-br from-green-50 to-white border-green-100 text-center">

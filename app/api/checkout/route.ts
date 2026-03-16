@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
       promoApplied,
     } = body;
 
-    // Validate amount
+
     const cents = Math.round(Number(amount) * 100);
     if (!promoApplied && (isNaN(cents) || cents < 50)) {
       return NextResponse.json(
@@ -31,20 +31,26 @@ export async function POST(req: NextRequest) {
       message: message || "",
     };
 
-    // For promo code "test" — create a $0 checkout for demo
+
+    let discounts: Stripe.Checkout.SessionCreateParams["discounts"] | undefined;
     if (promoApplied) {
-      // Use payment mode with amount 0 isn't supported by Stripe,
-      // so we create a checkout session with the lowest amount and 100% coupon
-      // or simply return a simulated success for the demo flow
-      return NextResponse.json({
-        demo: true,
-        message: "Demo transaction completed successfully. No charge was made.",
-        transactionId: `demo_${Date.now().toString(36)}`,
-      });
+      const COUPON_ID = "clubconnect_free";
+      try {
+        await stripe.coupons.retrieve(COUPON_ID);
+      } catch {
+        await stripe.coupons.create({
+          id: COUPON_ID,
+          percent_off: 100,
+          duration: "once",
+          name: "ClubConnect Free Checkout",
+        });
+      }
+      discounts = [{ coupon: COUPON_ID }];
     }
 
+    const finalCents = promoApplied ? Math.max(cents || 2500, 50) : cents;
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      payment_method_types: ["card"],
       customer_email: donorEmail || undefined,
       line_items: [
         {
@@ -56,16 +62,17 @@ export async function POST(req: NextRequest) {
                 ? `Message: ${message}`
                 : "ClubConnect school club donation",
             },
-            unit_amount: cents,
-            ...(isRecurring ? { recurring: { interval: "month" } } : {}),
+            unit_amount: finalCents,
+            ...(isRecurring && !promoApplied ? { recurring: { interval: "month" } } : {}),
           },
           quantity: 1,
         },
       ],
-      mode: isRecurring ? "subscription" : "payment",
+      mode: isRecurring && !promoApplied ? "subscription" : "payment",
       success_url: `${req.nextUrl.origin}/donate?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.nextUrl.origin}/donate?canceled=true`,
       metadata,
+      ...(discounts ? { discounts } : {}),
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);

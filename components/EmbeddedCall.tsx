@@ -41,7 +41,7 @@ export default function EmbeddedCall({ room, displayName, onClose }: { room: str
         height: 480,
         parentNode: containerRef.current,
         interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [] // hide default toolbar to use our own
+          TOOLBAR_BUTTONS: []
         },
         configOverwrite: { disableDeepLinking: true }
       };

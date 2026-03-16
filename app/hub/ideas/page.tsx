@@ -91,7 +91,7 @@ export default function IdeasPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="lg:grid lg:grid-cols-4 lg:gap-6">
-          {/* Sidebar */}
+          {}
           <aside className="space-y-4 mb-6 lg:mb-0">
             <div className="card p-4">
               <h3 className="font-bold text-primary-700 mb-2 text-sm uppercase tracking-wider">Filters</h3>
@@ -115,7 +115,7 @@ export default function IdeasPage() {
             <button onClick={() => setShowForm(!showForm)} className="btn-primary w-full text-sm flex items-center justify-center gap-2"><Plus size={16} /> Propose New Idea</button>
           </aside>
 
-          {/* Main */}
+          {}
           <div className="lg:col-span-3 space-y-4">
             {showForm && (
               <Reveal>
@@ -140,13 +140,13 @@ export default function IdeasPage() {
             {filtered.map((idea) => (
               <Reveal key={idea.id}>
                 <div className="card p-5 ux-hover-lift-sm flex gap-4">
-                  {/* Vote Column */}
+                  {}
                   <div className="flex flex-col items-center gap-1 min-w-[48px]">
                     <button onClick={() => handleVote(idea.id)} className={`p-1 rounded hover:bg-primary-50 transition-colors ${votes[idea.id] ? "text-primary-600" : "text-neutral-400"}`}><ArrowUp size={20} /></button>
                     <span className="font-bold text-lg text-primary-700">{idea.upvotes + (votes[idea.id] || 0)}</span>
                     <span className="text-[10px] text-neutral-400">votes</span>
                   </div>
-                  {/* Content */}
+                  {}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${STATUS_LABELS[idea.status].color}`}>{STATUS_LABELS[idea.status].label}</span>

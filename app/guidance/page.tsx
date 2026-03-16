@@ -9,8 +9,8 @@ import {
   Users, X, Zap,
 } from "lucide-react";
 
-/* ---- Gemini AI Chat ---- */
-const GEMINI_KEY = "AIzaSyA7_t94hTmqEa1anx_AkID9ChvrBM16SW8";
+
+const GEMINI_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -94,7 +94,7 @@ export default function GuidancePage() {
       }));
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -116,7 +116,7 @@ export default function GuidancePage() {
 
   return (
     <div className="bg-neutral-50">
-      {/* Hero */}
+      {}
       <section className="bg-gradient-to-r from-primary-700 via-primary-600 to-primary-800 text-white border-b-4 border-secondary-500 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
         <div className="relative max-w-7xl mx-auto px-6 sm:px-8 py-8">
@@ -141,7 +141,7 @@ export default function GuidancePage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6">
-        {/* Pathways Grid */}
+        {}
         <div className="grid grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
           {PATHWAYS.map(p => {
             const Icon = p.icon;
@@ -157,7 +157,7 @@ export default function GuidancePage() {
         </div>
 
         <div className="grid lg:grid-cols-5 gap-6">
-          {/* AI Chat Panel */}
+          {}
           <div className="lg:col-span-3">
             <div className="card overflow-hidden">
               <div className="px-5 py-4 border-b border-neutral-100 bg-primary-50/50 flex items-center gap-3">
@@ -227,9 +227,9 @@ export default function GuidancePage() {
             </div>
           </div>
 
-          {/* Right sidebar — FAQ + extras */}
+          {}
           <div className="lg:col-span-2 space-y-5">
-            {/* FAQ */}
+            {}
             <div className="card overflow-hidden">
               <div className="px-5 py-3 bg-primary-50/50 border-b border-neutral-100">
                 <h3 className="font-bold text-primary-800 text-base flex items-center gap-2"><HelpCircle size={18} className="text-secondary-500" /> FAQ</h3>
@@ -250,7 +250,7 @@ export default function GuidancePage() {
               </div>
             </div>
 
-            {/* Popular Topics */}
+            {}
             <div className="card p-5">
               <h3 className="font-bold text-primary-800 text-base mb-3 flex items-center gap-2"><Shield size={16} className="text-primary-500" /> Popular Topics</h3>
               <div className="flex flex-wrap gap-2">
@@ -261,14 +261,14 @@ export default function GuidancePage() {
               </div>
             </div>
 
-            {/* Mentor CTA */}
+            {}
             <div className="card p-5 bg-gradient-to-br from-secondary-50 to-primary-50/30 border-secondary-200">
               <h3 className="font-bold text-primary-800 text-base mb-2 flex items-center gap-2"><GraduationCap size={18} className="text-secondary-600" /> Need a Mentor?</h3>
               <p className="text-sm text-neutral-600 mb-3">Connect with professionals in STEM, arts, business &amp; more.</p>
               <Link href="/hub/mentors" className="btn-primary text-sm px-5 py-2.5 w-full flex items-center justify-center gap-2"><Award size={16} /> Browse Mentors</Link>
             </div>
 
-            {/* More Resources */}
+            {}
             <div className="card p-5">
               <h3 className="font-bold text-primary-800 text-base mb-3">More Resources</h3>
               <div className="space-y-3">

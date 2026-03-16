@@ -8,18 +8,18 @@ import {
 } from "@/lib/data";
 import {
   ArrowRight, Award, BarChart3, BookOpen, Bot, Calendar, ChevronRight,
-  Clock, Compass, FileText, GraduationCap, Heart, HelpCircle,
+  Clock, FileText, GraduationCap, Heart, HelpCircle,
   Lightbulb, MapPin, MessageCircle, MessageSquare, Paperclip, Plus,
-  Rocket, Search, Send, Shield, Sparkles, Star, Target, ThumbsUp,
+  Search, Send, Shield, Sparkles, Star, Target, ThumbsUp,
   TrendingUp, Trophy, Upload, Users, X, Zap,
 } from "lucide-react";
 
-/* ── Gemini AI ─────────────────────────────────────── */
+
 const GEMINI_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
 interface ChatMsg { role: "user" | "assistant"; text: string; file?: { name: string; size: string } }
 const SYS = `You are the ClubConnect Student AI — a friendly peer assistant. Help students with: finding/joining clubs, starting clubs, events, fundraising, leadership, competitions (TSA, DECA, etc.), mentors. Keep answers concise (2-4 sentences). Reference ClubConnect features when relevant.`;
 
-/* ── Community uploads (seed data) ─────────────────── */
+
 const SEED_UPLOADS = [
   { id: "u1", title: "TSA Competition Prep Guide", author: "Maria G.", date: "2 hrs ago", type: "PDF", likes: 34, desc: "Complete walkthrough for state TSA competition events." },
   { id: "u2", title: "Club Budget Spreadsheet", author: "Marcus J.", date: "1 day ago", type: "XLSX", likes: 67, desc: "Automated budget tracker with income and expense categories." },
@@ -31,7 +31,7 @@ const SEED_UPLOADS = [
   { id: "u8", title: "Club Constitution Template", author: "Alex J.", date: "3 weeks ago", type: "DOCX", likes: 91, desc: "Fill-in-the-blanks constitution that passes school approval." },
 ];
 
-/* ── Discussion threads ────────────────────────────── */
+
 const THREADS = [
   { id: 1, title: "Tips for TSA State Competition?", author: "Maria G.", club: "TSA", replies: 23, time: "2 hrs ago", hot: true },
   { id: 2, title: "Best fundraising ideas for spring", author: "James L.", club: "FBLA", replies: 18, time: "5 hrs ago", hot: true },
@@ -40,7 +40,7 @@ const THREADS = [
   { id: 5, title: "How to get more members in a new club?", author: "Priya K.", club: "Environmental", replies: 9, time: "2 days ago", hot: false },
 ];
 
-/* ── Social messages (seed) ────────────────────────── */
+
 const SEED_MESSAGES = [
   { id: 1, user: "Maria G.", text: "Has anyone tried the new TSA practice tests? They're really helpful!", time: "10:42 AM", likes: 5, file: null },
   { id: 2, user: "James L.", text: "Check out this fundraiser spreadsheet I made for FBLA 👆", time: "10:38 AM", likes: 3, file: { name: "FBLA_Fundraiser.xlsx", size: "42 KB" } },
@@ -52,13 +52,13 @@ const SEED_MESSAGES = [
 const FILE_ICONS: Record<string, string> = { PDF: "📄", DOCX: "📝", XLSX: "📊", ZIP: "📦", PNG: "🖼️", JPG: "🖼️" };
 
 export default function StudentsPage() {
-  /* ── Chat state ── */
+
   const [messages, setMessages] = useState(SEED_MESSAGES);
   const [msgInput, setMsgInput] = useState("");
   const [msgFile, setMsgFile] = useState<File | null>(null);
   const msgScrollRef = useRef<HTMLDivElement>(null);
 
-  /* ── Upload state ── */
+
   const [uploads, setUploads] = useState(SEED_UPLOADS);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = useState("");
@@ -67,20 +67,20 @@ export default function StudentsPage() {
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [uploadSearch, setUploadSearch] = useState("");
 
-  /* ── AI Chat state ── */
+
   const [aiChat, setAiChat] = useState<ChatMsg[]>([]);
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [showAi, setShowAi] = useState(false);
   const aiScrollRef = useRef<HTMLDivElement>(null);
 
-  /* ── Tab for right panel ── */
-  const [rightTab, setRightTab] = useState<"uploads" | "explore" | "events">("explore");
+
+  const [rightTab, setRightTab] = useState<"uploads" | "explore" | "events">("uploads");
 
   useEffect(() => { msgScrollRef.current && (msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight); }, [messages]);
   useEffect(() => { aiScrollRef.current && (aiScrollRef.current.scrollTop = aiScrollRef.current.scrollHeight); }, [aiChat, aiLoading]);
 
-  /* ── Send social message ── */
+
   const sendMsg = () => {
     if (!msgInput.trim() && !msgFile) return;
     setMessages(prev => [...prev, {
@@ -95,7 +95,7 @@ export default function StudentsPage() {
     setMsgFile(null);
   };
 
-  /* ── Upload resource ── */
+
   const submitUpload = () => {
     if (!uploadTitle.trim() || !uploadFile) return;
     const ext = uploadFile.name.split(".").pop()?.toUpperCase() || "FILE";
@@ -114,13 +114,13 @@ export default function StudentsPage() {
     setShowUploadForm(false);
   };
 
-  /* ── Like toggle ── */
+
   const toggleLike = (id: string) => {
     setLikedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
     setUploads(prev => prev.map(u => u.id === id ? { ...u, likes: likedIds.has(id) ? u.likes - 1 : u.likes + 1 } : u));
   };
 
-  /* ── AI Chat ── */
+
   const sendAi = useCallback(async (text: string) => {
     if (!text.trim() || aiLoading) return;
     const userMsg: ChatMsg = { role: "user", text: text.trim() };
@@ -129,7 +129,7 @@ export default function StudentsPage() {
     setAiLoading(true);
     try {
       const history = [...aiChat, userMsg].map(m => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text }] }));
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ system_instruction: { parts: [{ text: SYS }] }, contents: history }),
       });
@@ -140,7 +140,7 @@ export default function StudentsPage() {
     finally { setAiLoading(false); }
   }, [aiChat, aiLoading]);
 
-  /* ── Derived ── */
+
   const filteredUploads = useMemo(() => {
     if (!uploadSearch.trim()) return uploads;
     const q = uploadSearch.toLowerCase();
@@ -152,7 +152,7 @@ export default function StudentsPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* ═══ COMPACT HERO ═══ */}
+      {}
       <section className="bg-gradient-to-r from-primary-700 via-primary-800 to-primary-900 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -176,14 +176,14 @@ export default function StudentsPage() {
         </div>
       </section>
 
-      {/* ═══ MAIN LAYOUT: Left (chat/social) + Right (uploads/nav) ═══ */}
+      {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <div className="grid lg:grid-cols-5 gap-5">
 
-          {/* ──────── LEFT COLUMN (3/5) — Social & Discussions ──────── */}
+          {}
           <div className="lg:col-span-3 space-y-5">
 
-            {/* SOCIAL CHAT */}
+            {}
             <div className="bg-white border-2 border-primary-200 overflow-hidden">
               <div className="bg-primary-50 border-b border-primary-200 px-4 py-2.5 flex items-center justify-between">
                 <h2 className="font-bold text-primary-800 text-sm flex items-center gap-2"><MessageCircle size={16} className="text-primary-500" /> Student Lounge</h2>
@@ -224,7 +224,7 @@ export default function StudentsPage() {
               </div>
             </div>
 
-            {/* DISCUSSIONS */}
+            {}
             <div className="bg-white border-2 border-neutral-200 overflow-hidden">
               <div className="bg-neutral-50 border-b border-neutral-200 px-4 py-2.5 flex items-center justify-between">
                 <h2 className="font-bold text-primary-800 text-sm flex items-center gap-2"><MessageSquare size={16} className="text-secondary-500" /> Discussion Threads</h2>
@@ -251,7 +251,7 @@ export default function StudentsPage() {
               <Link href="/hub/discussions" className="block text-center text-xs text-primary-600 font-medium py-2.5 border-t border-neutral-100 hover:bg-primary-50/50">View All Discussions →</Link>
             </div>
 
-            {/* STUDENT VOICES (compact) */}
+            {}
             <div>
               <h3 className="font-bold text-primary-800 text-sm mb-2 flex items-center gap-2"><Heart size={14} className="text-secondary-500" /> Student Voices</h3>
               <div className="grid sm:grid-cols-3 gap-3">
@@ -274,14 +274,14 @@ export default function StudentsPage() {
             </div>
           </div>
 
-          {/* ──────── RIGHT COLUMN (2/5) — Uploads, Nav, Events ──────── */}
+          {}
           <div className="lg:col-span-2 space-y-5">
 
-            {/* TAB SELECTOR */}
+            {}
             <div className="flex border-2 border-neutral-200 bg-white">
               {[
-                { key: "explore" as const, label: "Upload", icon: Upload },
-                { key: "uploads" as const, label: "Resources", icon: Compass },
+                { key: "uploads" as const, label: "Community Resources", icon: Upload },
+                { key: "explore" as const, label: "Mentoring", icon: GraduationCap },
                 { key: "events" as const, label: "Events", icon: Calendar },
               ].map(tab => (
                 <button key={tab.key} onClick={() => setRightTab(tab.key)}
@@ -291,10 +291,10 @@ export default function StudentsPage() {
               ))}
             </div>
 
-            {/* ── TAB: Community Resources / Uploads ── */}
+            {}
             {rightTab === "uploads" && (
               <div className="space-y-3">
-                {/* Upload button + search */}
+                {}
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
                     <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -305,7 +305,7 @@ export default function StudentsPage() {
                   </button>
                 </div>
 
-                {/* Upload form */}
+                {}
                 {showUploadForm && (
                   <div className="bg-primary-50 border-2 border-primary-200 p-3 space-y-2">
                     <h4 className="font-bold text-primary-800 text-xs flex items-center gap-1.5"><Upload size={13} /> Share a Resource</h4>
@@ -323,7 +323,7 @@ export default function StudentsPage() {
                   </div>
                 )}
 
-                {/* Resource list */}
+                {}
                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
                   {filteredUploads.map(u => (
                     <div key={u.id} className="bg-white border-2 border-neutral-200 p-3 hover:border-primary-200 transition-colors">
@@ -349,51 +349,40 @@ export default function StudentsPage() {
               </div>
             )}
 
-            {/* ── TAB: Upload (community resources + quick nav) ── */}
+            {}
             {rightTab === "explore" && (
               <div className="space-y-3">
-                {/* Community Uploaded Resources */}
-                <div className="space-y-2">
-                  <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5"><Upload size={11} /> Community Uploads</h3>
-                  <div className="space-y-2 max-h-[320px] overflow-y-auto">
-                    {filteredUploads.map(u => (
-                      <div key={u.id} className="bg-white border-2 border-neutral-200 p-3 hover:border-primary-200 transition-colors">
-                        <div className="flex items-start gap-2.5">
-                          <span className="text-lg">{FILE_ICONS[u.type] || "📄"}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <h4 className="font-bold text-primary-700 text-xs truncate">{u.title}</h4>
-                              <span className="text-[8px] font-semibold bg-neutral-100 text-neutral-500 px-1 py-0.5 shrink-0">{u.type}</span>
-                            </div>
-                            <p className="text-[10px] text-neutral-500 line-clamp-1">{u.desc}</p>
-                            <div className="flex items-center gap-3 mt-1.5">
-                              <span className="text-[9px] text-neutral-400">{u.author} · {u.date}</span>
-                              <button onClick={() => toggleLike(u.id)} className={`text-[10px] flex items-center gap-0.5 ${likedIds.has(u.id) ? "text-red-500" : "text-neutral-400 hover:text-red-500"}`}>
-                                <Heart size={10} className={likedIds.has(u.id) ? "fill-current" : ""} /> {u.likes}
-                              </button>
-                            </div>
-                          </div>
+                {}
+                <div className="bg-white border-2 border-neutral-200 p-3">
+                  <h3 className="font-bold text-primary-700 text-xs mb-2 flex items-center gap-1.5"><GraduationCap size={13} className="text-secondary-500" /> Available Mentors</h3>
+                  <div className="space-y-2">
+                    {featuredAlumni.filter(a => a.available).slice(0, 5).map(alum => (
+                      <div key={alum.id} className="flex items-center gap-2 p-2 hover:bg-primary-50/50 transition-colors">
+                        <div className="w-8 h-8 bg-primary-100 flex items-center justify-center text-[10px] font-bold text-primary-600 shrink-0">{alum.name.split(" ").map(n => n[0]).join("")}</div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-primary-700">{alum.name}</p>
+                          <p className="text-[9px] text-neutral-400">{alum.career} · Class of {alum.gradYear}</p>
                         </div>
+                        <Link href="/alumni" className="text-[9px] text-primary-600 font-semibold hover:underline shrink-0">Connect</Link>
                       </div>
                     ))}
                   </div>
+                  <Link href="/alumni" className="block text-center text-[10px] text-primary-600 font-medium mt-2 hover:underline">View All Mentors →</Link>
                 </div>
 
-                {/* Quick actions grid */}
+                {}
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { href: "/directory", label: "Club Directory", icon: Compass, color: "bg-blue-50 text-blue-600 border-blue-200" },
+                    { href: "/hub/mentors", label: "Mentor Network", icon: GraduationCap, color: "bg-teal-50 text-teal-600 border-teal-200" },
                     { href: "/hub/discussions", label: "Forums", icon: MessageSquare, color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
                     { href: "/hub/competitions", label: "Competitions", icon: Trophy, color: "bg-purple-50 text-purple-600 border-purple-200" },
-                    { href: "/start-a-club", label: "Start a Club", icon: Rocket, color: "bg-orange-50 text-orange-600 border-orange-200" },
                     { href: "/hub/quiz", label: "Club Finder Quiz", icon: HelpCircle, color: "bg-indigo-50 text-indigo-600 border-indigo-200" },
                     { href: "/hub/ideas", label: "Club Ideas", icon: Lightbulb, color: "bg-amber-50 text-amber-600 border-amber-200" },
                     { href: "/hub/collaborate", label: "Collaborate", icon: Users, color: "bg-pink-50 text-pink-600 border-pink-200" },
-                    { href: "/hub/mentors", label: "Mentors", icon: GraduationCap, color: "bg-teal-50 text-teal-600 border-teal-200" },
                     { href: "/hub/goals", label: "Goal Tracker", icon: Target, color: "bg-lime-50 text-lime-600 border-lime-200" },
                     { href: "/hub/achievements", label: "Badges", icon: Award, color: "bg-violet-50 text-violet-600 border-violet-200" },
                     { href: "/hub/health", label: "Club Health", icon: BarChart3, color: "bg-sky-50 text-sky-600 border-sky-200" },
-                    { href: "/hub/stories", label: "Stories", icon: Heart, color: "bg-rose-50 text-rose-600 border-rose-200" },
+                    { href: "/hub/stories", label: "Success Stories", icon: Heart, color: "bg-rose-50 text-rose-600 border-rose-200" },
                   ].map(item => (
                     <Link key={item.href} href={item.href} className={`flex items-center gap-2 p-2.5 border-2 ${item.color} hover:shadow-sm transition-all group`}>
                       <item.icon size={15} className="shrink-0 group-hover:scale-110 transition-transform" />
@@ -402,7 +391,7 @@ export default function StudentsPage() {
                   ))}
                 </div>
 
-                {/* Trending clubs */}
+                {}
                 <div className="bg-white border-2 border-neutral-200 p-3">
                   <h3 className="font-bold text-primary-700 text-xs mb-2 flex items-center gap-1.5"><TrendingUp size={13} className="text-secondary-500" /> Trending Clubs</h3>
                   <div className="space-y-2">
@@ -417,30 +406,13 @@ export default function StudentsPage() {
                     ))}
                   </div>
                 </div>
-
-                {/* Alumni / Mentors */}
-                <div className="bg-white border-2 border-neutral-200 p-3">
-                  <h3 className="font-bold text-primary-700 text-xs mb-2 flex items-center gap-1.5"><GraduationCap size={13} className="text-secondary-500" /> Available Mentors</h3>
-                  <div className="space-y-2">
-                    {featuredAlumni.filter(a => a.available).slice(0, 3).map(alum => (
-                      <div key={alum.id} className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-primary-100 flex items-center justify-center text-[9px] font-bold text-primary-600 shrink-0">{alum.name.split(" ").map(n => n[0]).join("")}</div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-primary-700">{alum.name}</p>
-                          <p className="text-[9px] text-neutral-400">{alum.career} · Class of {alum.gradYear}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Link href="/alumni" className="block text-center text-[10px] text-primary-600 font-medium mt-2 hover:underline">View All →</Link>
-                </div>
               </div>
             )}
 
-            {/* ── TAB: Events & Announcements ── */}
+            {}
             {rightTab === "events" && (
               <div className="space-y-3">
-                {/* Announcements */}
+                {}
                 <div className="space-y-2">
                   <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Announcements</h3>
                   {announcements.slice(0, 3).map(a => (
@@ -455,7 +427,7 @@ export default function StudentsPage() {
                   ))}
                 </div>
 
-                {/* Upcoming events */}
+                {}
                 <div className="space-y-2">
                   <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Upcoming Events</h3>
                   {upcomingEvents.map(ev => (
@@ -476,7 +448,7 @@ export default function StudentsPage() {
                   <Link href="/events" className="block text-center text-xs text-primary-600 font-medium py-2 hover:underline">All Events →</Link>
                 </div>
 
-                {/* Opportunities */}
+                {}
                 <div className="space-y-2">
                   <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Opportunities</h3>
                   {weeklyOpportunities.slice(0, 3).map(opp => (
@@ -493,7 +465,7 @@ export default function StudentsPage() {
               </div>
             )}
 
-            {/* Popular Guides (always visible below tabs) */}
+            {}
             <div className="bg-white border-2 border-neutral-200 p-3">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-bold text-primary-700 text-xs flex items-center gap-1.5"><BookOpen size={13} className="text-secondary-500" /> Popular Guides</h3>
@@ -512,7 +484,7 @@ export default function StudentsPage() {
               </div>
             </div>
 
-            {/* Resource Center CTA */}
+            {}
             <Link href="/resources" className="block bg-gradient-to-r from-primary-700 to-primary-800 text-white p-4 hover:from-primary-600 hover:to-primary-700 transition-all group">
               <div className="flex items-center justify-between">
                 <div>
@@ -525,7 +497,7 @@ export default function StudentsPage() {
           </div>
         </div>
 
-        {/* ═══ BOTTOM: Impact Stats ═══ */}
+        {}
         <div className="mt-5 bg-gradient-to-r from-primary-700 to-primary-900 text-white p-5">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             {[
@@ -544,7 +516,7 @@ export default function StudentsPage() {
         </div>
       </div>
 
-      {/* ═══ Floating AI Chat ═══ */}
+      {}
       <div className="fixed bottom-6 right-6 z-50">
         {showAi && (
           <div className="mb-3 w-80 sm:w-96 bg-white border-2 border-primary-200 shadow-2xl overflow-hidden">

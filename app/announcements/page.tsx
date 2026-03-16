@@ -71,7 +71,7 @@ export default function AnnouncementsPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Filters */}
+        {}
         <div className="card p-5 grid sm:grid-cols-4 gap-4 mb-6">
           <div className="sm:col-span-2 relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -90,7 +90,7 @@ export default function AnnouncementsPage() {
 
         <p className="text-sm text-neutral-600 mb-4">{filtered.length} announcement{filtered.length !== 1 ? "s" : ""}</p>
 
-        {/* Pinned / High Priority */}
+        {}
         {filtered.filter(a => a.priority === "high").length > 0 && (
           <Reveal>
             <div className="mb-6 space-y-3">
@@ -114,7 +114,7 @@ export default function AnnouncementsPage() {
           </Reveal>
         )}
 
-        {/* All Announcements */}
+        {}
         <div className="space-y-3">
           {filtered.filter(a => a.priority !== "high").map(a => (
             <Reveal key={a.id}>

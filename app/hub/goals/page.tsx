@@ -71,7 +71,7 @@ export default function GoalsPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Tabs */}
+        {}
         <div className="flex flex-wrap gap-2 mb-6">
           {(["active", "completed", "insights"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)} className={`px-4 py-2  text-sm font-semibold transition-all ${tab === t ? "bg-primary-600 text-white" : "bg-white text-neutral-600 hover:bg-primary-50"}`}>

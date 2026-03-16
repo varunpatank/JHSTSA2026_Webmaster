@@ -37,7 +37,6 @@ export default function DonationForm({
   const [isRecurring, setIsRecurring] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(initialSuccess || false);
-  const [demoTxId, setDemoTxId] = useState("");
   const [error, setError] = useState("");
 
   const effectiveAmount = promoApplied ? 0 : amount;
@@ -80,12 +79,6 @@ export default function DonationForm({
         setProcessing(false);
         return;
       }
-      if (data.demo) {
-        setDemoTxId(data.transactionId);
-        setSuccess(true);
-        setProcessing(false);
-        return;
-      }
       if (data.url) {
         window.location.href = data.url;
         return;
@@ -109,22 +102,9 @@ export default function DonationForm({
           Thank You!
         </h2>
         <p className="mt-2 text-neutral-600">
-          {promoApplied || demoTxId
-            ? "Demo transaction completed successfully! No charge was made."
-            : `Your donation${selectedClubData ? ` to ${selectedClubData.name}` : ""} has been processed via Stripe.`}
+          {`Your donation${selectedClubData ? ` to ${selectedClubData.name}` : ""} has been processed. Thank you for your generosity!`}
         </p>
-        {(promoApplied || demoTxId) && (
-          <p className="mt-2 text-sm text-secondary-600 font-medium">
-            Judges: This demonstrates our full Stripe payment flow. In
-            production, real charges are processed through Stripe Checkout.
-          </p>
-        )}
-        <div className="mt-4 p-4 bg-neutral-50  text-sm text-neutral-600 text-left space-y-1">
-          {demoTxId && (
-            <p>
-              <strong>Transaction ID:</strong> {demoTxId}
-            </p>
-          )}
+        <div className="mt-4 p-4 bg-neutral-50 text-sm text-neutral-600 text-left space-y-1">
           <p>
             <strong>Amount:</strong> ${effectiveAmount.toFixed(2)}
           </p>
@@ -147,7 +127,6 @@ export default function DonationForm({
               setAmount(25);
               setPromoCode("");
               setPromoApplied(false);
-              setDemoTxId("");
             }}
             className="btn-primary"
           >
@@ -169,7 +148,7 @@ export default function DonationForm({
         </div>
       )}
 
-      {/* Club Selection */}
+      {}
       <div className="card p-6 bg-white">
         <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
           <Heart size={18} /> Donation Recipient
@@ -191,7 +170,7 @@ export default function DonationForm({
         </select>
       </div>
 
-      {/* Amount Selection */}
+      {}
       <div className="card p-6 bg-white">
         <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
           <DollarSign size={18} /> Donation Amount
@@ -249,7 +228,7 @@ export default function DonationForm({
         </label>
       </div>
 
-      {/* Promo Code */}
+      {}
       <div className="card p-6 bg-gradient-to-br from-secondary-50/60 to-white border-secondary-100">
         <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2">
           <Tag size={16} /> Promo Code
@@ -288,7 +267,7 @@ export default function DonationForm({
         )}
       </div>
 
-      {/* Donor Info */}
+      {}
       <div className="card p-6 bg-white">
         <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
           <Users size={18} /> Your Information
@@ -343,7 +322,7 @@ export default function DonationForm({
         </div>
       </div>
 
-      {/* Payment Info */}
+      {}
       <div className="card p-6 bg-white">
         <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
           <CreditCard size={18} /> Payment
@@ -371,7 +350,7 @@ export default function DonationForm({
         </div>
       </div>
 
-      {/* Order Summary */}
+      {}
       <div className="card p-6 bg-gradient-to-br from-primary-50/60 to-white border-primary-100">
         <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2">
           <Receipt size={16} /> Summary
@@ -406,7 +385,7 @@ export default function DonationForm({
         </div>
       </div>
 
-      {/* Submit */}
+      {}
       <button
         type="submit"
         disabled={processing}

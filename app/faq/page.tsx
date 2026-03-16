@@ -60,7 +60,7 @@ export default function FAQPage() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-[260px_1fr] gap-6">
-        {/* Sidebar */}
+        {}
         <aside className="space-y-4">
           <div className="card p-5">
             <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2"><HelpCircle size={18} /> Categories</h2>
@@ -95,7 +95,7 @@ export default function FAQPage() {
           </div>
         </aside>
 
-        {/* FAQ List */}
+        {}
         <div className="space-y-3">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-neutral-600">{filtered.length} question{filtered.length !== 1 ? "s" : ""} found</p>

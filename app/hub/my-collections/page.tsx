@@ -123,8 +123,8 @@ export default function MyCollectionsPage() {
       note: newItem.note || undefined,
       addedAt: new Date().toISOString().split('T')[0]
     };
-    const updated = collections.map(c => 
-      c.id === selectedCollection.id 
+    const updated = collections.map(c =>
+      c.id === selectedCollection.id
         ? { ...c, items: [...c.items, item], updatedAt: new Date().toISOString().split('T')[0] }
         : c
     );
@@ -137,8 +137,8 @@ export default function MyCollectionsPage() {
   const removeItem = (itemId: string) => {
     if (!selectedCollection) return;
     const updatedItems = selectedCollection.items.filter(item => item.id !== itemId);
-    const updated = collections.map(c => 
-      c.id === selectedCollection.id 
+    const updated = collections.map(c =>
+      c.id === selectedCollection.id
         ? { ...c, items: updatedItems, updatedAt: new Date().toISOString().split('T')[0] }
         : c
     );
@@ -154,7 +154,7 @@ export default function MyCollectionsPage() {
   };
 
   const togglePublic = (collectionId: string) => {
-    const updated = collections.map(c => 
+    const updated = collections.map(c =>
       c.id === collectionId ? { ...c, isPublic: !c.isPublic } : c
     );
     setCollections(updated);
@@ -171,14 +171,14 @@ export default function MyCollectionsPage() {
     'note': '📝'
   };
 
-  const filteredCollections = collections.filter(c => 
+  const filteredCollections = collections.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
+      {}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0">
           <Image
@@ -204,11 +204,11 @@ export default function MyCollectionsPage() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar - Collections List */}
+            {}
             <div className="lg:w-80 flex-shrink-0">
               <div className="card p-4 sticky top-4">
                 <div className="flex items-center justify-between mb-4">
@@ -263,9 +263,9 @@ export default function MyCollectionsPage() {
               </div>
             </div>
 
-            {/* Main Content Area */}
+            {}
             <div className="flex-grow">
-              {/* Create Collection Modal */}
+              {}
               {isCreating && (
                 <div className="card p-6 mb-6 border-2 border-primary-300">
                   <h3 className="text-lg font-bold text-primary-500 mb-4">Create New Collection</h3>
@@ -299,8 +299,8 @@ export default function MyCollectionsPage() {
                               key={icon}
                               onClick={() => setNewCollection({ ...newCollection, icon })}
                               className={`w-8 h-8 text-lg border transition-all ${
-                                newCollection.icon === icon 
-                                  ? 'border-primary-500 bg-primary-50' 
+                                newCollection.icon === icon
+                                  ? 'border-primary-500 bg-primary-50'
                                   : 'border-neutral-200 hover:border-neutral-300'
                               }`}
                             >
@@ -317,8 +317,8 @@ export default function MyCollectionsPage() {
                               key={color.value}
                               onClick={() => setNewCollection({ ...newCollection, color: color.value })}
                               className={`w-8 h-8 ${color.value} border-2 transition-all ${
-                                newCollection.color === color.value 
-                                  ? 'border-neutral-800 scale-110' 
+                                newCollection.color === color.value
+                                  ? 'border-neutral-800 scale-110'
                                   : 'border-transparent'
                               }`}
                               title={color.label}
@@ -348,7 +348,7 @@ export default function MyCollectionsPage() {
                 </div>
               )}
 
-              {/* Selected Collection View */}
+              {}
               {selectedCollection ? (
                 <div className="card p-6">
                   <div className="flex items-start gap-4 mb-6">
@@ -387,7 +387,7 @@ export default function MyCollectionsPage() {
                     </div>
                   </div>
 
-                  {/* Add Item Button */}
+                  {}
                   <div className="mb-6">
                     <button
                       onClick={() => setIsAddingItem(true)}
@@ -397,7 +397,7 @@ export default function MyCollectionsPage() {
                     </button>
                   </div>
 
-                  {/* Add Item Form */}
+                  {}
                   {isAddingItem && (
                     <div className="p-4 bg-neutral-50 border border-neutral-200 mb-6">
                       <h4 className="font-bold text-neutral-700 mb-3">Add New Item</h4>
@@ -462,7 +462,7 @@ export default function MyCollectionsPage() {
                     </div>
                   )}
 
-                  {/* Items List */}
+                  {}
                   {selectedCollection.items.length > 0 ? (
                     <div className="space-y-3">
                       {selectedCollection.items.map(item => (
@@ -471,9 +471,9 @@ export default function MyCollectionsPage() {
                           <div className="flex-grow">
                             <h4 className="font-semibold text-neutral-700">{item.title}</h4>
                             {item.url && (
-                              <a 
-                                href={item.url} 
-                                target="_blank" 
+                              <a
+                                href={item.url}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-sm text-primary-500 hover:underline"
                               >
@@ -523,7 +523,7 @@ export default function MyCollectionsPage() {
         </div>
       </section>
 
-      {/* Tips Section */}
+      {}
       <section className="py-12 bg-white border-t border-neutral-200">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl font-bold font-heading text-primary-500 text-center mb-8">Collection Tips</h2>

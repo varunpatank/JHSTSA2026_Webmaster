@@ -43,9 +43,7 @@ export default function AIChatWidget() {
 
       const systemPrompt = `You are a helpful assistant for ClubConnect, a school community hub for Juanita High School. You help students find clubs, learn about events, and get involved. Here are the available clubs:\n${clubSummary}\n\nBe concise, friendly, and always encourage students to explore. If they ask about something you don't know, guide them to the relevant page on ClubConnect.`;
 
-      const apiKey =
-        process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
-        "AIzaSyA7_t94hTmqEa1anx_AkID9ChvrBM16SW8";
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
       const conversationHistory: { role: string; parts: { text: string }[] }[] =
         [];
       conversationHistory.push({
@@ -76,7 +74,7 @@ export default function AIChatWidget() {
       conversationHistory.push({ role: "user", parts: [{ text }] });
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -109,7 +107,7 @@ export default function AIChatWidget() {
 
   return (
     <>
-      {/* Floating button */}
+      {}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -120,11 +118,11 @@ export default function AIChatWidget() {
         </button>
       )}
 
-      {/* Chat panel */}
+      {}
       {open && (
         <div className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)]  border border-primary-200 bg-white shadow-2xl flex flex-col overflow-hidden animate-fade-up"
           style={{ height: "500px", maxHeight: "calc(100vh - 6rem)" }}>
-          {/* Header */}
+          {}
           <div className="bg-primary-600 text-white px-4 py-3 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <Bot size={18} />
@@ -142,7 +140,7 @@ export default function AIChatWidget() {
             </button>
           </div>
 
-          {/* Messages */}
+          {}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((msg, i) => (
               <div
@@ -171,7 +169,7 @@ export default function AIChatWidget() {
             <div ref={endRef} />
           </div>
 
-          {/* Input */}
+          {}
           <div className="border-t border-neutral-200 p-3 flex gap-2 shrink-0">
             <input
               type="text"

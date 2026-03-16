@@ -83,7 +83,7 @@ export default function CompetitionsPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        {/* Filters */}
+        {}
         <div className="card p-5 grid sm:grid-cols-4 gap-4">
           <div className="sm:col-span-2 relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -93,7 +93,7 @@ export default function CompetitionsPage() {
           <select value={diffFilter} onChange={e => setDiffFilter(e.target.value)} className="select-field">{difficulties.map(d => <option key={d}>{d}</option>)}</select>
         </div>
 
-        {/* Featured */}
+        {}
         {featured.length > 0 && (
           <Reveal>
             <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-3"><Star size={18} /> Featured Competitions</h2>
@@ -124,7 +124,7 @@ export default function CompetitionsPage() {
           </Reveal>
         )}
 
-        {/* All Competitions */}
+        {}
         <Reveal>
           <h2 className="text-lg font-heading font-bold text-primary-600 mb-3">{catFilter === "All" ? "All" : catFilter} Competitions ({filtered.length})</h2>
           <div className="space-y-3">

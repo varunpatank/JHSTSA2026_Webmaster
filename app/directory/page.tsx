@@ -16,7 +16,7 @@ import EventSubmissionForm from "@/components/EventSubmissionForm";
 
 const DirectoryLeafletMap = dynamic(() => import("@/components/DirectoryLeafletMap"), { ssr: false });
 
-/* ═══ CONSTANTS ═══ */
+
 const DAYS = ["Any", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const TIMES = ["Any", "Before School", "Lunch", "After School", "Weekends"];
 const CATEGORIES = ["Any", "Academic", "Arts", "Service", "Cultural", "STEM", "Sports", "Leadership", "Media", "Other"];
@@ -50,11 +50,11 @@ function inferDay(schedule: string) {
   return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].find(d => schedule.includes(d)) || "Varies";
 }
 
-/* ═══ MAIN PAGE ═══ */
+
 export default function DiscoverPage() {
   const [activeTab, setActiveTab] = useState<"clubs" | "events">("clubs");
 
-  /* ── Club state ── */
+
   const [clubSearch, setClubSearch] = useState("");
   const [meetingDay, setMeetingDay] = useState("Any");
   const [meetingTime, setMeetingTime] = useState("Any");
@@ -65,7 +65,7 @@ export default function DiscoverPage() {
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showMap, setShowMap] = useState(true);
 
-  /* ── Event state ── */
+
   const [evCategory, setEvCategory] = useState("Any");
   const [evMonth, setEvMonth] = useState("Any");
   const [evSearch, setEvSearch] = useState("");
@@ -78,7 +78,7 @@ export default function DiscoverPage() {
 
   useEffect(() => { setSubmitted(getSubmittedEvents()); }, []);
 
-  /* ── Club filtering ── */
+
   const rooms = useMemo(() => {
     const s = new Set(chapters.map(ch => getPrimaryLocation(ch.meetingLocation)));
     return ["Any", ...Array.from(s)];
@@ -103,7 +103,7 @@ export default function DiscoverPage() {
     setCompareIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 2 ? [...prev, id] : [prev[1], id]);
   };
 
-  /* ── Event filtering ── */
+
   const mergedEvents = useMemo(() => {
     const norm = submitted.map(e => ({
       id: e.id, title: e.title, description: e.description, date: e.date,
@@ -158,7 +158,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="bg-neutral-50">
-      {/* ═══ HERO ═══ */}
+      {}
       <section className="relative bg-gradient-to-br from-primary-700 via-primary-500 to-secondary-600 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 right-10 w-72 h-72 bg-secondary-400 rounded-full blur-3xl animate-drift-slower" />
@@ -190,7 +190,7 @@ export default function DiscoverPage() {
         </div>
       </section>
 
-      {/* ═══ TAB BAR ═══ */}
+      {}
       <section className="bg-white border-b border-neutral-200 sticky top-[57px] z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-1">
           {([["clubs", "Clubs", Users], ["events", "Events", Calendar]] as const).map(([id, label, Icon]) => (
@@ -213,10 +213,10 @@ export default function DiscoverPage() {
         </div>
       </section>
 
-      {/* ═══ CLUBS TAB ═══ */}
+      {}
       {activeTab === "clubs" && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
-          {/* Search + filter bar */}
+          {}
           <div className="card p-4 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex-1 min-w-[200px] relative">
@@ -268,7 +268,7 @@ export default function DiscoverPage() {
             )}
           </div>
 
-          {/* Map */}
+          {}
           <div className="card overflow-hidden">
             <button onClick={() => setShowMap(v => !v)} className="w-full flex items-center justify-between p-4 text-left hover:bg-primary-50/50 transition-colors">
               <div className="flex items-center gap-2">
@@ -293,7 +293,7 @@ export default function DiscoverPage() {
             )}
           </div>
 
-          {/* Compare Panel */}
+          {}
           {compareIds.length >= 2 && (
             <div className="card p-5 bg-gradient-to-r from-primary-50 to-secondary-50 border-primary-200 animate-fade-up">
               <div className="flex items-center justify-between mb-4">
@@ -323,7 +323,7 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          {/* Results */}
+          {}
           {viewMode === "grid" ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredClubs.map(ch => (
@@ -382,7 +382,7 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          {/* AI Recommendations & Club Quiz */}
+          {}
           <div className="grid lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 card p-5 bg-gradient-to-br from-purple-50 to-primary-50">
               <div className="flex items-center gap-2 mb-3">
@@ -423,7 +423,7 @@ export default function DiscoverPage() {
             </div>
           </div>
 
-          {/* Trending & Activity */}
+          {}
           <div className="grid lg:grid-cols-2 gap-4">
             <div className="card p-5">
               <div className="flex items-center gap-2 mb-4">
@@ -466,7 +466,7 @@ export default function DiscoverPage() {
             </div>
           </div>
 
-          {/* Discussions */}
+          {}
           <div className="card p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -496,7 +496,7 @@ export default function DiscoverPage() {
             </div>
           </div>
 
-          {/* CTA */}
+          {}
           <div className="card p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-primary-50 to-secondary-50">
             <div>
               <h3 className="text-lg font-heading font-bold text-primary-700">Can&apos;t find your club?</h3>
@@ -510,10 +510,10 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {/* ═══ EVENTS TAB ═══ */}
+      {}
       {activeTab === "events" && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
-          {/* Countdown banner */}
+          {}
           {nextEvent && countdown && (
             <div className="card p-5 bg-white shadow-lg border-l-4 border-secondary-500 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-up">
               <div className="flex items-center gap-4">
@@ -543,7 +543,7 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          {/* Filter bar */}
+          {}
           <div className="card p-4 flex flex-col md:flex-row md:items-end gap-4">
             <div className="flex-1 min-w-0">
               <label className="block text-xs font-semibold text-neutral-600 mb-1">Search</label>
@@ -584,7 +584,7 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          {/* Cards view */}
+          {}
           {evView === "cards" && (
             <div className="space-y-5">
               {filteredEvents.map((event, i) => (
@@ -626,7 +626,7 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          {/* Feed view */}
+          {}
           {evView === "feed" && (
             <div className="max-w-3xl mx-auto space-y-5">
               {filteredEvents.map(event => {
@@ -698,7 +698,7 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          {/* Calendar view */}
+          {}
           {evView === "calendar" && (() => {
             const grouped: Record<string, typeof filteredEvents> = {};
             filteredEvents.forEach(e => { const k = e.date; if (!grouped[k]) grouped[k] = []; grouped[k].push(e); });

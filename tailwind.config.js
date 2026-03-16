@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+
 module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -7,14 +7,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // School-themed professional colors
+
         primary: {
           50: "#eff6ff",
           100: "#dbeafe",
           200: "#bfdbfe",
           300: "#93c5fd",
           400: "#60a5fa",
-          500: "#1e3a5f", // Deep navy - main brand
+          500: "#1e3a5f",
           600: "#1a3352",
           700: "#152b45",
           800: "#112338",
@@ -26,14 +26,14 @@ module.exports = {
           200: "#fef08a",
           300: "#fde047",
           400: "#facc15",
-          500: "#b8860b", // Gold accent
+          500: "#b8860b",
           600: "#a47a0a",
           700: "#906d09",
           800: "#7c6008",
           900: "#685307",
         },
         accent: {
-          500: "#8b0000", // Maroon/Crimson accent
+          500: "#8b0000",
           600: "#7a0000",
           700: "#690000",
         },

@@ -1,9 +1,9 @@
-import { 
-  StarterGuide, 
-  ClubIdea, 
-  Competition, 
-  Mentor, 
-  CollaborationOpportunity, 
+import {
+  StarterGuide,
+  ClubIdea,
+  Competition,
+  Mentor,
+  CollaborationOpportunity,
   SuccessStory,
   Achievement,
   ClubFinderQuiz,
@@ -13,9 +13,7 @@ import {
   ResourceRequest
 } from '@/types';
 
-// ==========================================
-// STARTER GUIDES - Comprehensive Club Resources
-// ==========================================
+
 
 export const starterGuides: StarterGuide[] = [
   {
@@ -429,9 +427,7 @@ export const starterGuides: StarterGuide[] = [
   }
 ];
 
-// ==========================================
-// CLUB IDEAS - Creative Suggestions
-// ==========================================
+
 
 export const clubIdeas: ClubIdea[] = [
   {
@@ -652,9 +648,7 @@ export const clubIdeas: ClubIdea[] = [
   }
 ];
 
-// ==========================================
-// COMPETITIONS - Comprehensive Directory
-// ==========================================
+
 
 export const competitions: Competition[] = [
   {
@@ -858,9 +852,7 @@ export const competitions: Competition[] = [
   }
 ];
 
-// ==========================================
-// MENTORS - Network Directory
-// ==========================================
+
 
 export const mentors: Mentor[] = [
   {
@@ -970,9 +962,7 @@ export const mentors: Mentor[] = [
   }
 ];
 
-// ==========================================
-// COLLABORATION OPPORTUNITIES
-// ==========================================
+
 
 export const collaborationOpportunities: CollaborationOpportunity[] = [
   {
@@ -1059,9 +1049,7 @@ export const collaborationOpportunities: CollaborationOpportunity[] = [
   }
 ];
 
-// ==========================================
-// SUCCESS STORIES
-// ==========================================
+
 
 export const successStories: SuccessStory[] = [
   {
@@ -1255,9 +1243,7 @@ That's what real impact looks like - not just what you do, but what you enable o
   }
 ];
 
-// ==========================================
-// ACHIEVEMENTS - Gamification System
-// ==========================================
+
 
 export const achievements: Achievement[] = [
   {
@@ -1394,9 +1380,7 @@ export const achievements: Achievement[] = [
   }
 ];
 
-// ==========================================
-// CLUB FINDER QUIZ
-// ==========================================
+
 
 export const clubFinderQuiz: ClubFinderQuiz[] = [
   {
@@ -1465,9 +1449,7 @@ export const clubFinderQuiz: ClubFinderQuiz[] = [
   }
 ];
 
-// ==========================================
-// CALENDAR EVENTS (Sample)
-// ==========================================
+
 
 export const calendarEvents: CalendarEvent[] = [
   {
@@ -1509,9 +1491,7 @@ export const calendarEvents: CalendarEvent[] = [
   }
 ];
 
-// ==========================================
-// CLUB HEALTH METRICS (Sample)
-// ==========================================
+
 
 export const clubHealthMetrics: ClubHealthMetrics[] = [
   {
@@ -1586,9 +1566,7 @@ export const clubHealthMetrics: ClubHealthMetrics[] = [
   }
 ];
 
-// ==========================================
-// BENCHMARKS
-// ==========================================
+
 
 export const clubBenchmarks: ClubBenchmark[] = [
   { category: 'Academic', averageMembers: 35, averageEventsPerMonth: 4, averageRetentionRate: 78, topPerformers: ['Model United Nations', 'Debate Team'] },
@@ -1598,9 +1576,7 @@ export const clubBenchmarks: ClubBenchmark[] = [
   { category: 'Cultural', averageMembers: 48, averageEventsPerMonth: 3, averageRetentionRate: 85, topPerformers: ['Multicultural Student Alliance'] }
 ];
 
-// ==========================================
-// RESOURCE REQUESTS (Sample)
-// ==========================================
+
 
 export const resourceRequests: ResourceRequest[] = [
   {
@@ -1634,9 +1610,7 @@ export const resourceRequests: ResourceRequest[] = [
   }
 ];
 
-// ==========================================
-// HUB STATISTICS
-// ==========================================
+
 
 export const hubStats = {
   totalGuides: starterGuides.length,

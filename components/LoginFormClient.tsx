@@ -35,7 +35,7 @@ export default function LoginFormClient({
       mounted = false;
     };
   }, [router]);
-  
+
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -59,7 +59,7 @@ export default function LoginFormClient({
       }
     })();
   };
-  
+
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
@@ -142,7 +142,7 @@ export default function LoginFormClient({
           </div>
         </div>
 
-        {/* Benefits sidebar */}
+        {}
         <aside className="space-y-5">
           <div className="card p-6 bg-gradient-to-br from-primary-50 to-white">
             <h3 className="text-lg font-heading font-bold text-primary-600">Why Sign In?</h3>

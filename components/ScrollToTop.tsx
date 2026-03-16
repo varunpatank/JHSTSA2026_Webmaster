@@ -10,11 +10,9 @@ export default function ScrollToTop() {
   useEffect(() => {
     if (isFirst.current) {
       isFirst.current = false;
-      // On first mount, also scroll to top
+      return;
     }
-    window.scrollTo(0, 0);
-    // Also force after a micro-task in case layout shift
-    requestAnimationFrame(() => window.scrollTo(0, 0));
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
 
   return null;

@@ -81,7 +81,7 @@ export default function DiscussionsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="lg:grid lg:grid-cols-4 lg:gap-6">
-          {/* Sidebar */}
+          {}
           <aside className="space-y-4 mb-6 lg:mb-0">
             <button onClick={() => setShowNew(!showNew)} className="btn-primary w-full text-sm flex items-center justify-center gap-2"><Plus size={16} /> New Discussion</button>
             <div className="card p-4">
@@ -109,9 +109,9 @@ export default function DiscussionsPage() {
             </div>
           </aside>
 
-          {/* Main */}
+          {}
           <div className="lg:col-span-3 space-y-4">
-            {/* Search & Sort */}
+            {}
             <div className="card p-4 flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -137,17 +137,17 @@ export default function DiscussionsPage() {
               </Reveal>
             )}
 
-            {/* Discussion List */}
+            {}
             {filtered.map(disc => (
               <Reveal key={disc.id}>
                 <div className={`card p-5 ux-hover-lift-sm ${disc.pinned ? "border-l-4 border-primary-500" : ""}`}>
                   <div className="flex gap-4">
-                    {/* Vote Column */}
+                    {}
                     <div className="flex flex-col items-center gap-0.5 min-w-[40px] text-center">
                       <ArrowUp size={16} className="text-neutral-400 hover:text-primary-600 cursor-pointer" />
                       <span className="font-bold text-primary-700 text-sm">{disc.upvotes}</span>
                     </div>
-                    {/* Content */}
+                    {}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         {disc.pinned && <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 flex items-center gap-1"><Pin size={10} /> Pinned</span>}

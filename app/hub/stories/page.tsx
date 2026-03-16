@@ -63,7 +63,7 @@ export default function StoriesPage() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Featured Stories */}
+        {}
         {featured.length > 0 && (
           <Reveal>
             <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><Star size={18} /> Featured Stories</h2>
@@ -93,7 +93,7 @@ export default function StoriesPage() {
           </Reveal>
         )}
 
-        {/* Filters */}
+        {}
         <div className="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -102,7 +102,7 @@ export default function StoriesPage() {
           <select value={category} onChange={e => setCategory(e.target.value)} className="select-field text-sm w-auto">{categories.map(c => <option key={c}>{c}</option>)}</select>
         </div>
 
-        {/* All Stories */}
+        {}
         <div className="space-y-4">
           {filtered.filter(s => !s.featured || expandedId === s.id).map(story => (
             <Reveal key={story.id}>
@@ -137,7 +137,7 @@ export default function StoriesPage() {
           <div className="card p-8 text-center"><BookOpen size={40} className="mx-auto text-neutral-300" /><p className="mt-3 text-neutral-500">No stories match your search.</p></div>
         )}
 
-        {/* Submit Your Story */}
+        {}
         <Reveal>
           <div className="mt-8 card p-6 bg-gradient-to-r from-rose-50 to-pink-50 text-center border-2 border-rose-200">
             <h3 className="font-heading font-bold text-xl text-primary-700">Share Your Club&rsquo;s Story</h3>

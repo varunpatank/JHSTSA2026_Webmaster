@@ -116,8 +116,8 @@ export default function ClubManagerPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'officers' | 'events' | 'announcements' | 'settings' | 'preview'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ ...club });
-  
-  // New item states
+
+
   const [showOfficerForm, setShowOfficerForm] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
   const [showAnnouncementForm, setShowAnnouncementForm] = useState(false);
@@ -156,10 +156,10 @@ export default function ClubManagerPage() {
 
   const addAnnouncement = () => {
     if (!newAnnouncement.title || !newAnnouncement.content) return;
-    const announcement: Announcement = { 
-      id: Date.now().toString(), 
-      ...newAnnouncement, 
-      date: new Date().toISOString().split('T')[0] 
+    const announcement: Announcement = {
+      id: Date.now().toString(),
+      ...newAnnouncement,
+      date: new Date().toISOString().split('T')[0]
     };
     setAnnouncements([announcement, ...announcements]);
     setNewAnnouncement({ title: '', content: '', pinned: false });
@@ -183,7 +183,7 @@ export default function ClubManagerPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
+      {}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0">
           <Image
@@ -223,7 +223,7 @@ export default function ClubManagerPage() {
         </div>
       </section>
 
-      {/* Tab Navigation */}
+      {}
       <section className="bg-white border-b border-neutral-200 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto">
@@ -251,16 +251,16 @@ export default function ClubManagerPage() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Profile Tab */}
+          {}
           {activeTab === 'profile' && (
             <div className="max-w-3xl mx-auto">
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-primary-500">Club Profile</h2>
-                  <button 
+                  <button
                     onClick={() => { setIsEditing(!isEditing); setEditForm({ ...club }); }}
                     className="text-primary-500 hover:underline"
                   >
@@ -433,7 +433,7 @@ export default function ClubManagerPage() {
                 )}
               </div>
 
-              {/* Requirements & Benefits */}
+              {}
               <div className="grid md:grid-cols-2 gap-6 mt-6">
                 <div className="card p-6">
                   <h3 className="text-lg font-bold text-primary-500 mb-4">Membership Requirements</h3>
@@ -461,7 +461,7 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Officers Tab */}
+          {}
           {activeTab === 'officers' && (
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-between mb-6">
@@ -555,7 +555,7 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Events Tab */}
+          {}
           {activeTab === 'events' && (
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-between mb-6">
@@ -680,7 +680,7 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Announcements Tab */}
+          {}
           {activeTab === 'announcements' && (
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-between mb-6">
@@ -774,12 +774,12 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Settings Tab */}
+          {}
           {activeTab === 'settings' && (
             <div className="max-w-3xl mx-auto space-y-6">
               <h2 className="text-xl font-bold text-primary-500">Club Settings</h2>
 
-              {/* Social Links */}
+              {}
               <div className="card p-6">
                 <h3 className="text-lg font-bold text-neutral-700 mb-4">Social Links</h3>
                 <div className="space-y-3">
@@ -794,7 +794,7 @@ export default function ClubManagerPage() {
                 <button className="btn-outline text-sm mt-4">+ Add Social Link</button>
               </div>
 
-              {/* Club Status */}
+              {}
               <div className="card p-6">
                 <h3 className="text-lg font-bold text-neutral-700 mb-4">Club Status</h3>
                 <div className="flex items-center justify-between p-4 bg-neutral-50">
@@ -814,7 +814,7 @@ export default function ClubManagerPage() {
                 </div>
               </div>
 
-              {/* Danger Zone */}
+              {}
               <div className="card p-6 border-red-200">
                 <h3 className="text-lg font-bold text-red-600 mb-4">Danger Zone</h3>
                 <div className="space-y-4">
@@ -841,11 +841,11 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Preview Tab */}
+          {}
           {activeTab === 'preview' && (
             <div className="max-w-4xl mx-auto">
               <div className="bg-white border border-neutral-200 shadow-lg">
-                {/* Preview Header */}
+                {}
                 <div className="relative h-48">
                   <Image
                     src={club.coverImage}
@@ -865,10 +865,10 @@ export default function ClubManagerPage() {
                   </div>
                 </div>
 
-                {/* Preview Content */}
+                {}
                 <div className="p-6">
                   <p className="text-neutral-700 mb-6">{club.description}</p>
-                  
+
                   <div className="grid md:grid-cols-2 gap-6 mb-6">
                     <div className="p-4 bg-neutral-50">
                       <h4 className="font-bold text-primary-500 mb-2">📅 Meeting Info</h4>
@@ -903,7 +903,7 @@ export default function ClubManagerPage() {
 
               <div className="text-center mt-6 p-4 bg-primary-50 border border-primary-200">
                 <p className="text-primary-700">
-                  This is how your club page will appear to visitors. 
+                  This is how your club page will appear to visitors.
                   <button onClick={() => setActiveTab('profile')} className="text-primary-500 underline ml-1">
                     Edit Profile
                   </button>

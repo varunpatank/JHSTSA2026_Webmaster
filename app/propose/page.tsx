@@ -116,7 +116,7 @@ export default function ProposeResourcePage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Hero */}
+      {}
       <section className="bg-gradient-to-r from-primary-700 via-primary-800 to-primary-900 text-white border-b-4 border-secondary-500">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 text-xs font-semibold mb-3">
@@ -130,7 +130,7 @@ export default function ProposeResourcePage() {
       </section>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        {/* Progress Steps */}
+        {}
         <div className="flex items-center justify-center gap-2 mb-6">
           {[
             { num: 1, label: "Resource Info" },
@@ -149,7 +149,7 @@ export default function ProposeResourcePage() {
         </div>
 
         <div className="bg-white border-2 border-neutral-200 p-6">
-          {/* Step 1: Resource Information */}
+          {}
           {step === 1 && (
             <div className="space-y-4">
               <div>
@@ -218,7 +218,7 @@ export default function ProposeResourcePage() {
             </div>
           )}
 
-          {/* Step 2: Contact Details */}
+          {}
           {step === 2 && (
             <div className="space-y-4">
               <div>
@@ -258,7 +258,7 @@ export default function ProposeResourcePage() {
             </div>
           )}
 
-          {/* Step 3: Submitter Info & Review */}
+          {}
           {step === 3 && (
             <div className="space-y-4">
               <div>
@@ -308,7 +308,7 @@ export default function ProposeResourcePage() {
                   rows={2} className="w-full px-3 py-2 border-2 border-neutral-200 text-sm focus:outline-none focus:border-primary-400 resize-none" />
               </div>
 
-              {/* Review Summary */}
+              {}
               <div className="border-2 border-primary-200 bg-primary-50/50 p-4">
                 <h3 className="font-bold text-sm text-primary-700 mb-3 flex items-center gap-1"><FileText size={14} /> Submission Summary</h3>
                 <div className="grid sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
@@ -325,7 +325,7 @@ export default function ProposeResourcePage() {
             </div>
           )}
 
-          {/* Navigation */}
+          {}
           <div className="mt-6 flex items-center justify-between">
             {step > 1 ? (
               <button onClick={() => setStep(s => s - 1)} className="px-4 py-2 text-sm font-semibold text-primary-600 border-2 border-primary-200 hover:bg-primary-50 flex items-center gap-1">
@@ -351,7 +351,7 @@ export default function ProposeResourcePage() {
           </div>
         </div>
 
-        {/* Info sidebar */}
+        {}
         <div className="mt-6 grid sm:grid-cols-3 gap-3">
           <div className="bg-white border-2 border-neutral-200 p-4 text-center">
             <Heart size={20} className="mx-auto text-red-500 mb-2" />

@@ -51,7 +51,7 @@ export default function GuideDetailPage() {
             </div>
           ))}
 
-          {/* Nav links */}
+          {}
           <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
             {prevGuide ? (
               <Link href={`/guides/${prevGuide.slug}`} className="text-sm text-primary-600 hover:underline flex items-center gap-1"><ArrowLeft size={14} /> {prevGuide.title}</Link>
@@ -62,7 +62,7 @@ export default function GuideDetailPage() {
           </div>
         </div>
 
-        {/* Table of Contents */}
+        {}
         <aside className="hidden lg:block">
           <div className="card p-5 sticky top-20">
             <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-3"><BookOpen size={16} /> Contents</h3>

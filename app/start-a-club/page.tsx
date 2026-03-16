@@ -111,7 +111,7 @@ function ConstitutionEditor({ value, onChange }: { value: string; onChange: (v: 
 
   return (
     <div className="border-2 border-primary-200  overflow-hidden bg-white">
-      {/* Toolbar */}
+      {}
       <div className="flex flex-wrap items-center gap-1 px-3 py-2 bg-primary-50 border-b border-primary-200">
         <button type="button" onClick={undo} className="p-1.5 rounded hover:bg-primary-100 text-neutral-600" title="Undo"><Undo2 size={14} /></button>
         <button type="button" onClick={redo} className="p-1.5 rounded hover:bg-primary-100 text-neutral-600" title="Redo"><Redo2 size={14} /></button>
@@ -133,7 +133,7 @@ function ConstitutionEditor({ value, onChange }: { value: string; onChange: (v: 
         </div>
       </div>
 
-      {/* Editor / Preview */}
+      {}
       {preview ? (
         <div className="p-4 min-h-[300px] max-h-[500px] overflow-y-auto prose prose-sm">
           {value.split("\n").map((line, i) => {
@@ -155,7 +155,7 @@ function ConstitutionEditor({ value, onChange }: { value: string; onChange: (v: 
         />
       )}
 
-      {/* Status bar */}
+      {}
       <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-50 border-t border-neutral-200 text-xs text-neutral-500">
         <span>{wordCount} words &middot; {articleCount} articles</span>
         <span>{value.length} characters</span>
@@ -196,7 +196,7 @@ function LogoUploader({ onUpload }: { onUpload: (url: string) => void }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-6">
-        {/* Generated logo preview */}
+        {}
         <div className="w-24 h-24  border-2 border-dashed border-primary-300 flex items-center justify-center overflow-hidden"
           style={{ backgroundColor: preview ? "transparent" : bgColor }}>
           {preview ? (
@@ -475,7 +475,7 @@ export default function StartAClubPage() {
   if (submitted) {
     return (
       <div className="bg-neutral-50 min-h-screen flex items-center justify-center px-4 overflow-hidden relative">
-        {/* Confetti */}
+        {}
         {Array.from({ length: 60 }).map((_, i) => (
           <div
             key={i}
@@ -516,7 +516,7 @@ export default function StartAClubPage() {
 
   return (
     <div className="bg-neutral-50">
-      {/* Hero */}
+      {}
       <section className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-secondary-600 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-96 h-96 bg-secondary-400 rounded-full blur-3xl animate-drift-slower" />
@@ -529,7 +529,7 @@ export default function StartAClubPage() {
         </div>
       </section>
 
-      {/* Sticky progress */}
+      {}
       <div className="bg-white border-b border-neutral-200 sticky top-[57px] z-20">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between text-sm mb-2">
@@ -539,7 +539,7 @@ export default function StartAClubPage() {
           <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all duration-500" style={{ width: `${overallProgress}%` }} />
           </div>
-          {/* Phase dots */}
+          {}
           <div className="mt-3 flex gap-1">
             {stages.map(s => {
               const Icon = s.icon;
@@ -559,9 +559,9 @@ export default function StartAClubPage() {
         </div>
       </div>
 
-      {/* Main content */}
+      {}
       <div className="max-w-5xl mx-auto px-4 py-8" key={activeStage}>
-        {/* Phase header */}
+        {}
         <div className={` overflow-hidden border-2 ${current.borderColor} mb-6 animate-slide-up-spring`}>
           <div className={`bg-gradient-to-r ${current.color} text-white p-6`}>
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -586,7 +586,7 @@ export default function StartAClubPage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Left — Description + Checklist + Form */}
+          {}
           <div className="space-y-5">
             <div className="card p-5">
               <h3 className={`font-bold ${current.textColor} flex items-center gap-2`}><MessageCircle size={16} /> About This Phase</h3>
@@ -597,7 +597,7 @@ export default function StartAClubPage() {
               </div>
             </div>
 
-            {/* Interactive checklist */}
+            {}
             <div className="card p-5">
               <h3 className={`font-bold ${current.textColor} flex items-center gap-2 mb-3`}><CheckCircle2 size={16} /> Checklist</h3>
               <div className="space-y-2">
@@ -614,7 +614,7 @@ export default function StartAClubPage() {
               </div>
             </div>
 
-            {/* Form fields embedded in the phase */}
+            {}
             {current.formFields.length > 0 && (
               <form onSubmit={handleSubmit} className="card p-5 border-2 border-primary-200 bg-primary-50/30">
                 <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-4"><Sparkles size={16} /> Your Details</h3>
@@ -656,7 +656,7 @@ export default function StartAClubPage() {
                     );
                   })}
                 </div>
-                {/* Submit only shows on last stage with form fields */}
+                {}
                 {activeStage === 3 && formData.name && formData.purpose && formData.category && formData.advisor && (
                   <button type="submit" className="btn-primary btn-magnetic btn-ripple mt-4 w-full flex items-center justify-center gap-2">
                     <Rocket size={16} /> Submit Club Proposal
@@ -665,7 +665,7 @@ export default function StartAClubPage() {
               </form>
             )}
 
-            {/* Constitution Editor — Phase 2 */}
+            {}
             {activeStage === 2 && (
               <div className="card p-5 border-2 border-primary-200 bg-primary-50/30 animate-slide-up-spring">
                 <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-2"><FileText size={16} /> Club Constitution Editor</h3>
@@ -677,7 +677,7 @@ export default function StartAClubPage() {
               </div>
             )}
 
-            {/* Submit button for stage 4/5 (no form fields but all data might be ready) */}
+            {}
             {activeStage >= 4 && formData.name && formData.purpose && formData.category && formData.advisor && (
               <form onSubmit={handleSubmit} className="card p-5 border-2 border-green-200 bg-green-50/50">
                 <h3 className="font-bold text-green-700 flex items-center gap-2 mb-3"><CheckCircle2 size={16} /> Ready to Submit?</h3>
@@ -695,21 +695,21 @@ export default function StartAClubPage() {
             )}
           </div>
 
-          {/* Right — Links + Tips + Special Tools */}
+          {}
           <div className="space-y-5">
-            {/* Gamified Progress Tracker */}
+            {}
             <GamifiedProgress stages={stages} completedStages={completedStages} checkedItems={checkedItems} formData={formData as unknown as Record<string, string>} />
 
-            {/* Logo Uploader - Phase 1 & 2 */}
+            {}
             {activeStage <= 2 && (
               <div className="card p-5 border-2 border-secondary-200 bg-secondary-50/30 animate-slide-up-spring">
                 <h3 className="font-bold text-secondary-700 flex items-center gap-2 mb-3"><ImageIcon size={16} /> Club Logo Designer</h3>
                 <p className="text-sm text-neutral-600 mb-3">Upload your own logo or generate a quick one with initials and colors.</p>
-                <LogoUploader onUpload={(url) => {/* saved in component state */}} />
+                <LogoUploader onUpload={(url) => {}} />
               </div>
             )}
 
-            {/* Poster Designer - Phase 4 */}
+            {}
             {activeStage === 4 && (
               <div className="card p-5 border-2 border-primary-200 bg-primary-50/30 animate-slide-up-spring">
                 <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-3"><Palette size={16} /> Poster / Flyer Designer</h3>
@@ -749,7 +749,7 @@ export default function StartAClubPage() {
               </div>
             </div>
 
-            {/* Progress sidebar */}
+            {}
             <div className="card p-5">
               <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-3"><Shield size={16} /> Proposal Progress</h3>
               <div className="space-y-2">
@@ -773,7 +773,7 @@ export default function StartAClubPage() {
           </div>
         </div>
 
-        {/* Phase nav */}
+        {}
         <div className="mt-8 flex items-center justify-between">
           <button onClick={() => setActiveStage(s => Math.max(1, s - 1))}
             className={`btn-outline flex items-center gap-2 ${activeStage === 1 ? "opacity-0 pointer-events-none" : ""}`}>
@@ -793,7 +793,7 @@ export default function StartAClubPage() {
           </div>
         </div>
 
-        {/* Completion celebration */}
+        {}
         {completedStages.length === stages.length && (
           <Reveal>
             <div className="mt-10 text-center p-8 bg-gradient-to-r from-green-50 to-emerald-50  border-2 border-green-200 animate-scale-bounce">
