@@ -12,6 +12,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'gpskphnryyxaokhvguha.supabase.co',
+        port: '',
+        pathname: '/**',
+      },
     ],
     minimumCacheTTL: 86400,
     dangerouslyAllowSVG: true,

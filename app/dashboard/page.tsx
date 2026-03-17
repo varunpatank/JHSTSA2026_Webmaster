@@ -5,11 +5,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   Bell, BookOpen, Calendar, ChevronRight, Clock, Edit3,
-  Heart, LayoutDashboard, LogOut, Map, MessageSquare, PlusCircle,
-  Rocket, Save, Settings, Star, Target, Trophy, Users, Zap, X, Check
+  Heart, LayoutDashboard, LogOut, PlusCircle,
+  Rocket, Save, Search, Settings, Star, Target, Trophy, Users, Zap, X, Check
 } from 'lucide-react';
 import { chapters, events } from '@/lib/data';
-import { supabase, profilesApi, myClubsApi } from '@/lib/api';
+import { supabase, profilesApi, myClubsApi, clubProposalsApi } from '@/lib/api';
 
 interface SavedItem {
   id: string;
@@ -69,12 +69,12 @@ const demoEvents: MyEvent[] = [
   { id: '4', title: 'Science Fair Prep', club: 'Science Club', date: '2026-02-18', time: '3:30 PM', location: 'Lab 301', rsvpStatus: 'not-going' },
 ];
 const demoAchievements: Achievement[] = [
-  { id: '1', name: 'First Steps', icon: '👟', description: 'Joined your first club', rarity: 'Common' },
-  { id: '2', name: 'Quiz Master', icon: '🎯', description: 'Completed the Club Finder Quiz', rarity: 'Common' },
-  { id: '3', name: 'Social Butterfly', icon: '🦋', description: 'Joined 3+ clubs', rarity: 'Uncommon' },
-  { id: '4', name: 'Resource Hunter', icon: '📚', description: 'Saved 5+ resources', rarity: 'Uncommon' },
-  { id: '5', name: 'Event Champion', icon: '🏅', description: 'Attended 10 events', rarity: 'Rare' },
-  { id: '6', name: 'Leader', icon: '👑', description: 'Became a club officer', rarity: 'Epic' },
+  { id: '1', name: 'First Steps', icon: 'steps', description: 'Joined your first club', rarity: 'Common' },
+  { id: '2', name: 'Quiz Master', icon: 'target', description: 'Completed the Club Finder Quiz', rarity: 'Common' },
+  { id: '3', name: 'Social Butterfly', icon: 'users', description: 'Joined 3+ clubs', rarity: 'Uncommon' },
+  { id: '4', name: 'Resource Hunter', icon: 'book', description: 'Saved 5+ resources', rarity: 'Uncommon' },
+  { id: '5', name: 'Event Champion', icon: 'trophy', description: 'Attended 10 events', rarity: 'Rare' },
+  { id: '6', name: 'Leader', icon: 'star', description: 'Became a club officer', rarity: 'Epic' },
 ];
 const demoNotifications: Notification[] = [
   { id: '1', type: 'event', title: 'Reminder', body: 'TSA Meeting tomorrow at 3:30 PM', time: '2h ago', read: false },
@@ -82,7 +82,21 @@ const demoNotifications: Notification[] = [
   { id: '3', type: 'club', title: 'New Member', body: 'Sarah Kim joined Robotics Club', time: '1d ago', read: true },
 ];
 
-const activityIcons: Record<string, string> = { joined: '✅', saved: '❤️', rsvp: '📅', submitted: '📤', completed: '🏆' };
+const activityIcons: Record<string, React.ReactNode> = {
+  joined: <Check size={14} className="text-primary-600" />,
+  saved: <Heart size={14} className="text-accent-500" />,
+  rsvp: <Calendar size={14} className="text-primary-500" />,
+  submitted: <Rocket size={14} className="text-secondary-500" />,
+  completed: <Trophy size={14} className="text-secondary-600" />,
+};
+const achievementIconMap: Record<string, React.ReactNode> = {
+  steps: <Rocket size={14} />,
+  target: <Target size={14} />,
+  users: <Users size={14} />,
+  book: <BookOpen size={14} />,
+  trophy: <Trophy size={14} />,
+  star: <Star size={14} />,
+};
 const rarityColors: Record<string, string> = {
   Common: 'bg-gray-50 text-gray-600 border-gray-200',
   Uncommon: 'bg-green-50 text-green-700 border-green-200',
@@ -105,6 +119,8 @@ export default function DashboardPage() {
   const [clubEditForm, setClubEditForm] = useState<Record<string, string>>({});
   const [joinedClubs, setJoinedClubs] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const interests = ['STEM', 'Leadership', 'Competition'];
 
@@ -127,6 +143,7 @@ export default function DashboardPage() {
           const p = profileRes.data;
           setUserName(p.name || user.email || '');
           setUserEmail(user.email || '');
+          setAvatarUrl(p.avatar_url || null);
           setEditForm({ name: p.name || '', email: user.email || '', grade: p.grade || '' });
         } else {
           setUserName(user.email || '');
@@ -148,6 +165,13 @@ export default function DashboardPage() {
             setJoinedClubs(joined);
             setAdminClubs(admin);
           }
+        }
+
+        // Fetch proposals submitted by this user
+        const propRes: any = await clubProposalsApi.getByUser(user.id);
+        if (!mounted) return;
+        if (!propRes.error && propRes.data) {
+          setProposals(propRes.data);
         }
       } catch {
 
@@ -187,16 +211,22 @@ export default function DashboardPage() {
   return (
     <div className="bg-neutral-50">
       {}
-      <section className="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+      <section className="bg-primary-700 text-white">
         <div className="max-w-6xl mx-auto px-4 py-5">
           <div className="flex items-center gap-4">
-            <Image
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80"
-              alt={userName}
-              width={56}
-              height={56}
-              className="w-14 h-14  object-cover border-2 border-white/30"
-            />
+            {avatarUrl ? (
+              <Image
+                src={avatarUrl}
+                alt={userName}
+                width={56}
+                height={56}
+                className="w-14 h-14 object-cover border-2 border-white/30"
+              />
+            ) : (
+              <div className="w-14 h-14 bg-white/20 border-2 border-white/30 flex items-center justify-center text-lg font-bold text-white">
+                {userName ? userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?'}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold truncate">{userName}</h1>
@@ -261,194 +291,142 @@ export default function DashboardPage() {
 
           {}
           {activeTab === 'overview' && (
-            <div className="grid lg:grid-cols-5 gap-5">
-              {}
-              <div className="lg:col-span-3 space-y-5">
-                {}
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {[
-                    { href: '/directory', icon: '🔍', label: 'Clubs' },
-                    { href: '/events', icon: '📅', label: 'Events' },
-                    { href: '/events/new', icon: '✨', label: 'New Event' },
-                    { href: '/start-a-club', icon: '🚀', label: 'Start Club' },
-                    { href: '/resources', icon: '📖', label: 'Resources' },
-                    { href: '/donate', icon: '💰', label: 'Donate' },
-                  ].map(a => (
-                    <Link key={a.label} href={a.href} className="flex flex-col items-center gap-1 p-3 bg-white  border border-neutral-100 hover:border-primary-200 hover:shadow-sm transition-all text-center group">
-                      <span className="text-xl group-hover:scale-110 transition-transform">{a.icon}</span>
-                      <span className="text-[11px] font-medium text-neutral-600">{a.label}</span>
-                    </Link>
-                  ))}
-                </div>
-
-                {}
-                <div className="grid md:grid-cols-2 gap-5">
-                  {}
-                  <div className="bg-white  border border-neutral-100 p-4">
-                    <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
-                      <Zap size={14} className="text-secondary-500" /> Recent Activity
-                    </h2>
-                    <div className="space-y-1.5">
-                      {demoActivity.slice(0, 4).map(a => (
-                        <div key={a.id} className="flex items-start gap-2 p-2  hover:bg-neutral-50 transition-colors">
-                          <span className="text-sm mt-0.5">{activityIcons[a.type]}</span>
-                          <div className="min-w-0">
-                            <p className="text-xs text-neutral-700 leading-snug">{a.description}</p>
-                            <p className="text-[10px] text-neutral-400 mt-0.5">{new Date(a.timestamp).toLocaleDateString()}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {}
-                  <div className="bg-white  border border-neutral-100 p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5">
-                        <Calendar size={14} className="text-primary-500" /> Upcoming
-                      </h2>
-                      <button onClick={() => setActiveTab('events')} className="text-[11px] text-primary-500 hover:underline">All →</button>
-                    </div>
-                    <div className="space-y-2">
-                      {myEvents.filter(e => e.rsvpStatus !== 'not-going').slice(0, 3).map(ev => (
-                        <div key={ev.id} className="flex items-center gap-3 p-2  hover:bg-neutral-50 transition-colors">
-                          <div className="text-center bg-primary-500 text-white  p-1.5 min-w-[44px]">
-                            <div className="text-[9px] uppercase">{new Date(ev.date).toLocaleDateString('en-US', { month: 'short' })}</div>
-                            <div className="text-base font-bold leading-none">{new Date(ev.date).getDate()}</div>
-                          </div>
-                          <div className="min-w-0">
-                            <h4 className="text-xs font-semibold text-neutral-800 truncate">{ev.title}</h4>
-                            <p className="text-[10px] text-neutral-400">{ev.club} · {ev.time}</p>
-                          </div>
-                          <span className={`ml-auto shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                            ev.rsvpStatus === 'going' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                          }`}>{ev.rsvpStatus === 'going' ? '✓' : '?'}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {}
-                <div className="bg-white  border border-neutral-100 p-4">
-                  <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
-                    <Bell size={14} /> Notifications
-                    {unreadCount > 0 && <span className="px-1.5 py-0.5 bg-accent-500 text-white text-[9px] rounded-full font-bold">{unreadCount}</span>}
-                  </h2>
-                  <div className="space-y-1">
-                    {notifications.map(n => (
-                      <div
-                        key={n.id}
-                        onClick={() => markRead(n.id)}
-                        className={`flex items-center gap-3 p-2.5  cursor-pointer transition-colors ${
-                          n.read ? 'opacity-50 hover:opacity-70' : 'bg-primary-50/50 hover:bg-primary-50'
-                        }`}
-                      >
-                        <div className={`w-7 h-7  flex items-center justify-center text-xs ${
-                          n.type === 'event' ? 'bg-blue-100 text-blue-500' :
-                          n.type === 'achievement' ? 'bg-amber-100 text-amber-500' :
-                          n.type === 'club' ? 'bg-green-100 text-green-500' :
-                          'bg-neutral-100 text-neutral-500'
-                        }`}>
-                          {n.type === 'event' ? <Calendar size={13} /> :
-                           n.type === 'achievement' ? <Trophy size={13} /> :
-                           n.type === 'club' ? <Users size={13} /> :
-                           <Bell size={13} />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-neutral-700">{n.title}: <span className="font-normal text-neutral-500">{n.body}</span></p>
-                        </div>
-                        <span className="text-[10px] text-neutral-400 shrink-0">{n.time}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            <div className="space-y-5">
+              {/* Quick Actions */}
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                {[
+                  { href: '/directory', Icon: Search, label: 'Clubs' },
+                  { href: '/events', Icon: Calendar, label: 'Events' },
+                  { href: '/events/new', Icon: Zap, label: 'New Event' },
+                  { href: '/start-a-club', Icon: Rocket, label: 'Start Club' },
+                  { href: '/resources', Icon: BookOpen, label: 'Resources' },
+                  { href: '/donate', Icon: Heart, label: 'Donate' },
+                ].map(a => (
+                  <Link key={a.label} href={a.href} className="flex flex-col items-center gap-1 p-3 bg-white border border-neutral-100 hover:border-primary-200 hover:shadow-sm transition-all text-center group">
+                    <a.Icon size={20} className="text-primary-600 group-hover:scale-110 transition-transform" />
+                    <span className="text-[11px] font-medium text-neutral-600">{a.label}</span>
+                  </Link>
+                ))}
               </div>
 
-              {}
-              <div className="lg:col-span-2 space-y-5">
-                {}
-                <div className="bg-white  border border-neutral-100 p-4">
-                  <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
-                    <Trophy size={14} className="text-amber-500" /> Achievements
-                  </h2>
-                  <div className="grid grid-cols-3 gap-2">
-                    {demoAchievements.map(a => (
-                      <div key={a.id} className={`p-2 text-center  border ${rarityColors[a.rarity]} hover:scale-105 transition-transform cursor-default`} title={a.description}>
-                        <div className="text-xl">{a.icon}</div>
-                        <div className="text-[10px] font-semibold mt-0.5 leading-tight">{a.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {}
-                <div className="bg-white  border border-neutral-100 p-4">
+              {/* My Clubs (primary section) */}
+              {joinedClubs.length > 0 && (
+                <div className="bg-white border border-neutral-100 p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5">
                       <Users size={14} /> My Clubs
                     </h2>
                     <button onClick={() => setActiveTab('clubs')} className="text-[11px] text-primary-500 hover:underline">Manage →</button>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {joinedClubs.map(club => {
                       const ch = chapters.find(c => c.name === club.name);
                       return (
                         <Link key={club.id} href={ch ? `/directory/${ch.id}` : `/directory/${club.id}`}
-                          className="flex items-center gap-2.5 p-2  hover:bg-neutral-50 transition-colors">
-                          <div className="w-8 h-8  bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-bold">{club.name.charAt(0)}</div>
+                          className="flex items-center gap-2.5 p-2 hover:bg-neutral-50 transition-colors border border-neutral-100">
+                          <div className="w-8 h-8 bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-bold">{club.name.charAt(0)}</div>
                           <span className="text-xs font-medium text-neutral-700 truncate">{club.name}</span>
                           <ChevronRight size={12} className="ml-auto text-neutral-300" />
                         </Link>
                       );
                     })}
-                    {adminClubs.length > 0 && (
-                      <>
-                        <div className="text-[10px] text-neutral-400 uppercase tracking-wider font-bold mt-2 mb-1">Created by you</div>
-                        {adminClubs.map(club => (
-                          <div key={club.id} className="flex items-center gap-2.5 p-2  bg-secondary-50/50">
-                            <div className="w-8 h-8  bg-secondary-100 text-secondary-600 flex items-center justify-center text-sm font-bold">{club.name.charAt(0)}</div>
-                            <div className="min-w-0 flex-1">
-                              <span className="text-xs font-medium text-neutral-700 truncate block">{club.name}</span>
-                              <span className={`text-[9px] font-semibold ${club.status === 'Published' ? 'text-green-600' : club.status === 'Pending approval' ? 'text-amber-600' : 'text-neutral-400'}`}>{club.status}</span>
-                            </div>
-                            <button onClick={() => { setActiveTab('clubs'); setEditingClub(club.id); }} className="text-[10px] text-primary-500 hover:underline">Edit</button>
-                          </div>
-                        ))}
-                      </>
-                    )}
                   </div>
-                  <Link href="/directory" className="mt-3 flex items-center justify-center gap-1 text-[11px] text-primary-500 hover:underline p-2  border border-dashed border-neutral-200 hover:border-primary-300 transition-colors">
-                    <PlusCircle size={12} /> Join a club
-                  </Link>
                 </div>
+              )}
 
-                {}
-                <div className="bg-white  border border-neutral-100 p-4">
+              {/* Activity + Upcoming row */}
+              <div className="grid md:grid-cols-2 gap-5">
+                <div className="bg-white border border-neutral-100 p-4">
                   <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
-                    <Target size={14} /> Recommended
+                    <Zap size={14} className="text-secondary-500" /> Recent Activity
                   </h2>
-                  <div className="space-y-2">
-                    {[
-                      { name: 'Science Olympiad', reason: 'Matches your STEM interest', id: 'science-olympiad' },
-                      { name: 'Debate Team', reason: 'Popular with your peers', id: 'debate-team' },
-                    ].map(rec => (
-                      <Link key={rec.id} href={`/directory/${rec.id}`} className="block p-2.5  border border-neutral-100 hover:border-primary-200 transition-all">
-                        <div className="text-xs font-semibold text-neutral-700">{rec.name}</div>
-                        <div className="text-[10px] text-neutral-400">{rec.reason}</div>
-                      </Link>
+                  <div className="space-y-1.5">
+                    {demoActivity.slice(0, 4).map(a => (
+                      <div key={a.id} className="flex items-start gap-2 p-2 hover:bg-neutral-50 transition-colors">
+                        <span className="mt-0.5">{activityIcons[a.type]}</span>
+                        <div className="min-w-0">
+                          <p className="text-xs text-neutral-700 leading-snug">{a.description}</p>
+                          <p className="text-[10px] text-neutral-400 mt-0.5">{new Date(a.timestamp).toLocaleDateString()}</p>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
 
-                {}
-                <div className="bg-white  border border-neutral-100 p-4">
-                  <h2 className="text-sm font-bold text-neutral-800 mb-2">Interests</h2>
-                  <div className="flex flex-wrap gap-1.5">
-                    {interests.map(i => (
-                      <span key={i} className="bg-primary-50 text-primary-600 text-[10px] px-2.5 py-1 rounded-full font-medium">{i}</span>
+                <div className="bg-white border border-neutral-100 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5">
+                      <Calendar size={14} className="text-primary-500" /> Upcoming
+                    </h2>
+                    <button onClick={() => setActiveTab('events')} className="text-[11px] text-primary-500 hover:underline">All →</button>
+                  </div>
+                  <div className="space-y-2">
+                    {myEvents.filter(e => e.rsvpStatus !== 'not-going').slice(0, 3).map(ev => (
+                      <div key={ev.id} className="flex items-center gap-3 p-2 hover:bg-neutral-50 transition-colors">
+                        <div className="text-center bg-primary-500 text-white p-1.5 min-w-[44px]">
+                          <div className="text-[9px] uppercase">{new Date(ev.date).toLocaleDateString('en-US', { month: 'short' })}</div>
+                          <div className="text-base font-bold leading-none">{new Date(ev.date).getDate()}</div>
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-semibold text-neutral-800 truncate">{ev.title}</h4>
+                          <p className="text-[10px] text-neutral-400">{ev.club} · {ev.time}</p>
+                        </div>
+                        <span className={`ml-auto shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                          ev.rsvpStatus === 'going' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                        }`}>{ev.rsvpStatus === 'going' ? '✓' : '?'}</span>
+                      </div>
                     ))}
                   </div>
+                </div>
+              </div>
+
+              {/* Notifications */}
+              <div className="bg-white border border-neutral-100 p-4">
+                <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
+                  <Bell size={14} /> Notifications
+                  {unreadCount > 0 && <span className="px-1.5 py-0.5 bg-accent-500 text-white text-[9px] rounded-full font-bold">{unreadCount}</span>}
+                </h2>
+                <div className="space-y-1">
+                  {notifications.map(n => (
+                    <div
+                      key={n.id}
+                      onClick={() => markRead(n.id)}
+                      className={`flex items-center gap-3 p-2.5 cursor-pointer transition-colors ${
+                        n.read ? 'opacity-50 hover:opacity-70' : 'bg-primary-50/50 hover:bg-primary-50'
+                      }`}
+                    >
+                      <div className={`w-7 h-7 flex items-center justify-center text-xs ${
+                        n.type === 'event' ? 'bg-blue-100 text-blue-500' :
+                        n.type === 'achievement' ? 'bg-amber-100 text-amber-500' :
+                        n.type === 'club' ? 'bg-green-100 text-green-500' :
+                        'bg-neutral-100 text-neutral-500'
+                      }`}>
+                        {n.type === 'event' ? <Calendar size={13} /> :
+                         n.type === 'achievement' ? <Trophy size={13} /> :
+                         n.type === 'club' ? <Users size={13} /> :
+                         <Bell size={13} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-neutral-700">{n.title}: <span className="font-normal text-neutral-500">{n.body}</span></p>
+                      </div>
+                      <span className="text-[10px] text-neutral-400 shrink-0">{n.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Achievements (compact inline row) */}
+              <div className="bg-white border border-neutral-100 p-4">
+                <h2 className="text-sm font-bold text-neutral-800 flex items-center gap-1.5 mb-3">
+                  <Trophy size={14} className="text-amber-500" /> Achievements
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {demoAchievements.map(a => (
+                    <div key={a.id} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 border text-xs ${rarityColors[a.rarity]}`} title={a.description}>
+                      <span>{achievementIconMap[a.icon] ?? <Star size={14} />}</span>
+                      <span className="font-semibold">{a.name}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -472,6 +450,15 @@ export default function DashboardPage() {
               {}
               <div>
                 <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">Joined</h3>
+                {joinedClubs.length === 0 ? (
+                  <div className="bg-white border border-neutral-100 p-8 text-center">
+                    <Search size={28} className="mx-auto text-neutral-300 mb-2" />
+                    <p className="text-sm text-neutral-500">You haven&apos;t joined any clubs yet.</p>
+                    <Link href="/directory" className="inline-flex items-center gap-1 mt-3 text-xs text-primary-500 font-semibold hover:underline">
+                      <PlusCircle size={12} /> Browse Clubs
+                    </Link>
+                  </div>
+                ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {joinedClubs.map(club => {
                     const ch = chapters.find(c => c.name === club.name);
@@ -492,9 +479,8 @@ export default function DashboardPage() {
                     );
                   })}
                 </div>
+                )}
               </div>
-
-              {}
               {adminClubs.length > 0 && (
                 <div>
                   <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">Created by You</h3>
@@ -549,6 +535,31 @@ export default function DashboardPage() {
                           </div>
                         )}
                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Club Proposals */}
+              {proposals.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">Your Proposals</h3>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {proposals.map((p: any) => (
+                      <Link key={p.id} href={`/proposals/${p.id}`} className="bg-white border-2 border-primary-100 p-4 hover:shadow-md transition-shadow group">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 bg-primary-100 text-primary-600 flex items-center justify-center text-lg font-bold">{(p.club_name || '?')[0]}</div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-bold text-neutral-800 truncate group-hover:text-primary-600 transition-colors">{p.club_name}</h4>
+                            <span className={`text-[10px] font-bold ${p.status === 'approved' ? 'text-green-600' : p.status === 'rejected' ? 'text-red-500' : 'text-amber-600'}`}>
+                              {p.status === 'pending' ? '⏳ Pending Review' : p.status === 'approved' ? '✅ Approved' : p.status === 'rejected' ? '❌ Rejected' : p.status}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-neutral-500 line-clamp-2">{p.mission_statement}</p>
+                        {p.expected_members && <p className="text-[10px] text-neutral-400 mt-1">👥 {p.expected_members} expected members</p>}
+                        <div className="text-[10px] text-primary-500 font-semibold mt-2">View Details →</div>
+                      </Link>
                     ))}
                   </div>
                 </div>

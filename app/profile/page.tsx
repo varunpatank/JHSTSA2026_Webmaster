@@ -11,7 +11,6 @@ import {
   Award,
   Bell,
   Bookmark,
-  BookOpen,
   Calendar,
   CheckCircle,
   Clock,
@@ -76,6 +75,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   useEffect(() => {
@@ -467,9 +467,9 @@ export default function ProfilePage() {
             <p className="mt-1 text-sm text-neutral-600">Help our AI recommend better clubs and resources by choosing your interests:</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {["STEM", "Arts", "Music", "Sports", "Coding", "Debate", "Service", "Leadership", "Writing", "Science", "Math", "Business", "Environment", "Culture", "Media", "Gaming"].map(tag => {
-                const [selected, setSelected] = useState(false);
+                const selected = selectedInterests.has(tag);
                 return (
-                  <button key={tag} onClick={() => setSelected(v => !v)}
+                  <button key={tag} onClick={() => setSelectedInterests(prev => { const next = new Set(prev); if (next.has(tag)) next.delete(tag); else next.add(tag); return next; })}
                     className={`px-3 py-1.5  text-xs font-semibold border transition-all ${selected ? "bg-purple-600 text-white border-purple-600" : "bg-white text-neutral-600 border-neutral-200 hover:border-purple-300"}`}>
                     {selected ? <span className="inline-flex items-center gap-1"><CheckCircle size={10} /> {tag}</span> : tag}
                   </button>
@@ -483,21 +483,6 @@ export default function ProfilePage() {
           </div>
 
           {}
-          <div className="card p-6">
-            <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2">
-              <BookOpen size={18} /> Quick Links
-            </h2>
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <Link href="/directory" className="p-3  bg-primary-50 text-sm font-semibold text-primary-600 hover:bg-primary-100 text-center ux-hover-lift-sm">Explore</Link>
-              <Link href="/events" className="p-3  bg-primary-50 text-sm font-semibold text-primary-600 hover:bg-primary-100 text-center ux-hover-lift-sm">Events</Link>
-              <Link href="/resources" className="p-3  bg-primary-50 text-sm font-semibold text-primary-600 hover:bg-primary-100 text-center ux-hover-lift-sm">Resources</Link>
-              <Link href="/donate" className="p-3  bg-primary-50 text-sm font-semibold text-primary-600 hover:bg-primary-100 text-center ux-hover-lift-sm">Donate</Link>
-              <Link href="/hub" className="p-3  bg-secondary-50 text-sm font-semibold text-secondary-700 hover:bg-secondary-100 text-center ux-hover-lift-sm">Student Hub</Link>
-              <Link href="/dashboard" className="p-3  bg-secondary-50 text-sm font-semibold text-secondary-700 hover:bg-secondary-100 text-center ux-hover-lift-sm">Dashboard</Link>
-              <Link href="/start-a-club" className="p-3  bg-secondary-50 text-sm font-semibold text-secondary-700 hover:bg-secondary-100 text-center ux-hover-lift-sm">Create Club</Link>
-              <Link href="/hub/quiz" className="p-3  bg-secondary-50 text-sm font-semibold text-secondary-700 hover:bg-secondary-100 text-center ux-hover-lift-sm">Club Quiz</Link>
-            </div>
-          </div>
         </div>
       </section>
     </div>

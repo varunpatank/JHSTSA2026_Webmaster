@@ -2,11 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { chapters } from "@/lib/data";
 import {
-  ArrowUp, ArrowDown, ChevronDown, Filter, Lightbulb, MessageCircle, Plus,
+  ArrowUp, ArrowDown, ChevronDown, Filter, Lightbulb, Loader2, MessageCircle, Plus,
   Search, Star, ThumbsUp, Users, Zap
 } from "lucide-react";
+import { supabase, clubIdeasApi } from "@/lib/api";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -27,7 +27,7 @@ interface ClubIdea {
   interestCount: number; tags: string[];
 }
 
-const IDEAS: ClubIdea[] = [
+const SEED_IDEAS: ClubIdea[] = [
   { id: "i1", title: "Astronomy & Stargazing Club", description: "Weekly observation sessions with telescopes, astrophotography workshops, and planetarium trips. Partner with UW astronomy department for guest lectures.", category: "STEM", proposedBy: "Alex R.", date: "2025-12-10", upvotes: 42, comments: 8, status: "approved", interestCount: 35, tags: ["Science", "Outdoors", "Photography"] },
   { id: "i2", title: "Financial Literacy Club", description: "Learn investing, budgeting, and personal finance through simulated trading competitions and guest speakers from local finance firms.", category: "Academic", proposedBy: "Jordan K.", date: "2026-01-05", upvotes: 38, comments: 12, status: "forming", interestCount: 28, tags: ["Business", "Life Skills", "Competition"] },
   { id: "i3", title: "Esports & Game Development", description: "Competitive gaming teams for League of Legends, Valorant, and Rocket League, plus game development workshops using Unity and Godot.", category: "Technology", proposedBy: "Sam T.", date: "2026-01-12", upvotes: 67, comments: 23, status: "in-review", interestCount: 52, tags: ["Gaming", "Programming", "Competition"] },
@@ -46,17 +46,45 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function IdeasPage() {
+  const [ideas, setIdeas] = useState<ClubIdea[]>(SEED_IDEAS);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortBy, setSortBy] = useState<"upvotes" | "newest" | "interest">("upvotes");
   const [showForm, setShowForm] = useState(false);
-  const [votes, setVotes] = useState<Record<string, number>>({});
+  const [myVotes, setMyVotes] = useState<Set<string>>(new Set());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
+  const [formCategory, setFormCategory] = useState("STEM");
+  const [formDescription, setFormDescription] = useState("");
+  const [formTags, setFormTags] = useState("");
 
-  const categories = ["All", ...Array.from(new Set(IDEAS.map(i => i.category)))];
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+      const { data } = await clubIdeasApi.getAll();
+      if (!cancelled && data && data.length > 0) {
+        const dbIdeas: ClubIdea[] = data.map((d: any) => ({
+          id: d.id, title: d.title, description: d.description || "",
+          category: d.category || "General",
+          proposedBy: d.profiles?.name || "Anonymous",
+          date: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+          upvotes: d.votes || 0, comments: 0, status: "open" as const,
+          interestCount: d.votes || 0, tags: [],
+        }));
+        setIdeas([...dbIdeas, ...SEED_IDEAS]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const categories = ["All", ...Array.from(new Set(ideas.map(i => i.category)))];
   const statuses = ["All", "open", "in-review", "approved", "forming"];
 
-  const filtered = IDEAS.filter(i => {
+  const filtered = ideas.filter(i => {
     if (category !== "All" && i.category !== category) return false;
     if (statusFilter !== "All" && i.status !== statusFilter) return false;
     if (search.trim()) {
@@ -65,26 +93,45 @@ export default function IdeasPage() {
     }
     return true;
   }).sort((a, b) => {
-    if (sortBy === "upvotes") return (b.upvotes + (votes[b.id] || 0)) - (a.upvotes + (votes[a.id] || 0));
+    if (sortBy === "upvotes") return b.upvotes - a.upvotes;
     if (sortBy === "newest") return new Date(b.date).getTime() - new Date(a.date).getTime();
     return b.interestCount - a.interestCount;
   });
 
-  function handleVote(id: string) {
-    setVotes(v => ({ ...v, [id]: (v[id] || 0) === 1 ? 0 : 1 }));
+  async function handleVote(id: string) {
+    if (!currentUserId) return;
+    const wasVoted = myVotes.has(id);
+    setMyVotes(prev => { const n = new Set(prev); wasVoted ? n.delete(id) : n.add(id); return n; });
+    setIdeas(prev => prev.map(i => i.id === id ? { ...i, upvotes: wasVoted ? i.upvotes - 1 : i.upvotes + 1 } : i));
+    if (wasVoted) { await clubIdeasApi.removeVote(id, currentUserId); }
+    else { await clubIdeasApi.vote(id, currentUserId, 1); }
+  }
+
+  async function handleSubmitIdea() {
+    if (!formTitle.trim() || !formDescription.trim() || !currentUserId || submitting) return;
+    setSubmitting(true);
+    try {
+      const { data } = await clubIdeasApi.create({ author_id: currentUserId, title: formTitle.trim(), description: formDescription.trim(), category: formCategory });
+      if (data) {
+        const d = data as any;
+        setIdeas(prev => [{ id: d.id, title: d.title, description: d.description || "", category: formCategory, proposedBy: "You", date: new Date().toISOString().split("T")[0], upvotes: 0, comments: 0, status: "open", interestCount: 0, tags: formTags.split(",").map(t => t.trim()).filter(Boolean) }, ...prev]);
+      }
+      setFormTitle(""); setFormDescription(""); setFormTags(""); setShowForm(false);
+    } catch (e) { console.error("Failed to submit idea:", e); }
+    finally { setSubmitting(false); }
   }
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-amber-500 via-yellow-500 to-secondary-500 text-white border-b-4 border-secondary-600">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-yellow-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Lightbulb size={36} /> Club Ideas</h1>
           <p className="mt-3 max-w-2xl text-yellow-50 text-lg">Propose new clubs, vote on ideas, and help shape the future of our school community.</p>
           <div className="mt-6 flex gap-3">
-            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{IDEAS.length}</p><p className="text-xs text-yellow-100">Ideas</p></div>
-            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{IDEAS.reduce((s, i) => s + i.upvotes, 0)}+</p><p className="text-xs text-yellow-100">Total Votes</p></div>
-            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{IDEAS.filter(i => i.status === "forming").length}</p><p className="text-xs text-yellow-100">Now Forming</p></div>
+            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{ideas.length}</p><p className="text-xs text-yellow-100">Ideas</p></div>
+            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{ideas.reduce((s, i) => s + i.upvotes, 0)}+</p><p className="text-xs text-yellow-100">Total Votes</p></div>
+            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{ideas.filter(i => i.status === "forming").length}</p><p className="text-xs text-yellow-100">Now Forming</p></div>
           </div>
         </div>
       </section>
@@ -122,15 +169,16 @@ export default function IdeasPage() {
                 <div className="card p-5 border-2 border-secondary-200">
                   <h3 className="font-bold text-primary-700 mb-3">Submit a New Club Idea</h3>
                   <div className="grid sm:grid-cols-2 gap-3">
-                    <input type="text" placeholder="Club Name" className="input-field" />
-                    <select className="select-field"><option>Select Category</option>{categories.filter(c => c !== "All").map(c => <option key={c}>{c}</option>)}</select>
+                    <input type="text" placeholder="Club Name" value={formTitle} onChange={e => setFormTitle(e.target.value)} className="input-field" />
+                    <select value={formCategory} onChange={e => setFormCategory(e.target.value)} className="select-field">{categories.filter(c => c !== "All").map(c => <option key={c}>{c}</option>)}</select>
                   </div>
-                  <textarea placeholder="Describe your club idea, activities, and why students would join..." className="input-field mt-3 h-24 resize-none" />
-                  <input type="text" placeholder="Tags (comma-separated)" className="input-field mt-3" />
+                  <textarea placeholder="Describe your club idea, activities, and why students would join..." value={formDescription} onChange={e => setFormDescription(e.target.value)} className="input-field mt-3 h-24 resize-none" />
+                  <input type="text" placeholder="Tags (comma-separated)" value={formTags} onChange={e => setFormTags(e.target.value)} className="input-field mt-3" />
                   <div className="mt-3 flex gap-2">
-                    <button className="btn-primary text-sm">Submit Idea</button>
+                    <button onClick={handleSubmitIdea} disabled={submitting || !formTitle.trim() || !formDescription.trim()} className="btn-primary text-sm disabled:opacity-50 flex items-center gap-1">{submitting ? <><Loader2 size={13} className="animate-spin" /> Submitting…</> : "Submit Idea"}</button>
                     <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancel</button>
                   </div>
+                  {!currentUserId && <p className="text-xs text-red-500 mt-2">Sign in to submit ideas.</p>}
                 </div>
               </Reveal>
             )}
@@ -142,8 +190,8 @@ export default function IdeasPage() {
                 <div className="card p-5 ux-hover-lift-sm flex gap-4">
                   {}
                   <div className="flex flex-col items-center gap-1 min-w-[48px]">
-                    <button onClick={() => handleVote(idea.id)} className={`p-1 rounded hover:bg-primary-50 transition-colors ${votes[idea.id] ? "text-primary-600" : "text-neutral-400"}`}><ArrowUp size={20} /></button>
-                    <span className="font-bold text-lg text-primary-700">{idea.upvotes + (votes[idea.id] || 0)}</span>
+                    <button onClick={() => handleVote(idea.id)} className={`p-1 rounded hover:bg-primary-50 transition-colors ${myVotes.has(idea.id) ? "text-primary-600" : "text-neutral-400"}`}><ArrowUp size={20} /></button>
+                    <span className="font-bold text-lg text-primary-700">{idea.upvotes}</span>
                     <span className="text-[10px] text-neutral-400">votes</span>
                   </div>
                   {}

@@ -117,7 +117,7 @@ export default function ProposeResourcePage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {}
-      <section className="bg-gradient-to-r from-primary-700 via-primary-800 to-primary-900 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-800 text-white border-b-4 border-secondary-500">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 text-xs font-semibold mb-3">
             <Lightbulb size={12} /> Community Resource Hub

@@ -53,7 +53,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/95 to-primary-500/80"></div>
+          <div className="absolute inset-0 bg-primary-600/90"></div>
         </div>
         <div className="relative max-w-4xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
@@ -162,7 +162,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
 
             {}
             {completedSteps.length === guide.steps.length && (
-              <div className="card p-8 bg-gradient-to-r from-green-500 to-green-600 text-white text-center">
+              <div className="card p-8 bg-primary-600 text-white text-center">
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold font-heading mb-2">Congratulations!</h3>
                 <p className="text-white/90 mb-4">You&apos;ve completed this guide. You&apos;re ready to take action!</p>

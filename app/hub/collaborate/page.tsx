@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { chapters } from "@/lib/data";
 import {
-  ArrowRight, Calendar, CheckCircle, GitMerge, Handshake, Search, Star, Tag, Users, Zap
+  ArrowRight, Calendar, CheckCircle, GitMerge, Handshake, Loader2, Search, Star, Tag, Users, Zap
 } from "lucide-react";
+import { supabase, collaborationsApi } from "@/lib/api";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -25,7 +25,7 @@ interface Collaboration {
   timeline: string; skills: string[]; contact: string; postedDate: string;
 }
 
-const COLLABORATIONS: Collaboration[] = [
+const SEED_COLLABORATIONS: Collaboration[] = [
   { id: "cl1", title: "STEM Fair Showcase", description: "Joint robotics demonstration and science experiments for elementary school outreach. Need clubs for booth design, demonstrations, and student mentoring.", type: "event", clubs: ["Robotics Club", "Science Olympiad"], status: "seeking-partners", spots: 4, filled: 2, timeline: "March 15-16, 2026", skills: ["Teaching", "Presentation", "STEM Knowledge"], contact: "robotics@school.edu", postedDate: "2026-01-15" },
   { id: "cl2", title: "Spring Carnival Fundraiser", description: "Annual school-wide carnival with club-run booths, food vendors, and entertainment. All proceeds split between participating clubs.", type: "fundraiser", clubs: ["Student Council", "Key Club", "Art Club"], status: "active", spots: 10, filled: 6, timeline: "May 3, 2026", skills: ["Event Planning", "Food Service", "Entertainment", "Marketing"], contact: "studentcouncil@school.edu", postedDate: "2026-01-10" },
   { id: "cl3", title: "Environmental Documentary", description: "Create a short documentary about local environmental issues. Need writers, videographers, researchers, and environmental science students.", type: "project", clubs: ["Environmental Club", "Film Club"], status: "seeking-partners", spots: 3, filled: 2, timeline: "Feb-April 2026", skills: ["Video Production", "Writing", "Research", "Science"], contact: "enviroclub@school.edu", postedDate: "2026-01-20" },
@@ -46,13 +46,52 @@ const STATUS_COLORS: Record<string, { label: string; color: string }> = {
 };
 
 export default function CollaboratePage() {
+  const [collaborations, setCollaborations] = useState<Collaboration[]>(SEED_COLLABORATIONS);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+      const { data } = await collaborationsApi.getAll();
+      if (!cancelled && data && data.length > 0) {
+        const dbCollabs: Collaboration[] = data.map((d: any) => ({
+          id: d.id, title: d.title || "Collaboration",
+          description: d.description || "",
+          type: (d.type || "event") as Collaboration["type"],
+          clubs: d.organizations ? [d.organizations.name] : [],
+          status: "seeking-partners" as const,
+          spots: 5, filled: 1, timeline: "TBD",
+          skills: [], contact: "",
+          postedDate: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+        }));
+        setCollaborations([...dbCollabs, ...SEED_COLLABORATIONS]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  async function handleExpressInterest(collabId: string) {
+    if (!currentUserId || joiningId) return;
+    setJoiningId(collabId);
+    try {
+      // Use user ID as org_id placeholder since we're expressing personal interest
+      await collaborationsApi.join(collabId, currentUserId);
+      setJoinedIds(prev => new Set(prev).add(collabId));
+      setCollaborations(prev => prev.map(c => c.id === collabId ? { ...c, filled: c.filled + 1 } : c));
+    } catch (e) { console.error("Failed to express interest:", e); }
+    finally { setJoiningId(null); }
+  }
 
   const types = ["All", "event", "project", "fundraiser", "competition", "workshop"];
 
-  const filtered = COLLABORATIONS.filter(c => {
+  const filtered = collaborations.filter(c => {
     if (typeFilter !== "All" && c.type !== typeFilter) return false;
     if (statusFilter !== "All" && c.status !== statusFilter) return false;
     if (search.trim()) {
@@ -64,15 +103,15 @@ export default function CollaboratePage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-primary-600 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-indigo-200 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Handshake size={36} /> Collaboration Finder</h1>
           <p className="mt-3 max-w-2xl text-indigo-100 text-lg">Find cross-club partnerships, joint events, and collaborative projects to amplify your impact.</p>
           <div className="mt-6 grid grid-cols-3 gap-3 max-w-md">
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{COLLABORATIONS.length}</p><p className="text-xs text-indigo-100">Opportunities</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{COLLABORATIONS.filter(c => c.status === "seeking-partners").length}</p><p className="text-xs text-indigo-100">Seeking Partners</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{COLLABORATIONS.reduce((s, c) => s + c.clubs.length, 0)}</p><p className="text-xs text-indigo-100">Clubs Involved</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{collaborations.length}</p><p className="text-xs text-indigo-100">Opportunities</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{collaborations.filter(c => c.status === "seeking-partners").length}</p><p className="text-xs text-indigo-100">Seeking Partners</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{collaborations.reduce((s, c) => s + c.clubs.length, 0)}</p><p className="text-xs text-indigo-100">Clubs Involved</p></div>
           </div>
         </div>
       </section>
@@ -143,7 +182,15 @@ export default function CollaboratePage() {
 
                 <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-3">
                   <span className="text-xs text-neutral-400">Posted {new Date(collab.postedDate).toLocaleDateString()}</span>
-                  {collab.status === "seeking-partners" && <button className="btn-primary text-sm px-4 py-1.5">Express Interest</button>}
+                  {collab.status === "seeking-partners" && (
+                    joinedIds.has(collab.id) ? (
+                      <span className="text-sm text-green-600 flex items-center gap-1"><CheckCircle size={14} /> Interest Sent</span>
+                    ) : (
+                      <button onClick={() => handleExpressInterest(collab.id)} disabled={!currentUserId || joiningId === collab.id} className="btn-primary text-sm px-4 py-1.5 disabled:opacity-50 flex items-center gap-1">
+                        {joiningId === collab.id ? <><Loader2 size={13} className="animate-spin" /> Sending…</> : "Express Interest"}
+                      </button>
+                    )
+                  )}
                   {collab.status === "active" && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle size={14} /> Partnership Active</span>}
                 </div>
               </div>

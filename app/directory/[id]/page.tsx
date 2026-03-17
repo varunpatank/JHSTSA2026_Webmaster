@@ -345,26 +345,25 @@ export default function ClubDetailPage() {
       <section className="relative text-white border-b-4 border-secondary-500 overflow-hidden">
         <div className="absolute inset-0">
           <img src={heroBg} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-900/85 via-primary-800/80 to-primary-700/75" />
+          <div className="absolute inset-0 bg-primary-800/80" />
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 relative z-10">
           <Link href="/directory" className="text-sm text-neutral-200 hover:underline inline-flex items-center gap-1">
             <ChevronRight size={14} className="rotate-180" /> Directory
           </Link>
           {}
-          <div className="mt-4 flex flex-col items-center text-center">
-            <SpinningClubIcon clubId={chapter.id} name={chapter.name} />
-          </div>
-          <div className="mt-4 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+          <div className="mt-4 flex items-center gap-4">
+            <div className="w-16 h-16 bg-white/15 border-2 border-white/25 flex items-center justify-center shrink-0">
+              <span className="text-4xl">{(clubIcons[chapter.id] || { emoji: "⭐" }).emoji}</span>
+            </div>
             <div className="flex-1">
-              <div className="flex-1">
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-2 mb-1">
                 <span className="badge bg-white text-primary-600">{chapter.category}</span>
                 <span className="badge bg-primary-400/30 text-white border border-white/20">{chapter.membershipStatus}</span>
                 <span className="badge bg-green-500/20 text-green-100 border border-green-400/30">Active</span>
               </div>
               <h1 className="text-3xl md:text-4xl font-heading font-bold">{chapter.name}</h1>
-              <p className="mt-2 text-neutral-100 max-w-2xl text-sm leading-relaxed">{chapter.description}</p>
+              <p className="mt-1 text-neutral-100 max-w-2xl text-sm leading-relaxed">{chapter.description}</p>
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { label: "Members", value: chapter.memberCount, icon: Users },
@@ -374,15 +373,14 @@ export default function ClubDetailPage() {
                 ].map(stat => {
                   const Icon = stat.icon;
                   return (
-                    <div key={stat.label} className="bg-white/10 backdrop-blur-sm border border-white/10  p-3 text-center">
-                      <Icon size={14} className="mx-auto mb-1 text-secondary-300" />
-                      <p className="text-lg font-bold">{stat.value}</p>
-                      <p className="text-[10px] text-neutral-300">{stat.label}</p>
+                    <div key={stat.label} className="bg-white/10 backdrop-blur-sm border border-white/15 p-4 text-center hover:bg-white/15 transition-colors">
+                      <Icon size={16} className="mx-auto mb-1.5 text-secondary-300" />
+                      <p className="text-2xl md:text-3xl font-heading font-bold text-secondary-300">{stat.value}</p>
+                      <p className="text-xs text-white/80 mt-1 font-medium">{stat.label}</p>
                     </div>
                   );
                 })}
               </div>
-            </div>
             </div>
             <div className="flex flex-col gap-2 lg:min-w-[170px]">
               <button onClick={handleJoin} className="btn-secondary btn-ripple btn-magnetic text-sm">
@@ -834,7 +832,7 @@ export default function ClubDetailPage() {
                       <button onClick={() => { setEditingDescription(true); setDraftDescription(chapter.description); }} className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Edit size={10} /> Edit</button>
                       <Link href={`/events/new?club=${chapter.id}`} className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Calendar size={10} /> Event</Link>
                       <button className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><UserPlus size={10} /> Invite</button>
-                      <Link href="/students" className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Shield size={10} /> Students</Link>
+                      <Link href="/students" className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Shield size={10} /> Social</Link>
                       <Link href="/resources" className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Settings size={10} /> Resources</Link>
                       <Link href="/dashboard" className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><BarChart3 size={10} /> Analytics</Link>
                     </div>

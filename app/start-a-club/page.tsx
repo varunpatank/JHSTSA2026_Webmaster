@@ -4,9 +4,10 @@ import { FormEvent, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { addAdminClub, isLoggedIn } from "@/lib/clientState";
+import { supabase, clubProposalsApi, storageApi } from "@/lib/api";
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock,
-  Compass, ExternalLink, Image as ImageIcon, Info, Lightbulb, Megaphone, MessageCircle,
+  Compass, Image as ImageIcon, Info, Lightbulb, Megaphone, MessageCircle,
   Palette, Rocket, Search, Shield, Sparkles, Star, Target, TrendingUp,
   Trophy, Upload, Users, Gift, Globe2, Flag, Heart, FileText, Bold,
   Italic, List, Heading1, Heading2, Type, Undo2, Redo2, Copy,
@@ -373,6 +374,9 @@ const stages = [
       { key: "category", label: "Category", placeholder: "", type: "select", required: true, options: ["STEM", "Arts", "Academic", "Service", "Cultural", "Sports", "Social", "Business", "Environmental"] },
       { key: "meetingSchedule", label: "Meeting Schedule", placeholder: "e.g., Every Tuesday, 3:30 PM", type: "input", required: true },
       { key: "location", label: "Meeting Location", placeholder: "e.g., Room 204", type: "input", required: true },
+      { key: "expectedMembers", label: "Expected Members", placeholder: "e.g., 25", type: "input", required: false },
+      { key: "budget", label: "Budget Requirements", placeholder: "e.g., $200/year for materials and competition fees", type: "textarea", required: false },
+      { key: "justification", label: "Why This Club Matters", placeholder: "Explain why this club should exist at your school...", type: "textarea", required: false },
     ],
   },
   {
@@ -396,6 +400,7 @@ const stages = [
       { key: "advisor", label: "Faculty Advisor", placeholder: "e.g., Ms. Johnson", type: "input", required: true },
       { key: "advisorEmail", label: "Advisor Email", placeholder: "advisor@school.edu", type: "input", required: false },
       { key: "officers", label: "Initial Officers (optional)", placeholder: "President: Alex M., VP: Jordan L.", type: "textarea", required: false },
+      { key: "socialLinks", label: "Social Media Links (one per line)", placeholder: "instagram: https://...\ndiscord: https://...", type: "textarea", required: false },
     ],
   },
   {
@@ -446,9 +451,13 @@ export default function StartAClubPage() {
   const [completedStages, setCompletedStages] = useState<number[]>([]);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [resourceFiles, setResourceFiles] = useState<{ name: string; file: File }[]>([]);
   const [formData, setFormData] = useState({
     name: "", purpose: "", category: "", meetingSchedule: "",
     location: "", advisor: "", advisorEmail: "", officers: "", constitution: "",
+    expectedMembers: "", socialLinks: "", budget: "", justification: "",
   });
 
   const current = stages.find(s => s.id === activeStage)!;
@@ -464,12 +473,63 @@ export default function StartAClubPage() {
     if (activeStage < stages.length) setActiveStage(activeStage + 1);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!isLoggedIn()) { router.push("/login?redirect=/start-a-club"); return; }
-    const id = formData.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") || `club-${Date.now()}`;
-    addAdminClub({ id, name: formData.name, status: "Pending approval" });
-    setSubmitted(true);
+    setSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push("/login?redirect=/start-a-club"); return; }
+
+      let logoUrl: string | undefined;
+      if (logoFile) {
+        const res = await storageApi.uploadFile(user.id, logoFile, 'uploads');
+        if (res.data) logoUrl = res.data.publicUrl;
+      }
+
+      const resourceLinksArr: { name: string; url: string }[] = [];
+      for (const rf of resourceFiles) {
+        const res = await storageApi.uploadFile(user.id, rf.file, 'uploads');
+        if (res.data) resourceLinksArr.push({ name: rf.name || rf.file.name, url: res.data.publicUrl });
+      }
+
+      const socialObj: Record<string, string> = {};
+      if (formData.socialLinks.trim()) {
+        formData.socialLinks.split('\n').forEach(line => {
+          const [key, ...rest] = line.split(':');
+          if (key && rest.length) socialObj[key.trim().toLowerCase()] = rest.join(':').trim();
+        });
+      }
+
+      await clubProposalsApi.create({
+        submitted_by: user.id,
+        club_name: formData.name,
+        mission_statement: formData.purpose,
+        category: formData.category || undefined,
+        proposed_advisor: formData.advisor || undefined,
+        advisor_email: formData.advisorEmail || undefined,
+        constitution_draft: formData.constitution || undefined,
+        meeting_schedule: formData.meetingSchedule || undefined,
+        meeting_location: formData.location || undefined,
+        meeting_space_needs: formData.location || undefined,
+        interested_members: formData.officers || undefined,
+        expected_members: formData.expectedMembers ? parseInt(formData.expectedMembers) : undefined,
+        budget_requirements: formData.budget || undefined,
+        justification: formData.justification || undefined,
+        social_links: Object.keys(socialObj).length ? socialObj : undefined,
+        resource_links: resourceLinksArr.length ? resourceLinksArr : undefined,
+        logo_url: logoUrl,
+      });
+
+      const id = formData.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") || `club-${Date.now()}`;
+      addAdminClub({ id, name: formData.name, status: "Pending approval" });
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Proposal submission failed:", err);
+      alert("Failed to submit proposal. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -517,7 +577,7 @@ export default function StartAClubPage() {
   return (
     <div className="bg-neutral-50">
       {}
-      <section className="relative bg-gradient-to-r from-primary-600 via-primary-500 to-secondary-600 text-white overflow-hidden">
+      <section className="relative bg-primary-600 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-96 h-96 bg-secondary-400 rounded-full blur-3xl animate-drift-slower" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400 rounded-full blur-3xl animate-drift-slow" />
@@ -530,7 +590,7 @@ export default function StartAClubPage() {
       </section>
 
       {}
-      <div className="bg-white border-b border-neutral-200 sticky top-[57px] z-20">
+      <div className="bg-white border-b border-neutral-200">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="font-semibold text-neutral-700">Phase {activeStage} of {stages.length}</span>
@@ -585,9 +645,9 @@ export default function StartAClubPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          {}
-          <div className="space-y-5">
+        <div className="space-y-5">
+          {/* About + Checklist */}
+          <div className="grid lg:grid-cols-2 gap-5">
             <div className="card p-5">
               <h3 className={`font-bold ${current.textColor} flex items-center gap-2`}><MessageCircle size={16} /> About This Phase</h3>
               <p className="mt-2 text-sm text-neutral-700 leading-relaxed">{current.description}</p>
@@ -595,9 +655,17 @@ export default function StartAClubPage() {
                 <p className={`text-xs font-bold ${current.textColor} mb-1 flex items-center gap-1`}><Sparkles size={12} /> Phase Prompt</p>
                 <p className="text-sm text-neutral-700 leading-relaxed italic">{current.prompt}</p>
               </div>
+              {/* Pro Tips inline */}
+              <div className="mt-4 space-y-1.5">
+                {current.tips.map((tip, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <div className={`w-5 h-5 rounded-full ${current.badgeColor} flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-bold`}>{i + 1}</div>
+                    <p className="text-xs text-neutral-600">{tip}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {}
             <div className="card p-5">
               <h3 className={`font-bold ${current.textColor} flex items-center gap-2 mb-3`}><CheckCircle2 size={16} /> Checklist</h3>
               <div className="space-y-2">
@@ -605,16 +673,40 @@ export default function StartAClubPage() {
                   const key = `${activeStage}-${i}`;
                   const checked = !!checkedItems[key];
                   return (
-                    <label key={i} className={`flex items-start gap-3 p-2.5  border cursor-pointer transition-all ${checked ? "bg-green-50 border-green-200" : "bg-white border-neutral-100 hover:border-primary-200"}`}>
+                    <label key={i} className={`flex items-start gap-3 p-2.5 border cursor-pointer transition-all ${checked ? "bg-green-50 border-green-200" : "bg-white border-neutral-100 hover:border-primary-200"}`}>
                       <input type="checkbox" checked={checked} onChange={() => setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }))} className="mt-0.5 w-4 h-4 rounded border-neutral-300 text-green-600 focus:ring-green-500" />
                       <span className={`text-sm ${checked ? "line-through text-green-700" : "text-neutral-700"}`}>{item}</span>
                     </label>
                   );
                 })}
               </div>
+              {/* Tools & Resources inline */}
+              <div className="mt-4 space-y-1.5">
+                {current.links.map(link => {
+                  const LI = link.icon;
+                  return (
+                    <Link key={link.href} href={link.href}
+                      className={`flex items-center gap-2 p-2 border ${current.borderColor} ${current.bgLight} hover:shadow-sm transition-all group`}>
+                      <LI size={14} className={current.textColor} />
+                      <span className="font-medium text-xs text-neutral-700 group-hover:text-primary-700">{link.label}</span>
+                      <ArrowRight size={12} className="ml-auto text-neutral-400 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
+          </div>
 
-            {}
+          {/* Logo Designer (Phase 1) */}
+          {activeStage <= 1 && (
+            <div className="card p-5 border-2 border-secondary-200 bg-secondary-50/30">
+              <h3 className="font-bold text-secondary-700 flex items-center gap-2 mb-3"><ImageIcon size={16} /> Club Logo Designer</h3>
+              <p className="text-sm text-neutral-600 mb-3">Upload your own logo or generate a quick one with initials and colors.</p>
+              <LogoUploader onUpload={(url) => { setLogoFile(null); }} />
+            </div>
+          )}
+
+          {/* Form Fields */}
             {current.formFields.length > 0 && (
               <form onSubmit={handleSubmit} className="card p-5 border-2 border-primary-200 bg-primary-50/30">
                 <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-4"><Sparkles size={16} /> Your Details</h3>
@@ -658,8 +750,9 @@ export default function StartAClubPage() {
                 </div>
                 {}
                 {activeStage === 3 && formData.name && formData.purpose && formData.category && formData.advisor && (
-                  <button type="submit" className="btn-primary btn-magnetic btn-ripple mt-4 w-full flex items-center justify-center gap-2">
-                    <Rocket size={16} /> Submit Club Proposal
+                  <button type="submit" disabled={submitting}
+                    className="btn-primary btn-magnetic btn-ripple mt-4 w-full flex items-center justify-center gap-2 disabled:opacity-50">
+                    {submitting ? "Submitting…" : <><Rocket size={16} /> Submit Club Proposal</>}
                   </button>
                 )}
               </form>
@@ -687,88 +780,63 @@ export default function StartAClubPage() {
                   <p><strong>Category:</strong> {formData.category}</p>
                   <p><strong>Schedule:</strong> {formData.meetingSchedule}</p>
                   <p><strong>Advisor:</strong> {formData.advisor}</p>
+                  {formData.expectedMembers && <p><strong>Expected Members:</strong> {formData.expectedMembers}</p>}
                 </div>
-                <button type="submit" className="btn-primary btn-magnetic btn-ripple w-full flex items-center justify-center gap-2">
-                  <Rocket size={16} /> Submit Club Proposal
+
+                {/* Resource Upload */}
+                <div className="mb-4 border border-green-200 bg-white p-3">
+                  <h4 className="text-sm font-semibold text-green-700 mb-2 flex items-center gap-1"><Upload size={14} /> Attach Resources (optional)</h4>
+                  <p className="text-xs text-neutral-500 mb-2">Upload supporting documents: flyers, plans, budgets, etc.</p>
+                  <input type="file" multiple onChange={e => {
+                    if (e.target.files) {
+                      const newFiles = Array.from(e.target.files).map(f => ({ name: f.name, file: f }));
+                      setResourceFiles(prev => [...prev, ...newFiles]);
+                    }
+                  }} className="text-xs" />
+                  {resourceFiles.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {resourceFiles.map((rf, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs bg-green-50 px-2 py-1">
+                          <span>📎 {rf.name}</span>
+                          <button type="button" onClick={() => setResourceFiles(prev => prev.filter((_, j) => j !== i))} className="text-red-500 hover:underline">Remove</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <button type="submit" disabled={submitting}
+                  className="btn-primary btn-magnetic btn-ripple w-full flex items-center justify-center gap-2 disabled:opacity-50">
+                  {submitting ? "Submitting…" : <><Rocket size={16} /> Submit Club Proposal</>}
                 </button>
               </form>
             )}
-          </div>
 
-          {}
-          <div className="space-y-5">
-            {}
-            <GamifiedProgress stages={stages} completedStages={completedStages} checkedItems={checkedItems} formData={formData as unknown as Record<string, string>} />
-
-            {}
-            {activeStage <= 2 && (
-              <div className="card p-5 border-2 border-secondary-200 bg-secondary-50/30 animate-slide-up-spring">
-                <h3 className="font-bold text-secondary-700 flex items-center gap-2 mb-3"><ImageIcon size={16} /> Club Logo Designer</h3>
-                <p className="text-sm text-neutral-600 mb-3">Upload your own logo or generate a quick one with initials and colors.</p>
-                <LogoUploader onUpload={(url) => {}} />
-              </div>
-            )}
-
-            {}
-            {activeStage === 4 && (
-              <div className="card p-5 border-2 border-primary-200 bg-primary-50/30 animate-slide-up-spring">
-                <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-3"><Palette size={16} /> Poster / Flyer Designer</h3>
-                <p className="text-sm text-neutral-600 mb-3">Create a promotional poster for your club. Choose a template and customize:</p>
-                <PosterDesigner clubName={formData.name} />
-              </div>
-            )}
-
-            <div className="card p-5">
-              <h3 className={`font-bold ${current.textColor} flex items-center gap-2 mb-3`}><ExternalLink size={16} /> Tools &amp; Resources</h3>
-              <div className="space-y-2">
-                {current.links.map(link => {
-                  const LI = link.icon;
-                  return (
-                    <Link key={link.href} href={link.href}
-                      className={`block p-3  border-2 ${current.borderColor} ${current.bgLight} hover:shadow-md transition-all group`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9  bg-gradient-to-br ${current.color} text-white flex items-center justify-center`}><LI size={16} /></div>
-                        <span className="font-semibold text-sm text-neutral-800 group-hover:text-primary-700">{link.label}</span>
-                        <ArrowRight size={14} className="ml-auto text-neutral-400 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+          {/* Poster Designer (Phase 4) */}
+          {activeStage === 4 && (
+            <div className="card p-5 border-2 border-primary-200 bg-primary-50/30">
+              <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-3"><Palette size={16} /> Poster / Flyer Designer</h3>
+              <p className="text-sm text-neutral-600 mb-3">Create a promotional poster for your club. Choose a template and customize:</p>
+              <PosterDesigner clubName={formData.name} />
             </div>
+          )}
 
-            <div className={`card p-5 border-2 ${current.borderColor} ${current.bgLight}`}>
-              <h3 className={`font-bold ${current.textColor} flex items-center gap-2 mb-3`}><Sparkles size={16} /> Pro Tips</h3>
-              <div className="space-y-2">
-                {current.tips.map((tip, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <div className={`w-5 h-5 rounded-full ${current.badgeColor} flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-bold`}>{i + 1}</div>
-                    <p className="text-sm text-neutral-700">{tip}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {}
-            <div className="card p-5">
-              <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-3"><Shield size={16} /> Proposal Progress</h3>
-              <div className="space-y-2">
-                {[
-                  { label: "Club name", done: !!formData.name },
-                  { label: "Mission defined", done: !!formData.purpose },
-                  { label: "Category selected", done: !!formData.category },
-                  { label: "Schedule planned", done: !!formData.meetingSchedule },
-                  { label: "Location set", done: !!formData.location },
-                  { label: "Advisor identified", done: !!formData.advisor },
-                ].map(item => (
-                  <div key={item.label} className="flex items-center gap-2">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs transition-all ${item.done ? "bg-green-500 text-white" : "bg-neutral-200 text-neutral-400"}`}>
-                      {item.done ? "✓" : "○"}
-                    </div>
-                    <span className={`text-sm ${item.done ? "text-green-700 font-medium" : "text-neutral-500"}`}>{item.label}</span>
-                  </div>
-                ))}
-              </div>
+          {/* Proposal Progress (compact) */}
+          <div className="card p-4">
+            <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-3"><Shield size={16} /> Proposal Progress</h3>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Club name", done: !!formData.name },
+                { label: "Mission defined", done: !!formData.purpose },
+                { label: "Category selected", done: !!formData.category },
+                { label: "Schedule planned", done: !!formData.meetingSchedule },
+                { label: "Location set", done: !!formData.location },
+                { label: "Advisor identified", done: !!formData.advisor },
+              ].map(item => (
+                <span key={item.label} className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium border ${item.done ? "bg-green-50 text-green-700 border-green-200" : "bg-neutral-50 text-neutral-400 border-neutral-200"}`}>
+                  {item.done ? "✓" : "○"} {item.label}
+                </span>
+              ))}
             </div>
           </div>
         </div>

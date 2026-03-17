@@ -117,7 +117,7 @@ export default function GuidancePage() {
   return (
     <div className="bg-neutral-50">
       {}
-      <section className="bg-gradient-to-r from-primary-700 via-primary-600 to-primary-800 text-white border-b-4 border-secondary-500 relative overflow-hidden">
+      <section className="bg-primary-700 text-white border-b-4 border-secondary-500 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
         <div className="relative max-w-7xl mx-auto px-6 sm:px-8 py-8">
           <div className="flex items-center justify-between gap-6">

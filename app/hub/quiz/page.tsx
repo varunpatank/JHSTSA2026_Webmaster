@@ -56,10 +56,24 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
   ]},
 ];
 
+const LS_QUIZ = "clubconnect_quiz_results";
+
 export default function QuizPage() {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LS_QUIZ);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === QUIZ_QUESTIONS.length) {
+          setAnswers(parsed); setShowResults(true);
+        }
+      }
+    } catch {}
+  }, []);
 
   function handleAnswer(optionIndex: number) {
     const newAnswers = [...answers, optionIndex];
@@ -68,11 +82,13 @@ export default function QuizPage() {
       setCurrent(current + 1);
     } else {
       setShowResults(true);
+      try { localStorage.setItem(LS_QUIZ, JSON.stringify(newAnswers)); } catch {}
     }
   }
 
   function reset() {
     setCurrent(0); setAnswers([]); setShowResults(false);
+    try { localStorage.removeItem(LS_QUIZ); } catch {};
   }
   function getResults() {
     const scores: Record<string, number> = {};
@@ -93,7 +109,7 @@ export default function QuizPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-fuchsia-600 via-pink-500 to-primary-600 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-fuchsia-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Sparkles size={36} /> Club Finder Quiz</h1>

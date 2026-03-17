@@ -104,7 +104,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Insights</p>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold">School-Wide Analytics</h1>
@@ -262,7 +262,7 @@ export default function AnalyticsPage() {
         </Reveal>
 
         <Reveal>
-          <div className="card p-6 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-center">
+          <div className="card p-6 bg-primary-600 text-white text-center">
             <h2 className="text-xl font-heading font-bold">Want to see your club&apos;s analytics?</h2>
             <p className="text-primary-100 mt-2">Dashboard with detailed metrics is available for officers and advisors.</p>
             <Link href="/dashboard" className="btn-secondary inline-block mt-4">Go to Dashboard</Link>

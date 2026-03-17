@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { chapters } from "@/lib/data";
 import {
-  Award, BookOpen, ChevronDown, Heart, Quote, Search, Star, Trophy, Users
+  Award, BookOpen, ChevronDown, Heart, Loader2, Quote, Search, Star, Trophy, Users
 } from "lucide-react";
+import { supabase, successStoriesApi } from "@/lib/api";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -26,7 +26,7 @@ interface SuccessStory {
   featured: boolean; image: string;
 }
 
-const STORIES: SuccessStory[] = [
+const SEED_STORIES: SuccessStory[] = [
   { id: "s1", title: "From Classroom to Capitol: Our Model UN Journey", club: "Model United Nations", author: "Sarah Kim, Class of 2025", year: "2024-2025", category: "Academic", excerpt: "How our Model UN delegation went from 5 members to winning Best Delegation at the Pacific Northwest Conference.", fullStory: "When I joined Model UN as a sophomore, we had just five members and no conference experience. Fast forward two years: we sent 15 delegates to three conferences, won Best Delegation at PACMUN, and two members received Outstanding Delegate awards at the national conference. The key was mentorship — upperclassmen teaching underclassmen research methods, public speaking, and diplomatic negotiation. We created a structured training program that new members could follow, and our weekly practice sessions became the highlight of everyone's week.", impact: [{ label: "Members Grown", value: "5 → 35" }, { label: "Conferences Attended", value: "3" }, { label: "Awards Won", value: "7" }], featured: true, image: "🏛️" },
   { id: "s2", title: "Building a Robot, Building a Community", club: "Robotics Club", author: "Marcus Chen, Class of 2025", year: "2024-2025", category: "STEM", excerpt: "Our robotics team qualified for state finals while running workshops for middle schoolers, proving STEM outreach and competition can coexist.", fullStory: "Our team faced a choice: focus solely on competition or invest time in community outreach. We chose both. Every Saturday morning, our members ran free robotics workshops for 6th-8th graders at the local library. The result was unexpected — teaching fundamentals to younger students actually strengthened our own understanding. When competition season came, we built our most innovative robot yet, qualified for state finals, and our workshop program grew to serve 40+ middle schoolers weekly. Three of our mentees have since joined the high school team.", impact: [{ label: "State Ranking", value: "Top 5" }, { label: "Students Mentored", value: "40+" }, { label: "Workshop Hours", value: "200+" }], featured: true, image: "🤖" },
   { id: "s3", title: "Painting a Brighter Future", club: "Art Club", author: "Emily Torres, Class of 2026", year: "2025-2026", category: "Arts", excerpt: "Our community mural project transformed a neglected underpass into a public art landmark, earning a city beautification award.", fullStory: "What started as a simple idea — 'let's paint something big' — became our most ambitious project ever. We partnered with the city parks department to transform a 120-foot concrete underpass near school into a community mural. Over 8 weekends, 25 students designed and painted scenes celebrating Kirkland's history and diversity. The project required fundraising ($2,000 for supplies), city permits, community input sessions, and a lot of paint-stained clothes. The finished mural was featured in the Kirkland Reporter and earned us the City Beautification Award.", impact: [{ label: "Mural Length", value: "120 ft" }, { label: "Students Involved", value: "25" }, { label: "Funds Raised", value: "$2,000" }], featured: false, image: "🎨" },
@@ -36,14 +36,57 @@ const STORIES: SuccessStory[] = [
 ];
 
 export default function StoriesPage() {
+  const [stories, setStories] = useState<SuccessStory[]>(SEED_STORIES);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [storyTitle, setStoryTitle] = useState("");
+  const [storyContent, setStoryContent] = useState("");
 
-  const categories = ["All", ...Array.from(new Set(STORIES.map(s => s.category)))];
-  const featured = STORIES.filter(s => s.featured);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+      const { data } = await successStoriesApi.getAll();
+      if (!cancelled && data && data.length > 0) {
+        const dbStories: SuccessStory[] = data.map((d: any) => ({
+          id: d.id, title: d.title || "Untitled",
+          club: d.organizations?.name || "A Club",
+          author: d.profiles?.name || "Anonymous",
+          year: d.created_at?.split("-")[0] || "2026",
+          category: "General", excerpt: (d.content || "").slice(0, 200),
+          fullStory: d.content || "",
+          impact: [], featured: d.is_featured || false,
+          image: "📖",
+        }));
+        setStories([...dbStories, ...SEED_STORIES]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const filtered = STORIES.filter(s => {
+  async function handleSubmitStory() {
+    if (!storyTitle.trim() || !storyContent.trim() || !currentUserId || submitting) return;
+    setSubmitting(true);
+    try {
+      const { data } = await successStoriesApi.create({ author_id: currentUserId, title: storyTitle.trim(), content: storyContent.trim() });
+      if (data) {
+        const d = data as any;
+        setStories(prev => [{ id: d.id, title: d.title, club: "Your Club", author: "You", year: new Date().getFullYear().toString(), category: "General", excerpt: (d.content || "").slice(0, 200), fullStory: d.content || "", impact: [], featured: false, image: "📖" }, ...prev]);
+      }
+      setStoryTitle(""); setStoryContent(""); setShowSubmit(false);
+    } catch (e) { console.error("Failed to submit story:", e); }
+    finally { setSubmitting(false); }
+  }
+
+  const categories = ["All", ...Array.from(new Set(stories.map(s => s.category)))];
+  const featured = stories.filter(s => s.featured);
+
+  const filtered = stories.filter(s => {
     if (category !== "All" && s.category !== category) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -54,7 +97,7 @@ export default function StoriesPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-rose-500 via-pink-500 to-primary-600 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-rose-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><BookOpen size={36} /> Success Stories</h1>
@@ -139,10 +182,24 @@ export default function StoriesPage() {
 
         {}
         <Reveal>
-          <div className="mt-8 card p-6 bg-gradient-to-r from-rose-50 to-pink-50 text-center border-2 border-rose-200">
-            <h3 className="font-heading font-bold text-xl text-primary-700">Share Your Club&rsquo;s Story</h3>
-            <p className="text-sm text-neutral-600 mt-1">Every club has a story worth telling. Submit yours and inspire the next generation.</p>
-            <button className="btn-primary mt-4">Submit Your Story</button>
+          <div className="mt-8 card p-6 bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-200">
+            <h3 className="font-heading font-bold text-xl text-primary-700 text-center">Share Your Club&rsquo;s Story</h3>
+            <p className="text-sm text-neutral-600 mt-1 text-center">Every club has a story worth telling. Submit yours and inspire the next generation.</p>
+            {!showSubmit ? (
+              <div className="text-center"><button onClick={() => setShowSubmit(true)} className="btn-primary mt-4">Submit Your Story</button></div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                <input type="text" placeholder="Story title..." value={storyTitle} onChange={e => setStoryTitle(e.target.value)} className="input-field" />
+                <textarea placeholder="Write your success story..." value={storyContent} onChange={e => setStoryContent(e.target.value)} className="input-field h-32 resize-none" />
+                <div className="flex gap-2">
+                  <button onClick={handleSubmitStory} disabled={submitting || !storyTitle.trim() || !storyContent.trim()} className="btn-primary text-sm disabled:opacity-50 flex items-center gap-1">
+                    {submitting ? <><Loader2 size={13} className="animate-spin" /> Submitting…</> : "Submit Story"}
+                  </button>
+                  <button onClick={() => setShowSubmit(false)} className="text-sm text-neutral-500 hover:text-neutral-700">Cancel</button>
+                </div>
+                {!currentUserId && <p className="text-xs text-red-500">Sign in to submit stories.</p>}
+              </div>
+            )}
           </div>
         </Reveal>
       </div>

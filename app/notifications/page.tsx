@@ -77,7 +77,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-primary-700 via-primary-600 to-slate-700 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-700 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <h1 className="text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Bell size={36} /> Notifications</h1>
           <p className="mt-3 max-w-2xl text-primary-100 text-lg">Stay updated with club events, achievements, and important announcements.</p>

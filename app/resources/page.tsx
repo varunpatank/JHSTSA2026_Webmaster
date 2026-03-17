@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { chapters, sponsorsData, schoolWideStats } from "@/lib/data";
+import { chapters, schoolWideStats } from "@/lib/data";
 import {
   ArrowRight, Award, BarChart3, BookOpen, Bot, Calendar, CheckCircle,
-  Compass, Download, ExternalLink, Eye, FileText, Flame, Folder, Globe,
+  Compass, Download, ExternalLink, Eye, FileText, Flame, Globe,
   Heart, HelpCircle, Lightbulb, MapPin, MessageCircle, MessageSquare,
   Plus, Rocket, Search, Send, Shield, Star, Target, Trophy, Upload,
   Users, X, Zap, Gift, TrendingUp, Clock,
@@ -224,7 +224,7 @@ interface AIChatMsg { role: "user" | "assistant"; text: string; link?: { label: 
 
 function useResourceAI() {
   const [messages, setMessages] = useState<AIChatMsg[]>([
-    { role: "assistant", text: "Hi! I'm the ClubConnect Resource Assistant. Ask me what you need help with and I'll find the best resource for you!\n\nTry: \"How do I start a club?\" or \"I need help with fundraising\"\n\n⚠️ Note: Some linked resources may be sample data and not link to real pages." },
+    { role: "assistant", text: "Hey there! Tell me what you need and I'll find the **best resource** for you!\n\nTry asking about starting a club, fundraising, competitions, or anything else." },
   ]);
   const [loading, setLoading] = useState(false);
   const [pendingResource, setPendingResource] = useState<ResourceItem | null>(null);
@@ -253,7 +253,7 @@ function useResourceAI() {
         `Stage ${s.phase} "${s.title}" (${s.subtitle}): ${s.resources.map(r => `"${r.title}" [id:${r.id}, ${r.type}, ${r.format}] — ${r.details}`).join("; ")}`
       ).join("\n");
       const hubPages = ROCKET_STAGES.flatMap(s => s.hubLinks.map(l => `${l.label} (${l.href})`)).join(", ");
-      const context = `You are the ClubConnect Resource Assistant. When recommending a resource, respond with EXACTLY this format:\nRECOMMEND: <resource_id>\n<Your 2-3 sentence explanation of why this resource fits and what stage it's in. End by asking: "Would you like me to take you there?">\n\nIf no resource matches, just give a helpful answer without RECOMMEND.\n\nAll resources:\n${resourceList}\n\nHub pages: ${hubPages}\n\nAvailable clubs: ${chapters.map(c => c.name).join(", ")}.`;
+      const context = `You are the ClubConnect Smart Finder. When recommending a resource, respond with EXACTLY this format:\nRECOMMEND: <resource_id>\n<Your 2-3 sentence explanation of why this resource fits and what stage it's in. End by asking: "Would you like me to take you there?">\n\nIf no resource matches, just give a helpful answer without RECOMMEND.\n\nAll resources:\n${resourceList}\n\nHub pages: ${hubPages}\n\nAvailable clubs: ${chapters.map(c => c.name).join(", ")}.`;
       const conversationHistory = messages.filter((_, i) => i > 0).map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.text }] }));
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -362,13 +362,16 @@ export default function ResourcesPage() {
   const [popup, setPopup] = useState<ResourceItem | null>(null);
   const [previewPage, setPreviewPage] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
-  const [showAI, setShowAI] = useState(true);
+  const [showAI, setShowAI] = useState(false);
   const [aiInput, setAiInput] = useState("");
+  const [formatFilter, setFormatFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("popular");
+  const chatTopRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const { messages: aiMessages, loading: aiLoading, send: aiSend, pendingResource } = useResourceAI();
 
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "instant", block: "nearest" }); }, [aiMessages]);
+  useEffect(() => { chatTopRef.current?.scrollIntoView({ behavior: "instant", block: "start" }); }, [aiMessages]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -384,11 +387,16 @@ export default function ResourcesPage() {
 
   const filteredResources = currentStage.resources.filter(r => {
     if (typeFilter !== "All" && r.type !== typeFilter) return false;
+    if (formatFilter !== "All" && r.format !== formatFilter) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       return r.title.toLowerCase().includes(q) || r.details.toLowerCase().includes(q);
     }
     return true;
+  }).sort((a, b) => {
+    if (sortBy === "popular") return b.downloads - a.downloads;
+    if (sortBy === "name") return a.title.localeCompare(b.title);
+    return 0;
   });
 
   const globalSearch = searchQuery.trim()
@@ -404,7 +412,7 @@ export default function ResourcesPage() {
   return (
     <div className="bg-neutral-50">
       {}
-      <section className="relative bg-gradient-to-br from-slate-800 via-primary-800 to-slate-900 text-white border-b-4 border-secondary-500 overflow-hidden">
+      <section className="relative bg-primary-800 text-white border-b-4 border-secondary-500 overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px)" }} />
         </div>
@@ -418,7 +426,7 @@ export default function ResourcesPage() {
                 <BookOpen size={12} /> Resource Hub &amp; Knowledge Base
               </div>
               <h1 className="text-3xl md:text-4xl font-heading font-bold">Resource Center</h1>
-              <p className="mt-2 text-neutral-300 max-w-lg text-sm">Your launch pad for club success &mdash; guides, templates, tools, and AI-powered assistance organized by growth stage.</p>
+              <p className="mt-2 text-neutral-300 max-w-lg text-sm">Your launch pad for club success &mdash; guides, templates, tools, and smart recommendations organized by growth stage.</p>
             </div>
             <div className="grid grid-cols-4 gap-3">
               {[
@@ -438,10 +446,77 @@ export default function ResourcesPage() {
 
       {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div className="flex flex-col lg:flex-row gap-5">
+        <div className="space-y-4">
 
-          {}
-          <div className="flex-1 min-w-0 space-y-4">
+          {/* Advanced Resource Filter */}
+          <div className="card overflow-hidden border border-neutral-200">
+            <div className="bg-primary-50 px-4 py-3 border-b border-primary-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Search size={14} className="text-primary-600" />
+                <h3 className="text-sm font-bold text-primary-700">Filter Resources</h3>
+              </div>
+              {(searchQuery || typeFilter !== "All" || formatFilter !== "All") && (
+                <button onClick={() => { setSearchQuery(""); setTypeFilter("All"); setFormatFilter("All"); setSortBy("popular"); }}
+                  className="text-[10px] font-semibold text-primary-500 hover:text-primary-700 underline">
+                  Clear All
+                </button>
+              )}
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search by title, description, or keyword..." className="input-field pl-9 text-xs w-full" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                  <label className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Type</label>
+                  <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="select-field text-xs w-full">
+                    {["All", "guide", "template", "checklist", "handbook"].map(o => <option key={o} value={o}>{o === "All" ? "All Types" : o.charAt(0).toUpperCase() + o.slice(1) + "s"}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Format</label>
+                  <select value={formatFilter} onChange={e => setFormatFilter(e.target.value)} className="select-field text-xs w-full">
+                    {["All", "PDF", "DOCX", "ZIP", "XLSX"].map(o => <option key={o} value={o}>{o === "All" ? "All Formats" : o}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Sort By</label>
+                  <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="select-field text-xs w-full">
+                    <option value="popular">Most Popular</option>
+                    <option value="name">Alphabetical</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Stage</label>
+                  <select value={activeStage} onChange={e => setActiveStage(e.target.value)} className="select-field text-xs w-full">
+                    {ROCKET_STAGES.map(s => <option key={s.id} value={s.id}>{s.phase}. {s.title}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {searchQuery && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-semibold">
+                    &ldquo;{searchQuery}&rdquo; <button onClick={() => setSearchQuery("")} className="hover:text-primary-900"><X size={10} /></button>
+                  </span>
+                )}
+                {typeFilter !== "All" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-secondary-100 text-secondary-700 text-[10px] font-semibold">
+                    {typeFilter} <button onClick={() => setTypeFilter("All")} className="hover:text-secondary-900"><X size={10} /></button>
+                  </span>
+                )}
+                {formatFilter !== "All" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-semibold">
+                    {formatFilter} <button onClick={() => setFormatFilter("All")} className="hover:text-primary-900"><X size={10} /></button>
+                  </span>
+                )}
+                <span className="ml-auto text-[10px] text-neutral-400">{filteredResources.length} of {currentStage.resources.length} resources</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div className="space-y-4">
 
                 {}
                 <div className="flex gap-2 overflow-x-auto pb-1">
@@ -454,34 +529,109 @@ export default function ResourcesPage() {
                         <div className={`w-7 h-7 rounded-md bg-gradient-to-br ${stage.color} text-white flex items-center justify-center`}>
                           <Icon size={14} />
                         </div>
-                        <span>{stage.title}</span>
+                        <span>{stage.phase}. {stage.title}</span>
                       </button>
                     );
                   })}
                 </div>
 
                 {}
-                <div className={` overflow-hidden border ${currentStage.borderColor}`}>
-                  <div className={`bg-gradient-to-r ${currentStage.color} text-white p-5 flex items-center gap-4`}>
-                    <div className="shrink-0">
-                      <StageRocket stageId={currentStage.id} phase={currentStage.phase} />
+                <div className={`overflow-hidden border ${currentStage.borderColor}`}>
+                  <div className={`bg-gradient-to-r ${currentStage.color} text-white p-5`}>
+                    <div className="flex items-center gap-4">
+                      <div className="shrink-0">
+                        <StageRocket stageId={currentStage.id} phase={currentStage.phase} />
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">STAGE {currentStage.phase}</span>
+                        <h2 className="text-xl font-heading font-bold">{currentStage.title} &mdash; {currentStage.subtitle}</h2>
+                        <p className="text-sm text-white/80 mt-1">{currentStage.resources.length} resources &bull; {currentStage.hubLinks.length} tools</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">STAGE {currentStage.phase}</span>
-                      <h2 className="text-xl font-heading font-bold">{currentStage.title} &mdash; {currentStage.subtitle}</h2>
-                      <p className="text-sm text-white/80 mt-1">{currentStage.resources.length} resources &bull; {currentStage.hubLinks.length} tools</p>
-                    </div>
+                    {/* Smart Finder search bar */}
+                    <form onSubmit={e => { e.preventDefault(); if (aiInput.trim()) { if (!showAI) setShowAI(true); aiSend(aiInput.trim()); setAiInput(""); } }} className="mt-4 flex items-center gap-2">
+                      <div className="flex-1 relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                        <input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="Find a resource... (press Enter)" className="w-full pl-9 pr-4 py-2.5 bg-white/10 border border-white/20 text-sm text-white placeholder:text-white/50 focus:border-white/50 focus:bg-white/15 focus:outline-none transition-colors" />
+                      </div>
+                      <button type="submit" className="px-4 py-2.5 bg-white text-primary-700 text-xs font-bold hover:bg-white/90 disabled:opacity-50 transition-colors" disabled={aiLoading || !aiInput.trim()}>Search</button>
+                    </form>
+                    {showAI && (
+                      <div className="mt-4 bg-white/10 backdrop-blur-sm border border-white/15 overflow-hidden">
+                        <div className="max-h-56 overflow-y-auto p-3 space-y-2">
+                          <div ref={chatTopRef} />
+                          {aiMessages.map((msg, i) => {
+                            const formatted = msg.role === "assistant" ? msg.text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(Would you like me to take you there\??)/gi, "<strong>$1</strong>").replace(/\n/g, "<br/>") : msg.text;
+                            return (
+                            <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                              <div className={`max-w-[75%] px-3 py-2 text-xs leading-relaxed ${msg.role === "user" ? "bg-white/25 text-white" : "bg-white text-neutral-700 shadow-sm"}`}>
+                                {msg.role === "assistant" ? <span dangerouslySetInnerHTML={{ __html: formatted }} /> : msg.text}
+                              </div>
+                              {msg.link && (
+                                <button
+                                  onClick={() => { const rid = msg.link!.href.replace("#resource-", ""); const allRes = ROCKET_STAGES.flatMap(s => s.resources); const found = allRes.find(r => r.id === rid); if (found) { const stage = ROCKET_STAGES.find(s => s.resources.some(r => r.id === rid)); if (stage) setActiveStage(stage.id); setPopup(found); } }}
+                                  className="mt-1 inline-flex items-center gap-1 px-2.5 py-1 bg-white text-primary-700 text-[11px] font-bold hover:bg-white/90 transition-colors">
+                                  <ArrowRight size={11} /> {msg.link.label}
+                                </button>
+                              )}
+                              {!msg.link && i === aiMessages.length - 1 && pendingResource && msg.role === "assistant" && (
+                                <button
+                                  onClick={() => { const r = pendingResource; const stage = ROCKET_STAGES.find(s => s.resources.some(res => res.id === r.id)); if (stage) setActiveStage(stage.id); setPopup(r); }}
+                                  className="mt-1 inline-flex items-center gap-1 px-2.5 py-1 bg-white text-primary-700 text-[11px] font-bold hover:bg-white/90 transition-colors">
+                                  <ArrowRight size={11} /> Go to {pendingResource.title}
+                                </button>
+                              )}
+                            </div>
+                            );
+                          })}
+                          {aiLoading && (
+                            <div className="flex justify-start">
+                              <div className="bg-white px-3 py-2 shadow-sm">
+                                <div className="flex gap-1"><span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" /><span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} /><span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} /></div>
+                              </div>
+                            </div>
+                          )}
+                          <div ref={chatEndRef} />
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 px-3 pt-2 pb-1 bg-white/5 border-t border-white/10">
+                          {["How do I start a club?", "Fundraising help", "Competition prep", "Meeting templates"].map(suggestion => (
+                            <button key={suggestion} onClick={() => aiSend(suggestion)} className="px-2 py-1 bg-white/15 border border-white/20 text-[10px] font-semibold text-white hover:bg-white/25 transition-colors">
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                        <form onSubmit={e => { e.preventDefault(); if (aiInput.trim()) { aiSend(aiInput.trim()); setAiInput(""); } }} className="flex items-center gap-1.5 p-2.5 border-t border-white/10 bg-white/5">
+                          <input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="Ask for a resource..." className="flex-1 px-3 py-2 bg-white/10 border border-white/20 text-xs text-white placeholder:text-white/50 focus:border-white/40 focus:outline-none" />
+                          <button type="submit" className="px-3 py-2 bg-white text-primary-700 text-xs font-semibold hover:bg-white/90 disabled:opacity-50" disabled={aiLoading || !aiInput.trim()}>
+                            <Send size={14} />
+                          </button>
+                        </form>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {currentStage.hubLinks.map(link => {
+                  {currentStage.hubLinks.map((link, idx) => {
                     const Icon = link.icon;
+                    const btnColors = [
+                      "from-blue-500 to-blue-600 border-blue-300",
+                      "from-emerald-500 to-emerald-600 border-emerald-300",
+                      "from-violet-500 to-violet-600 border-violet-300",
+                      "from-rose-500 to-rose-600 border-rose-300",
+                      "from-amber-500 to-amber-600 border-amber-300",
+                      "from-teal-500 to-teal-600 border-teal-300",
+                      "from-pink-500 to-pink-600 border-pink-300",
+                      "from-cyan-500 to-cyan-600 border-cyan-300",
+                    ];
+                    const colorSet = btnColors[idx % btnColors.length];
+                    const borderClass = colorSet.split(" ").pop() || "";
+                    const gradientClass = colorSet.split(" ").slice(0, 2).join(" ");
                     return (
                       <Link key={link.href} href={link.href}
-                        className={`card  p-3 border hover:shadow-sm transition-all flex items-center gap-2 ${currentStage.borderColor}`}>
-                        <div className={`w-7 h-7 rounded-md bg-gradient-to-br ${currentStage.color} text-white flex items-center justify-center shrink-0`}>
+                        className={`card p-3 border hover:shadow-md hover:scale-[1.02] transition-all flex items-center gap-2 ${borderClass}`}>
+                        <div className={`w-7 h-7 rounded-md bg-gradient-to-br ${gradientClass} text-white flex items-center justify-center shrink-0`}>
                           <Icon size={13} />
                         </div>
                         <span className="font-semibold text-xs text-primary-800 truncate">{link.label}</span>
@@ -532,26 +682,6 @@ export default function ResourcesPage() {
                   )}
                 </div>
 
-                {}
-                <Reveal>
-                  <div className="card  p-4">
-                    <h3 className="text-sm font-bold text-primary-700 mb-2 flex items-center gap-1"><Star size={14} className="text-secondary-500" /> Community Partners</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {sponsorsData.map(sponsor => (
-                        <div key={sponsor.name} className="flex items-center gap-2 p-2  border border-neutral-100 hover:border-primary-200 transition-all">
-                          <div className={`w-8 h-8  flex items-center justify-center text-xs font-bold ${sponsor.tier === "platinum" ? "bg-neutral-100 text-neutral-700" : sponsor.tier === "gold" ? "bg-secondary-50 text-secondary-700" : "bg-neutral-50 text-neutral-500"}`}>
-                            {sponsor.name.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-primary-800 text-xs">{sponsor.name}</p>
-                            <p className="text-[10px] text-neutral-500 capitalize">{sponsor.tier}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </Reveal>
-
             {}
             <div className="card  p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gradient-to-r from-primary-50 to-secondary-50 border border-primary-200">
               <div>
@@ -575,118 +705,6 @@ export default function ResourcesPage() {
               </Link>
             </div>
           </div>
-
-          {}
-          <aside className="lg:w-80 shrink-0">
-            <div className="sticky top-20 space-y-4">
-
-              {}
-              <div className="card  p-3">
-                <h3 className="font-bold text-xs text-primary-700 mb-2 flex items-center gap-1"><Search size={12} /> Search &amp; Filter</h3>
-                <div className="relative mb-2">
-                  <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-                  <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search resources..." className="input-field pl-8 text-xs " />
-                </div>
-                <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="select-field text-xs  w-full">
-                  {["All", "guide", "template", "checklist", "handbook"].map(o => <option key={o} value={o}>{o === "All" ? "All Types" : o.charAt(0).toUpperCase() + o.slice(1)}</option>)}
-                </select>
-                <p className="text-[10px] text-neutral-400 mt-1.5">{filteredResources.length} results in {currentStage.title}</p>
-              </div>
-
-              {}
-              <div className="card  overflow-hidden">
-                <button onClick={() => setShowAI(v => !v)}
-                  className={`w-full flex items-center gap-2 p-3 font-semibold text-xs transition-all ${showAI ? "bg-primary-600 text-white" : "bg-white text-primary-700 hover:bg-primary-50"}`}>
-                  <div className={`w-8 h-8  flex items-center justify-center ${showAI ? "bg-white/20" : "bg-primary-100"}`}>
-                    <Bot size={16} className={showAI ? "text-white" : "text-primary-600"} />
-                  </div>
-                  <div className="text-left">
-                    <div className="font-bold text-xs">AI Resource Assistant</div>
-                    <div className={`text-[10px] ${showAI ? "text-primary-200" : "text-neutral-500"}`}>Powered by Gemini</div>
-                  </div>
-                  <div className="ml-auto flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-secondary-400 animate-pulse" />
-                  </div>
-                </button>
-                {showAI && (
-                  <div>
-                    <div className="max-h-56 overflow-y-auto p-3 space-y-2 bg-neutral-50">
-                      {aiMessages.map((msg, i) => {
-                        const formatted = msg.role === "assistant" ? msg.text.replace(/(Would you like me to take you there\??)/gi, "<strong>$1</strong>").replace(/\n/g, "<br/>") : msg.text;
-                        return (
-                        <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                          <div className={`max-w-[88%] px-3 py-1.5 text-xs leading-relaxed ${msg.role === "user" ? "bg-primary-600 text-white rounded-br-sm" : "bg-white text-neutral-700 border border-neutral-200 rounded-bl-sm shadow-sm"}`}>
-                            {msg.role === "assistant" ? <span dangerouslySetInnerHTML={{ __html: formatted }} /> : msg.text}
-                          </div>
-                          {msg.link && (
-                            <button
-                              onClick={() => { const rid = msg.link!.href.replace("#resource-", ""); const allRes = ROCKET_STAGES.flatMap(s => s.resources); const found = allRes.find(r => r.id === rid); if (found) { const stage = ROCKET_STAGES.find(s => s.resources.some(r => r.id === rid)); if (stage) setActiveStage(stage.id); setPopup(found); } }}
-                              className="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-primary-600 text-white text-[10px] font-semibold hover:bg-primary-700 transition-colors">
-                              <ArrowRight size={10} /> {msg.link.label}
-                            </button>
-                          )}
-                          {!msg.link && i === aiMessages.length - 1 && pendingResource && msg.role === "assistant" && (
-                            <button
-                              onClick={() => { const r = pendingResource; const stage = ROCKET_STAGES.find(s => s.resources.some(res => res.id === r.id)); if (stage) setActiveStage(stage.id); setPopup(r); }}
-                              className="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-primary-600 text-white text-[10px] font-semibold hover:bg-primary-700 transition-colors">
-                              <ArrowRight size={10} /> Go to {pendingResource.title}
-                            </button>
-                          )}
-                        </div>
-                        );
-                      })}
-                      {aiLoading && (
-                        <div className="flex justify-start">
-                          <div className="bg-white border border-neutral-200  rounded-bl-sm px-3 py-1.5 shadow-sm">
-                            <div className="flex gap-1"><span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" /><span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} /><span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} /></div>
-                          </div>
-                        </div>
-                      )}
-                      <div ref={chatEndRef} />
-                    </div>
-                    <form onSubmit={e => { e.preventDefault(); if (aiInput.trim()) { aiSend(aiInput.trim()); setAiInput(""); } }} className="flex items-center gap-1.5 p-2 border-t border-neutral-200 bg-white">
-                      <input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="Ask for a resource..." className="flex-1 px-2.5 py-1.5  border border-neutral-200 text-xs focus:border-primary-400 focus:outline-none" />
-                      <button type="submit" className="px-2.5 py-1.5 bg-primary-600 text-white  text-xs hover:bg-primary-700 disabled:opacity-50" disabled={aiLoading || !aiInput.trim()}>
-                        <Send size={12} />
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-
-              {}
-              <div className="card  p-3">
-                <h3 className="font-bold text-xs text-primary-700 mb-2 flex items-center gap-1"><Folder size={12} /> All Hub Pages</h3>
-                <div className="space-y-0.5">
-                  {[
-                    { href: "/hub/achievements", label: "Achievements", icon: "&#127942;" },
-                    { href: "/hub/calendar", label: "Calendar", icon: "&#128197;" },
-                    { href: "/hub/collaborate", label: "Collaboration", icon: "&#129309;" },
-                    { href: "/hub/compare", label: "Compare Clubs", icon: "&#9878;" },
-                    { href: "/hub/competitions", label: "Competitions", icon: "&#127941;" },
-                    { href: "/hub/discussions", label: "Discussions", icon: "&#128172;" },
-                    { href: "/hub/external", label: "External Resources", icon: "&#127760;" },
-                    { href: "/hub/goals", label: "Goal Tracker", icon: "&#127919;" },
-                    { href: "/hub/health", label: "Club Health", icon: "&#10084;" },
-                    { href: "/hub/ideas", label: "Ideas Generator", icon: "&#128161;" },
-                    { href: "/hub/manage-club", label: "Club Manager", icon: "&#9881;" },
-                    { href: "/hub/mentors", label: "Mentors", icon: "&#128104;" },
-                    { href: "/hub/my-collections", label: "My Collections", icon: "&#128218;" },
-                    { href: "/hub/quiz", label: "Club Finder Quiz", icon: "&#10067;" },
-                    { href: "/hub/request", label: "Resource Requests", icon: "&#128203;" },
-                    { href: "/hub/stories", label: "Success Stories", icon: "&#11088;" },
-                    { href: "/hub/tutorial", label: "Tutorial", icon: "&#128214;" },
-                    { href: "/community", label: "Community Forum", icon: "&#128483;" },
-                  ].map(link => (
-                    <Link key={link.href} href={link.href}
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium text-neutral-600 hover:bg-primary-50 hover:text-primary-700 transition-colors">
-                      <span dangerouslySetInnerHTML={{ __html: link.icon }} /> {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
         </div>
       </div>
 
@@ -709,13 +727,18 @@ export default function ResourcesPage() {
                 <div className="bg-secondary-50  p-2"><p className="text-base font-bold text-secondary-700">{popup.fileSize}</p><p className="text-[10px] text-neutral-500">Size</p></div>
               </div>
 
-              {}
-              {popup.format === "PDF" && PDF_CONTENT[popup.id] && (
+              {/* Preview for ALL resources */}
+              {(() => {
+                const pdfContent = PDF_CONTENT[popup.id];
+                const pages = pdfContent
+                  ? pdfContent.pages
+                  : [{ title: popup.title, body: `${popup.details}\n\nFormat: ${popup.format}\nFile Size: ${popup.fileSize}\nType: ${popup.type}\nDownloads: ${popup.downloads}\n\nThis document is available for download. Click the download button below to get the full ${popup.format} file.` }];
+                return (
                 <div className="mt-4">
                   {!showPreview ? (
                     <button onClick={() => { setShowPreview(true); setPreviewPage(0); }}
                       className="btn-outline w-full flex items-center justify-center gap-2 text-xs  border-2 border-primary-200 hover:bg-primary-50">
-                      <Eye size={14} /> Preview Document ({PDF_CONTENT[popup.id].pages.length} pages)
+                      <Eye size={14} /> Preview Document ({pages.length} {pages.length === 1 ? 'page' : 'pages'})
                     </button>
                   ) : (
                     <div className="border-2 border-neutral-200  overflow-hidden">
@@ -726,7 +749,7 @@ export default function ResourcesPage() {
                           <span className="font-semibold">{popup.title}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-neutral-300">Page {previewPage + 1} of {PDF_CONTENT[popup.id].pages.length}</span>
+                          <span className="text-[10px] text-neutral-300">Page {previewPage + 1} of {pages.length}</span>
                           <button onClick={() => { setShowPreview(false); setPreviewPage(0); }} className="p-0.5 rounded hover:bg-neutral-700"><X size={12} /></button>
                         </div>
                       </div>
@@ -742,9 +765,9 @@ export default function ResourcesPage() {
                             <span className="text-[9px] text-neutral-400">Page {previewPage + 1}</span>
                           </div>
                           {}
-                          <h3 className="text-base font-bold text-primary-800 mb-3">{PDF_CONTENT[popup.id].pages[previewPage].title}</h3>
+                          <h3 className="text-base font-bold text-primary-800 mb-3">{pages[previewPage].title}</h3>
                           {}
-                          <div className="text-xs text-neutral-700 leading-relaxed whitespace-pre-line">{PDF_CONTENT[popup.id].pages[previewPage].body}</div>
+                          <div className="text-xs text-neutral-700 leading-relaxed whitespace-pre-line">{pages[previewPage].body}</div>
                           {}
                           <div className="border-t border-neutral-200 mt-6 pt-2 flex items-center justify-between text-[8px] text-neutral-400">
                             <span>ClubConnect &copy; {new Date().getFullYear()}</span>
@@ -753,6 +776,7 @@ export default function ResourcesPage() {
                         </div>
                       </div>
                       {}
+                      {pages.length > 1 && (
                       <div className="bg-neutral-800 px-4 py-2 flex items-center justify-between">
                         <button onClick={() => setPreviewPage(p => Math.max(0, p - 1))}
                           disabled={previewPage === 0}
@@ -760,23 +784,25 @@ export default function ResourcesPage() {
                           &larr; Previous
                         </button>
                         <div className="flex gap-1">
-                          {PDF_CONTENT[popup.id].pages.map((_, i) => (
+                          {pages.map((_, i) => (
                             <button key={i} onClick={() => setPreviewPage(i)}
                               className={`w-6 h-6 rounded text-[10px] font-bold transition-colors ${previewPage === i ? "bg-primary-500 text-white" : "bg-neutral-700 text-neutral-300 hover:bg-neutral-600"}`}>
                               {i + 1}
                             </button>
                           ))}
                         </div>
-                        <button onClick={() => setPreviewPage(p => Math.min(PDF_CONTENT[popup.id].pages.length - 1, p + 1))}
-                          disabled={previewPage === PDF_CONTENT[popup.id].pages.length - 1}
+                        <button onClick={() => setPreviewPage(p => Math.min(pages.length - 1, p + 1))}
+                          disabled={previewPage === pages.length - 1}
                           className="px-3 py-1 text-xs text-white bg-neutral-700 rounded hover:bg-neutral-600 disabled:opacity-30 disabled:cursor-not-allowed">
                           Next &rarr;
                         </button>
                       </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
+                );
+              })()}
 
               <div className="mt-4 space-y-2">
                 <button onClick={() => downloadResource(popup.id, popup.title, popup.format)} className="btn-primary w-full flex items-center justify-center gap-2  text-sm"><Download size={14} /> Download {popup.format}</button>

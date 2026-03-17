@@ -47,7 +47,7 @@ export default function AboutPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
       {}
-      <section className="bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white border-b-4 border-secondary-500 relative overflow-hidden">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-white/5 blur-2xl" />
           <div className="absolute bottom-0 left-1/4 w-80 h-40 rounded-full bg-secondary-500/10 blur-3xl" />
@@ -65,9 +65,9 @@ export default function AboutPage() {
               { label: "Events This Year", value: schoolWideStats.totalEvents },
               { label: "Service Hours", value: schoolWideStats.totalServiceHours.toLocaleString() },
             ].map(stat => (
-              <div key={stat.label} className="bg-white/10 backdrop-blur-sm border border-white/10  p-4 text-center">
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-xs text-neutral-300 mt-1">{stat.label}</p>
+              <div key={stat.label} className="bg-white/10 backdrop-blur-sm border border-white/15 p-5 text-center hover:bg-white/15 transition-colors">
+                <p className="text-3xl md:text-4xl font-heading font-bold text-secondary-300">{stat.value}</p>
+                <p className="text-sm text-white/80 mt-1.5 font-medium">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -219,7 +219,7 @@ export default function AboutPage() {
 
         {}
         <Reveal>
-          <div className="card p-8 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-center">
+          <div className="card p-8 bg-primary-600 text-white text-center">
             <h2 className="text-2xl font-heading font-bold">Ready to Get Involved?</h2>
             <p className="mt-2 text-primary-100 max-w-lg mx-auto">Whether you want to join a club, start one, or volunteer — ClubConnect has everything you need to make an impact.</p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">

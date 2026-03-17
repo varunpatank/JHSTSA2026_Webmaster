@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -109,6 +109,10 @@ const colorOptions = [
 const logoOptions = ['🔧', '🎨', '📚', '🎭', '🌍', '💻', '🎵', '⚽', '🔬', '📷', '✍️', '🤝', '🌱', '💼', '🎯'];
 const socialPlatforms = ['Instagram', 'Twitter', 'Discord', 'Facebook', 'YouTube', 'TikTok', 'Website', 'Email'];
 
+const LS_CLUB = "clubconnect_managed_club";
+const LS_EVENTS = "clubconnect_managed_events";
+const LS_ANN = "clubconnect_managed_announcements";
+
 export default function ClubManagerPage() {
   const [club, setClub] = useState<ClubDraft>(demoClub);
   const [events, setEvents] = useState<Event[]>(demoEvents);
@@ -116,6 +120,18 @@ export default function ClubManagerPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'officers' | 'events' | 'announcements' | 'settings' | 'preview'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ ...club });
+
+  useEffect(() => {
+    try {
+      const c = localStorage.getItem(LS_CLUB); if (c) { const p = JSON.parse(c); setClub(p); setEditForm(p); }
+      const e = localStorage.getItem(LS_EVENTS); if (e) setEvents(JSON.parse(e));
+      const a = localStorage.getItem(LS_ANN); if (a) setAnnouncements(JSON.parse(a));
+    } catch {}
+  }, []);
+
+  const persistClub = useCallback((c: ClubDraft) => { setClub(c); try { localStorage.setItem(LS_CLUB, JSON.stringify(c)); } catch {} }, []);
+  const persistEvents = useCallback((e: Event[]) => { setEvents(e); try { localStorage.setItem(LS_EVENTS, JSON.stringify(e)); } catch {} }, []);
+  const persistAnn = useCallback((a: Announcement[]) => { setAnnouncements(a); try { localStorage.setItem(LS_ANN, JSON.stringify(a)); } catch {} }, []);
 
 
   const [showOfficerForm, setShowOfficerForm] = useState(false);
@@ -126,32 +142,33 @@ export default function ClubManagerPage() {
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', pinned: false });
 
   const saveProfile = () => {
-    setClub({ ...editForm, lastUpdated: new Date().toISOString().split('T')[0] });
+    const updated = { ...editForm, lastUpdated: new Date().toISOString().split('T')[0] };
+    persistClub(updated);
     setIsEditing(false);
   };
 
   const addOfficer = () => {
     if (!newOfficer.name || !newOfficer.role) return;
     const officer: Officer = { id: Date.now().toString(), ...newOfficer };
-    setClub({ ...club, officers: [...club.officers, officer] });
+    persistClub({ ...club, officers: [...club.officers, officer] });
     setNewOfficer({ name: '', role: '', email: '', bio: '' });
     setShowOfficerForm(false);
   };
 
   const removeOfficer = (id: string) => {
-    setClub({ ...club, officers: club.officers.filter(o => o.id !== id) });
+    persistClub({ ...club, officers: club.officers.filter(o => o.id !== id) });
   };
 
   const addEvent = () => {
     if (!newEvent.title || !newEvent.date) return;
     const event: Event = { id: Date.now().toString(), ...newEvent };
-    setEvents([...events, event]);
+    persistEvents([...events, event]);
     setNewEvent({ title: '', date: '', time: '', location: '', description: '', type: 'meeting' });
     setShowEventForm(false);
   };
 
   const removeEvent = (id: string) => {
-    setEvents(events.filter(e => e.id !== id));
+    persistEvents(events.filter(e => e.id !== id));
   };
 
   const addAnnouncement = () => {
@@ -161,17 +178,17 @@ export default function ClubManagerPage() {
       ...newAnnouncement,
       date: new Date().toISOString().split('T')[0]
     };
-    setAnnouncements([announcement, ...announcements]);
+    persistAnn([announcement, ...announcements]);
     setNewAnnouncement({ title: '', content: '', pinned: false });
     setShowAnnouncementForm(false);
   };
 
   const togglePinned = (id: string) => {
-    setAnnouncements(announcements.map(a => a.id === id ? { ...a, pinned: !a.pinned } : a));
+    persistAnn(announcements.map(a => a.id === id ? { ...a, pinned: !a.pinned } : a));
   };
 
   const removeAnnouncement = (id: string) => {
-    setAnnouncements(announcements.filter(a => a.id !== id));
+    persistAnn(announcements.filter(a => a.id !== id));
   };
 
   const eventTypeColors: Record<string, string> = {
@@ -193,7 +210,7 @@ export default function ClubManagerPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/95 to-neutral-800/80"></div>
+          <div className="absolute inset-0 bg-primary-800/90"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">

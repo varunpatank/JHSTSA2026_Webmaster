@@ -209,7 +209,7 @@ export default function ExternalResourcesPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/95 to-teal-600/80"></div>
+          <div className="absolute inset-0 bg-primary-600/90"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
@@ -389,7 +389,7 @@ export default function ExternalResourcesPage() {
       </section>
 
       {}
-      <section className="py-12 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+      <section className="py-12 bg-primary-600 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold font-heading mb-4">Know a Great Resource?</h2>
           <p className="text-white/90 mb-6">

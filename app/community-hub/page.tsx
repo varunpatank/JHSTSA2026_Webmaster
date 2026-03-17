@@ -130,7 +130,7 @@ export default function CommunityHubPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {}
-      <section className="relative bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 text-white overflow-hidden">
+      <section className="relative bg-primary-800 text-white overflow-hidden">
         {}
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(255,255,255,.15) 48px,rgba(255,255,255,.15) 49px),repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(255,255,255,.15) 48px,rgba(255,255,255,.15) 49px)" }} />
 
@@ -457,7 +457,7 @@ export default function CommunityHubPage() {
               </div>
 
               {}
-              <div className="bg-gradient-to-br from-primary-700 to-primary-900 text-white p-5">
+              <div className="bg-primary-800 text-white p-5">
                 <Sparkles size={24} className="text-secondary-400 mb-2" />
                 <h3 className="font-bold text-sm mb-1">Have Something to Share?</h3>
                 <p className="text-xs text-neutral-300 mb-3">Submit spotlights, stories, or event proposals to the community.</p>
@@ -568,7 +568,7 @@ export default function CommunityHubPage() {
 
             {}
             {spotlights.length > 0 && (
-              <div className="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white p-8 mb-8 relative overflow-hidden">
+              <div className="bg-secondary-500 text-white p-8 mb-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 -translate-y-1/2 translate-x-1/2" />
                 <div className="relative">
                   <span className="inline-flex items-center gap-1.5 bg-white/20 px-3 py-1 text-xs font-bold mb-4">
@@ -829,7 +829,7 @@ export default function CommunityHubPage() {
             </div>
 
             {}
-            <div className="mt-8 bg-gradient-to-r from-primary-700 to-primary-900 text-white p-8">
+            <div className="mt-8 bg-primary-800 text-white p-8">
               <h3 className="text-xl font-bold mb-4 text-center">Community Impact at a Glance</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
@@ -853,7 +853,7 @@ export default function CommunityHubPage() {
       {}
       <div className="bg-white border-t-2 border-neutral-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="bg-gradient-to-r from-primary-700 to-primary-800 text-white p-8 flex flex-wrap items-center justify-between gap-6">
+          <div className="bg-primary-700 text-white p-8 flex flex-wrap items-center justify-between gap-6">
             <div>
               <h2 className="text-xl font-bold mb-1">Looking for downloadable guides and templates?</h2>
               <p className="text-neutral-300 text-sm">

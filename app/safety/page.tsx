@@ -37,7 +37,7 @@ const POLICIES = [
 export default function SafetyPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-red-700 via-red-600 to-primary-700 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-700 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-red-200">Student Wellbeing</p>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Shield size={40} /> Safety & Guidelines</h1>

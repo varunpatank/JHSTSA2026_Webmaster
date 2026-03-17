@@ -4,20 +4,21 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   chapters, events, studentStories, announcements,
-  schoolWideStats, weeklyOpportunities, featuredAlumni, guidesData,
+  schoolWideStats, featuredAlumni,
 } from "@/lib/data";
+import { supabase, uploadsApi, uploadLikesApi, storageApi } from "@/lib/api";
+import type { Upload } from "@/lib/apiTypes";
 import {
-  ArrowRight, Award, BarChart3, BookOpen, Bot, Calendar, ChevronRight,
-  Clock, FileText, GraduationCap, Heart, HelpCircle,
-  Lightbulb, MapPin, MessageCircle, MessageSquare, Paperclip, Plus,
-  Search, Send, Shield, Sparkles, Star, Target, ThumbsUp,
-  TrendingUp, Trophy, Upload, Users, X, Zap,
+  ArrowRight, Bot, Calendar, Clock, GraduationCap, Heart,
+  Loader2, MapPin, MessageCircle, MessageSquare, Paperclip, Plus,
+  Search, Send, Sparkles, ThumbsUp,
+  TrendingUp, Upload as UploadIcon, Users, X,
 } from "lucide-react";
 
 
 const GEMINI_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
 interface ChatMsg { role: "user" | "assistant"; text: string; file?: { name: string; size: string } }
-const SYS = `You are the ClubConnect Student AI — a friendly peer assistant. Help students with: finding/joining clubs, starting clubs, events, fundraising, leadership, competitions (TSA, DECA, etc.), mentors. Keep answers concise (2-4 sentences). Reference ClubConnect features when relevant.`;
+const SYS = `You are the ClubConnect Social AI — a friendly peer assistant. Help social with: finding/joining clubs, starting clubs, events, fundraising, leadership, competitions (TSA, DECA, etc.), mentors. Keep answers concise (2-4 sentences). Reference ClubConnect features when relevant.`;
 
 
 const SEED_UPLOADS = [
@@ -30,6 +31,11 @@ const SEED_UPLOADS = [
   { id: "u7", title: "Fundraiser Planning Checklist", author: "James L.", date: "2 weeks ago", type: "PDF", likes: 56, desc: "Complete checklist for organizing bake sales and car washes." },
   { id: "u8", title: "Club Constitution Template", author: "Alex J.", date: "3 weeks ago", type: "DOCX", likes: 91, desc: "Fill-in-the-blanks constitution that passes school approval." },
 ];
+
+interface UploadItem {
+  id: string; title: string; author: string; author_avatar?: string; date: string;
+  type: string; likes: number; desc: string; file_url?: string;
+}
 
 
 const THREADS = [
@@ -51,21 +57,46 @@ const SEED_MESSAGES = [
 
 const FILE_ICONS: Record<string, string> = { PDF: "📄", DOCX: "📝", XLSX: "📊", ZIP: "📦", PNG: "🖼️", JPG: "🖼️" };
 
-export default function StudentsPage() {
+const LS_MESSAGES = "clubconnect_lounge_msgs";
+
+function formatTimeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hr${hours > 1 ? "s" : ""} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+}
+
+export default function SocialPage() {
 
   const [messages, setMessages] = useState(SEED_MESSAGES);
   const [msgInput, setMsgInput] = useState("");
   const [msgFile, setMsgFile] = useState<File | null>(null);
   const msgScrollRef = useRef<HTMLDivElement>(null);
 
+  // Load persisted lounge messages
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_MESSAGES);
+      if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length) setMessages(parsed); }
+    } catch {}
+  }, []);
 
-  const [uploads, setUploads] = useState(SEED_UPLOADS);
+
+  const [uploads, setUploads] = useState<UploadItem[]>(SEED_UPLOADS);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploadDesc, setUploadDesc] = useState("");
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [uploadSearch, setUploadSearch] = useState("");
+  const [uploadSubmitting, setUploadSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
 
   const [aiChat, setAiChat] = useState<ChatMsg[]>([]);
@@ -75,7 +106,36 @@ export default function StudentsPage() {
   const aiScrollRef = useRef<HTMLDivElement>(null);
 
 
-  const [rightTab, setRightTab] = useState<"uploads" | "explore" | "events">("uploads");
+
+  // Fetch uploads from Supabase on mount, merge with seed data
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+
+      const { data } = await uploadsApi.getAll();
+      if (!cancelled && data && data.length > 0) {
+        const dbUploads: UploadItem[] = data.map((u: any) => {
+          const ext = (u.file_type || u.file_name?.split('.').pop() || 'FILE').toUpperCase().replace(/^\./, '');
+          const timeAgo = u.created_at ? formatTimeAgo(new Date(u.created_at)) : "Recently";
+          return {
+            id: u.id,
+            title: u.title || u.file_name,
+            author: u.profiles?.name || "Anonymous",
+            author_avatar: u.profiles?.avatar_url,
+            date: timeAgo,
+            type: ext.length > 5 ? ext.slice(0, 4) : ext,
+            likes: u.likes ?? 0,
+            desc: u.description || "No description.",
+            file_url: u.file_url,
+          };
+        });
+        setUploads([...dbUploads, ...SEED_UPLOADS]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => { msgScrollRef.current && (msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight); }, [messages]);
   useEffect(() => { aiScrollRef.current && (aiScrollRef.current.scrollTop = aiScrollRef.current.scrollHeight); }, [aiChat, aiLoading]);
@@ -83,42 +143,78 @@ export default function StudentsPage() {
 
   const sendMsg = () => {
     if (!msgInput.trim() && !msgFile) return;
-    setMessages(prev => [...prev, {
+    const newMsg = {
       id: Date.now(),
       user: "You",
       text: msgInput.trim(),
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       likes: 0,
       file: msgFile ? { name: msgFile.name, size: `${(msgFile.size / 1024).toFixed(0)} KB` } : null,
-    }]);
+    };
+    setMessages(prev => {
+      const updated = [...prev, newMsg];
+      try { localStorage.setItem(LS_MESSAGES, JSON.stringify(updated)); } catch {}
+      return updated;
+    });
     setMsgInput("");
     setMsgFile(null);
   };
 
 
-  const submitUpload = () => {
-    if (!uploadTitle.trim() || !uploadFile) return;
-    const ext = uploadFile.name.split(".").pop()?.toUpperCase() || "FILE";
-    setUploads(prev => [{
-      id: `u-${Date.now()}`,
-      title: uploadTitle.trim(),
-      author: "You",
-      date: "Just now",
-      type: ext,
-      likes: 0,
-      desc: uploadDesc.trim() || "No description provided.",
-    }, ...prev]);
+  const submitUpload = useCallback(async () => {
+    if (!uploadTitle.trim() || !uploadFile || !currentUserId || uploadSubmitting) return;
+    setUploadSubmitting(true);
+    try {
+      const uploadRes = await storageApi.uploadFile(currentUserId, uploadFile, 'uploads');
+      if (!uploadRes.data) { setUploadSubmitting(false); return; }
+
+      const ext = uploadFile.name.split(".").pop()?.toUpperCase() || "FILE";
+      const { data } = await uploadsApi.create({
+        user_id: currentUserId,
+        file_name: uploadFile.name,
+        file_url: uploadRes.data.publicUrl,
+        file_type: ext.toLowerCase(),
+        file_size: uploadFile.size,
+        title: uploadTitle.trim(),
+        description: uploadDesc.trim() || undefined,
+      });
+
+      if (data) {
+        const newItem: UploadItem = {
+          id: (data as any).id,
+          title: uploadTitle.trim(),
+          author: (data as any).profiles?.name || "You",
+          author_avatar: (data as any).profiles?.avatar_url,
+          date: "Just now",
+          type: ext,
+          likes: 0,
+          desc: uploadDesc.trim() || "No description provided.",
+          file_url: uploadRes.data.publicUrl,
+        };
+        setUploads(prev => [newItem, ...prev]);
+      }
+    } catch (e) {
+      console.error("Upload failed:", e);
+    }
     setUploadTitle("");
     setUploadDesc("");
     setUploadFile(null);
     setShowUploadForm(false);
-  };
+    setUploadSubmitting(false);
+  }, [uploadTitle, uploadFile, uploadDesc, currentUserId, uploadSubmitting]);
 
 
-  const toggleLike = (id: string) => {
-    setLikedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
-    setUploads(prev => prev.map(u => u.id === id ? { ...u, likes: likedIds.has(id) ? u.likes - 1 : u.likes + 1 } : u));
-  };
+  const toggleLike = useCallback(async (id: string) => {
+    if (!currentUserId) return;
+    const wasLiked = likedIds.has(id);
+    setLikedIds(prev => { const n = new Set(prev); wasLiked ? n.delete(id) : n.add(id); return n; });
+    setUploads(prev => prev.map(u => u.id === id ? { ...u, likes: wasLiked ? u.likes - 1 : u.likes + 1 } : u));
+    if (wasLiked) {
+      await uploadLikesApi.unlike(id, currentUserId);
+    } else {
+      await uploadLikesApi.like(id, currentUserId);
+    }
+  }, [currentUserId, likedIds]);
 
 
   const sendAi = useCallback(async (text: string) => {
@@ -147,13 +243,12 @@ export default function StudentsPage() {
     return uploads.filter(u => u.title.toLowerCase().includes(q) || u.desc.toLowerCase().includes(q) || u.author.toLowerCase().includes(q));
   }, [uploads, uploadSearch]);
 
-  const trendingClubs = useMemo(() => [...chapters].filter(c => c.isActive).sort((a, b) => b.memberCount - a.memberCount).slice(0, 5), []);
   const upcomingEvents = useMemo(() => [...events].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4), []);
 
   return (
     <div className="min-h-screen bg-neutral-50">
       {}
-      <section className="bg-gradient-to-r from-primary-700 via-primary-800 to-primary-900 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-800 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-heading font-bold flex items-center gap-2">
@@ -178,10 +273,7 @@ export default function StudentsPage() {
 
       {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
-        <div className="grid lg:grid-cols-5 gap-5">
-
-          {}
-          <div className="lg:col-span-3 space-y-5">
+        <div className="space-y-5">
 
             {}
             <div className="bg-white border-2 border-primary-200 overflow-hidden">
@@ -251,7 +343,69 @@ export default function StudentsPage() {
               <Link href="/hub/discussions" className="block text-center text-xs text-primary-600 font-medium py-2.5 border-t border-neutral-100 hover:bg-primary-50/50">View All Discussions →</Link>
             </div>
 
-            {}
+            {/* Community Resources */}
+            <div className="bg-white border-2 border-neutral-200 overflow-hidden">
+              <div className="bg-neutral-50 border-b border-neutral-200 px-4 py-2.5 flex items-center justify-between">
+                <h2 className="font-bold text-primary-800 text-sm flex items-center gap-2"><UploadIcon size={16} className="text-secondary-500" /> Community Resources</h2>
+                <button onClick={() => setShowUploadForm(v => !v)} className="bg-primary-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-primary-700 flex items-center gap-1 transition-colors">
+                  <UploadIcon size={12} /> Upload
+                </button>
+              </div>
+              <div className="p-3 space-y-3">
+                <div className="relative">
+                  <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <input type="text" value={uploadSearch} onChange={e => setUploadSearch(e.target.value)} placeholder="Search resources…" className="w-full text-xs py-2 pl-8 pr-3 border-2 border-neutral-200 focus:outline-none focus:border-primary-400" />
+                </div>
+                {showUploadForm && (
+                  <div className="bg-primary-50 border-2 border-primary-200 p-3 space-y-2">
+                    <h4 className="font-bold text-primary-800 text-xs flex items-center gap-1.5"><UploadIcon size={13} /> Share a Resource</h4>
+                    <input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Resource title" className="w-full text-xs py-1.5 px-2.5 border border-primary-200 focus:outline-none focus:border-primary-400 bg-white" />
+                    <textarea value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} placeholder="Brief description…" className="w-full text-xs py-1.5 px-2.5 border border-primary-200 focus:outline-none focus:border-primary-400 bg-white resize-none" rows={2} />
+                    <label className="flex items-center gap-2 px-2.5 py-1.5 border border-dashed border-primary-300 bg-white cursor-pointer hover:bg-primary-50 transition-colors">
+                      <Paperclip size={13} className="text-primary-500" />
+                      <span className="text-xs text-neutral-500">{uploadFile ? uploadFile.name : "Choose file…"}</span>
+                      <input type="file" className="hidden" onChange={e => setUploadFile(e.target.files?.[0] || null)} />
+                    </label>
+                    <div className="flex gap-2">
+                      <button onClick={submitUpload} disabled={!uploadTitle.trim() || !uploadFile || uploadSubmitting} className="bg-primary-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-1">
+                        {uploadSubmitting ? <><Loader2 size={11} className="animate-spin" /> Uploading…</> : <><Send size={11} /> Submit</>}
+                      </button>
+                      <button onClick={() => setShowUploadForm(false)} className="text-xs text-neutral-500 px-3 py-1.5 border border-neutral-200 hover:bg-neutral-50">Cancel</button>
+                    </div>
+                  </div>
+                )}
+                <div className="grid sm:grid-cols-2 gap-2 max-h-[400px] overflow-y-auto">
+                  {filteredUploads.map(u => (
+                    <div key={u.id} className="bg-white border-2 border-neutral-200 p-3 hover:border-primary-200 transition-colors">
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-lg">{FILE_ICONS[u.type] || "📄"}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <h4 className="font-bold text-primary-700 text-xs truncate">{u.title}</h4>
+                            <span className="text-[8px] font-semibold bg-neutral-100 text-neutral-500 px-1 py-0.5 shrink-0">{u.type}</span>
+                          </div>
+                          <p className="text-[10px] text-neutral-500 line-clamp-1">{u.desc}</p>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <div className="flex items-center gap-1">
+                              {u.author_avatar
+                                ? <img src={u.author_avatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+                                : <div className="w-4 h-4 bg-primary-100 text-primary-600 flex items-center justify-center text-[7px] font-bold rounded-full">{u.author?.[0] || "?"}</div>
+                              }
+                              <span className="text-[9px] text-neutral-400">{u.author} · {u.date}</span>
+                            </div>
+                            <button onClick={() => toggleLike(u.id)} className={`text-[10px] flex items-center gap-0.5 ${likedIds.has(u.id) ? "text-red-500" : "text-neutral-400 hover:text-red-500"}`}>
+                              <Heart size={10} className={likedIds.has(u.id) ? "fill-current" : ""} /> {u.likes}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Student Voices */}
             <div>
               <h3 className="font-bold text-primary-800 text-sm mb-2 flex items-center gap-2"><Heart size={14} className="text-secondary-500" /> Student Voices</h3>
               <div className="grid sm:grid-cols-3 gap-3">
@@ -272,220 +426,61 @@ export default function StudentsPage() {
                 ))}
               </div>
             </div>
-          </div>
 
-          {}
-          <div className="lg:col-span-2 space-y-5">
-
-            {}
-            <div className="flex border-2 border-neutral-200 bg-white">
-              {[
-                { key: "uploads" as const, label: "Community Resources", icon: Upload },
-                { key: "explore" as const, label: "Mentoring", icon: GraduationCap },
-                { key: "events" as const, label: "Events", icon: Calendar },
-              ].map(tab => (
-                <button key={tab.key} onClick={() => setRightTab(tab.key)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-colors ${rightTab === tab.key ? "bg-primary-600 text-white" : "text-neutral-500 hover:bg-neutral-50"}`}>
-                  <tab.icon size={13} /> {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {}
-            {rightTab === "uploads" && (
-              <div className="space-y-3">
-                {}
-                <div className="flex gap-2">
-                  <div className="flex-1 relative">
-                    <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-                    <input type="text" value={uploadSearch} onChange={e => setUploadSearch(e.target.value)} placeholder="Search resources…" className="w-full text-xs py-2 pl-8 pr-3 border-2 border-neutral-200 focus:outline-none focus:border-primary-400" />
-                  </div>
-                  <button onClick={() => setShowUploadForm(v => !v)} className="bg-primary-600 text-white px-3 py-2 text-xs font-semibold hover:bg-primary-700 flex items-center gap-1 transition-colors shrink-0">
-                    <Upload size={13} /> Upload
-                  </button>
-                </div>
-
-                {}
-                {showUploadForm && (
-                  <div className="bg-primary-50 border-2 border-primary-200 p-3 space-y-2">
-                    <h4 className="font-bold text-primary-800 text-xs flex items-center gap-1.5"><Upload size={13} /> Share a Resource</h4>
-                    <input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="Resource title" className="w-full text-xs py-1.5 px-2.5 border border-primary-200 focus:outline-none focus:border-primary-400 bg-white" />
-                    <textarea value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} placeholder="Brief description…" className="w-full text-xs py-1.5 px-2.5 border border-primary-200 focus:outline-none focus:border-primary-400 bg-white resize-none" rows={2} />
-                    <label className="flex items-center gap-2 px-2.5 py-1.5 border border-dashed border-primary-300 bg-white cursor-pointer hover:bg-primary-50 transition-colors">
-                      <Paperclip size={13} className="text-primary-500" />
-                      <span className="text-xs text-neutral-500">{uploadFile ? uploadFile.name : "Choose file…"}</span>
-                      <input type="file" className="hidden" onChange={e => setUploadFile(e.target.files?.[0] || null)} />
-                    </label>
-                    <div className="flex gap-2">
-                      <button onClick={submitUpload} disabled={!uploadTitle.trim() || !uploadFile} className="bg-primary-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-1"><Send size={11} /> Submit</button>
-                      <button onClick={() => setShowUploadForm(false)} className="text-xs text-neutral-500 px-3 py-1.5 border border-neutral-200 hover:bg-neutral-50">Cancel</button>
+            {/* Announcements + Events */}
+            <div className="grid md:grid-cols-2 gap-5">
+              {/* Announcements */}
+              <div className="space-y-2">
+                <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Announcements</h3>
+                {announcements.slice(0, 3).map(a => (
+                  <div key={a.id} className={`border-l-4 p-3 ${a.priority === "high" ? "border-l-red-500 bg-red-50" : a.priority === "medium" ? "border-l-secondary-500 bg-secondary-50" : "border-l-primary-400 bg-primary-50"}`}>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className={`text-[8px] font-bold uppercase px-1 py-0.5 ${a.priority === "high" ? "bg-red-200 text-red-800" : "bg-secondary-200 text-secondary-800"}`}>{a.priority === "high" ? "Urgent" : "Info"}</span>
+                      <span className="text-[9px] text-neutral-400">{a.date}</span>
                     </div>
+                    <h4 className="font-bold text-primary-800 text-xs">{a.title}</h4>
+                    <p className="text-[10px] text-neutral-600 mt-0.5 line-clamp-2">{a.content}</p>
                   </div>
-                )}
-
-                {}
-                <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                  {filteredUploads.map(u => (
-                    <div key={u.id} className="bg-white border-2 border-neutral-200 p-3 hover:border-primary-200 transition-colors">
-                      <div className="flex items-start gap-2.5">
-                        <span className="text-lg">{FILE_ICONS[u.type] || "📄"}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <h4 className="font-bold text-primary-700 text-xs truncate">{u.title}</h4>
-                            <span className="text-[8px] font-semibold bg-neutral-100 text-neutral-500 px-1 py-0.5 shrink-0">{u.type}</span>
-                          </div>
-                          <p className="text-[10px] text-neutral-500 line-clamp-1">{u.desc}</p>
-                          <div className="flex items-center gap-3 mt-1.5">
-                            <span className="text-[9px] text-neutral-400">{u.author} · {u.date}</span>
-                            <button onClick={() => toggleLike(u.id)} className={`text-[10px] flex items-center gap-0.5 ${likedIds.has(u.id) ? "text-red-500" : "text-neutral-400 hover:text-red-500"}`}>
-                              <Heart size={10} className={likedIds.has(u.id) ? "fill-current" : ""} /> {u.likes}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Upcoming Events</h3>
+                {upcomingEvents.map(ev => (
+                  <Link key={ev.id} href={`/events/${ev.id}`} className="flex items-start gap-2.5 p-2.5 bg-white border-2 border-neutral-200 hover:border-primary-300 transition-colors group">
+                    <div className="bg-primary-50 border border-primary-200 px-2 py-1 text-center shrink-0">
+                      <div className="text-[9px] text-primary-500 font-medium">{new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}</div>
+                      <div className="text-base font-bold text-primary-800 leading-none">{new Date(ev.date).getDate()}</div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {}
-            {rightTab === "explore" && (
-              <div className="space-y-3">
-                {}
-                <div className="bg-white border-2 border-neutral-200 p-3">
-                  <h3 className="font-bold text-primary-700 text-xs mb-2 flex items-center gap-1.5"><GraduationCap size={13} className="text-secondary-500" /> Available Mentors</h3>
-                  <div className="space-y-2">
-                    {featuredAlumni.filter(a => a.available).slice(0, 5).map(alum => (
-                      <div key={alum.id} className="flex items-center gap-2 p-2 hover:bg-primary-50/50 transition-colors">
-                        <div className="w-8 h-8 bg-primary-100 flex items-center justify-center text-[10px] font-bold text-primary-600 shrink-0">{alum.name.split(" ").map(n => n[0]).join("")}</div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-primary-700">{alum.name}</p>
-                          <p className="text-[9px] text-neutral-400">{alum.career} · Class of {alum.gradYear}</p>
-                        </div>
-                        <Link href="/alumni" className="text-[9px] text-primary-600 font-semibold hover:underline shrink-0">Connect</Link>
-                      </div>
-                    ))}
-                  </div>
-                  <Link href="/alumni" className="block text-center text-[10px] text-primary-600 font-medium mt-2 hover:underline">View All Mentors →</Link>
-                </div>
-
-                {}
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { href: "/hub/mentors", label: "Mentor Network", icon: GraduationCap, color: "bg-teal-50 text-teal-600 border-teal-200" },
-                    { href: "/hub/discussions", label: "Forums", icon: MessageSquare, color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
-                    { href: "/hub/competitions", label: "Competitions", icon: Trophy, color: "bg-purple-50 text-purple-600 border-purple-200" },
-                    { href: "/hub/quiz", label: "Club Finder Quiz", icon: HelpCircle, color: "bg-indigo-50 text-indigo-600 border-indigo-200" },
-                    { href: "/hub/ideas", label: "Club Ideas", icon: Lightbulb, color: "bg-amber-50 text-amber-600 border-amber-200" },
-                    { href: "/hub/collaborate", label: "Collaborate", icon: Users, color: "bg-pink-50 text-pink-600 border-pink-200" },
-                    { href: "/hub/goals", label: "Goal Tracker", icon: Target, color: "bg-lime-50 text-lime-600 border-lime-200" },
-                    { href: "/hub/achievements", label: "Badges", icon: Award, color: "bg-violet-50 text-violet-600 border-violet-200" },
-                    { href: "/hub/health", label: "Club Health", icon: BarChart3, color: "bg-sky-50 text-sky-600 border-sky-200" },
-                    { href: "/hub/stories", label: "Success Stories", icon: Heart, color: "bg-rose-50 text-rose-600 border-rose-200" },
-                  ].map(item => (
-                    <Link key={item.href} href={item.href} className={`flex items-center gap-2 p-2.5 border-2 ${item.color} hover:shadow-sm transition-all group`}>
-                      <item.icon size={15} className="shrink-0 group-hover:scale-110 transition-transform" />
-                      <span className="text-xs font-semibold">{item.label}</span>
-                    </Link>
-                  ))}
-                </div>
-
-                {}
-                <div className="bg-white border-2 border-neutral-200 p-3">
-                  <h3 className="font-bold text-primary-700 text-xs mb-2 flex items-center gap-1.5"><TrendingUp size={13} className="text-secondary-500" /> Trending Clubs</h3>
-                  <div className="space-y-2">
-                    {trendingClubs.map((club, i) => (
-                      <Link key={club.id} href={`/directory/${club.id}`} className="flex items-center gap-2 group">
-                        <span className="w-5 h-5 flex items-center justify-center bg-primary-100 text-primary-700 text-[10px] font-bold shrink-0">{i + 1}</span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-primary-700 group-hover:text-primary-500 truncate">{club.name}</p>
-                          <p className="text-[9px] text-neutral-400">{club.memberCount} members</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {}
-            {rightTab === "events" && (
-              <div className="space-y-3">
-                {}
-                <div className="space-y-2">
-                  <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Announcements</h3>
-                  {announcements.slice(0, 3).map(a => (
-                    <div key={a.id} className={`border-l-4 p-3 ${a.priority === "high" ? "border-l-red-500 bg-red-50" : a.priority === "medium" ? "border-l-secondary-500 bg-secondary-50" : "border-l-primary-400 bg-primary-50"}`}>
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className={`text-[8px] font-bold uppercase px-1 py-0.5 ${a.priority === "high" ? "bg-red-200 text-red-800" : "bg-secondary-200 text-secondary-800"}`}>{a.priority === "high" ? "Urgent" : "Info"}</span>
-                        <span className="text-[9px] text-neutral-400">{a.date}</span>
-                      </div>
-                      <h4 className="font-bold text-primary-800 text-xs">{a.title}</h4>
-                      <p className="text-[10px] text-neutral-600 mt-0.5 line-clamp-2">{a.content}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {}
-                <div className="space-y-2">
-                  <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Upcoming Events</h3>
-                  {upcomingEvents.map(ev => (
-                    <Link key={ev.id} href={`/events/${ev.id}`} className="flex items-start gap-2.5 p-2.5 bg-white border-2 border-neutral-200 hover:border-primary-300 transition-colors group">
-                      <div className="bg-primary-50 border border-primary-200 px-2 py-1 text-center shrink-0">
-                        <div className="text-[9px] text-primary-500 font-medium">{new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}</div>
-                        <div className="text-base font-bold text-primary-800 leading-none">{new Date(ev.date).getDate()}</div>
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="font-bold text-primary-800 text-xs group-hover:text-primary-600">{ev.title}</h4>
-                        <p className="text-[9px] text-neutral-500">{ev.chapterName}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5 text-[9px] text-neutral-400">
-                          <Clock size={9} /> {ev.startTime} <MapPin size={9} /> {ev.location.split(",")[0]}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                  <Link href="/events" className="block text-center text-xs text-primary-600 font-medium py-2 hover:underline">All Events →</Link>
-                </div>
-
-                {}
-                <div className="space-y-2">
-                  <h3 className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Opportunities</h3>
-                  {weeklyOpportunities.slice(0, 3).map(opp => (
-                    <div key={opp.id} className="flex items-center gap-2 p-2.5 bg-white border border-neutral-200">
-                      <span className="text-sm">{opp.type === "competition" ? "🏆" : opp.type === "volunteer" ? "🤝" : "📅"}</span>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-primary-800 text-[11px]">{opp.title}</h4>
-                        <p className="text-[9px] text-neutral-500">{opp.club} · {opp.date}</p>
-                      </div>
-                      {opp.urgent && <span className="text-[8px] font-bold bg-red-100 text-red-700 px-1 py-0.5">Urgent</span>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {}
-            <div className="bg-white border-2 border-neutral-200 p-3">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-primary-700 text-xs flex items-center gap-1.5"><BookOpen size={13} className="text-secondary-500" /> Popular Guides</h3>
-                <Link href="/guides" className="text-[10px] text-primary-600 font-medium hover:underline">All →</Link>
-              </div>
-              <div className="space-y-1.5">
-                {guidesData.slice(0, 3).map(guide => (
-                  <Link key={guide.id} href={`/guides/${guide.slug}`} className="flex items-center gap-2 p-2 hover:bg-primary-50/50 transition-colors group">
-                    <FileText size={13} className="text-primary-400 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-primary-700 group-hover:text-primary-500 truncate">{guide.title}</p>
-                      <p className="text-[9px] text-neutral-400">{guide.sections.length} sections</p>
+                      <h4 className="font-bold text-primary-800 text-xs group-hover:text-primary-600">{ev.title}</h4>
+                      <p className="text-[9px] text-neutral-500">{ev.chapterName}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5 text-[9px] text-neutral-400">
+                        <Clock size={9} /> {ev.startTime} <MapPin size={9} /> {ev.location.split(",")[0]}
+                      </div>
                     </div>
                   </Link>
                 ))}
+                <Link href="/events" className="block text-center text-xs text-primary-600 font-medium py-2 hover:underline">All Events →</Link>
               </div>
             </div>
 
-            {}
-            <Link href="/resources" className="block bg-gradient-to-r from-primary-700 to-primary-800 text-white p-4 hover:from-primary-600 hover:to-primary-700 transition-all group">
+            {/* Quick Links */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {([
+                { href: "/hub/mentors", label: "Mentor Network", icon: GraduationCap, color: "bg-teal-50 text-teal-600 border-teal-200" },
+                { href: "/hub/discussions", label: "Forums", icon: MessageSquare, color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+                { href: "/hub/collaborate", label: "Collaborate", icon: Users, color: "bg-pink-50 text-pink-600 border-pink-200" },
+                { href: "/hub/stories", label: "Success Stories", icon: Heart, color: "bg-rose-50 text-rose-600 border-rose-200" },
+              ]).map(item => (
+                <Link key={item.href} href={item.href} className={`flex items-center gap-2 p-3 border-2 ${item.color} hover:shadow-sm transition-all group`}>
+                  <item.icon size={16} className="shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-semibold">{item.label}</span>
+                </Link>
+              ))}
+            </div>
+
+            {/* Resource Center */}
+            <Link href="/resources" className="block bg-primary-700 text-white p-4 hover:bg-primary-600 transition-all group">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold">Need school-provided guides?</p>
@@ -494,11 +489,10 @@ export default function StudentsPage() {
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
-          </div>
         </div>
 
         {}
-        <div className="mt-5 bg-gradient-to-r from-primary-700 to-primary-900 text-white p-5">
+        <div className="mt-5 bg-primary-800 text-white p-5">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             {[
               { label: "Service Hours", value: schoolWideStats.totalServiceHours.toLocaleString(), icon: Heart },

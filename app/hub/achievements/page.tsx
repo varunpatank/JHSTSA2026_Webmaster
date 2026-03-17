@@ -81,7 +81,7 @@ export default function AchievementsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-yellow-500 via-amber-500 to-secondary-600 text-white border-b-4 border-secondary-700">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-yellow-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Award size={36} /> Achievement Badges</h1>
@@ -108,7 +108,7 @@ export default function AchievementsPage() {
         {tab === "leaderboard" ? (
           <Reveal>
             <div className="card overflow-hidden">
-              <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-4 text-white">
+              <div className="bg-primary-700 p-4 text-white">
                 <h2 className="font-bold text-lg flex items-center gap-2"><Trophy size={20} /> Achievement Leaderboard</h2>
               </div>
               <div className="divide-y divide-neutral-100">

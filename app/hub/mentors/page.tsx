@@ -3,9 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
-  Award, BookOpen, Briefcase, Calendar, ChevronDown, Clock, GraduationCap,
-  Heart, Mail, MapPin, MessageCircle, Search, Star, User, Users
+  Award, BookOpen, Briefcase, Calendar, CheckCircle, ChevronDown, Clock, GraduationCap,
+  Heart, Loader2, Mail, MapPin, MessageCircle, Search, Star, User, Users
 } from "lucide-react";
+import { supabase, mentorsApi } from "@/lib/api";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -26,7 +27,7 @@ interface Mentor {
   offering: string[];
 }
 
-const MENTORS: Mentor[] = [
+const SEED_MENTORS: Mentor[] = [
   { id: "m1", name: "Dr. Sarah Chen", title: "Senior Software Engineer at Microsoft", expertise: ["Software Development", "AI/ML", "Career Planning"], bio: "15+ years in tech. Stanford CS grad. Passionate about mentoring the next generation of engineers. Has mentored 20+ students into FAANG internships.", availability: "Biweekly · Tuesdays", avatar: "SC", category: "STEM", yearsExperience: 15, sessionsDone: 48, rating: 4.9, offering: ["1-on-1 Sessions", "Resume Review", "Mock Interviews"] },
   { id: "m2", name: "Prof. James Rodriguez", title: "Political Science Professor, UW", expertise: ["Model UN", "Public Policy", "Debate", "Research"], bio: "Former UN consultant. Coaches college Model UN teams. Advises on college applications and political science pathways.", availability: "Monthly · Thursdays", avatar: "JR", category: "Academic", yearsExperience: 12, sessionsDone: 35, rating: 4.8, offering: ["Group Workshops", "College App Review", "Research Mentorship"] },
   { id: "m3", name: "Maria Gonzalez", title: "Community Organizer, United Way", expertise: ["Community Service", "Nonprofit Management", "Grant Writing", "Fundraising"], bio: "Managed $2M+ in community grants. Helps students turn service ideas into sustainable programs. 10 years in nonprofit sector.", availability: "Weekly · Mondays", avatar: "MG", category: "Service", yearsExperience: 10, sessionsDone: 62, rating: 4.9, offering: ["1-on-1 Sessions", "Grant Proposals", "Project Planning"] },
@@ -36,13 +37,49 @@ const MENTORS: Mentor[] = [
 ];
 
 export default function MentorsPage() {
+  const [mentors, setMentors] = useState<Mentor[]>(SEED_MENTORS);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
+  const [requestingId, setRequestingId] = useState<string | null>(null);
 
-  const categories = ["All", ...Array.from(new Set(MENTORS.map(m => m.category)))];
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+      const { data } = await mentorsApi.getAll();
+      if (!cancelled && data && data.length > 0) {
+        const dbMentors: Mentor[] = data.map((d: any) => ({
+          id: d.id, name: d.name || "Mentor", title: d.title || "",
+          expertise: d.expertise || [], bio: d.bio || "",
+          availability: d.availability || "TBD",
+          avatar: (d.name || "M").split(" ").map((n: string) => n[0]).join("").slice(0, 2),
+          category: d.category || "General",
+          yearsExperience: d.years_experience || 0, sessionsDone: d.sessions_done || 0,
+          rating: d.rating || 5.0, offering: d.offering || [],
+        }));
+        setMentors([...dbMentors, ...SEED_MENTORS]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const filtered = MENTORS.filter(m => {
+  async function handleRequestMentorship(mentorId: string) {
+    if (!currentUserId || requestingId) return;
+    setRequestingId(mentorId);
+    try {
+      await mentorsApi.requestMentor({ mentor_id: mentorId, mentee_id: currentUserId, message: "I'd like to connect for mentorship." });
+      setRequestedIds(prev => new Set(prev).add(mentorId));
+    } catch (e) { console.error("Failed to request mentorship:", e); }
+    finally { setRequestingId(null); }
+  }
+
+  const categories = ["All", ...Array.from(new Set(mentors.map(m => m.category)))];
+
+  const filtered = mentors.filter(m => {
     if (category !== "All" && m.category !== category) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -53,15 +90,15 @@ export default function MentorsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-teal-600 via-teal-500 to-primary-600 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-teal-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><GraduationCap size={36} /> Mentor Network</h1>
           <p className="mt-3 max-w-2xl text-teal-50 text-lg">Connect with experienced professionals and alumni for guidance, skill development, and career mentorship.</p>
           <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{MENTORS.length}</p><p className="text-xs text-teal-100">Mentors</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{MENTORS.reduce((s, m) => s + m.sessionsDone, 0)}</p><p className="text-xs text-teal-100">Sessions</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{(MENTORS.reduce((s, m) => s + m.rating, 0) / MENTORS.length).toFixed(1)}</p><p className="text-xs text-teal-100">Avg Rating</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{mentors.length}</p><p className="text-xs text-teal-100">Mentors</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{mentors.reduce((s, m) => s + m.sessionsDone, 0)}</p><p className="text-xs text-teal-100">Sessions</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{(mentors.reduce((s, m) => s + m.rating, 0) / mentors.length).toFixed(1)}</p><p className="text-xs text-teal-100">Avg Rating</p></div>
             <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{categories.length - 1}</p><p className="text-xs text-teal-100">Fields</p></div>
           </div>
         </div>
@@ -126,7 +163,13 @@ export default function MentorsPage() {
                 </div>
                 <div className="px-5 py-3 border-t border-neutral-100 bg-neutral-50/50 flex justify-between items-center">
                   <span className="text-xs text-neutral-400">{mentor.yearsExperience}+ years in field</span>
-                  <button className="btn-primary text-sm px-4 py-1.5">Request Mentorship</button>
+                  {requestedIds.has(mentor.id) ? (
+                    <span className="text-sm text-green-600 flex items-center gap-1"><CheckCircle size={14} /> Requested</span>
+                  ) : (
+                    <button onClick={() => handleRequestMentorship(mentor.id)} disabled={!currentUserId || requestingId === mentor.id} className="btn-primary text-sm px-4 py-1.5 disabled:opacity-50 flex items-center gap-1">
+                      {requestingId === mentor.id ? <><Loader2 size={13} className="animate-spin" /> Sending…</> : "Request Mentorship"}
+                    </button>
+                  )}
                 </div>
               </div>
             </Reveal>

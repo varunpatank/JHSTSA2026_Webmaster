@@ -2,13 +2,9 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  addSubmittedEvent,
-  getAdminClubs,
-  isLoggedIn,
-} from "@/lib/clientState";
+import { supabase, eventsApi, organizationsApi, storageApi } from "@/lib/api";
 import { chapters } from "@/lib/data";
-import { ImagePlus, FileUp, X, Calendar, MapPin, Clock, Upload } from "lucide-react";
+import { ImagePlus, FileUp, X, Calendar, MapPin, Clock, Upload, Loader2 } from "lucide-react";
 
 interface EventSubmissionFormProps {
   initialClubId?: string;
@@ -32,27 +28,32 @@ export default function EventSubmissionForm({
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("Other");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [resourceFiles, setResourceFiles] = useState<{ name: string; size: string }[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [resourceFiles, setResourceFiles] = useState<{ name: string; size: string; file: File }[]>([]);
   const [isPublic, setIsPublic] = useState(true);
   const [maxAttendees, setMaxAttendees] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const imageInputRef = useRef<HTMLInputElement>(null);
   const resourceInputRef = useRef<HTMLInputElement>(null);
 
-  const availableClubs = useMemo(() => {
-    const admin = getAdminClubs();
-    if (admin.length > 0)
-      return admin.map((club) => ({ id: club.id, name: club.name }));
-    return chapters
-      .slice(0, 6)
-      .map((club) => ({ id: club.id, name: club.name }));
-  }, []);
+  const [availableClubs, setAvailableClubs] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    if (!clubId && availableClubs[0]) {
-      setClubId(availableClubs[0].id);
-    }
-    setLoaded(true);
-  }, [availableClubs, clubId]);
+    let cancelled = false;
+    (async () => {
+      const { data } = await organizationsApi.getAll();
+      if (!cancelled) {
+        const clubs = data && data.length > 0
+          ? data.map((o: any) => ({ id: o.id, name: o.name }))
+          : chapters.slice(0, 6).map((c) => ({ id: c.id, name: c.name }));
+        setAvailableClubs(clubs);
+        if (!initialClubId && clubs[0]) setClubId(clubs[0].id);
+        setLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [initialClubId]);
 
   if (!loaded) {
     if (isModal) return null;
@@ -62,6 +63,7 @@ export default function EventSubmissionForm({
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onload = (ev) => setImagePreview(ev.target?.result as string);
       reader.readAsDataURL(file);
@@ -74,31 +76,62 @@ export default function EventSubmissionForm({
       const newFiles = Array.from(files).map((f) => ({
         name: f.name,
         size: f.size < 1024 * 1024 ? `${(f.size / 1024).toFixed(0)} KB` : `${(f.size / (1024 * 1024)).toFixed(1)} MB`,
+        file: f,
       }));
       setResourceFiles((prev) => [...prev, ...newFiles]);
     }
   };
 
-  const onSubmit = (event: FormEvent) => {
+  const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const selectedClub = availableClubs.find((club) => club.id === clubId);
+    setSubmitting(true);
+    setError("");
 
-    addSubmittedEvent({
-      id: `custom-${Date.now()}`,
-      clubId,
-      clubName: selectedClub?.name || "Club",
-      title,
-      description,
-      date,
-      startTime,
-      endTime,
-      location,
-    });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError("You must be logged in to create an event.");
+        setSubmitting(false);
+        return;
+      }
 
-    if (isModal && onClose) {
-      onClose();
-    } else {
-      router.push("/events?from=created");
+      let image_url: string | undefined;
+      if (imageFile) {
+        const uploadRes = await storageApi.uploadFile(user.id, imageFile, 'uploads');
+        if (uploadRes.data) image_url = uploadRes.data.publicUrl;
+      }
+
+      const eventData: Record<string, any> = {
+        name: title,
+        description,
+        time: date ? new Date(`${date}T${startTime || '00:00'}`).toISOString() : undefined,
+        start_time: startTime,
+        end_time: endTime,
+        location_text: location,
+        category,
+        is_public: isPublic,
+        max_attendees: maxAttendees ? parseInt(maxAttendees, 10) : undefined,
+        image_url,
+        created_by: user.id,
+        org_id: clubId || undefined,
+      };
+
+      const { error: dbErr } = await eventsApi.create(eventData);
+      if (dbErr) {
+        setError(dbErr.message || "Failed to create event.");
+        setSubmitting(false);
+        return;
+      }
+
+      if (isModal && onClose) {
+        onClose();
+      } else {
+        router.push("/events?from=created");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -139,7 +172,7 @@ export default function EventSubmissionForm({
         {imagePreview ? (
           <div className="relative  overflow-hidden border border-neutral-200">
             <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover" />
-            <button type="button" onClick={() => { setImagePreview(null); if (imageInputRef.current) imageInputRef.current.value = ""; }}
+            <button type="button" onClick={() => { setImagePreview(null); setImageFile(null); if (imageInputRef.current) imageInputRef.current.value = ""; }}
               className="absolute top-2 right-2 p-1  bg-black/50 text-white hover:bg-black/70">
               <X size={16} />
             </button>
@@ -156,21 +189,21 @@ export default function EventSubmissionForm({
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-neutral-700 mb-1 flex items-center gap-1"><Calendar size={14} /> Date</label>
+          <label className="text-sm font-semibold text-neutral-700 mb-1 flex items-center gap-1"><Calendar size={14} /> Date</label>
           <input type="date" className="input-field" value={date} onChange={(e) => setDate(e.target.value)} required />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-neutral-700 mb-1 flex items-center gap-1"><MapPin size={14} /> Location</label>
+          <label className="text-sm font-semibold text-neutral-700 mb-1 flex items-center gap-1"><MapPin size={14} /> Location</label>
           <input className="input-field" value={location} onChange={(e) => setLocation(e.target.value)} required placeholder="Room 204, Gym, etc." />
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-neutral-700 mb-1 flex items-center gap-1"><Clock size={14} /> Start time</label>
+          <label className="text-sm font-semibold text-neutral-700 mb-1 flex items-center gap-1"><Clock size={14} /> Start time</label>
           <input type="time" className="input-field" value={startTime} onChange={(e) => setStartTime(e.target.value)} required />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-neutral-700 mb-1 flex items-center gap-1"><Clock size={14} /> End time</label>
+          <label className="text-sm font-semibold text-neutral-700 mb-1 flex items-center gap-1"><Clock size={14} /> End time</label>
           <input type="time" className="input-field" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
         </div>
       </div>
@@ -211,9 +244,10 @@ export default function EventSubmissionForm({
         )}
       </div>
 
-      <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
-        <Upload size={16} /> Publish Event
+      <button type="submit" disabled={submitting} className="btn-primary w-full flex items-center justify-center gap-2">
+        {submitting ? <><Loader2 size={16} className="animate-spin" /> Creating…</> : <><Upload size={16} /> Publish Event</>}
       </button>
+      {error && <p className="text-sm text-red-600 font-medium mt-2">{error}</p>}
 
       {!isModal && (
         <div className="mt-4 pt-4 border-t border-neutral-200 flex flex-wrap gap-3 text-sm">

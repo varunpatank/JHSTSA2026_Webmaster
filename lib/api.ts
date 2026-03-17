@@ -44,28 +44,22 @@ export const authApi = {
     }) => {
         const { name, email, grade, password, bio, phone_number, school, is_adult } = data
 
-        const signUpPayload: any = { email, password }
-
-        const authRes = await supabase.auth.signUp(signUpPayload)
-        if (authRes.error) return { auth: authRes, profile: null }
-
-        const userId = authRes.data.user?.id
-        if (!userId) {
-            return { auth: authRes, profile: { data: null, error: new Error('User ID not available; profile creation deferred') } }
-        }
-
-        const profileRes = await supabase.from('profiles').insert({
-            id: userId,
-            name: name,
-            bio: bio ?? null,
+        const authRes = await supabase.auth.signUp({
             email,
-            phone_number: phone_number ?? null,
-            grade: grade ?? null,
-            school: school ?? null,
-            is_adult: !!is_adult,
-        }).select().single()
+            password,
+            options: {
+                data: {
+                    name,
+                    grade: grade || null,
+                    school: school || null,
+                    is_adult: !!is_adult,
+                    bio: bio || null,
+                    phone_number: phone_number || null,
+                },
+            },
+        })
 
-        return { auth: authRes, profile: profileRes }
+        return { auth: authRes, profile: null }
     },
 
 
@@ -363,6 +357,15 @@ export const storageApi = {
         if (!path) return null
         return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl
     },
+
+    uploadFile: async (userId: string, file: File, bucket: string = 'uploads') => {
+        const ext = file.name.split('.').pop() || 'bin'
+        const path = `${userId}/${Date.now()}.${ext}`
+        const { data, error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false, contentType: file.type })
+        if (error) return { data: null, error }
+        const publicUrl = supabase.storage.from(bucket).getPublicUrl(data.path).data.publicUrl
+        return { data: { path: data.path, publicUrl }, error: null }
+    },
 }
 
 
@@ -426,6 +429,12 @@ export const discussionsApi = {
 
     addReply: (data: { discussion_id: string; author_id: string; content: string }) =>
         supabase.from('discussion_replies').insert(data).select('*, profiles(name, avatar_url)').single(),
+
+    vote: (discussionId: string, userId: string, vote: 1 | -1) =>
+        supabase.from('discussion_votes').upsert({ discussion_id: discussionId, user_id: userId, vote }, { onConflict: 'discussion_id,user_id' }),
+
+    removeVote: (discussionId: string, userId: string) =>
+        supabase.from('discussion_votes').delete().eq('discussion_id', discussionId).eq('user_id', userId),
 }
 
 
@@ -467,13 +476,13 @@ export const quizzesApi = {
 
 export const uploadsApi = {
     getAll: () =>
-        supabase.from('uploads').select('*, profiles(name)').order('created_at', { ascending: false }).limit(50),
+        supabase.from('uploads').select('*, profiles(name, avatar_url)').order('created_at', { ascending: false }).limit(50),
 
     getByOrg: (orgId: string) =>
-        supabase.from('uploads').select('*, profiles(name)').eq('org_id', orgId).order('created_at', { ascending: false }).limit(50),
+        supabase.from('uploads').select('*, profiles(name, avatar_url)').eq('org_id', orgId).order('created_at', { ascending: false }).limit(50),
 
-    create: (data: { user_id: string; file_name: string; file_url: string; file_type?: string; file_size?: number; description?: string; org_id?: string }) =>
-        supabase.from('uploads').insert(data).select().single(),
+    create: (data: { user_id: string; file_name: string; file_url: string; title?: string; file_type?: string; file_size?: number; description?: string; category?: string; tags?: string[]; org_id?: string }) =>
+        supabase.from('uploads').insert(data).select('*, profiles(name, avatar_url)').single(),
 
     delete: (id: string) =>
         supabase.from('uploads').delete().eq('id', id),
@@ -501,6 +510,9 @@ export const eventRegistrationsApi = {
 
 
 export const clubProposalsApi = {
+    getAll: () =>
+        supabase.from('club_proposals').select('*, profiles(name, avatar_url)').order('submitted_at', { ascending: false }).limit(100),
+
     getByUser: (userId: string) =>
         supabase.from('club_proposals').select('*').eq('submitted_by', userId).order('submitted_at', { ascending: false }).limit(20),
 
@@ -508,13 +520,18 @@ export const clubProposalsApi = {
         submitted_by: string; club_name: string; mission_statement: string;
         category?: string; proposed_advisor?: string; advisor_email?: string;
         justification?: string; constitution_draft?: string; first_year_plan?: string;
-        budget_requirements?: string; meeting_space_needs?: string; interested_members?: string;
+        budget_requirements?: string; meeting_space_needs?: string; meeting_schedule?: string;
+        meeting_location?: string; interested_members?: string; expected_members?: number;
+        social_links?: Record<string, string>; resource_links?: { name: string; url: string }[];
         logo_url?: string; poster_url?: string;
     }) =>
         supabase.from('club_proposals').insert(data).select().single(),
 
     getById: (id: string) =>
-        supabase.from('club_proposals').select('*').eq('id', id).single(),
+        supabase.from('club_proposals').select('*, profiles(name, avatar_url)').eq('id', id).single(),
+
+    update: (id: string, data: Record<string, unknown>) =>
+        supabase.from('club_proposals').update(data).eq('id', id).select().single(),
 }
 
 

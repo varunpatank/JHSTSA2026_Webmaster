@@ -40,7 +40,7 @@ export default function AlumniPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Community</p>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><GraduationCap size={40} /> Alumni Network</h1>
@@ -52,9 +52,9 @@ export default function AlumniPage() {
               { label: "Career Panels", value: careerPanels.length },
               { label: "Chapters Supported", value: "15" },
             ].map(s => (
-              <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/10  p-3 text-center">
-                <p className="text-xl font-bold">{s.value}</p>
-                <p className="text-xs text-neutral-300">{s.label}</p>
+              <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/15 p-5 text-center hover:bg-white/15 transition-colors">
+                <p className="text-3xl md:text-4xl font-heading font-bold text-secondary-300">{s.value}</p>
+                <p className="text-sm text-white/80 mt-1.5 font-medium">{s.label}</p>
               </div>
             ))}
           </div>

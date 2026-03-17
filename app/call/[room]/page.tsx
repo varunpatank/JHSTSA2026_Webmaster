@@ -24,14 +24,14 @@ export default function CallRoomPage({ params }: { params: Promise<{ room: strin
 
   if (!joined) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-primary-900 flex items-center justify-center p-4">
         <div className="w-full max-w-lg animate-fade-up">
           <Link href="/meetings" className="inline-flex items-center gap-1.5 text-primary-300 hover:text-white text-sm mb-6 transition-colors">
             Back to Meetings
           </Link>
 
           <div className="bg-white  shadow-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-5 text-white">
+            <div className="bg-primary-600 px-6 py-5 text-white">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm  flex items-center justify-center">
                   <PhoneCall size={24} />

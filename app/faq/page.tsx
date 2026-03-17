@@ -43,7 +43,7 @@ export default function FAQPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Help Center</p>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold">Frequently Asked Questions</h1>

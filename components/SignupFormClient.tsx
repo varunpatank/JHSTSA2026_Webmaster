@@ -72,12 +72,6 @@ export default function SignupFormClient({ redirect = "/profile" }: SignupFormCl
         return;
       }
 
-      if (res.profile?.error) {
-        setError((res.profile.error as any)?.message || "Profile creation failed");
-        setLoading(false);
-        return;
-      }
-
           setMissing({});
 
       router.push(redirect);

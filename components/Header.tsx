@@ -67,11 +67,11 @@ export default function Header() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/dashboard", label: "Dashboard" },
     { href: "/directory", label: "Discover" },
     { href: "/start-a-club", label: "Create" },
     { href: "/resources", label: "Resources" },
-    { href: "/students", label: "Students" },
+    { href: "/community", label: "Social" },
+    { href: "/dashboard", label: "Dashboard" },
   ];
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);

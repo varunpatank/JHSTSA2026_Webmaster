@@ -7,7 +7,7 @@ import { ArrowRight, BookOpen, Clock, FileText } from "lucide-react";
 export default function GuidesIndexPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Resources</p>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold">Guides & Handbooks</h1>
@@ -35,7 +35,7 @@ export default function GuidesIndexPage() {
           ))}
         </div>
 
-        <div className="mt-10 card p-6 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-center">
+        <div className="mt-10 card p-6 bg-primary-600 text-white text-center">
           <h2 className="text-xl font-heading font-bold">Need Help?</h2>
           <p className="text-primary-100 mt-2">Check our FAQ or ask our AI assistant for personalised help.</p>
           <div className="mt-4 flex justify-center gap-3">

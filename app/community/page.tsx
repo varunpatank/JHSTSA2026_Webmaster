@@ -2,484 +2,556 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  FileText, Heart, ImageIcon, MessageCircle, Paperclip, Send,
+  Upload, X, Bookmark, Share2, TrendingUp, Users,
+  Calendar, Phone, MoreHorizontal, ThumbsUp,
+} from 'lucide-react';
 
 const EmbeddedCall = dynamic(() => import('@/components/EmbeddedCall'), { ssr: false });
 
+interface FeedReply {
+  id: number;
+  author: string;
+  avatar: string;
+  text: string;
+  time: string;
+}
+
+interface FeedPost {
+  id: number;
+  author: string;
+  avatar: string;
+  club: string;
+  time: string;
+  text: string;
+  type: 'text' | 'resource' | 'image' | 'achievement' | 'discussion';
+  fileName?: string;
+  fileSize?: string;
+  likes: number;
+  liked: boolean;
+  saved: boolean;
+  replies: FeedReply[];
+}
+
+const INITIAL_FEED: FeedPost[] = [
+  {
+    id: 1,
+    author: 'Maria G.',
+    avatar: 'MG',
+    club: 'TSA',
+    time: '2 hours ago',
+    text: 'Just uploaded the full TSA presentation template pack our chapter used at States. Feel free to download and customize!',
+    type: 'resource',
+    fileName: 'TSA_Presentation_Templates.zip',
+    fileSize: '4.2 MB',
+    likes: 24,
+    liked: false,
+    saved: false,
+    replies: [
+      { id: 1, author: 'James L.', avatar: 'JL', text: 'This is incredible, thanks Maria! Using this for regionals.', time: '1h ago' },
+      { id: 2, author: 'Sophie K.', avatar: 'SK', text: 'The slide layouts are clean. Great work!', time: '45m ago' },
+    ],
+  },
+  {
+    id: 2,
+    author: 'Alex J.',
+    avatar: 'AJ',
+    club: 'Robotics',
+    time: '5 hours ago',
+    text: 'Does anyone have experience with PID tuning for FTC robots? We keep overshooting our target position.',
+    type: 'discussion',
+    likes: 8,
+    liked: false,
+    saved: false,
+    replies: [
+      { id: 1, author: 'Taylor M.', avatar: 'TM', text: 'Try reducing your P gain and adding a small D term. We had the same issue last season.', time: '4h ago' },
+    ],
+  },
+  {
+    id: 3,
+    author: 'Sophie K.',
+    avatar: 'SK',
+    club: 'NHS',
+    time: '1 day ago',
+    text: 'Our chapter just hit 500 community service hours this semester! So proud of everyone who contributed.',
+    type: 'achievement',
+    likes: 42,
+    liked: false,
+    saved: false,
+    replies: [],
+  },
+  {
+    id: 4,
+    author: 'James L.',
+    avatar: 'JL',
+    club: 'FBLA',
+    time: '1 day ago',
+    text: 'Here is the fundraiser tracking spreadsheet I made. It auto-calculates profit margins and has a dashboard.',
+    type: 'resource',
+    fileName: 'FBLA_Fundraiser_Tracker.xlsx',
+    fileSize: '1.8 MB',
+    likes: 31,
+    liked: false,
+    saved: false,
+    replies: [
+      { id: 1, author: 'Maria G.', avatar: 'MG', text: 'The formulas in this are next level. Sharing with our treasurer!', time: '22h ago' },
+    ],
+  },
+  {
+    id: 5,
+    author: 'Taylor M.',
+    avatar: 'TM',
+    club: 'Drama',
+    time: '2 days ago',
+    text: 'Spring musical auditions are next week! Drop your monologue tips below.',
+    type: 'text',
+    likes: 15,
+    liked: false,
+    saved: false,
+    replies: [],
+  },
+  {
+    id: 6,
+    author: 'Priya K.',
+    avatar: 'PK',
+    club: 'Debate',
+    time: '3 days ago',
+    text: 'Uploading my evidence files and case briefs from last tournament. Hope these help someone prepping for districts!',
+    type: 'resource',
+    fileName: 'Debate_Evidence_Briefs.pdf',
+    fileSize: '2.5 MB',
+    likes: 19,
+    liked: false,
+    saved: false,
+    replies: [
+      { id: 1, author: 'Alex J.', avatar: 'AJ', text: 'These sources are gold. Thank you!', time: '2d ago' },
+    ],
+  },
+];
+
 export default function CommunityPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'discussions' | 'spotlight' | 'stories' | 'alumni' | 'connect'>('discussions');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const discussions = [
-    { id: 1, title: 'Tips for TSA State Competition?', author: 'Maria G.', club: 'TSA', replies: 23, lastActive: '2 hours ago', hot: true },
-    { id: 2, title: 'Best fundraising ideas for spring', author: 'James L.', club: 'FBLA', replies: 18, lastActive: '5 hours ago', hot: true },
-    { id: 3, title: 'How to balance club leadership with academics', author: 'Sophie K.', club: 'NHS', replies: 31, lastActive: '1 day ago', hot: false },
-    { id: 4, title: 'Robotics competition strategies', author: 'Alex J.', club: 'Robotics', replies: 15, lastActive: '1 day ago', hot: false },
-    { id: 5, title: 'New member recruitment ideas', author: 'Taylor M.', club: 'Drama', replies: 12, lastActive: '2 days ago', hot: false },
-  ];
+  // Feed state
+  const [feed, setFeed] = useState<FeedPost[]>(INITIAL_FEED);
+  const [postText, setPostText] = useState('');
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'discussions' | 'resources' | 'achievements'>('all');
 
-  const spotlights = [
-    { id: 1, title: 'TSA Chapter Wins State Championship', club: 'TSA', date: 'Nov 2024', image: '🏆', featured: true },
-    { id: 2, title: 'Drama Club Spring Musical Sells Out', club: 'Drama', date: 'Oct 2024', image: '🎭', featured: false },
-    { id: 3, title: 'Robotics Team Qualifies for Nationals', club: 'Robotics', date: 'Oct 2024', image: '🤖', featured: false },
-    { id: 4, title: 'NHS Community Service Milestone', club: 'NHS', date: 'Sep 2024', image: '🤝', featured: false },
-  ];
+  // Replies
+  const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
+  const [replyInputs, setReplyInputs] = useState<Record<number, string>>({});
 
-  const successStories = [
-    { id: 1, title: 'From Club Member to Tech Entrepreneur', author: 'Sarah Chen, Class of 2020', club: 'TSA', excerpt: 'How TSA skills helped me launch my startup...' },
-    { id: 2, title: 'Leadership Lessons That Shaped My Career', author: 'Michael Brown, Class of 2018', club: 'FBLA', excerpt: 'The business skills I learned in FBLA...' },
-    { id: 3, title: 'Finding My Voice Through Debate', author: 'Emily Rodriguez, Class of 2021', club: 'Debate', excerpt: 'Public speaking transformed my confidence...' },
-  ];
+  // Chat
+  const [chatMessages, setChatMessages] = useState([
+    { user: 'Sophie K.', text: 'TSA rubric breakdown is so helpful!', time: '1h' },
+    { user: 'Taylor M.', text: 'Anyone have the meeting agenda template?', time: '3h' },
+    { user: 'Maria G.', text: 'Check the fundraising playbook I posted!', time: '6h' },
+  ]);
+  const [chatInput, setChatInput] = useState('');
 
-  const alumni = [
-    { id: 1, name: 'Dr. Jennifer Walsh', year: '2015', role: 'Software Engineer at Google', club: 'TSA' },
-    { id: 2, name: 'Marcus Thompson', year: '2017', role: 'Investment Banker', club: 'FBLA' },
-    { id: 3, name: 'Amanda Lee', year: '2019', role: 'Broadway Performer', club: 'Drama' },
-  ];
-
-
-  const members = [
-    { id: 'm1', name: 'Greg Shelton', role: 'Advisor', club: 'Juanita HS Webmaster', email: 'gshelton@lwsd.org', bio: 'Advisor with 10+ years experience mentoring Webmaster teams.', availability: ['Mon 3:30pm','Wed 4:00pm'] },
-    { id: 'm2', name: 'Alex Johnson', role: 'Team Captain', club: 'Robotics', email: 'a.johnson@student.edu', bio: 'Lead programmer and mentor for new members.', availability: ['Tue 5:00pm','Thu 3:30pm'] },
-    { id: 'm3', name: 'Isabella Martinez', role: 'President', club: 'Community Service', email: 'i.martinez@student.edu', bio: 'Organizes large volunteer drives and outreach.', availability: ['Fri 12:00pm'] },
-  ];
-
-  const [meetings, setMeetings] = useState<any[]>([]);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<any | null>(null);
-  const [form, setForm] = useState({ datetime: '', duration: 30, method: 'Video', message: '' });
-
-  function openSchedule(member: any) {
-    setSelectedMember(member);
-    setShowScheduleModal(true);
-  }
-
-  function createMeeting() {
-    if (!selectedMember || !form.datetime) return alert('Please choose date/time');
-    const mt = {
-      id: 'mt-' + Date.now(),
-      member: selectedMember,
-      datetime: form.datetime,
-      duration: form.duration,
-      method: form.method,
-      message: form.message,
-      room: `ClubConnect-${selectedMember.id}-${Date.now()}`,
-    };
-    setMeetings((m) => [mt, ...m]);
-    setShowScheduleModal(false);
-    setForm({ datetime: '', duration: 30, method: 'Video', message: '' });
-  }
-
-  function downloadICS(meeting: any) {
-    const start = new Date(meeting.datetime);
-    const end = new Date(start.getTime() + meeting.duration * 60000);
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${meeting.id}\nDTSTAMP:${start.toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTSTART:${start.toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTEND:${end.toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nSUMMARY:Meeting with ${meeting.member.name}\nDESCRIPTION:${meeting.message}\nEND:VEVENT\nEND:VCALENDAR`;
-    const blob = new Blob([ics], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${meeting.member.name.replace(/\s+/g,'_')}-meeting.ics`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
+  // Call
   const [embeddedRoom, setEmbeddedRoom] = useState<string | null>(null);
 
-  function startEmbeddedRoom(roomId: string) {
-    setEmbeddedRoom(roomId);
-  }
-
-  function openLocalPreview() {
-
-    setShowPreview(true);
-  }
-
-  const [showPreview, setShowPreview] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-    async function start() {
-      if (!showPreview) return;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (videoRef.current) videoRef.current.srcObject = stream;
-      } catch (err) {
-        console.error('getUserMedia failed', err);
-        alert('Unable to access camera/microphone for preview.');
-        setShowPreview(false);
-      }
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files && e.target.files[0]) {
+      setAttachedFile(e.target.files[0]);
     }
-    start();
-    return () => {
-      if (stream) stream.getTracks().forEach(t => t.stop());
-      if (videoRef.current) videoRef.current.srcObject = null;
+  }
+
+  function submitPost() {
+    if (!postText.trim() && !attachedFile) return;
+    const newPost: FeedPost = {
+      id: Date.now(),
+      author: 'You',
+      avatar: 'YO',
+      club: 'General',
+      time: 'Just now',
+      text: postText.trim(),
+      type: attachedFile ? 'resource' : 'text',
+      fileName: attachedFile?.name,
+      fileSize: attachedFile ? `${(attachedFile.size / 1024 / 1024).toFixed(1)} MB` : undefined,
+      likes: 0,
+      liked: false,
+      saved: false,
+      replies: [],
     };
-  }, [showPreview]);
+    setFeed(prev => [newPost, ...prev]);
+    setPostText('');
+    setAttachedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function toggleLike(id: number) {
+    setFeed(prev =>
+      prev.map(p =>
+        p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p
+      )
+    );
+  }
+
+  function toggleSave(id: number) {
+    setFeed(prev => prev.map(p => (p.id === id ? { ...p, saved: !p.saved } : p)));
+  }
+
+  function toggleReplies(id: number) {
+    setExpandedReplies(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function submitReply(postId: number) {
+    const text = replyInputs[postId]?.trim();
+    if (!text) return;
+    const reply: FeedReply = { id: Date.now(), author: 'You', avatar: 'YO', text, time: 'Just now' };
+    setFeed(prev =>
+      prev.map(p => (p.id === postId ? { ...p, replies: [reply, ...p.replies] } : p))
+    );
+    setReplyInputs(prev => ({ ...prev, [postId]: '' }));
+  }
+
+  function sendChat() {
+    if (!chatInput.trim()) return;
+    setChatMessages(prev => [{ user: 'You', text: chatInput.trim(), time: 'now' }, ...prev]);
+    setChatInput('');
+  }
+
+  const filtered = feed.filter(p => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'discussions') return p.type === 'discussion' || p.type === 'text';
+    if (activeFilter === 'resources') return p.type === 'resource' || p.type === 'image';
+    if (activeFilter === 'achievements') return p.type === 'achievement';
+    return true;
+  });
+
+  const typeColors: Record<string, string> = {
+    resource: 'bg-primary-100 text-primary-700',
+    discussion: 'bg-secondary-100 text-secondary-700',
+    achievement: 'bg-accent-100 text-accent-700',
+    image: 'bg-primary-50 text-primary-600',
+    text: 'bg-neutral-100 text-neutral-600',
+  };
 
   return (
     <div className="min-h-screen bg-neutral-100">
-      {}
-      <div className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold font-heading mb-4">Community</h1>
-          <p className="text-xl text-neutral-200 max-w-2xl">
-            Connect with fellow students, celebrate achievements, and learn from alumni success stories.
-          </p>
-        </div>
-      </div>
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.png,.jpg,.jpeg,.gif,.svg,.txt,.md,.csv"
+        onChange={handleFileSelect}
+      />
 
-      {}
-      <div className="bg-white border-b border-neutral-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-0">
-            {[
-              { key: 'discussions', label: 'Discussions', icon: '💬' },
-              { key: 'spotlight', label: 'Club Spotlight', icon: '⭐' },
-              { key: 'stories', label: 'Success Stories', icon: '🌟' },
-              { key: 'alumni', label: 'Alumni Network', icon: '🎓' },
-              { key: 'connect', label: 'Connect & Meetings', icon: '📞' },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as 'discussions' | 'spotlight' | 'stories' | 'alumni' | 'connect')}
-                className={`px-6 py-4 font-medium border-b-3 transition-colors ${
-                  activeTab === tab.key
-                    ? 'border-secondary-500 text-primary-600 bg-neutral-50'
-                    : 'border-transparent text-neutral-600 hover:text-primary-600 hover:bg-neutral-50'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
+      {/* Slim Hero */}
+      <div className="bg-primary-700 text-white py-5">
+        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold font-heading">Community Feed</h1>
+            <p className="text-xs text-neutral-300 mt-0.5">Share resources, start discussions, connect with clubs</p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-300">
+            <span className="bg-white/10 px-2 py-0.5 flex items-center gap-1"><TrendingUp size={12} /> {feed.length} Posts</span>
+            <span className="bg-white/10 px-2 py-0.5 flex items-center gap-1"><Users size={12} /> 47 Online</span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {}
-        {activeTab === 'discussions' && (
-          <div>
-            <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-              <h2 className="text-2xl font-bold text-primary-700">Forum Discussions</h2>
-              <Link
-                href="/hub/discussions"
-                className="px-4 py-2 bg-secondary-500 text-white hover:bg-secondary-600 transition-colors"
-              >
-                ➕ Start New Discussion
-              </Link>
-            </div>
+      <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className="flex gap-4">
 
-            <div className="space-y-4">
-              {discussions.map(discussion => (
-                <Link
-                  key={discussion.id}
-                  href="/hub/discussions"
-                  className="block bg-white border-2 border-neutral-200 p-6 hover:border-primary-400 transition-colors"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        {discussion.hot && (
-                          <span className="px-2 py-1 bg-accent-100 text-accent-700 text-xs font-bold">🔥 HOT</span>
-                        )}
-                        <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium">{discussion.club}</span>
+          {/*  Main Feed Column  */}
+          <div className="flex-1 min-w-0 space-y-3">
+
+            {/*  Post Composer  */}
+            <div className="bg-white border border-neutral-200 p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 bg-primary-600 text-white flex items-center justify-center text-xs font-bold shrink-0">YO</div>
+                <div className="flex-1 min-w-0">
+                  <textarea
+                    value={postText}
+                    onChange={e => setPostText(e.target.value)}
+                    placeholder="Share a resource, start a discussion, or post an update..."
+                    rows={2}
+                    className="w-full border border-neutral-200 px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary-400 placeholder:text-neutral-400"
+                  />
+                  {/* Attached file preview */}
+                  {attachedFile && (
+                    <div className="mt-2 flex items-center gap-2 bg-primary-50 border border-primary-200 px-3 py-2">
+                      <FileText size={16} className="text-primary-600 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-primary-700 truncate">{attachedFile.name}</p>
+                        <p className="text-[10px] text-primary-500">{(attachedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                       </div>
-                      <h3 className="text-lg font-bold text-primary-700">{discussion.title}</h3>
-                      <p className="text-neutral-500 text-sm mt-1">Started by {discussion.author}</p>
+                      <button onClick={() => { setAttachedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }} className="text-neutral-400 hover:text-neutral-600">
+                        <X size={14} />
+                      </button>
                     </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-primary-600">{discussion.replies}</div>
-                      <div className="text-neutral-400 text-sm">replies</div>
-                      <div className="text-neutral-500 text-xs mt-2">Active {discussion.lastActive}</div>
+                  )}
+                  <div className="mt-2 flex items-center justify-between">
+                    <div className="flex gap-1">
+                      <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-primary-50 border border-primary-200 text-primary-700 hover:bg-primary-100 transition-colors">
+                        <Upload size={14} /> Upload File
+                      </button>
+                      <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-100 transition-colors">
+                        <ImageIcon size={14} /> Image
+                      </button>
+                      <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-100 transition-colors">
+                        <Paperclip size={14} /> Attach
+                      </button>
                     </div>
+                    <button
+                      onClick={submitPost}
+                      disabled={!postText.trim() && !attachedFile}
+                      className="flex items-center gap-1 px-4 py-1.5 bg-secondary-500 text-white text-xs font-bold hover:bg-secondary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Send size={14} /> Post
+                    </button>
                   </div>
-                </Link>
-              ))}
-            </div>
-
-            <div className="mt-6 p-6 bg-primary-50 border-2 border-primary-200">
-              <h3 className="font-bold text-primary-700 mb-2">Join the Conversation!</h3>
-              <p className="text-neutral-600 mb-4">Share tips, ask questions, and connect with fellow club members across your school.</p>
-              <Link
-                href="/hub/discussions"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 transition-colors"
-              >
-                Browse All Discussions →
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {}
-        {activeTab === 'spotlight' && (
-          <div>
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">Club Spotlight</h2>
-
-            {}
-            {spotlights.filter(s => s.featured).map(spotlight => (
-              <div key={spotlight.id} className="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white p-8 mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-3 py-1 bg-white/20 text-sm font-bold">⭐ FEATURED</span>
-                  <span className="text-sm">{spotlight.date}</span>
                 </div>
-                <div className="text-6xl mb-4">{spotlight.image}</div>
-                <h3 className="text-2xl font-bold mb-2">{spotlight.title}</h3>
-                <p className="text-white/80">{spotlight.club}</p>
               </div>
-            ))}
+            </div>
 
-            {}
-            <div className="grid md:grid-cols-3 gap-6">
-              {spotlights.filter(s => !s.featured).map(spotlight => (
-                <div key={spotlight.id} className="bg-white border-2 border-neutral-200 p-6 hover:border-primary-400 transition-colors">
-                  <div className="text-4xl mb-4">{spotlight.image}</div>
-                  <span className="text-sm text-neutral-500">{spotlight.date}</span>
-                  <h3 className="text-lg font-bold text-primary-700 mt-2">{spotlight.title}</h3>
-                  <p className="text-secondary-600 mt-1">{spotlight.club}</p>
-                </div>
+            {/*  Feed Filters  */}
+            <div className="flex gap-1 bg-white border border-neutral-200 p-1">
+              {(['all', 'discussions', 'resources', 'achievements'] as const).map(f => (
+                <button key={f} onClick={() => setActiveFilter(f)}
+                  className={`flex-1 px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
+                    activeFilter === f ? 'bg-primary-600 text-white' : 'text-neutral-500 hover:bg-neutral-50'
+                  }`}>
+                  {f === 'all' ? 'All Posts' : f}
+                </button>
               ))}
             </div>
 
-            <div className="mt-8 text-center">
-              <Link
-                href="/spotlight"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
-              >
-                View All Spotlights →
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {}
-        {activeTab === 'stories' && (
-          <div>
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">Success Stories</h2>
-
-            <div className="space-y-6">
-              {successStories.map(story => (
-                <div key={story.id} className="bg-white border-2 border-neutral-200 p-8 hover:border-primary-400 transition-colors">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium">{story.club}</span>
+            {/*  Feed Posts  */}
+            {filtered.map(post => (
+              <div key={post.id} className="bg-white border border-neutral-200">
+                {/* Post header */}
+                <div className="flex items-center gap-3 px-4 pt-3 pb-2">
+                  <div className="w-9 h-9 bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold shrink-0">{post.avatar}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-primary-700">{post.author}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 font-semibold ${typeColors[post.type]}`}>{post.club}</span>
+                    </div>
+                    <p className="text-[10px] text-neutral-400">{post.time}</p>
                   </div>
-                  <h3 className="text-xl font-bold text-primary-700 mb-2">{story.title}</h3>
-                  <p className="text-secondary-600 font-medium mb-3">{story.author}</p>
-                  <p className="text-neutral-600">{story.excerpt}</p>
-                  <button className="mt-4 text-primary-600 font-medium hover:text-primary-700">
-                    Read Full Story →
+                  <button className="text-neutral-300 hover:text-neutral-500">
+                    <MoreHorizontal size={16} />
                   </button>
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-8 text-center">
-              <Link
-                href="/hub/stories"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
-              >
-                View All Stories →
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {}
-        {activeTab === 'alumni' && (
-          <div>
-            <h2 className="text-2xl font-bold text-primary-700 mb-6">Alumni Network</h2>
-
-            <div className="bg-primary-50 border-2 border-primary-200 p-6 mb-8">
-              <h3 className="font-bold text-primary-700 mb-2">Connect with Alumni</h3>
-              <p className="text-neutral-600">Our alumni network helps current students learn from graduates who've gone on to successful careers.</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {alumni.map(person => (
-                <div key={person.id} className="bg-white border-2 border-neutral-200 p-6 text-center">
-                  <div className="w-20 h-20 bg-primary-100 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl">
-                    👤
-                  </div>
-                  <h3 className="text-lg font-bold text-primary-700">{person.name}</h3>
-                  <p className="text-secondary-600 font-medium">Class of {person.year}</p>
-                  <p className="text-neutral-500 text-sm mt-2">{person.role}</p>
-                  <span className="inline-block mt-3 px-3 py-1 bg-primary-100 text-primary-700 text-sm">
-                    {person.club}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 text-center">
-              <Link
-                href="/alumni"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
-              >
-                View Full Alumni Directory →
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Connect & Meetings Tab (new) */}
-        {activeTab === 'connect' && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-primary-700">Connect with Founders & Members</h2>
-              <div className="flex gap-3">
-                <button onClick={() => setShowPreview(true)} className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 rounded">Local Call Preview</button>
-                <button onClick={() => { setSelectedMember(null); setShowScheduleModal(true); }} className="px-4 py-2 bg-secondary-500 text-white rounded">Schedule Meeting</button>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {members.map((member, idx) => (
-                <div key={member.id} className="bg-white border-2 border-neutral-200 p-6 hover:shadow-lg transition-shadow animate-fade-up" style={{ animationDelay: `${idx * 80}ms` }}>
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center text-2xl">{member.name.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <h3 className="font-bold text-primary-700">{member.name}</h3>
-                          <div className="text-xs text-neutral-500">{member.role} • {member.club}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs text-neutral-400">Availability</div>
-                          <div className="text-sm text-neutral-600">{member.availability.join(', ')}</div>
-                        </div>
+                {/* Post body */}
+                <div className="px-4 pb-2">
+                  <p className="text-sm text-neutral-700 leading-relaxed">{post.text}</p>
+                  {post.type === 'achievement' && (
+                    <div className="mt-2 bg-accent-50 border border-accent-200 px-3 py-2 flex items-center gap-2">
+                      <TrendingUp size={16} className="text-accent-600" />
+                      <span className="text-xs font-semibold text-accent-700">Achievement Unlocked</span>
+                    </div>
+                  )}
+                  {post.fileName && (
+                    <div className="mt-2 bg-primary-50 border border-primary-200 px-3 py-2 flex items-center gap-2">
+                      <FileText size={18} className="text-primary-600 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-primary-700 truncate">{post.fileName}</p>
+                        <p className="text-[10px] text-primary-500">{post.fileSize}</p>
                       </div>
-                      <p className="text-sm text-neutral-600 mt-3">{member.bio}</p>
-
-                      <div className="mt-4 flex gap-2">
-                        <button onClick={() => openSchedule(member)} className="px-3 py-2 bg-primary-600 text-white rounded">Book</button>
-                        <button onClick={() => router.push(`/call/${encodeURIComponent(`Community-${member.id}-${Date.now()}`)}`)} className="px-3 py-2 border rounded">Start Call (full‑screen)</button>
-                        <button onClick={() => { setSelectedMember(member); setShowScheduleModal(true); }} className="px-3 py-2 border rounded">Message / Propose</button>
-                      </div>
+                      <button className="px-2.5 py-1 bg-primary-600 text-white text-[10px] font-bold hover:bg-primary-700 transition-colors">
+                        Download
+                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </div>
 
-            <div className="mb-8 bg-white border  p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Upcoming Meetings</h3>
-                <div className="text-sm text-neutral-500">Manage on the Meetings page</div>
-              </div>
-              <p className="text-neutral-500 mb-4">Meetings are now managed on a dedicated page for better clarity and controls.</p>
-              <div className="flex gap-3">
-                <a href="/meetings" className="px-4 py-2 bg-primary-600 text-white rounded">Open Meetings →</a>
-                <button onClick={() => setShowScheduleModal(true)} className="px-4 py-2 border rounded">Quick schedule</button>
-              </div>
-            </div>
-
-            {/* Schedule modal */}
-            {showScheduleModal && (
-              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-                <div className="bg-white  w-full max-w-2xl p-6">
-                  <div className="flex items-start justify-between mb-4 gap-4">
-                    <h4 className="text-lg font-bold truncate max-w-[72%]">Schedule Meeting {selectedMember ? `with ${selectedMember.name}` : ''}</h4>
-                    <button onClick={() => setShowScheduleModal(false)} className="text-neutral-400 ml-auto">✕</button>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-neutral-600">Date & time</label>
-                      <input type="datetime-local" value={form.datetime} onChange={e=>setForm(f=>({...f, datetime: e.target.value}))} className="input-field mt-1 w-full" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-neutral-600">Duration (minutes)</label>
-                      <input type="number" value={form.duration} onChange={e=>setForm(f=>({...f, duration: Number(e.target.value)}))} className="input-field mt-1 w-full" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-neutral-600">Method</label>
-                      <select value={form.method} onChange={e=>setForm(f=>({...f, method: e.target.value}))} className="select-field mt-1 w-full">
-                        <option>Video</option>
-                        <option>Audio</option>
-                        <option>In-person</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-neutral-600">Message</label>
-                      <input value={form.message} onChange={e=>setForm(f=>({...f, message: e.target.value}))} className="input-field mt-1 w-full" />
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-end gap-3">
-                    <button onClick={() => setShowScheduleModal(false)} className="px-4 py-2 border rounded">Cancel</button>
-                    <button onClick={createMeeting} className="px-4 py-2 bg-secondary-500 text-white rounded">Schedule</button>
-                  </div>
+                {/* Post actions */}
+                <div className="flex items-center border-t border-neutral-100 px-4 py-1.5">
+                  <button onClick={() => toggleLike(post.id)} className={`flex items-center gap-1 px-3 py-1 text-xs font-semibold transition-colors ${post.liked ? 'text-accent-600' : 'text-neutral-400 hover:text-accent-500'}`}>
+                    {post.liked ? <Heart size={15} fill="currentColor" /> : <Heart size={15} />}
+                    <span>{post.likes}</span>
+                  </button>
+                  <button onClick={() => toggleReplies(post.id)} className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-neutral-400 hover:text-primary-600 transition-colors">
+                    <MessageCircle size={15} /> {post.replies.length}
+                  </button>
+                  <button onClick={() => toggleSave(post.id)} className={`flex items-center gap-1 px-3 py-1 text-xs font-semibold transition-colors ${post.saved ? 'text-secondary-600' : 'text-neutral-400 hover:text-secondary-500'}`}>
+                    {post.saved ? <Bookmark size={15} fill="currentColor" /> : <Bookmark size={15} />}
+                  </button>
+                  <button className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-neutral-400 hover:text-primary-600 transition-colors ml-auto">
+                    <Share2 size={15} />
+                  </button>
                 </div>
+
+                {/* Replies thread */}
+                {expandedReplies.has(post.id) && (
+                  <div className="border-t border-neutral-100 bg-neutral-50">
+                    {/* Reply input */}
+                    <div className="flex items-center gap-2 px-4 py-2 border-b border-neutral-100">
+                      <div className="w-6 h-6 bg-primary-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">YO</div>
+                      <input
+                        value={replyInputs[post.id] || ''}
+                        onChange={e => setReplyInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                        onKeyDown={e => e.key === 'Enter' && submitReply(post.id)}
+                        placeholder="Write a reply..."
+                        className="flex-1 bg-white border border-neutral-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-primary-400"
+                      />
+                      <button onClick={() => submitReply(post.id)} className="text-primary-600 hover:text-primary-700">
+                        <Send size={14} />
+                      </button>
+                    </div>
+                    {/* Existing replies */}
+                    <div className="divide-y divide-neutral-100 max-h-[250px] overflow-y-auto">
+                      {post.replies.map(r => (
+                        <div key={r.id} className="flex items-start gap-2 px-4 py-2">
+                          <div className="w-6 h-6 bg-primary-100 text-primary-700 flex items-center justify-center text-[9px] font-bold shrink-0">{r.avatar}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-primary-700">{r.author}</span>
+                              <span className="text-[10px] text-neutral-400">{r.time}</span>
+                            </div>
+                            <p className="text-xs text-neutral-600 mt-0.5">{r.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                      {post.replies.length === 0 && (
+                        <p className="text-xs text-neutral-400 px-4 py-3 text-center">No replies yet. Be the first!</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {filtered.length === 0 && (
+              <div className="bg-white border border-neutral-200 p-8 text-center">
+                <p className="text-sm text-neutral-400">No posts match this filter.</p>
               </div>
             )}
-
-            {/* Local preview call modal */}
-            {showPreview && (
-              <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-                <div className="bg-white  w-full max-w-2xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-lg font-bold">Call preview (local only)</h4>
-                    <button onClick={() => setShowPreview(false)} className="text-neutral-400">✕</button>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-neutral-100 p-4 rounded">
-                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-56 bg-black/10 rounded" />
-                    </div>
-                    <div>
-                      <h5 className="font-semibold">Start in‑platform call</h5>
-                      <p className="text-sm text-neutral-600 mb-3">Open an embedded in‑app meeting with full controls (mute, camera, screen, whiteboard).</p>
-                      <div className="flex gap-2">
-                        <button onClick={() => startEmbeddedRoom(`Community-Preview-${Date.now()}`)} className="px-4 py-2 bg-primary-600 text-white rounded">Open Embedded Call</button>
-                        <button onClick={() => navigator.clipboard?.writeText(`https://meet.jit.si/Community-${Date.now()}`)} className="px-4 py-2 border rounded">Copy Jitsi link</button>
-                      </div>
-                      <div className="mt-6">
-                        <h6 className="font-semibold">Notes</h6>
-                        <ul className="list-disc pl-5 text-sm text-neutral-600 mt-2">
-                          <li>Preview shows your local camera/microphone only (no remote participants).</li>
-                          <li>Embedded call uses Jitsi Meet iframe API so participants can join inside ClubConnect.</li>
-                          <li>Whiteboard is included in the embedded call (local-only for now).</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
           </div>
-        )}
-      </div>
 
-      {/* CTA Section */}
-      <div className="bg-white border-t border-neutral-200 py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-8">
-            <div className="flex flex-wrap items-center justify-between gap-6">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">Have a story to share?</h2>
-                <p className="text-white/80">Your club achievements deserve recognition. Submit your spotlight or success story.</p>
+          {/*  Right Sidebar  */}
+          <div className="hidden lg:block w-72 shrink-0 space-y-3">
+
+            {/* Live Chat */}
+            <div className="bg-white border border-neutral-200">
+              <div className="px-3 py-2 border-b border-neutral-200 flex items-center justify-between">
+                <h3 className="text-xs font-bold text-primary-700 flex items-center gap-1.5"><MessageCircle size={13} /> Live Chat</h3>
+                <span className="w-2 h-2 bg-green-500 rounded-full" />
               </div>
-              <Link
-                href="/hub/request"
-                className="px-6 py-3 bg-secondary-500 text-white font-medium hover:bg-secondary-600 transition-colors"
-              >
-                Submit Your Story
+              <div className="h-48 overflow-y-auto flex flex-col-reverse p-2 space-y-reverse space-y-1">
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={`text-[11px] px-2 py-1.5 ${msg.user === 'You' ? 'bg-primary-50 border-l-2 border-primary-400' : 'bg-neutral-50'}`}>
+                    <span className="font-bold text-primary-700">{msg.user}</span>
+                    <span className="text-neutral-300 mx-1"></span>
+                    <span className="text-neutral-400 text-[9px]">{msg.time}</span>
+                    <p className="text-neutral-600 mt-0.5">{msg.text}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex border-t border-neutral-200">
+                <input
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendChat()}
+                  placeholder="Message..."
+                  className="flex-1 px-2.5 py-2 text-xs focus:outline-none"
+                />
+                <button onClick={sendChat} className="px-2.5 text-primary-600 hover:text-primary-700">
+                  <Send size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* Online Members */}
+            <div className="bg-white border border-neutral-200">
+              <div className="px-3 py-2 border-b border-neutral-200">
+                <h3 className="text-xs font-bold text-primary-700 flex items-center gap-1.5"><Users size={13} /> Online Now</h3>
+              </div>
+              <div className="divide-y divide-neutral-100">
+                {[
+                  { name: 'Maria G.', avatar: 'MG', role: 'TSA President' },
+                  { name: 'Alex J.', avatar: 'AJ', role: 'Robotics Captain' },
+                  { name: 'Sophie K.', avatar: 'SK', role: 'NHS Secretary' },
+                  { name: 'James L.', avatar: 'JL', role: 'FBLA Treasurer' },
+                ].map((m, i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-2">
+                    <div className="relative">
+                      <div className="w-7 h-7 bg-primary-100 text-primary-700 flex items-center justify-center text-[10px] font-bold">{m.avatar}</div>
+                      <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-primary-700">{m.name}</p>
+                      <p className="text-[9px] text-neutral-400">{m.role}</p>
+                    </div>
+                    <button
+                      onClick={() => router.push(`/call/${encodeURIComponent(`Community-${m.avatar}-${Date.now()}`)}`)}
+                      className="p-1 text-neutral-300 hover:text-primary-600 transition-colors"
+                    >
+                      <Phone size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="bg-white border border-neutral-200">
+              <div className="px-3 py-2 border-b border-neutral-200">
+                <h3 className="text-xs font-bold text-primary-700">Quick Links</h3>
+              </div>
+              <div className="p-2 space-y-0.5">
+                {[
+                  { label: 'Resource Library', href: '/resources', icon: <FileText size={13} /> },
+                  { label: 'Discussion Forum', href: '/hub/discussions', icon: <MessageCircle size={13} /> },
+                  { label: 'Club Guides', href: '/guides', icon: <Paperclip size={13} /> },
+                  { label: 'Events Calendar', href: '/events', icon: <Calendar size={13} /> },
+                  { label: 'Success Stories', href: '/hub/stories', icon: <TrendingUp size={13} /> },
+                  { label: 'Alumni Network', href: '/alumni', icon: <Users size={13} /> },
+                  { label: 'External Resources', href: '/hub/external', icon: <Share2 size={13} /> },
+                  { label: 'Submit Content', href: '/hub/request', icon: <Upload size={13} /> },
+                ].map((link, i) => (
+                  <Link key={i} href={link.href} className="flex items-center gap-2 px-2 py-1.5 text-xs text-neutral-600 hover:bg-primary-50 hover:text-primary-700 transition-colors">
+                    <span className="text-neutral-400">{link.icon}</span>
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Start a Call */}
+            <button
+              onClick={() => setEmbeddedRoom(`Community-Lobby-${Date.now()}`)}
+              className="w-full bg-primary-600 text-white px-3 py-2.5 text-xs font-bold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <Phone size={14} /> Start a Community Call
+            </button>
+
+            {/* CTA */}
+            <div className="bg-secondary-500 text-white p-3">
+              <p className="text-xs font-bold">Share Your Story</p>
+              <p className="text-[10px] text-white/70 mt-0.5">Spotlight, success story, or resource</p>
+              <Link href="/hub/request" className="mt-2 block text-center px-3 py-1.5 bg-white/20 text-white text-[10px] font-bold hover:bg-white/30 transition-colors">
+                Submit &rarr;
               </Link>
             </div>
           </div>
         </div>
-
-        {/* Embedded call modal */}
-        {embeddedRoom && (
-          <EmbeddedCall
-            room={embeddedRoom}
-            displayName={typeof window !== 'undefined' ? (localStorage.getItem('cc_displayName') || 'Guest') : 'Guest'}
-            onClose={() => setEmbeddedRoom(null)}
-          />
-        )}
       </div>
+
+      {/* Embedded call modal */}
+      {embeddedRoom && (
+        <EmbeddedCall
+          room={embeddedRoom}
+          displayName={typeof window !== 'undefined' ? (localStorage.getItem('cc_displayName') || 'Guest') : 'Guest'}
+          onClose={() => setEmbeddedRoom(null)}
+        />
+      )}
     </div>
   );
 }

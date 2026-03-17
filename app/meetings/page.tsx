@@ -48,6 +48,11 @@ export default function MeetingsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [rsvps, setRsvps] = useState<Record<string, boolean>>({});
+
+  function toggleRsvp(id: string) {
+    setRsvps(prev => ({ ...prev, [id]: !prev[id] }));
+  }
 
   const types = ["All", "regular", "special", "workshop", "planning"];
 
@@ -62,7 +67,7 @@ export default function MeetingsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-gradient-to-br from-slate-700 via-primary-600 to-primary-700 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-700 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <h1 className="text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Calendar size={36} /> Meetings Schedule</h1>
           <p className="mt-3 max-w-2xl text-primary-100 text-lg">View upcoming club meetings, RSVPs, and agendas all in one place.</p>
@@ -133,7 +138,9 @@ export default function MeetingsPage() {
                       <span className="text-xs text-neutral-500">{meeting.maxAttendees - meeting.attendees} spots left</span>
                     </div>
                     <div className="flex gap-2 mt-3">
-                      <button className="btn-primary text-sm">RSVP</button>
+                      <button onClick={() => toggleRsvp(meeting.id)} className={`text-sm font-semibold px-4 py-1.5 transition-colors ${rsvps[meeting.id] ? "bg-green-600 hover:bg-green-700 text-white" : "btn-primary"}`}>
+                        {rsvps[meeting.id] ? <><CheckCircle size={14} className="inline mr-1" />Going</> : "RSVP"}
+                      </button>
                       {meeting.isVirtual && (
                         <Link href={`/call/preview?room=${encodeURIComponent(`ClubConnect-${meeting.club.replace(/\s+/g, "-")}-${meeting.id}`)}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white text-sm font-semibold  hover:bg-green-600 transition-colors">
                           <Video size={14} /> Join Call

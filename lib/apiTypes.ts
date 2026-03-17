@@ -432,13 +432,19 @@ export interface Upload {
     id: string
     user_id: string
     org_id?: string
+    title?: string
     file_name: string
     file_url: string
     file_type?: string
     file_size?: number
     description?: string
+    category?: string
+    tags?: string[]
     likes?: number
+    download_count?: number
+    is_approved?: boolean
     created_at?: string
+    profiles?: { name: string; avatar_url?: string }
     [key: string]: unknown
 }
 

@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { chapters, events, quizQuestions, featuredAlumni, careerPanels } from "@/lib/data";
 import { formatChapterLocation, getPrimaryLocation } from "@/lib/location";
+import { clubProposalsApi } from "@/lib/api";
+import { Rocket } from "lucide-react";
 
 const interestToCategory: Record<string, string> = {
   "Academic competitions": "Academic",
@@ -29,10 +31,10 @@ const interestToCategory: Record<string, string> = {
   "Technology & Engineering": "STEM",
   "Sports & Recreation": "Sports",
 };
-type TabKey = "quiz" | "chatbot" | "alumni" | "discussions" | "resources";
+type TabKey = "chatbot" | "alumni" | "discussions" | "resources" | "proposals";
 
 const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
-  { key: "quiz", label: "Club Quiz", icon: HelpCircle },
+  { key: "proposals", label: "New Clubs", icon: Rocket },
   { key: "chatbot", label: "AI Assistant", icon: Bot },
   { key: "alumni", label: "Alumni Network", icon: GraduationCap },
   { key: "discussions", label: "Discussions", icon: MessageSquare },
@@ -45,7 +47,7 @@ interface ChatMessage {
 }
 
 export default function ExplorePage() {
-  const [activeTab, setActiveTab] = useState<TabKey>("quiz");
+  const [activeTab, setActiveTab] = useState<TabKey>("proposals");
   const [search, setSearch] = useState("");
   const [quizStep, setQuizStep] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
@@ -57,6 +59,8 @@ export default function ExplorePage() {
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [discussionInput, setDiscussionInput] = useState("");
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [proposalsLoading, setProposalsLoading] = useState(false);
   const [discussions, setDiscussions] = useState([
     { id: 1, author: "James C.", title: "Best way to recruit freshmen?", replies: 3, time: "2 hours ago" },
     { id: 2, author: "Maria S.", title: "Spring fundraiser ideas needed", replies: 7, time: "5 hours ago" },
@@ -67,6 +71,14 @@ export default function ExplorePage() {
     const hash = window.location.hash.replace("#", "") as TabKey;
     if (tabs.some((t) => t.key === hash)) setActiveTab(hash);
   }, []);
+  useEffect(() => {
+    if (activeTab === "proposals" && proposals.length === 0 && !proposalsLoading) {
+      setProposalsLoading(true);
+      Promise.resolve(clubProposalsApi.getAll()).then(({ data }) => {
+        if (data) setProposals(data as any[]);
+      }).finally(() => setProposalsLoading(false));
+    }
+  }, [activeTab]);
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
@@ -220,6 +232,63 @@ export default function ExplorePage() {
         </section>
       )}
 
+      {/* ═══ Inline Club Finder Quiz ═══ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="bg-white border border-neutral-200 overflow-hidden">
+          <div className="bg-primary-600 text-white px-5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <HelpCircle size={18} />
+              <h2 className="font-bold text-sm font-heading">Club Finder Quiz</h2>
+            </div>
+            {quizDone && (
+              <button onClick={resetQuiz} className="text-[11px] bg-white/20 hover:bg-white/30 px-2.5 py-1 font-semibold transition-colors">Retake</button>
+            )}
+          </div>
+          <div className="p-5">
+            {!quizDone ? (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-neutral-500">Question {quizStep + 1} of {quizQuestions.length}</p>
+                  <div className="flex gap-1">
+                    {quizQuestions.map((_, i) => (
+                      <div key={i} className={`h-1.5 w-8 ${i <= quizStep ? "bg-primary-500" : "bg-neutral-200"}`} />
+                    ))}
+                  </div>
+                </div>
+                <h3 className="text-base font-bold text-primary-800 mb-4">{quizQuestions[quizStep].question}</h3>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {quizQuestions[quizStep].options.map((option) => (
+                    <button key={option} onClick={() => handleQuizAnswer(option)}
+                      className="text-left p-3 border-2 border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all text-sm font-medium">
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="text-secondary-500" size={20} />
+                  <h3 className="font-bold text-primary-800">Your Recommended Clubs</h3>
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
+                  {quizRecommendations.map((club, i) => (
+                    <Link key={club.id} href={`/directory/${club.id}`}
+                      className="flex items-center gap-3 p-3 border border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40 transition-all">
+                      <div className="w-8 h-8 bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm shrink-0">{i + 1}</div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm text-primary-700 truncate">{club.name}</p>
+                        <p className="text-[10px] text-neutral-500">{club.category} · {club.memberCount} members</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {}
       <div className="sticky top-[57px] z-30 bg-white border-b border-neutral-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -250,90 +319,6 @@ export default function ExplorePage() {
 
       {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {}
-        {activeTab === "quiz" && (
-          <div className="animate-fade-up max-w-2xl mx-auto">
-            <h2 className="text-2xl font-heading font-bold text-primary-700 mb-2 text-center">
-              Club Finder Quiz
-            </h2>
-            <p className="text-neutral-600 text-center mb-8">
-              Answer a few questions and we&apos;ll recommend clubs that match your interests.
-            </p>
-
-            {!quizDone ? (
-              <div className="card p-8 bg-white">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-neutral-500">
-                    Question {quizStep + 1} of {quizQuestions.length}
-                  </span>
-                  <div className="flex gap-1">
-                    {quizQuestions.map((_, i) => (
-                      <div
-                        key={i}
-                        className={`h-2 w-8 rounded-full ${
-                          i <= quizStep ? "bg-primary-500" : "bg-neutral-200"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-primary-800 mb-6">
-                  {quizQuestions[quizStep].question}
-                </h3>
-                <div className="space-y-3">
-                  {quizQuestions[quizStep].options.map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => handleQuizAnswer(option)}
-                      className="w-full text-left p-4  border-2 border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all text-sm font-medium"
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="card p-8 bg-white">
-                <div className="text-center mb-6">
-                  <Sparkles className="mx-auto text-secondary-500" size={32} />
-                  <h3 className="mt-3 text-xl font-bold text-primary-800">
-                    Your Recommended Clubs
-                  </h3>
-                  <p className="text-sm text-neutral-600 mt-1">
-                    Based on your answers, these clubs are the best fit for you.
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  {quizRecommendations.map((club, i) => (
-                    <Link
-                      key={club.id}
-                      href={`/directory/${club.id}`}
-                      className="flex items-center gap-4 p-4  border border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40 ux-hover-lift-sm"
-                    >
-                      <div className="w-10 h-10  bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-lg">
-                        {i + 1}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-primary-700">{club.name}</p>
-                        <p className="text-xs text-neutral-500">
-                          {club.category} · {club.meetingFrequency} · {club.memberCount} members
-                        </p>
-                      </div>
-                      <ArrowRight size={16} className="text-neutral-400" />
-                    </Link>
-                  ))}
-                </div>
-                <button
-                  onClick={resetQuiz}
-                  className="btn-outline mt-6 w-full"
-                >
-                  Retake Quiz
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         {}
         {activeTab === "chatbot" && (
           <div className="animate-fade-up max-w-2xl mx-auto">
@@ -511,17 +496,12 @@ export default function ExplorePage() {
             <p className="text-neutral-600 mb-6">
               Browse and share helpful resources for running successful clubs.
             </p>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4">
               {[
                 { title: "How to Start a Club", desc: "Complete step-by-step guide to founding a new student organization.", href: "/resources", icon: "🚀" },
-                { title: "Faculty Advisor Guide", desc: "Everything advisors need to know about supporting a student chapter.", href: "/resources", icon: "👨‍🏫" },
-                { title: "Fundraising Playbook", desc: "Proven strategies for club fundraising and budget management.", href: "/donate", icon: "💰" },
                 { title: "Event Planning Toolkit", desc: "Templates and checklists for hosting successful club events.", href: "/events", icon: "📋" },
-                { title: "Social Media Guide", desc: "Best practices for promoting your club on Instagram, Discord, and more.", href: "/resources", icon: "📱" },
-                { title: "Meeting Templates", desc: "Agenda templates and meeting minutes formats for organized clubs.", href: "/resources", icon: "📝" },
-                { title: "Recruitment Strategies", desc: "How to attract and retain members throughout the school year.", href: "/resources", icon: "🎯" },
+                { title: "Fundraising Playbook", desc: "Proven strategies for club fundraising and budget management.", href: "/donate", icon: "💰" },
                 { title: "Leadership Development", desc: "Workshops and exercises for building strong officer teams.", href: "/resources", icon: "⭐" },
-                { title: "Club Constitution Template", desc: "Write a club constitution that will pass school approval.", href: "/start-a-club", icon: "📄" },
               ].map((resource) => (
                 <Link key={resource.title} href={resource.href} className="card-hover p-5 bg-white group ux-hover-lift-sm">
                   <span className="text-2xl">{resource.icon}</span>
