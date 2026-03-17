@@ -11,8 +11,6 @@ import DirectoryFilters, {
   type DirectoryFilterState,
 } from "@/components/directory/DirectoryFilters";
 import ClubGrid from "@/components/directory/ClubGrid";
-import AIChatbot from "@/components/directory/AIChatbot";
-import DiscussionForums from "@/components/directory/DiscussionForums";
 import { HelpCircle, Sparkles, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 
 const DirectoryLeafletMap = dynamic(
@@ -327,8 +325,6 @@ function DirectoryPageContent() {
                       ))}
                     </div>
 
-                    <AIChatbot />
-
                     {/* Club Finder Quiz */}
                     <div className="bg-white border border-neutral-200 overflow-hidden">
                       <button onClick={() => setQuizOpen(o => !o)}
@@ -480,13 +476,7 @@ function DirectoryPageContent() {
           </div>
         </section>
 
-        {/* ── Discussion Forums ── */}
-        <section
-          className="animate-fade-up"
-          style={{ animationDelay: "180ms" }}
-        >
-          <DiscussionForums />
-        </section>
+
       </div>
     </div>
   );

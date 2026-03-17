@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  zoom: 1.1;
+}
+
 :root {
   --primary: #1e3a5f;
   --primary-light: #2d4a6f;

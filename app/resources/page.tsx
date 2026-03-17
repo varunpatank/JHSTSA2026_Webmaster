@@ -428,95 +428,33 @@ export default function ResourcesPage() {
               <h1 className="text-3xl md:text-4xl font-heading font-bold">Resource Center</h1>
               <p className="mt-2 text-neutral-300 max-w-lg text-sm">Your launch pad for club success &mdash; guides, templates, tools, and smart recommendations organized by growth stage.</p>
             </div>
-            <div className="grid grid-cols-4 gap-3">
-              {[
-                { label: "Resources", value: allResources.length },
-                { label: "Downloads", value: totalDownloads.toLocaleString() },
-                { label: "Clubs", value: schoolWideStats.totalClubs },
-              ].map(s => (
-                <div key={s.label} className="bg-white/10 border border-white/10  p-2 text-center">
-                  <p className="text-lg font-bold">{s.value}</p>
-                  <p className="text-[10px] text-neutral-300">{s.label}</p>
-                </div>
-              ))}
+            <div className="flex flex-col gap-3 items-end">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: "Resources", value: allResources.length },
+                  { label: "Downloads", value: totalDownloads.toLocaleString() },
+                  { label: "Clubs", value: schoolWideStats.totalClubs },
+                ].map(s => (
+                  <div key={s.label} className="bg-white/10 border border-white/10  p-2 text-center">
+                    <p className="text-lg font-bold">{s.value}</p>
+                    <p className="text-[10px] text-neutral-300">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="relative w-full md:w-72">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search resources..." className="w-full bg-white/10 border border-white/20 text-white placeholder:text-neutral-400 pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-secondary-400" />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div className="space-y-4">
-
-          {/* Advanced Resource Filter */}
-          <div className="card overflow-hidden border border-neutral-200">
-            <div className="bg-primary-50 px-4 py-3 border-b border-primary-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Search size={14} className="text-primary-600" />
-                <h3 className="text-sm font-bold text-primary-700">Filter Resources</h3>
-              </div>
-              {(searchQuery || typeFilter !== "All" || formatFilter !== "All") && (
-                <button onClick={() => { setSearchQuery(""); setTypeFilter("All"); setFormatFilter("All"); setSortBy("popular"); }}
-                  className="text-[10px] font-semibold text-primary-500 hover:text-primary-700 underline">
-                  Clear All
-                </button>
-              )}
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search by title, description, or keyword..." className="input-field pl-9 text-xs w-full" />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div>
-                  <label className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Type</label>
-                  <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="select-field text-xs w-full">
-                    {["All", "guide", "template", "checklist", "handbook"].map(o => <option key={o} value={o}>{o === "All" ? "All Types" : o.charAt(0).toUpperCase() + o.slice(1) + "s"}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Format</label>
-                  <select value={formatFilter} onChange={e => setFormatFilter(e.target.value)} className="select-field text-xs w-full">
-                    {["All", "PDF", "DOCX", "ZIP", "XLSX"].map(o => <option key={o} value={o}>{o === "All" ? "All Formats" : o}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Sort By</label>
-                  <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="select-field text-xs w-full">
-                    <option value="popular">Most Popular</option>
-                    <option value="name">Alphabetical</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">Stage</label>
-                  <select value={activeStage} onChange={e => setActiveStage(e.target.value)} className="select-field text-xs w-full">
-                    {ROCKET_STAGES.map(s => <option key={s.id} value={s.id}>{s.phase}. {s.title}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {searchQuery && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-semibold">
-                    &ldquo;{searchQuery}&rdquo; <button onClick={() => setSearchQuery("")} className="hover:text-primary-900"><X size={10} /></button>
-                  </span>
-                )}
-                {typeFilter !== "All" && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-secondary-100 text-secondary-700 text-[10px] font-semibold">
-                    {typeFilter} <button onClick={() => setTypeFilter("All")} className="hover:text-secondary-900"><X size={10} /></button>
-                  </span>
-                )}
-                {formatFilter !== "All" && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-100 text-primary-700 text-[10px] font-semibold">
-                    {formatFilter} <button onClick={() => setFormatFilter("All")} className="hover:text-primary-900"><X size={10} /></button>
-                  </span>
-                )}
-                <span className="ml-auto text-[10px] text-neutral-400">{filteredResources.length} of {currentStage.resources.length} resources</span>
-              </div>
-            </div>
-          </div>
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+        <div className="space-y-3">
           {/* Main content */}
-          <div className="space-y-4">
+          <div className="space-y-3">
 
                 {}
                 <div className="flex gap-2 overflow-x-auto pb-1">
@@ -547,6 +485,26 @@ export default function ResourcesPage() {
                         <h2 className="text-xl font-heading font-bold">{currentStage.title} &mdash; {currentStage.subtitle}</h2>
                         <p className="text-sm text-white/80 mt-1">{currentStage.resources.length} resources &bull; {currentStage.hubLinks.length} tools</p>
                       </div>
+                    </div>
+                    {/* Inline filters */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="bg-white/15 border border-white/25 text-white text-xs py-1.5 px-2 focus:outline-none focus:border-white/50 [&>option]:text-neutral-800">
+                        {["All", "guide", "template", "checklist", "handbook"].map(o => <option key={o} value={o}>{o === "All" ? "All Types" : o.charAt(0).toUpperCase() + o.slice(1) + "s"}</option>)}
+                      </select>
+                      <select value={formatFilter} onChange={e => setFormatFilter(e.target.value)} className="bg-white/15 border border-white/25 text-white text-xs py-1.5 px-2 focus:outline-none focus:border-white/50 [&>option]:text-neutral-800">
+                        {["All", "PDF", "DOCX", "ZIP", "XLSX"].map(o => <option key={o} value={o}>{o === "All" ? "All Formats" : o}</option>)}
+                      </select>
+                      <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="bg-white/15 border border-white/25 text-white text-xs py-1.5 px-2 focus:outline-none focus:border-white/50 [&>option]:text-neutral-800">
+                        <option value="popular">Most Popular</option>
+                        <option value="name">Alphabetical</option>
+                      </select>
+                      {(typeFilter !== "All" || formatFilter !== "All") && (
+                        <button onClick={() => { setTypeFilter("All"); setFormatFilter("All"); setSortBy("popular"); }}
+                          className="text-[10px] font-semibold text-white/80 hover:text-white underline">
+                          Clear Filters
+                        </button>
+                      )}
+                      <span className="ml-auto text-[10px] text-white/70">{filteredResources.length} of {currentStage.resources.length} resources</span>
                     </div>
                     {/* Smart Finder search bar */}
                     <form onSubmit={e => { e.preventDefault(); if (aiInput.trim()) { if (!showAI) setShowAI(true); aiSend(aiInput.trim()); setAiInput(""); } }} className="mt-4 flex items-center gap-2">

@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import JudgeGuide from "@/components/JudgeGuide";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
@@ -26,6 +27,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />
+        <JudgeGuide />
       </body>
     </html>
   );

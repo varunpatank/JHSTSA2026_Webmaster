@@ -1,13 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
- ArrowRight, BookOpen, Calendar, Compass, GraduationCap,
+ ArrowRight, BookOpen, Calendar, Compass, FileText, GraduationCap,
  MapPin, Rocket, Users,
 } from "lucide-react";
 import {
  announcements, events, stats, schoolWideStats, chapters,
 } from "@/lib/data";
-import JudgeGuide from "@/components/JudgeGuide";
+
 
 const CLUB_ICONS: Record<string, string> = {
  "Model United Nations": "\u{1F30D}",
@@ -209,6 +209,7 @@ export default function HomePage() {
         { href: "/start-a-club", icon: Rocket, title: "Start a Club", desc: "Step-by-step creation wizard" },
         { href: "/hub/mentors", icon: GraduationCap, title: "Mentors", desc: "Connect with professionals and alumni" },
         { href: "/events", icon: Calendar, title: "Events", desc: "Community events and calendar" },
+        { href: "/references", icon: FileText, title: "References", desc: "Documentation, citations, and judge's guide" },
        ].map(item => {
         const Icon = item.icon;
         return (
@@ -246,8 +247,6 @@ export default function HomePage() {
     </section>
    </div>
 
-   {/* Judge's Guide */}
-   <JudgeGuide />
   </div>
  );
 }
