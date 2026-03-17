@@ -59,7 +59,23 @@ export const authApi = {
             },
         })
 
-        return { auth: authRes, profile: null }
+        if (authRes.error || !authRes.data.user) {
+            return { auth: authRes, profile: null }
+        }
+
+        const userId = authRes.data.user.id
+        const profileRes = await profilesApi.create({
+            id: userId,
+            name,
+            email,
+            grade: grade || null,
+            school: school || null,
+            is_adult: !!is_adult,
+            bio: bio || null,
+            phone_number: phone_number || null,
+        })
+
+        return { auth: authRes, profile: profileRes.data ?? null }
     },
 
 
@@ -83,8 +99,10 @@ export const profilesApi = {
         supabase.from('profiles').select('*').limit(50),
 
     getById: (id: string) =>
-        supabase.from('profiles').select('*').limit(50).eq('id', id).single(),
+        supabase.from('profiles').select('*').eq('id', id).maybeSingle(),
 
+    create: (data: { id: string; name: string; email: string; grade?: string | null; school?: string | null; is_adult?: boolean; bio?: string | null; phone_number?: string | null }) =>
+        supabase.from('profiles').upsert(data, { onConflict: 'id' }).select().maybeSingle(),
 
     update: (id: string, data: Partial<Profile>) =>
         supabase.from('profiles').update(data).eq('id', id),
@@ -94,16 +112,21 @@ export const profilesApi = {
 
 export const membershipsApi = {
 
-    getForCurrentUser: () =>
-        supabase.from('memberships').select('*').limit(50),
-
+    getForCurrentUser: async () => {
+        const { data: authData } = await supabase.auth.getUser()
+        const userId = authData.user?.id
+        if (!userId) return { data: [], error: { message: 'Not authenticated' } }
+        return supabase.from('memberships').select('*, organizations(id, name, slug, category, logo_url)').eq('user_id', userId).limit(50)
+    },
 
     getByOrg: (orgId: string) =>
         supabase.from('memberships').select('*').limit(50).eq('org_id', orgId),
 
     getById: (id: string) =>
-        supabase.from('memberships').select('*').limit(50).eq('id', id).single(),
+        supabase.from('memberships').select('*').eq('id', id).maybeSingle(),
 
+    create: (data: { org_id: string; user_id: string; user_permissions?: string }) =>
+        supabase.from('memberships').upsert(data, { onConflict: 'org_id,user_id' }).select().maybeSingle(),
 
     update: (id: string, data: Partial<Membership>) =>
         supabase.from('memberships').update(data).eq('id', id),
@@ -121,11 +144,11 @@ export const organizationsApi = {
         supabase.from('organizations').select('*').limit(50),
 
     getById: (id: string) =>
-        supabase.from('organizations').select('*').limit(50).eq('id', id).single(),
+        supabase.from('organizations').select('*').eq('id', id).maybeSingle(),
 
 
     create: (data: Partial<Organization>) =>
-        supabase.from('organizations').insert(data).select().single(),
+        supabase.from('organizations').insert(data).select().maybeSingle(),
 
 
     update: (id: string, data: Partial<Organization>) =>
@@ -168,11 +191,11 @@ export const meetingsApi = {
         supabase.from('meetings').select('*').limit(50).eq('org_id', orgId),
 
     getById: (id: string) =>
-        supabase.from('meetings').select('*').limit(50).eq('id', id).single(),
+        supabase.from('meetings').select('*').eq('id', id).maybeSingle(),
 
 
     create: (data: Partial<Meeting>) =>
-        supabase.from('meetings').insert(data).select().single(),
+        supabase.from('meetings').insert(data).select().maybeSingle(),
 
 
     update: (id: string, data: Partial<Meeting>) =>
@@ -335,7 +358,7 @@ export const storageApi = {
 
 
         try {
-            const prevProfile = await supabase.from('profiles').select('avatar_url').eq('id', userId).single()
+            const prevProfile = await supabase.from('profiles').select('avatar_url').eq('id', userId).maybeSingle()
             if (!prevProfile.error && prevProfile.data && prevProfile.data.avatar_url) {
                 const prevUrl: string = prevProfile.data.avatar_url
                 const parts = prevUrl.split('/avatars/')
@@ -742,6 +765,26 @@ export const collaborationsApi = {
         supabase.from('collaboration_participants').insert({ collaboration_id: collaborationId, org_id: orgId }),
 }
 
+export const collectionsApi = {
+    getByUser: (userId: string) =>
+        supabase.from('user_collections').select('*, collection_items(*)').eq('user_id', userId).order('updated_at', { ascending: false }),
+
+    create: (data: { user_id: string; name: string; description?: string; icon?: string; color?: string; is_public?: boolean }) =>
+        supabase.from('user_collections').insert(data).select().single(),
+
+    update: (id: string, data: { name?: string; description?: string; icon?: string; color?: string; is_public?: boolean }) =>
+        supabase.from('user_collections').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id).select().single(),
+
+    delete: (id: string) =>
+        supabase.from('user_collections').delete().eq('id', id),
+
+    addItem: (data: { collection_id: string; title: string; item_type: string; url?: string; note?: string }) =>
+        supabase.from('collection_items').insert(data).select().single(),
+
+    removeItem: (itemId: string) =>
+        supabase.from('collection_items').delete().eq('id', itemId),
+}
+
 
 
 export const uploadLikesApi = {
@@ -803,4 +846,32 @@ export const communityApi = {
         if (orgId) query = query.eq('org_id', orgId)
         return query
     },
+}
+
+
+export const chatApi = {
+
+    getChannels: () =>
+        supabase.from('chat_channels').select('*').order('created_at', { ascending: true }),
+
+    getMessages: (channelId: string, limit = 100) =>
+        supabase.from('chat_messages').select('*, profiles(name, avatar_url)').eq('channel_id', channelId).order('created_at', { ascending: true }).limit(limit),
+
+    sendMessage: (channelId: string, senderId: string, content: string) =>
+        supabase.from('chat_messages').insert({ channel_id: channelId, sender_id: senderId, content }).select().single(),
+
+    deleteMessage: (messageId: string) =>
+        supabase.from('chat_messages').update({ is_deleted: true, content: '[deleted]' }).eq('id', messageId),
+
+    getMembers: (channelId: string) =>
+        supabase.from('chat_channel_members').select('*, profiles(name, avatar_url)').eq('channel_id', channelId),
+
+    joinChannel: (channelId: string, userId: string) =>
+        supabase.from('chat_channel_members').upsert({ channel_id: channelId, user_id: userId }),
+
+    createChannel: (data: { name: string; description?: string; org_id?: string; channel_type?: string; created_by: string }) =>
+        supabase.from('chat_channels').insert(data).select().single(),
+
+    subscribeToMessages: (channelId: string, callback: (msg: any) => void) =>
+        supabase.channel(`chat:${channelId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `channel_id=eq.${channelId}` }, (payload) => callback(payload.new)).subscribe(),
 }

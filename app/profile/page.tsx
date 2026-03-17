@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getAdminClubs, getJoinedClubs } from "@/lib/clientState";
-import { supabase, authApi, profilesApi } from "@/lib/api";
+import { supabase, authApi, profilesApi, membershipsApi, myClubsApi } from "@/lib/api";
 import AvatarUploader from "@/components/AvatarUploader";
 import {
   Activity,
@@ -106,6 +106,35 @@ export default function ProfilePage() {
 
           setJoinedClubs(getJoinedClubs());
           setAdminClubs(getAdminClubs());
+
+          // Also load clubs from Supabase memberships
+          try {
+            const membershipRes: any = await membershipsApi.getForCurrentUser();
+            if (!membershipRes.error && membershipRes.data) {
+              const dbClubs = (membershipRes.data as any[])
+                .filter((m: any) => m.organizations)
+                .map((m: any) => ({ id: m.organizations.id, name: m.organizations.name, status: 'member' as const }));
+              if (dbClubs.length > 0) {
+                setJoinedClubs(prev => {
+                  const existing = new Set(prev.map((c: any) => c.id));
+                  const merged = [...prev];
+                  for (const c of dbClubs) {
+                    if (!existing.has(c.id)) merged.push(c);
+                  }
+                  return merged;
+                });
+              }
+            }
+            const adminRes: any = await myClubsApi.getMyClubs();
+            if (!adminRes.error && adminRes.data) {
+              const dbAdmin = (adminRes.data as any[]).map((c: any) => ({
+                id: c.id,
+                name: c.name,
+                status: c.is_published ? 'Published' : 'Draft',
+              }));
+              if (dbAdmin.length > 0) setAdminClubs(dbAdmin);
+            }
+          } catch {}
         }
       } catch (e) {
       } finally {

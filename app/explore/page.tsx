@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { chapters, events, quizQuestions, featuredAlumni, careerPanels } from "@/lib/data";
 import { formatChapterLocation, getPrimaryLocation } from "@/lib/location";
-import { clubProposalsApi } from "@/lib/api";
+import { clubProposalsApi, myClubsApi } from "@/lib/api";
 import { Rocket } from "lucide-react";
 
 const interestToCategory: Record<string, string> = {
@@ -61,6 +61,7 @@ export default function ExplorePage() {
   const [discussionInput, setDiscussionInput] = useState("");
   const [proposals, setProposals] = useState<any[]>([]);
   const [proposalsLoading, setProposalsLoading] = useState(false);
+  const [publishedClubs, setPublishedClubs] = useState<any[]>([]);
   const [discussions, setDiscussions] = useState([
     { id: 1, author: "James C.", title: "Best way to recruit freshmen?", replies: 3, time: "2 hours ago" },
     { id: 2, author: "Maria S.", title: "Spring fundraiser ideas needed", replies: 7, time: "5 hours ago" },
@@ -74,8 +75,12 @@ export default function ExplorePage() {
   useEffect(() => {
     if (activeTab === "proposals" && proposals.length === 0 && !proposalsLoading) {
       setProposalsLoading(true);
-      Promise.resolve(clubProposalsApi.getAll()).then(({ data }) => {
-        if (data) setProposals(data as any[]);
+      Promise.all([
+        clubProposalsApi.getAll(),
+        myClubsApi.getDirectory(),
+      ]).then(([propRes, clubRes]) => {
+        if (propRes.data) setProposals(propRes.data as any[]);
+        if (clubRes.data) setPublishedClubs(clubRes.data as any[]);
       }).finally(() => setProposalsLoading(false));
     }
   }, [activeTab]);
@@ -484,6 +489,86 @@ export default function ExplorePage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ═══ New Clubs / Proposals Tab ═══ */}
+        {activeTab === "proposals" && (
+          <div className="animate-fade-up">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-2xl font-heading font-bold text-primary-700">Discover Clubs</h2>
+              <Link href="/start-a-club" className="btn-primary text-sm flex items-center gap-1.5">
+                <Rocket size={14} /> Start a Club
+              </Link>
+            </div>
+            <p className="text-neutral-600 mb-6">Published student-created clubs and pending proposals from the community.</p>
+
+            {proposalsLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="animate-spin text-primary-500" size={28} />
+              </div>
+            ) : (
+              <>
+                {publishedClubs.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-3">Published Clubs</h3>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {publishedClubs.map((club: any) => (
+                        <div key={club.id} className="card p-5 bg-white ux-hover-lift-sm">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-11 h-11 bg-primary-100 text-primary-700 flex items-center justify-center text-lg font-bold shrink-0">
+                              {(club.name || '?')[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-primary-700 truncate">{club.name}</h4>
+                              {club.category && <span className="badge badge-primary text-[10px]">{club.category}</span>}
+                            </div>
+                          </div>
+                          {club.description && <p className="text-sm text-neutral-600 line-clamp-2 mb-2">{club.description}</p>}
+                          <div className="flex items-center gap-3 text-[11px] text-neutral-400">
+                            {club.creator_name && <span>by {club.creator_name}</span>}
+                            {club.member_count > 0 && <span><Users size={11} className="inline -mt-0.5" /> {club.member_count}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {proposals.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-3">Pending Proposals</h3>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {proposals.map((p: any) => (
+                        <div key={p.id} className="card p-5 bg-white border-l-4 border-l-amber-400">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 bg-amber-50 text-amber-600 flex items-center justify-center text-lg font-bold shrink-0">
+                              {(p.club_name || '?')[0]}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-primary-700 truncate">{p.club_name}</h4>
+                              <span className="text-[10px] text-amber-600 font-semibold">⏳ {p.status || 'Pending'}</span>
+                            </div>
+                          </div>
+                          {p.mission_statement && <p className="text-sm text-neutral-500 line-clamp-2">{p.mission_statement}</p>}
+                          {p.category && <span className="badge badge-outline text-[10px] mt-2">{p.category}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {publishedClubs.length === 0 && proposals.length === 0 && (
+                  <div className="text-center py-16">
+                    <Compass size={36} className="mx-auto text-neutral-300 mb-3" />
+                    <p className="text-neutral-500">No student-created clubs yet. Be the first!</p>
+                    <Link href="/start-a-club" className="btn-primary mt-4 inline-flex items-center gap-1.5">
+                      <Rocket size={14} /> Start a Club
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
+import { loginUser } from "@/lib/clientState";
 import { BookOpen, Calendar, LogIn, Shield, Users } from "lucide-react";
 
 interface LoginFormClientProps {
@@ -51,6 +52,7 @@ export default function LoginFormClient({
           setSubmitting(false);
           return;
         }
+        loginUser(res.data?.user?.email?.split('@')[0] || email, email);
         router.push(redirect);
       } catch (e: any) {
         setError(e?.message || "Sign in failed");

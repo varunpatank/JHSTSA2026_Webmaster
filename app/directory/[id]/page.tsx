@@ -7,12 +7,13 @@ import {
   chapters, events, clubHistoryData, projectsData, meetingNotesData, sponsorsData,
 } from "@/lib/data";
 import { addJoinedClub, isLoggedIn } from "@/lib/clientState";
+import { supabase, membershipsApi, organizationsApi, profilesApi } from "@/lib/api";
 import { formatChapterLocation } from "@/lib/location";
 import {
   ArrowRight, Award, BarChart3, BookOpen, Calendar, CheckCircle, ChevronDown,
   ChevronRight, Clock, Compass, Edit, ExternalLink, FileText, Globe, Heart, History,
   Instagram, LinkIcon, Mail, MapPin, Megaphone, MessageSquare, Milestone,
-  PenTool, Phone, Rocket, Send, Settings, Share2, Shield, Star, Target,
+  PenTool, Phone, Rocket, Send, Settings, Shield, Star, Target,
   Trophy, Twitter, TrendingUp, UserPlus, Users, Video, Zap,
 } from "lucide-react";
 
@@ -122,10 +123,10 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
   const baseColor = clubIcons[clubId]?.emoji === "🌍" ? "#1e3a5f" : clubIcons[clubId]?.emoji === "🤖" ? "#4a90d9" : clubIcons[clubId]?.emoji === "🤝" ? "#e74c3c" : clubIcons[clubId]?.emoji === "🎭" ? "#9b59b6" : clubIcons[clubId]?.emoji === "⚖️" ? "#e67e22" : clubIcons[clubId]?.emoji === "🌎" ? "#27ae60" : clubIcons[clubId]?.emoji === "🌱" ? "#2ecc71" : clubIcons[clubId]?.emoji === "📰" ? "#34495e" : "#b8860b";
 
   return (
-    <div className="relative mx-auto lg:mx-0 shrink-0 select-none" style={{ width: 180, height: 180 }}>
-      {}
-      <div className="absolute inset-2 blur-2xl animate-pulse" style={{ background: `radial-gradient(circle, ${baseColor}55, transparent 70%)` }} />
-      {}
+    <div className="relative shrink-0 select-none flex flex-col items-center" style={{ width: 240 }}>
+      {/* Glow */}
+      <div className="absolute inset-4 blur-2xl animate-pulse" style={{ background: `radial-gradient(circle, ${baseColor}55, transparent 70%)` }} />
+      {/* Sparks */}
       {clickSpark && (
         <div className="absolute inset-0 z-20 pointer-events-none">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -138,11 +139,12 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
           ))}
         </div>
       )}
-      {}
+      {/* 3D cube on swivel */}
       <div
         ref={containerRef}
-        className="relative w-full h-full cursor-grab active:cursor-grabbing"
+        className="relative cursor-grab active:cursor-grabbing"
         style={{
+          width: 220, height: 220,
           perspective: "600px",
           touchAction: "none",
         }}
@@ -162,20 +164,26 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
             imageRendering: "pixelated",
           }}
         >
-          {}
+          {/* Pixel grid overlay */}
           <div className="absolute inset-0 pointer-events-none" style={{
-            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 11px, rgba(255,255,255,0.08) 11px, rgba(255,255,255,0.08) 12px), repeating-linear-gradient(90deg, transparent, transparent 11px, rgba(255,255,255,0.08) 11px, rgba(255,255,255,0.08) 12px)`,
+            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(255,255,255,0.06) 7px, rgba(255,255,255,0.06) 8px), repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(255,255,255,0.06) 7px, rgba(255,255,255,0.06) 8px)`,
             imageRendering: "pixelated",
           }} />
-          {}
+          {/* Shine */}
           <div className="absolute inset-0 pointer-events-none" style={{
             background: `linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.15) 100%)`,
           }} />
-          <span className="text-7xl drop-shadow-lg relative z-10" style={{ imageRendering: "pixelated", filter: "contrast(1.1)" }}>{info.emoji}</span>
-          <span className="text-[10px] font-bold text-white/90 mt-2 tracking-widest uppercase relative z-10">{info.label}</span>
-          <span className="text-[8px] text-white/50 mt-1 relative z-10">drag to rotate &middot; click to interact</span>
+          <span className="text-8xl drop-shadow-lg relative z-10" style={{ imageRendering: "pixelated", filter: "contrast(1.1)" }}>{info.emoji}</span>
+          <span className="text-[11px] font-bold text-white/90 mt-2 tracking-widest uppercase relative z-10">{info.label}</span>
         </div>
       </div>
+      {/* Swivel stand */}
+      <div className="relative -mt-1 flex flex-col items-center">
+        <div className="w-3 h-6 bg-white/20" style={{ imageRendering: "pixelated" }} />
+        <div className="w-20 h-3 bg-white/15 border-t border-white/20" style={{ imageRendering: "pixelated" }} />
+      </div>
+      {/* Instruction */}
+      <span className="text-[10px] text-white/60 mt-2 tracking-wide">🖱️ Drag to swivel &middot; Click for effect</span>
       <style>{`
         @keyframes sparkOut {
           0% { transform: rotate(var(--r, 0deg)) translateX(0) scale(1); opacity: 1; }
@@ -308,14 +316,41 @@ export default function ClubDetailPage() {
   ];
   const maxMembers = Math.max(...monthlyMembers.map(m => m.value));
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!isLoggedIn()) {
       router.push(`/login?redirect=/directory/${chapter.id}&action=join&club=${chapter.id}`);
       return;
     }
     const status = chapter.membershipStatus === "Open Enrollment" ? "member" : "pending";
     addJoinedClub({ id: chapter.id, name: chapter.name, status });
-    router.push("/profile?from=join");
+
+    // Also create membership in Supabase if an org exists for this club
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user) {
+        // Ensure profile exists first (FK constraint)
+        const { data: profile } = await profilesApi.getById(authData.user.id);
+        if (!profile) {
+          await profilesApi.create({
+            id: authData.user.id,
+            name: authData.user.email?.split('@')[0] || 'Student',
+            email: authData.user.email || '',
+          });
+        }
+        const { data: orgs } = await organizationsApi.getAll();
+        const matchedOrg = orgs?.find((o: any) => o.slug === chapter.id || o.name === chapter.name);
+        if (matchedOrg) {
+          await membershipsApi.create({
+            org_id: matchedOrg.id,
+            user_id: authData.user.id,
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Join error:', e);
+    }
+
+    router.push("/dashboard?tab=clubs&joined=true");
   };
 
   const tabs = [
@@ -347,24 +382,33 @@ export default function ClubDetailPage() {
           <img src={heroBg} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-primary-800/80" />
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 relative z-10">
-          <Link href="/directory" className="text-sm text-neutral-200 hover:underline inline-flex items-center gap-1">
-            <ChevronRight size={14} className="rotate-180" /> Directory
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 relative z-10">
+          <Link href="/directory" className="text-sm text-neutral-300 hover:text-white hover:underline inline-flex items-center gap-1 transition-colors">
+            <ChevronRight size={14} className="rotate-180" /> Back to Directory
           </Link>
-          {}
-          <div className="mt-4 flex items-center gap-4">
-            <div className="w-16 h-16 bg-white/15 border-2 border-white/25 flex items-center justify-center shrink-0">
-              <span className="text-4xl">{(clubIcons[chapter.id] || { emoji: "⭐" }).emoji}</span>
-            </div>
-            <div className="flex-1">
-              <div className="flex flex-wrap gap-2 mb-1">
-                <span className="badge bg-white text-primary-600">{chapter.category}</span>
-                <span className="badge bg-primary-400/30 text-white border border-white/20">{chapter.membershipStatus}</span>
-                <span className="badge bg-green-500/20 text-green-100 border border-green-400/30">Active</span>
+
+          {/* Banner: spinning icon LEFT, text RIGHT */}
+          <div className="mt-6 flex items-start gap-6">
+            {/* Left: large pixelated 3D club logo on swivel stand */}
+            <SpinningClubIcon clubId={chapter.id} name={chapter.name} />
+
+            {/* Right: all text content */}
+            <div className="flex-1 min-w-0 space-y-3 pt-2">
+              {/* Badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-white text-primary-700">{chapter.category}</span>
+                <span className="px-3 py-1 text-xs font-semibold bg-primary-400/30 text-white border border-white/20">{chapter.membershipStatus}</span>
+                <span className="px-3 py-1 text-xs font-semibold bg-green-500/20 text-green-100 border border-green-400/30">Active</span>
               </div>
-              <h1 className="text-3xl md:text-4xl font-heading font-bold">{chapter.name}</h1>
-              <p className="mt-1 text-neutral-100 max-w-2xl text-sm leading-relaxed">{chapter.description}</p>
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+              {/* Title */}
+              <h1 className="text-4xl md:text-5xl font-heading font-bold leading-tight tracking-tight">{chapter.name}</h1>
+
+              {/* Description */}
+              <p className="text-neutral-200 text-base leading-relaxed max-w-xl">{chapter.description}</p>
+
+              {/* Stats row */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
                 {[
                   { label: "Members", value: chapter.memberCount, icon: Users },
                   { label: "Founded", value: chapter.foundedYear, icon: Clock },
@@ -373,28 +417,27 @@ export default function ClubDetailPage() {
                 ].map(stat => {
                   const Icon = stat.icon;
                   return (
-                    <div key={stat.label} className="bg-white/10 backdrop-blur-sm border border-white/15 p-4 text-center hover:bg-white/15 transition-colors">
-                      <Icon size={16} className="mx-auto mb-1.5 text-secondary-300" />
-                      <p className="text-2xl md:text-3xl font-heading font-bold text-secondary-300">{stat.value}</p>
-                      <p className="text-xs text-white/80 mt-1 font-medium">{stat.label}</p>
+                    <div key={stat.label} className="flex items-center gap-2">
+                      <Icon size={16} className="text-secondary-300" />
+                      <span className="font-heading font-bold text-lg text-secondary-300">{stat.value}</span>
+                      <span className="text-white/50 text-xs uppercase tracking-wide">{stat.label}</span>
                     </div>
                   );
                 })}
               </div>
-            </div>
-            <div className="flex flex-col gap-2 lg:min-w-[170px]">
-              <button onClick={handleJoin} className="btn-secondary btn-ripple btn-magnetic text-sm">
-                <UserPlus size={14} className="inline mr-1.5" /> Join Club
-              </button>
-              <Link href={`/call/preview?room=${chapter.id}`} className="btn-outline border-white text-white hover:bg-white hover:text-primary-500 text-center text-sm btn-magnetic flex items-center justify-center gap-1.5">
-                <Video size={14} /> Join Meeting
-              </Link>
-              <Link href={`/donate?club=${chapter.id}`} className="btn-outline border-white/50 text-white/80 hover:bg-white hover:text-primary-500 text-center text-sm">
-                <Heart size={14} className="inline mr-1.5" /> Donate
-              </Link>
-              <button onClick={() => navigator.clipboard?.writeText(window.location.href)} className="text-xs text-white/60 hover:text-white text-center py-1 flex items-center justify-center gap-1">
-                <Share2 size={12} /> Share
-              </button>
+
+              {/* Actions */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button onClick={handleJoin} className="btn-secondary btn-ripple btn-magnetic inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold">
+                  <UserPlus size={16} /> Join Club
+                </button>
+                <Link href={`/call/preview?room=${chapter.id}`} className="btn-outline border-white text-white hover:bg-white hover:text-primary-600 btn-magnetic inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold">
+                  <Video size={16} /> Join Meeting
+                </Link>
+                <Link href={`/donate?club=${chapter.id}`} className="btn-outline border-white/40 text-white/80 hover:bg-white hover:text-primary-600 inline-flex items-center gap-2 px-4 py-2.5 text-sm">
+                  <Heart size={16} /> Donate
+                </Link>
+              </div>
             </div>
           </div>
         </div>

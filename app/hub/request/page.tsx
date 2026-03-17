@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { resourceRequests } from '@/lib/hubData';
@@ -38,8 +38,18 @@ type StatusKey = keyof typeof statusColors;
 export default function ResourceRequestPage() {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [votedRequests, setVotedRequests] = useState<string[]>([]);
+  const [votedRequests, setVotedRequests] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const s = localStorage.getItem('clubconnect_voted_requests');
+      if (s) try { return JSON.parse(s); } catch {}
+    }
+    return [];
+  });
   const [sortBy, setSortBy] = useState<'votes' | 'date'>('votes');
+
+  useEffect(() => {
+    localStorage.setItem('clubconnect_voted_requests', JSON.stringify(votedRequests));
+  }, [votedRequests]);
 
   const handleVote = (id: string) => {
     if (votedRequests.includes(id)) {

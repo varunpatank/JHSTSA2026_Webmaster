@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { supabase, profilesApi } from '@/lib/api';
+import { supabase, profilesApi, storageApi } from '@/lib/api';
 import {
-  FileText, Heart, ImageIcon, MessageCircle, Paperclip, Send,
+  Download, FileText, Heart, ImageIcon, MessageCircle, Paperclip, Send,
   Upload, X, Bookmark, Share2, TrendingUp, Users,
   Calendar, Phone, MoreHorizontal, GraduationCap,
   Video, BookOpen, Award, Star, ArrowRight, Globe,
-  FolderOpen, Lightbulb, Clock,
+  Clock,
 } from 'lucide-react';
 
 /*  Types  */
@@ -32,6 +32,7 @@ interface FeedPost {
   type: 'text' | 'resource' | 'image' | 'achievement' | 'discussion';
   fileName?: string;
   fileSize?: string;
+  fileUrl?: string;
   likes: number;
   liked: boolean;
   saved: boolean;
@@ -127,7 +128,13 @@ export default function CommunityPage() {
     ? userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
     : 'YO';
 
-  const [feed, setFeed] = useState<FeedPost[]>(INITIAL_FEED);
+  const [feed, setFeed] = useState<FeedPost[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('clubconnect_community_feed');
+      if (saved) try { return JSON.parse(saved); } catch {}
+    }
+    return INITIAL_FEED;
+  });
   const [postText, setPostText] = useState('');
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'discussions' | 'resources' | 'achievements'>('all');
@@ -135,13 +142,26 @@ export default function CommunityPage() {
   const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
   const [replyInputs, setReplyInputs] = useState<Record<number, string>>({});
 
-  const [chatMessages, setChatMessages] = useState([
-    { user: 'Sophie K.', text: 'TSA rubric breakdown is so helpful!', time: '1h' },
-    { user: 'Taylor M.', text: 'Anyone have the meeting agenda template?', time: '3h' },
-    { user: 'Maria G.', text: 'Check the fundraising playbook I posted!', time: '6h' },
-    { user: 'Alex J.', text: 'Robotics meeting moved to Room 204', time: '8h' },
-  ]);
+  const [chatMessages, setChatMessages] = useState<{user:string;text:string;time:string}[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('clubconnect_community_chat');
+      if (saved) try { return JSON.parse(saved); } catch {}
+    }
+    return [
+      { user: 'Sophie K.', text: 'TSA rubric breakdown is so helpful!', time: '1h' },
+      { user: 'Taylor M.', text: 'Anyone have the meeting agenda template?', time: '3h' },
+      { user: 'Maria G.', text: 'Check the fundraising playbook I posted!', time: '6h' },
+      { user: 'Alex J.', text: 'Robotics meeting moved to Room 204', time: '8h' },
+    ];
+  });
   const [chatInput, setChatInput] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('clubconnect_community_feed', JSON.stringify(feed));
+  }, [feed]);
+  useEffect(() => {
+    localStorage.setItem('clubconnect_community_chat', JSON.stringify(chatMessages));
+  }, [chatMessages]);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) setAttachedFile(e.target.files[0]);
@@ -153,14 +173,31 @@ export default function CommunityPage() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) setAttachedFile(e.dataTransfer.files[0]);
   }
 
-  function submitPost() {
+  const [uploading, setUploading] = useState(false);
+
+  async function submitPost() {
     if (!postText.trim() && !attachedFile) return;
+    let fileUrl: string | undefined;
+    if (attachedFile) {
+      setUploading(true);
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData.user?.id || 'anonymous';
+        const res = await storageApi.uploadFile(userId, attachedFile);
+        if (!res.error && res.data) {
+          fileUrl = res.data.publicUrl;
+        }
+      } catch {} finally {
+        setUploading(false);
+      }
+    }
     const newPost: FeedPost = {
       id: Date.now(), author: userName || 'You', avatar: userInitials, club: 'General', time: 'Just now',
       text: postText.trim(),
       type: attachedFile ? 'resource' : 'text',
       fileName: attachedFile?.name,
       fileSize: attachedFile ? `${(attachedFile.size / 1024 / 1024).toFixed(1)} MB` : undefined,
+      fileUrl,
       likes: 0, liked: false, saved: false, replies: [],
     };
     setFeed(prev => [newPost, ...prev]);
@@ -251,37 +288,6 @@ export default function CommunityPage() {
                 </div>
               </div>
             </div>
-
-            {/* Navigation */}
-            <div className="bg-white border border-neutral-200">
-              <nav className="py-1">
-                {[
-                  { icon: <FolderOpen size={15} />, label: 'Resources', href: '/resources' },
-                  { icon: <MessageCircle size={15} />, label: 'Discussions', href: '/hub/discussions' },
-                  { icon: <BookOpen size={15} />, label: 'Club Guides', href: '/guides' },
-                  { icon: <Calendar size={15} />, label: 'Events', href: '/events' },
-                  { icon: <Star size={15} />, label: 'Success Stories', href: '/hub/stories' },
-                  { icon: <GraduationCap size={15} />, label: 'Alumni Network', href: '/alumni' },
-                  { icon: <Bookmark size={15} />, label: 'My Collections', href: '/hub/my-collections' },
-                  { icon: <Lightbulb size={15} />, label: 'Ideas Board', href: '/hub/ideas' },
-                ].map((item, i) => (
-                  <Link key={i} href={item.href} className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-600 hover:bg-primary-50 hover:text-primary-700 transition-colors">
-                    <span className="text-neutral-400">{item.icon}</span>
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-
-            {/* Followed Clubs */}
-            <div className="bg-white border border-neutral-200 p-4">
-              <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Your Clubs</h4>
-              <div className="flex flex-wrap gap-1.5">
-                {['TSA', 'Robotics', 'NHS', 'FBLA', 'Debate', 'Drama'].map(tag => (
-                  <span key={tag} className="text-[10px] px-2 py-1 bg-primary-50 text-primary-700 font-semibold border border-primary-100">#{tag}</span>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/*  CENTER FEED  */}
@@ -351,9 +357,9 @@ export default function CommunityPage() {
                     <Paperclip size={14} /> Attach
                   </button>
                 </div>
-                <button onClick={submitPost} disabled={!postText.trim() && !attachedFile}
+                <button onClick={submitPost} disabled={uploading || (!postText.trim() && !attachedFile)}
                   className="flex items-center gap-1.5 px-5 py-2 bg-secondary-500 text-white text-xs font-bold hover:bg-secondary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                  <Send size={14} /> Post
+                  <Send size={14} /> {uploading ? 'Uploading...' : 'Post'}
                 </button>
               </div>
             </div>
@@ -402,7 +408,13 @@ export default function CommunityPage() {
                         <p className="text-sm font-semibold text-primary-700 truncate">{post.fileName}</p>
                         <p className="text-xs text-primary-500">{post.fileSize}</p>
                       </div>
-                      <button className="px-3 py-1.5 bg-primary-600 text-white text-xs font-bold hover:bg-primary-700 transition-colors">Download</button>
+                      {post.fileUrl ? (
+                        <a href={post.fileUrl} download={post.fileName} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-primary-600 text-white text-xs font-bold hover:bg-primary-700 transition-colors flex items-center gap-1">
+                          <Download size={13} /> Download
+                        </a>
+                      ) : (
+                        <span className="px-3 py-1.5 bg-neutral-300 text-neutral-500 text-xs font-bold cursor-not-allowed">Demo File</span>
+                      )}
                     </div>
                   )}
                 </div>

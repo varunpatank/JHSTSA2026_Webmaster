@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -169,8 +169,27 @@ const tutorialSteps: TutorialStep[] = [
 ];
 
 export default function TutorialPage() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const s = localStorage.getItem('clubconnect_tutorial_step');
+      if (s) return parseInt(s, 10) || 0;
+    }
+    return 0;
+  });
+  const [completedSteps, setCompletedSteps] = useState<number[]>(() => {
+    if (typeof window !== 'undefined') {
+      const s = localStorage.getItem('clubconnect_tutorial_completed');
+      if (s) try { return JSON.parse(s); } catch {}
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('clubconnect_tutorial_step', String(currentStep));
+  }, [currentStep]);
+  useEffect(() => {
+    localStorage.setItem('clubconnect_tutorial_completed', JSON.stringify(completedSteps));
+  }, [completedSteps]);
 
   const step = tutorialSteps[currentStep];
   const progress = ((currentStep + 1) / tutorialSteps.length) * 100;

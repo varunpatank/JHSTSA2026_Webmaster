@@ -63,14 +63,21 @@ export default function JudgeGuide() {
           <Database size={14} className="text-emerald-600 mt-0.5 shrink-0" />
           <div>
            <p className="text-xs font-semibold text-emerald-700">Database-Backed (Supabase)</p>
-           <p className="text-[11px] text-neutral-600 leading-relaxed">Auth &amp; profiles, community uploads &amp; likes, hub discussions, ideas, mentors, stories, collaboration posts, and Stripe donation sessions are stored in a real PostgreSQL database.</p>
+           <p className="text-[11px] text-neutral-600 leading-relaxed">Login/signup, user profiles, club creation (appears on Discover), club management (edit/delete), chat messages, events, resource uploads, donations, discussions, proposals, notifications, and all community content are stored in a PostgreSQL database with Row-Level Security.</p>
           </div>
          </div>
          <div className="flex items-start gap-2.5">
           <Layout size={14} className="text-blue-600 mt-0.5 shrink-0" />
           <div>
-           <p className="text-xs font-semibold text-blue-700">Hardcoded for UI Demonstration</p>
-           <p className="text-[11px] text-neutral-600 leading-relaxed">Club directory, resource library, events, homepage stats, achievements, competitions, calendar, and rubrics use hardcoded data to showcase full UI functionality.</p>
+           <p className="text-xs font-semibold text-blue-700">localStorage Persistence</p>
+           <p className="text-[11px] text-neutral-600 leading-relaxed">Community feed posts/likes, chat sidebar, dashboard saved items/events/notifications, quiz results, tutorial progress, collection management, resource request votes, goals, and club management drafts persist via localStorage across refreshes.</p>
+          </div>
+         </div>
+         <div className="flex items-start gap-2.5">
+          <Layout size={14} className="text-violet-600 mt-0.5 shrink-0" />
+          <div>
+           <p className="text-xs font-semibold text-violet-700">Hardcoded UI Demonstration</p>
+           <p className="text-[11px] text-neutral-600 leading-relaxed">The preset club directory, homepage stats, calendar events, achievements list, competitions, rubrics, and guides use hardcoded data to showcase the full interface.</p>
           </div>
          </div>
         </div>

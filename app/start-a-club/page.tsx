@@ -4,7 +4,7 @@ import { FormEvent, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { addAdminClub, isLoggedIn } from "@/lib/clientState";
-import { supabase, clubProposalsApi, storageApi } from "@/lib/api";
+import { supabase, clubProposalsApi, storageApi, myClubsApi } from "@/lib/api";
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock,
   Compass, Image as ImageIcon, Info, Lightbulb, Megaphone, MessageCircle,
@@ -521,8 +521,25 @@ export default function StartAClubPage() {
         logo_url: logoUrl,
       });
 
-      const id = formData.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") || `club-${Date.now()}`;
-      addAdminClub({ id, name: formData.name, status: "Pending approval" });
+      // Also create the actual organization so it appears on the Discover page
+      const slug = formData.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-") || `club-${Date.now()}`;
+      const orgRes = await myClubsApi.createClub({
+        name: formData.name,
+        slug,
+        description: formData.purpose,
+        category: formData.category || undefined,
+        meeting_schedule: formData.meetingSchedule || undefined,
+        meeting_location: formData.location || undefined,
+        advisor_name: formData.advisor || undefined,
+        contact_email: formData.advisorEmail || undefined,
+        logo_url: logoUrl,
+        social_links: Object.keys(socialObj).length ? socialObj : undefined,
+        created_by: user.id,
+        is_published: true,
+      });
+
+      const orgId = orgRes.data?.id || slug;
+      addAdminClub({ id: orgId, name: formData.name, status: "Published" });
       setSubmitted(true);
     } catch (err) {
       console.error("Proposal submission failed:", err);

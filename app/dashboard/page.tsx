@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import {
   Bell, BookOpen, Calendar, ChevronRight, Clock, Edit3,
-  Heart, LayoutDashboard, LogOut, PlusCircle,
+  Heart, LayoutDashboard, Lock, LogOut, PlusCircle,
   Rocket, Save, Search, Settings, Star, Target, Trophy, Users, Zap, X, Check
 } from 'lucide-react';
 import { chapters, events } from '@/lib/data';
-import { supabase, profilesApi, myClubsApi, clubProposalsApi } from '@/lib/api';
+import { supabase, profilesApi, myClubsApi, clubProposalsApi, organizationsApi, membershipsApi } from '@/lib/api';
+import { getJoinedClubs } from '@/lib/clientState';
 
 interface SavedItem {
   id: string;
@@ -39,6 +41,7 @@ interface Achievement {
   icon: string;
   description: string;
   rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+  earnedDate?: string;
 }
 interface Notification {
   id: string;
@@ -106,10 +109,36 @@ const rarityColors: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const [savedItems, setSavedItems] = useState<SavedItem[]>(demoSaved);
-  const [myEvents, setMyEvents] = useState<MyEvent[]>(demoEvents);
-  const [notifications, setNotifications] = useState<Notification[]>(demoNotifications);
-  const [activeTab, setActiveTab] = useState<'overview' | 'clubs' | 'events' | 'saved' | 'settings'>('overview');
+  const [savedItems, setSavedItems] = useState<SavedItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const s = localStorage.getItem('clubconnect_dashboard_saved');
+      if (s) try { return JSON.parse(s); } catch {}
+    }
+    return demoSaved;
+  });
+  const [myEvents, setMyEvents] = useState<MyEvent[]>(() => {
+    if (typeof window !== 'undefined') {
+      const s = localStorage.getItem('clubconnect_dashboard_events');
+      if (s) try { return JSON.parse(s); } catch {}
+    }
+    return demoEvents;
+  });
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    if (typeof window !== 'undefined') {
+      const s = localStorage.getItem('clubconnect_dashboard_notifs');
+      if (s) try { return JSON.parse(s); } catch {}
+    }
+    return demoNotifications;
+  });
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'overview' | 'clubs' | 'events' | 'saved' | 'settings'>(() => {
+    if (typeof window !== 'undefined') {
+      const urlTab = new URLSearchParams(window.location.search).get('tab');
+      if (urlTab === 'clubs' || urlTab === 'events' || urlTab === 'saved' || urlTab === 'settings') return urlTab;
+    }
+    return 'overview';
+  });
+  const [showConfetti, setShowConfetti] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -117,12 +146,43 @@ export default function DashboardPage() {
   const [adminClubs, setAdminClubs] = useState<{ id: string; name: string; status: 'Draft' | 'Pending approval' | 'Published' }[]>([]);
   const [editingClub, setEditingClub] = useState<string | null>(null);
   const [clubEditForm, setClubEditForm] = useState<Record<string, string>>({});
-  const [joinedClubs, setJoinedClubs] = useState<{ id: string; name: string }[]>([]);
+  const [joinedClubs, setJoinedClubs] = useState<{ id: string; name: string; slug?: string; category?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [proposals, setProposals] = useState<any[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>(() => {
+    if (typeof window !== 'undefined') {
+      const s = localStorage.getItem('clubconnect_achievements');
+      if (s) try { return JSON.parse(s); } catch {}
+    }
+    return demoAchievements;
+  });
 
   const interests = ['STEM', 'Leadership', 'Competition'];
+
+  useEffect(() => {
+    localStorage.setItem('clubconnect_dashboard_saved', JSON.stringify(savedItems));
+  }, [savedItems]);
+  useEffect(() => {
+    localStorage.setItem('clubconnect_dashboard_events', JSON.stringify(myEvents));
+  }, [myEvents]);
+  useEffect(() => {
+    localStorage.setItem('clubconnect_dashboard_notifs', JSON.stringify(notifications));
+  }, [notifications]);
+  useEffect(() => {
+    localStorage.setItem('clubconnect_achievements', JSON.stringify(achievements));
+  }, [achievements]);
+
+  // Confetti on join
+  useEffect(() => {
+    if (searchParams.get('joined') === 'true') {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 4000);
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard?tab=clubs');
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let mounted = true;
@@ -155,16 +215,48 @@ export default function DashboardPage() {
         if (!mounted) return;
         if (!clubRes.error && clubRes.data) {
           const clubs = clubRes.data as any[];
-          const joined = clubs.map((c: any) => ({ id: c.id, name: c.name }));
           const admin = clubs.map((c: any) => ({
             id: c.id,
             name: c.name,
             status: (c.is_published ? 'Published' : 'Draft') as 'Draft' | 'Pending approval' | 'Published',
           }));
           if (mounted) {
-            setJoinedClubs(joined);
             setAdminClubs(admin);
           }
+        }
+
+        // Fetch clubs user has joined via memberships + localStorage
+        const membershipRes: any = await membershipsApi.getForCurrentUser();
+        if (!mounted) return;
+        const dbJoined: { id: string; name: string; slug?: string; category?: string }[] = [];
+        if (!membershipRes.error && membershipRes.data) {
+          const memberships = membershipRes.data as any[];
+          memberships
+            .filter((m: any) => m.organizations)
+            .forEach((m: any) => dbJoined.push({ id: m.organizations.id, name: m.organizations.name, slug: m.organizations.slug, category: m.organizations.category }));
+        }
+        // Also pull from localStorage (always available immediately after join)
+        const localClubs = getJoinedClubs();
+        const localMapped = localClubs.map(lc => {
+          const ch = chapters.find(c => c.id === lc.id);
+          return { id: lc.id, name: lc.name, slug: lc.id, category: ch?.category };
+        });
+        // Merge: DB clubs take priority, add any localStorage-only clubs
+        const dbIds = new Set(dbJoined.map(c => c.slug || c.id));
+        const merged = [...dbJoined, ...localMapped.filter(lc => !dbIds.has(lc.id))];
+        if (mounted) {
+            setJoinedClubs(merged);
+            // Unlock achievements based on joined clubs
+            setAchievements(prev => {
+              let updated = [...prev];
+              if (merged.length >= 1) {
+                updated = updated.map(a => a.id === '1' ? { ...a, earnedDate: a.earnedDate || new Date().toISOString().split('T')[0] } : a);
+              }
+              if (merged.length >= 3) {
+                updated = updated.map(a => a.id === '3' ? { ...a, earnedDate: a.earnedDate || new Date().toISOString().split('T')[0] } : a);
+              }
+              return updated;
+            });
         }
 
         // Fetch proposals submitted by this user
@@ -200,6 +292,31 @@ export default function DashboardPage() {
   const markRead = (id: string) =>
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
 
+  const handleDeleteClub = async (clubId: string) => {
+    if (!confirm('Are you sure you want to delete this club?')) return;
+    await organizationsApi.delete(clubId);
+    setAdminClubs(prev => prev.filter(c => c.id !== clubId));
+    setJoinedClubs(prev => prev.filter(c => c.id !== clubId));
+  };
+  const handlePublishClub = async (clubId: string) => {
+    await myClubsApi.publish(clubId);
+    setAdminClubs(prev => prev.map(c => c.id === clubId ? { ...c, status: 'Published' } : c));
+  };
+  const handleSaveClubEdit = async (clubId: string) => {
+    await organizationsApi.update(clubId, {
+      name: clubEditForm.name || undefined,
+      description: clubEditForm.purpose || undefined,
+      category: clubEditForm.category || undefined,
+      meeting_schedule: clubEditForm.schedule || undefined,
+      meeting_location: clubEditForm.location || undefined,
+      advisor_name: clubEditForm.advisor || undefined,
+    });
+    if (clubEditForm.name) {
+      setAdminClubs(prev => prev.map(c => c.id === clubId ? { ...c, name: clubEditForm.name } : c));
+    }
+    setEditingClub(null);
+  };
+
   const tabs = [
     { id: 'overview' as const, label: 'Overview', icon: LayoutDashboard },
     { id: 'clubs' as const, label: 'My Clubs', icon: Users },
@@ -210,6 +327,41 @@ export default function DashboardPage() {
 
   return (
     <div className="bg-neutral-50">
+      {/* Confetti overlay */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+          {Array.from({ length: 60 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-confetti"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: '-10px',
+                animationDelay: `${Math.random() * 2}s`,
+                animationDuration: `${2 + Math.random() * 2}s`,
+              }}
+            >
+              <div
+                style={{
+                  width: `${6 + Math.random() * 8}px`,
+                  height: `${6 + Math.random() * 8}px`,
+                  backgroundColor: ['#1e3a5f', '#b8860b', '#8b2252', '#2e8b57', '#4169e1', '#ff6347', '#ffd700', '#9370db'][i % 8],
+                  transform: `rotate(${Math.random() * 360}deg)`,
+                }}
+              />
+            </div>
+          ))}
+          <style jsx>{`
+            @keyframes confetti-fall {
+              0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+              100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            }
+            .animate-confetti {
+              animation: confetti-fall linear forwards;
+            }
+          `}</style>
+        </div>
+      )}
       {}
       <section className="bg-primary-700 text-white">
         <div className="max-w-6xl mx-auto px-4 py-5">
@@ -238,7 +390,7 @@ export default function DashboardPage() {
               {[
                 { v: joinedClubs.length, l: 'Clubs' },
                 { v: myEvents.filter(e => e.rsvpStatus === 'going').length, l: 'Events' },
-                { v: demoAchievements.length, l: 'Badges' },
+                { v: achievements.filter(a => a.earnedDate).length, l: 'Badges' },
               ].map(s => (
                 <div key={s.l}>
                   <div className="text-lg font-bold">{s.v}</div>
@@ -319,17 +471,17 @@ export default function DashboardPage() {
                     <button onClick={() => setActiveTab('clubs')} className="text-[11px] text-primary-500 hover:underline">Manage →</button>
                   </div>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {joinedClubs.map(club => {
-                      const ch = chapters.find(c => c.name === club.name);
-                      return (
-                        <Link key={club.id} href={ch ? `/directory/${ch.id}` : `/directory/${club.id}`}
-                          className="flex items-center gap-2.5 p-2 hover:bg-neutral-50 transition-colors border border-neutral-100">
-                          <div className="w-8 h-8 bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-bold">{club.name.charAt(0)}</div>
-                          <span className="text-xs font-medium text-neutral-700 truncate">{club.name}</span>
-                          <ChevronRight size={12} className="ml-auto text-neutral-300" />
+                    {joinedClubs.map(club => (
+                        <Link key={club.id} href={`/directory/${club.slug || club.id}`}
+                          className="flex items-center gap-2.5 p-2.5 hover:bg-primary-50 transition-colors border border-neutral-100 group">
+                          <div className="w-8 h-8 bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-bold group-hover:bg-primary-200 transition-colors">{club.name.charAt(0)}</div>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-xs font-semibold text-neutral-700 truncate block group-hover:text-primary-600 transition-colors">{club.name}</span>
+                            {club.category && <span className="text-[10px] text-neutral-400">{club.category}</span>}
+                          </div>
+                          <ChevronRight size={12} className="ml-auto text-neutral-300 group-hover:text-primary-500 transition-colors" />
                         </Link>
-                      );
-                    })}
+                    ))}
                   </div>
                 </div>
               )}
@@ -341,7 +493,15 @@ export default function DashboardPage() {
                     <Zap size={14} className="text-secondary-500" /> Recent Activity
                   </h2>
                   <div className="space-y-1.5">
-                    {demoActivity.slice(0, 4).map(a => (
+                    {[
+                      ...joinedClubs.map((c, i) => ({
+                        id: `join-${c.id}`,
+                        type: 'joined' as const,
+                        description: `Joined ${c.name}`,
+                        timestamp: new Date(Date.now() - i * 86400000).toISOString(),
+                      })),
+                      ...demoActivity,
+                    ].slice(0, 5).map(a => (
                       <div key={a.id} className="flex items-start gap-2 p-2 hover:bg-neutral-50 transition-colors">
                         <span className="mt-0.5">{activityIcons[a.type]}</span>
                         <div className="min-w-0">
@@ -421,10 +581,11 @@ export default function DashboardPage() {
                   <Trophy size={14} className="text-amber-500" /> Achievements
                 </h2>
                 <div className="flex flex-wrap gap-2">
-                  {demoAchievements.map(a => (
-                    <div key={a.id} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 border text-xs ${rarityColors[a.rarity]}`} title={a.description}>
-                      <span>{achievementIconMap[a.icon] ?? <Star size={14} />}</span>
+                  {achievements.map(a => (
+                    <div key={a.id} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 border text-xs ${a.earnedDate ? rarityColors[a.rarity] : 'bg-neutral-50 border-neutral-200 text-neutral-400'}`} title={a.earnedDate ? `${a.description} — Earned ${a.earnedDate}` : `${a.description} — Not yet earned`}>
+                      <span className={a.earnedDate ? '' : 'opacity-40'}>{achievementIconMap[a.icon] ?? <Star size={14} />}</span>
                       <span className="font-semibold">{a.name}</span>
+                      {!a.earnedDate && <Lock size={10} />}
                     </div>
                   ))}
                 </div>
@@ -460,24 +621,19 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {joinedClubs.map(club => {
-                    const ch = chapters.find(c => c.name === club.name);
-                    return (
-                      <div key={club.id} className="bg-white  border border-neutral-100 p-4 hover:shadow-md transition-shadow group">
+                  {joinedClubs.map(club => (
+                      <Link key={club.id} href={`/directory/${club.slug || club.id}`} className="block bg-white border border-neutral-100 p-4 hover:shadow-md hover:border-primary-200 transition-all group">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10  bg-primary-100 text-primary-600 flex items-center justify-center text-lg font-bold">{club.name.charAt(0)}</div>
+                          <div className="w-10 h-10 bg-primary-100 text-primary-600 flex items-center justify-center text-lg font-bold group-hover:bg-primary-200 transition-colors">{club.name.charAt(0)}</div>
                           <div>
                             <h4 className="text-sm font-bold text-neutral-800 group-hover:text-primary-600 transition-colors">{club.name}</h4>
-                            <p className="text-[10px] text-neutral-400">Member</p>
+                            <p className="text-[10px] text-neutral-400">Student Member</p>
                           </div>
+                          <ChevronRight size={14} className="ml-auto text-neutral-300 group-hover:text-primary-500 transition-colors" />
                         </div>
-                        <div className="flex gap-3 mt-3">
-                          <Link href={ch ? `/directory/${ch.id}` : `/directory/${club.id}`} className="text-xs text-primary-500 font-semibold hover:underline">View →</Link>
-                          <button className="text-xs text-red-400 hover:text-red-600 ml-auto">Leave</button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        {club.category && <span className="text-[10px] px-2 py-0.5 bg-primary-50 text-primary-600 font-medium">{club.category}</span>}
+                      </Link>
+                  ))}
                 </div>
                 )}
               </div>
@@ -525,8 +681,16 @@ export default function DashboardPage() {
                               </div>
                             ))}
                             <div className="flex gap-2 pt-1">
-                              <button onClick={() => setEditingClub(null)} className="flex-1 text-xs bg-primary-500 hover:bg-primary-600 text-white py-1.5  font-semibold flex items-center justify-center gap-1 transition-colors">
+                              <button onClick={() => handleSaveClubEdit(club.id)} className="flex-1 text-xs bg-primary-500 hover:bg-primary-600 text-white py-1.5  font-semibold flex items-center justify-center gap-1 transition-colors">
                                 <Check size={12} /> Save
+                              </button>
+                              {club.status !== 'Published' && (
+                                <button onClick={() => handlePublishClub(club.id)} className="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 font-semibold transition-colors">
+                                  Publish
+                                </button>
+                              )}
+                              <button onClick={() => handleDeleteClub(club.id)} className="text-xs text-red-400 hover:text-red-600 px-3 py-1.5">
+                                Delete
                               </button>
                               <button onClick={() => setEditingClub(null)} className="text-xs text-neutral-400 hover:text-neutral-600 px-3 py-1.5 ">
                                 Cancel

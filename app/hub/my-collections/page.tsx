@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { supabase, collectionsApi } from '@/lib/api';
 
 interface Collection {
   id: string;
@@ -81,6 +82,46 @@ export default function MyCollectionsPage() {
   const [newCollection, setNewCollection] = useState({ name: '', description: '', icon: '📁', color: 'bg-primary-500', isPublic: false });
   const [newItem, setNewItem] = useState({ title: '', type: 'link' as CollectionItem['type'], url: '', note: '' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Load from DB on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) {
+        setCurrentUserId(user.id);
+        const { data } = await collectionsApi.getByUser(user.id);
+        if (!cancelled && data && data.length > 0) {
+          const dbCollections: Collection[] = data.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            description: c.description || '',
+            icon: c.icon || '📁',
+            color: c.color || 'bg-primary-500',
+            isPublic: c.is_public || false,
+            createdAt: c.created_at?.split('T')[0] || '',
+            updatedAt: c.updated_at?.split('T')[0] || '',
+            items: (c.collection_items || []).map((i: any) => ({
+              id: i.id,
+              title: i.title,
+              type: i.item_type || 'link',
+              url: i.url || undefined,
+              note: i.note || undefined,
+              addedAt: i.added_at?.split('T')[0] || '',
+            })),
+          }));
+          setCollections([...dbCollections, ...demoCollections]);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Also keep localStorage as fallback
+  useEffect(() => {
+    localStorage.setItem('clubconnect_collections', JSON.stringify(collections));
+  }, [collections]);
 
   const iconOptions = ['📁', '🏆', '📚', '💡', '🎯', '⭐', '💰', '🎨', '🔬', '🌍', '🎵', '💻', '📝', '🤝', '🎓'];
   const colorOptions = [
@@ -94,10 +135,22 @@ export default function MyCollectionsPage() {
     { value: 'bg-orange-500', label: 'Orange' },
   ];
 
-  const createCollection = () => {
+  const createCollection = async () => {
     if (!newCollection.name.trim()) return;
+    let id = Date.now().toString();
+    if (currentUserId) {
+      const { data } = await collectionsApi.create({
+        user_id: currentUserId,
+        name: newCollection.name,
+        description: newCollection.description,
+        icon: newCollection.icon,
+        color: newCollection.color,
+        is_public: newCollection.isPublic,
+      });
+      if (data) id = (data as any).id;
+    }
     const collection: Collection = {
-      id: Date.now().toString(),
+      id,
       name: newCollection.name,
       description: newCollection.description,
       icon: newCollection.icon,
@@ -113,10 +166,21 @@ export default function MyCollectionsPage() {
     setSelectedCollection(collection);
   };
 
-  const addItemToCollection = () => {
+  const addItemToCollection = async () => {
     if (!selectedCollection || !newItem.title.trim()) return;
+    let id = Date.now().toString();
+    if (currentUserId) {
+      const { data } = await collectionsApi.addItem({
+        collection_id: selectedCollection.id,
+        title: newItem.title,
+        item_type: newItem.type,
+        url: newItem.url || undefined,
+        note: newItem.note || undefined,
+      });
+      if (data) id = (data as any).id;
+    }
     const item: CollectionItem = {
-      id: Date.now().toString(),
+      id,
       title: newItem.title,
       type: newItem.type,
       url: newItem.url || undefined,
@@ -134,8 +198,9 @@ export default function MyCollectionsPage() {
     setIsAddingItem(false);
   };
 
-  const removeItem = (itemId: string) => {
+  const removeItem = async (itemId: string) => {
     if (!selectedCollection) return;
+    if (currentUserId) await collectionsApi.removeItem(itemId);
     const updatedItems = selectedCollection.items.filter(item => item.id !== itemId);
     const updated = collections.map(c =>
       c.id === selectedCollection.id
@@ -146,14 +211,17 @@ export default function MyCollectionsPage() {
     setSelectedCollection({ ...selectedCollection, items: updatedItems });
   };
 
-  const deleteCollection = (collectionId: string) => {
+  const deleteCollection = async (collectionId: string) => {
+    if (currentUserId) await collectionsApi.delete(collectionId);
     setCollections(collections.filter(c => c.id !== collectionId));
     if (selectedCollection?.id === collectionId) {
       setSelectedCollection(null);
     }
   };
 
-  const togglePublic = (collectionId: string) => {
+  const togglePublic = async (collectionId: string) => {
+    const col = collections.find(c => c.id === collectionId);
+    if (currentUserId && col) await collectionsApi.update(collectionId, { is_public: !col.isPublic });
     const updated = collections.map(c =>
       c.id === collectionId ? { ...c, isPublic: !c.isPublic } : c
     );

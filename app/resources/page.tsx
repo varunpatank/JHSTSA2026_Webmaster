@@ -23,10 +23,10 @@ const ROCKET_STAGES = [
       { id: "ig-4", title: "School Approval Steps", details: "Submission sequence, review expectations, and publication conditions.", type: "guide", downloads: 189, fileSize: "800 KB", format: "PDF" },
     ],
     hubLinks: [
-      { href: "/start-a-club", label: "Start a Club Wizard", icon: Rocket },
-      { href: "/hub/tutorial", label: "Interactive Tutorial", icon: BookOpen },
-      { href: "/hub/quiz", label: "Club Finder Quiz", icon: HelpCircle },
-      { href: "/hub/ideas", label: "Club Ideas Generator", icon: Lightbulb },
+      { href: "/hub/ideas", label: "Ideas Board", icon: Lightbulb },
+      { href: "/hub/discussions", label: "Discussions", icon: MessageCircle },
+      { href: "/resources", label: "Resources", icon: BookOpen },
+      { href: "/guides", label: "Club Guides", icon: FileText },
     ],
   },
   {
@@ -39,10 +39,10 @@ const ROCKET_STAGES = [
       { id: "lo-4", title: "Recruitment Flyer Templates", details: "Customizable flyer designs for announcing your club.", type: "template", downloads: 489, fileSize: "5.4 MB", format: "ZIP" },
     ],
     hubLinks: [
-      { href: "/hub/collaborate", label: "Collaboration Finder", icon: Users },
-      { href: "/hub/mentors", label: "Mentor Network", icon: Award },
+      { href: "/events", label: "Events", icon: Calendar },
+      { href: "/hub/stories", label: "Success Stories", icon: Star },
       { href: "/directory", label: "Club Directory", icon: Compass },
-      { href: "/hub/compare", label: "Compare Clubs", icon: BarChart3 },
+      { href: "/hub/my-collections", label: "My Collections", icon: Heart },
     ],
   },
   {
@@ -55,10 +55,10 @@ const ROCKET_STAGES = [
       { id: "ob-4", title: "Conflict Resolution Guide", details: "Strategies for handling disagreements between members, officers, and advisors.", type: "guide", downloads: 134, fileSize: "520 KB", format: "PDF" },
     ],
     hubLinks: [
-      { href: "/hub/calendar", label: "Events Calendar", icon: Calendar },
-      { href: "/hub/discussions", label: "Discussion Forum", icon: MessageCircle },
-      { href: "/hub/manage-club", label: "Club Manager", icon: Target },
-      { href: "/hub/goals", label: "Goal Tracker", icon: CheckCircle },
+      { href: "/alumni", label: "Alumni Network", icon: Users },
+      { href: "/hub/discussions", label: "Discussions", icon: MessageCircle },
+      { href: "/hub/ideas", label: "Ideas Board", icon: Lightbulb },
+      { href: "/guides", label: "Club Guides", icon: BookOpen },
     ],
   },
   {
@@ -71,10 +71,10 @@ const ROCKET_STAGES = [
       { id: "ex-4", title: "Sponsorship Outreach Kit", details: "Template emails and tips for approaching local businesses.", type: "template", downloads: 312, fileSize: "900 KB", format: "ZIP" },
     ],
     hubLinks: [
-      { href: "/hub/competitions", label: "Competitions Hub", icon: Trophy },
-      { href: "/events", label: "Events & Programs", icon: Calendar },
-      { href: "/donate", label: "Donations & Funding", icon: Heart },
       { href: "/hub/stories", label: "Success Stories", icon: Star },
+      { href: "/events", label: "Events", icon: Calendar },
+      { href: "/hub/my-collections", label: "My Collections", icon: Heart },
+      { href: "/resources", label: "Resources", icon: BookOpen },
     ],
   },
   {
@@ -87,10 +87,10 @@ const ROCKET_STAGES = [
       { id: "mc-4", title: "Judging Criteria Overview", details: "Understand how TSA and other organizations score student projects.", type: "handbook", downloads: 234, fileSize: "520 KB", format: "PDF" },
     ],
     hubLinks: [
-      { href: "/hub/health", label: "Club Health Dashboard", icon: BarChart3 },
-      { href: "/hub/achievements", label: "Achievements & Badges", icon: Award },
-      { href: "/hub/rubrics/webmaster", label: "TSA Rubrics", icon: FileText },
-      { href: "/hub/external", label: "External Resources", icon: ExternalLink },
+      { href: "/alumni", label: "Alumni Network", icon: Users },
+      { href: "/hub/discussions", label: "Discussions", icon: MessageCircle },
+      { href: "/hub/stories", label: "Success Stories", icon: Star },
+      { href: "/hub/ideas", label: "Ideas Board", icon: Lightbulb },
     ],
   },
 ];

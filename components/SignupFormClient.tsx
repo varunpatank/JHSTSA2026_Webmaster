@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
+import { loginUser } from "@/lib/clientState";
 import { BookOpen, Calendar, Shield, UserPlus, Users } from "lucide-react";
 
 interface SignupFormClientProps {
@@ -72,6 +73,7 @@ export default function SignupFormClient({ redirect = "/profile" }: SignupFormCl
         return;
       }
 
+      loginUser(name, email);
           setMissing({});
 
       router.push(redirect);
