@@ -2,8 +2,9 @@
 
 import { FormEvent, useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import HeroSection from "@/components/HeroSection";
 import { useRouter } from "next/navigation";
-import { addAdminClub, isLoggedIn } from "@/lib/clientState";
+import { addAdminClub } from "@/lib/clientState";
 import { supabase, clubProposalsApi, storageApi, myClubsApi } from "@/lib/api";
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock,
@@ -475,11 +476,11 @@ export default function StartAClubPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!isLoggedIn()) { router.push("/login?redirect=/start-a-club"); return; }
-    setSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login?redirect=/start-a-club"); return; }
+
+      setSubmitting(true);
 
       let logoUrl: string | undefined;
       if (logoFile) {
@@ -594,17 +595,11 @@ export default function StartAClubPage() {
   return (
     <div className="bg-neutral-50">
       {}
-      <section className="relative bg-primary-600 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-secondary-400 rounded-full blur-3xl animate-drift-slower" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent-400 rounded-full blur-3xl animate-drift-slow" />
-        </div>
-        <div className="relative max-w-5xl mx-auto px-4 py-10 text-center animate-fade-up">
-          <Rocket size={40} className="mx-auto mb-3 text-secondary-300 animate-float" />
-          <h1 className="text-3xl md:text-4xl font-heading font-bold">Start a New Club</h1>
-          <p className="mt-2 text-white/80 max-w-xl mx-auto">Follow the phases, fill in your details along the way, and submit when you&rsquo;re ready.</p>
-        </div>
-      </section>
+      <HeroSection
+        title="Start a New Club"
+        description="Follow the phases, fill in your details along the way, and submit when you&rsquo;re ready."
+        icon={<Rocket size={40} className="animate-float" />}
+      />
 
       {}
       <div className="bg-white border-b border-neutral-200">

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { featuredAlumni, careerPanels } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import {
   Award, BookOpen, Briefcase, Calendar, ChevronDown, GraduationCap,
   Heart, Mail, MapPin, MessageSquare, Search, Star, TrendingUp, Users,
@@ -40,26 +41,18 @@ export default function AlumniPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Community</p>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><GraduationCap size={40} /> Alumni Network</h1>
-          <p className="mt-3 max-w-2xl text-primary-100 text-lg">Connect with graduates who paved the way. Mentorship, career advice, and ongoing support for current students.</p>
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { label: "Alumni Connected", value: "240+" },
-              { label: "Mentorship Sessions", value: "85" },
-              { label: "Career Panels", value: careerPanels.length },
-              { label: "Chapters Supported", value: "15" },
-            ].map(s => (
-              <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/15 p-5 text-center hover:bg-white/15 transition-colors">
-                <p className="text-3xl md:text-4xl font-heading font-bold text-secondary-300">{s.value}</p>
-                <p className="text-sm text-white/80 mt-1.5 font-medium">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Community"
+        title="Alumni Network"
+        icon={<GraduationCap size={40} />}
+        description="Connect with graduates who paved the way. Mentorship, career advice, and ongoing support for current students."
+        stats={[
+          { label: "Alumni Connected", value: "240+" },
+          { label: "Mentorship Sessions", value: "85" },
+          { label: "Career Panels", value: careerPanels.length },
+          { label: "Chapters Supported", value: "15" },
+        ]}
+      />
 
       {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6">

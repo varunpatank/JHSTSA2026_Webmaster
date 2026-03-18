@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import HeroSection from "@/components/HeroSection";
 import { supabase, profilesApi, storageApi } from '@/lib/api';
 import {
   Download, FileText, Heart, ImageIcon, MessageCircle, Paperclip, Send,
@@ -251,19 +252,18 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-neutral-100">
       <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.png,.jpg,.jpeg,.gif,.svg,.txt,.md,.csv" onChange={handleFileSelect} />
 
-      {/* Hero */}
-      <div className="bg-primary-700 text-white py-5">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
+      <HeroSection align="left">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold font-heading">Community</h1>
-            <p className="text-xs text-neutral-300 mt-0.5">Share resources, start discussions, connect with clubs</p>
+            <h1 className="hero-title mt-0"><span>Community</span></h1>
+            <p className="hero-description mt-1 text-sm">Share resources, start discussions, connect with clubs</p>
           </div>
           <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-300">
-            <span className="bg-white/10 px-2.5 py-1 flex items-center gap-1"><TrendingUp size={12} /> {feed.length} Posts</span>
-            <span className="bg-white/10 px-2.5 py-1 flex items-center gap-1"><Users size={12} /> 47 Online</span>
+            <span className="hero-stat px-2.5 py-1 flex items-center gap-1"><TrendingUp size={12} /> {feed.length} Posts</span>
+            <span className="hero-stat px-2.5 py-1 flex items-center gap-1"><Users size={12} /> 47 Online</span>
           </div>
         </div>
-      </div>
+      </HeroSection>
 
       <div className="max-w-7xl mx-auto px-4 py-5">
         <div className="flex gap-5">

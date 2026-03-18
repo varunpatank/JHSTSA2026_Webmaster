@@ -11,6 +11,7 @@ import DirectoryFilters, {
   type DirectoryFilterState,
 } from "@/components/directory/DirectoryFilters";
 import ClubGrid from "@/components/directory/ClubGrid";
+import HeroSection from "@/components/HeroSection";
 import { HelpCircle, Sparkles, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 
 const DirectoryLeafletMap = dynamic(
@@ -179,17 +180,11 @@ function DirectoryPageContent() {
 
   return (
     <div className="bg-neutral-50 min-h-screen">
-      {/* ── Hero Header ── */}
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 animate-fade-up">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">
-            Discover &middot; Filter &middot; Connect
-          </p>
-          <h1 className="mt-2 text-2xl md:text-5xl font-heading font-bold">
-            Organization Directory
-          </h1>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Discover · Filter · Connect"
+        title="Organization Directory"
+        description="Explore school clubs, compare meeting details, filter by interest, and find the right community to join."
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* ── Map + Filters Island ── */}

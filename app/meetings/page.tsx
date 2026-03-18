@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { chapters } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import {
   Calendar, CheckCircle, ChevronDown, Clock, MapPin, PhoneCall, Plus, Search, Users, Video
 } from "lucide-react";
@@ -67,22 +68,21 @@ export default function MeetingsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-700 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <h1 className="text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Calendar size={36} /> Meetings Schedule</h1>
-          <p className="mt-3 max-w-2xl text-primary-100 text-lg">View upcoming club meetings, RSVPs, and agendas all in one place.</p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/call/preview" className="btn-secondary inline-flex items-center gap-2">
-              <PhoneCall size={16} /> Start Quick Call
-            </Link>
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-3 max-w-md">
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{MEETINGS.length}</p><p className="text-xs text-primary-200">This Week</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{MEETINGS.filter(m => m.isVirtual).length}</p><p className="text-xs text-primary-200">Virtual</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{types.length - 1}</p><p className="text-xs text-primary-200">Types</p></div>
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        title="Meetings Schedule"
+        icon={<Calendar size={36} />}
+        description="View upcoming club meetings, RSVPs, and agendas all in one place."
+        actions={
+          <Link href="/call/preview" className="btn-secondary inline-flex items-center gap-2">
+            <PhoneCall size={16} /> Start Quick Call
+          </Link>
+        }
+        stats={[
+          { label: "This Week", value: MEETINGS.length },
+          { label: "Virtual", value: MEETINGS.filter(m => m.isVirtual).length },
+          { label: "Types", value: types.length - 1 },
+        ]}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="card p-4 mb-6 flex flex-col sm:flex-row gap-3">

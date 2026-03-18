@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { announcements } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import { Bell, Calendar, ChevronDown, Filter, Megaphone, Pin, Search, Tag } from "lucide-react";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -62,13 +63,12 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Stay Updated</p>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Megaphone size={36} /> Announcements</h1>
-          <p className="mt-3 max-w-2xl text-primary-100 text-lg">Important updates, deadlines, and news from clubs, advisors, and the Activities Office.</p>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Stay Updated"
+        title="Announcements"
+        icon={<Megaphone size={36} />}
+        description="Important updates, deadlines, and news from clubs, advisors, and the Activities Office."
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {}

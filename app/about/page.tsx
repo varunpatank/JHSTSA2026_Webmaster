@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { chapters, sponsorsData, schoolWideStats } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import {
   Award, BookOpen, Calendar, CheckCircle, Globe, Heart, MapPin,
   MessageSquare, Shield, Star, Target, TrendingUp, Users, Zap,
@@ -46,37 +47,23 @@ const TEAM = [
 export default function AboutPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {}
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-500 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-white/5 blur-2xl" />
-          <div className="absolute bottom-0 left-1/4 w-80 h-40 rounded-full bg-secondary-500/10 blur-3xl" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative z-10">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Our Story</p>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold">About ClubConnect</h1>
-          <p className="mt-4 max-w-3xl text-primary-100 text-lg leading-relaxed">
-            ClubConnect is a modern hub designed to help student chapters organize, collaborate, and shine. We combine tools for meetings, events, and resources with privacy-first defaults and partner integrations that amplify student leadership.
-          </p>
-          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { label: "Active Clubs", value: schoolWideStats.totalClubs },
-              { label: "Student Members", value: schoolWideStats.totalMembers.toLocaleString() },
-              { label: "Events This Year", value: schoolWideStats.totalEvents },
-              { label: "Service Hours", value: schoolWideStats.totalServiceHours.toLocaleString() },
-            ].map(stat => (
-              <div key={stat.label} className="bg-white/10 backdrop-blur-sm border border-white/15 p-5 text-center hover:bg-white/15 transition-colors">
-                <p className="text-3xl md:text-4xl font-heading font-bold text-secondary-300">{stat.value}</p>
-                <p className="text-sm text-white/80 mt-1.5 font-medium">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 flex flex-wrap gap-3">
+      <HeroSection
+        eyebrow="Our Story"
+        title="About ClubConnect"
+        description="ClubConnect is a modern hub designed to help student chapters organize, collaborate, and shine. We combine tools for meetings, events, and resources with privacy-first defaults and partner integrations that amplify student leadership."
+        stats={[
+          { label: "Active Clubs", value: schoolWideStats.totalClubs },
+          { label: "Student Members", value: schoolWideStats.totalMembers.toLocaleString() },
+          { label: "Events This Year", value: schoolWideStats.totalEvents },
+          { label: "Service Hours", value: schoolWideStats.totalServiceHours.toLocaleString() },
+        ]}
+        actions={
+          <>
             <Link href="/start-a-club" className="btn-secondary">Propose a Chapter</Link>
             <Link href="/directory" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">Browse Directory</Link>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-12">
         {}

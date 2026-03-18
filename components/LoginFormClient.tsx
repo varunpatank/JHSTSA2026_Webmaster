@@ -3,8 +3,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
 import { authApi } from "@/lib/api";
 import { loginUser } from "@/lib/clientState";
+import HeroSection from "@/components/HeroSection";
 import { BookOpen, Calendar, LogIn, Shield, Users } from "lucide-react";
 
 interface LoginFormClientProps {
@@ -20,12 +22,13 @@ export default function LoginFormClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { status } = useSession();
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const loggedIn = await authApi.isLoggedIn();
+        const loggedIn = status === "authenticated" || await authApi.isLoggedIn();
         if (mounted && loggedIn) router.replace('/profile');
       } catch (e) {
       } finally {
@@ -35,7 +38,7 @@ export default function LoginFormClient({
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [router, status]);
 
 
   const onSubmit = (event: FormEvent) => {
@@ -52,6 +55,19 @@ export default function LoginFormClient({
           setSubmitting(false);
           return;
         }
+
+        const nextAuthRes = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (nextAuthRes?.error) {
+          await authApi.signOut();
+          setError("App session setup failed. Please try again.");
+          return;
+        }
+
         loginUser(res.data?.user?.email?.split('@')[0] || email, email);
         router.push(redirect);
       } catch (e: any) {
@@ -72,13 +88,11 @@ export default function LoginFormClient({
 
   return (
     <div className="min-h-screen bg-neutral-100">
-      <section className="bg-primary-500 text-white border-b-4 border-secondary-500">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Account</p>
-          <h1 className="mt-1 text-4xl font-heading font-bold">Welcome Back</h1>
-          <p className="mt-2 text-primary-100">Sign in to manage your clubs, events, and profile.</p>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Account"
+        title="Welcome Back"
+        description="Sign in to manage your clubs, events, and profile."
+      />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2">

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import HeroSection from "@/components/HeroSection";
 import {
   chapters, events, studentStories, announcements,
   schoolWideStats, featuredAlumni,
@@ -248,13 +249,11 @@ export default function SocialPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {}
-      <section className="bg-primary-800 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-wrap items-center justify-between gap-4">
+      <HeroSection align="left">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-heading font-bold flex items-center gap-2">
-              <Users size={24} /> Student Community Hub
-            </h1>
-            <p className="text-primary-200 text-sm mt-1">Chat, share resources, explore clubs &amp; compete — all in one place.</p>
+            <h1 className="hero-title mt-0"><Users size={24} className="hero-icon" /> <span>Student Community Hub</span></h1>
+            <p className="hero-description mt-1 text-sm">Chat, share resources, explore clubs &amp; compete — all in one place.</p>
           </div>
           <div className="flex gap-3">
             {[
@@ -262,14 +261,14 @@ export default function SocialPage() {
               { v: schoolWideStats.totalMembers.toLocaleString(), l: "Students" },
               { v: uploads.length, l: "Resources" },
             ].map(s => (
-              <div key={s.l} className="bg-white/10 border border-white/10 px-3 py-1.5 text-center">
+              <div key={s.l} className="hero-stat px-3 py-1.5">
                 <p className="text-base font-bold leading-none">{s.v}</p>
                 <p className="text-[9px] text-primary-300">{s.l}</p>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </HeroSection>
 
       {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">

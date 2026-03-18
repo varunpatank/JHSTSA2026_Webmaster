@@ -42,16 +42,27 @@ export function isLoggedIn() {
   return window.localStorage.getItem(LOGGED_IN_KEY) === "true";
 }
 
-export function loginUser(name: string, email: string) {
+export function setLoggedInState(loggedIn: boolean, identity?: { name?: string | null; email?: string | null }) {
   if (!canUseStorage()) return;
-  window.localStorage.setItem(LOGGED_IN_KEY, "true");
-  window.localStorage.setItem(USER_NAME_KEY, name);
-  window.localStorage.setItem(USER_EMAIL_KEY, email);
+  window.localStorage.setItem(LOGGED_IN_KEY, loggedIn ? "true" : "false");
+
+  if (!loggedIn) return;
+
+  if (identity?.name) {
+    window.localStorage.setItem(USER_NAME_KEY, identity.name);
+  }
+
+  if (identity?.email) {
+    window.localStorage.setItem(USER_EMAIL_KEY, identity.email);
+  }
+}
+
+export function loginUser(name: string, email: string) {
+  setLoggedInState(true, { name, email });
 }
 
 export function logoutUser() {
-  if (!canUseStorage()) return;
-  window.localStorage.setItem(LOGGED_IN_KEY, "false");
+  setLoggedInState(false);
 }
 
 export function getUserIdentity() {
