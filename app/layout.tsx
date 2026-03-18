@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import JudgeGuide from "@/components/JudgeGuide";
+import AuthProviders from "@/components/AuthProviders";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
@@ -23,11 +24,13 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className={`${inter.className} min-h-screen flex flex-col`}>
-        <ScrollToTop />
-        <Header />
-        <main className="flex-grow">{children}</main>
-        <Footer />
-        <JudgeGuide />
+        <AuthProviders>
+          <ScrollToTop />
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+          <JudgeGuide />
+        </AuthProviders>
       </body>
     </html>
   );

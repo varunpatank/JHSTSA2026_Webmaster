@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import HeroSection from "@/components/HeroSection";
 import {
   chapters,
   events,
@@ -130,45 +131,33 @@ export default function CommunityHubPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {}
-      <section className="relative bg-primary-800 text-white overflow-hidden">
-        {}
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(255,255,255,.15) 48px,rgba(255,255,255,.15) 49px),repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(255,255,255,.15) 48px,rgba(255,255,255,.15) 49px)" }} />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-            <div>
-              <span className="inline-flex items-center gap-2 bg-secondary-500/20 px-3 py-1 text-xs font-semibold text-secondary-300 mb-4 border border-secondary-500/30">
-                <Globe size={13} /> Student Community Hub
-              </span>
-              <h1 className="text-3xl md:text-4xl font-heading font-bold tracking-tight">
-                Community Hub
-              </h1>
-              <p className="mt-2 text-neutral-300 max-w-xl text-sm leading-relaxed">
-                The heartbeat of student life — connect with peers, join discussions, celebrate achievements, and collaborate across clubs.
-              </p>
-            </div>
-
-            {}
-            <div className="flex gap-3 flex-wrap">
-              {[
-                { label: "Active Clubs", value: schoolWideStats.totalClubs, icon: Users },
-                { label: "Students", value: schoolWideStats.totalMembers.toLocaleString(), icon: TrendingUp },
-                { label: "Discussions", value: discussionThreads.length, icon: MessageCircle },
-                { label: "This Week", value: weeklyOpportunities.length + " events", icon: Calendar },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="bg-white/10 border border-white/10 px-4 py-3 text-center min-w-[100px]"
-                >
-                  <s.icon size={14} className="mx-auto mb-1 text-secondary-400" />
-                  <p className="text-lg font-bold leading-none">{s.value}</p>
-                  <p className="text-[10px] text-neutral-400 mt-1">{s.label}</p>
-                </div>
-              ))}
-            </div>
+      <HeroSection align="left">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div>
+            <span className="inline-flex items-center gap-2 bg-secondary-500/20 px-3 py-1 text-xs font-semibold text-secondary-300 border border-secondary-500/30">
+              <Globe size={13} /> Student Community Hub
+            </span>
+            <h1 className="hero-title"><span>Community Hub</span></h1>
+            <p className="hero-description max-w-xl text-sm leading-relaxed">
+              The heartbeat of student life — connect with peers, join discussions, celebrate achievements, and collaborate across clubs.
+            </p>
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            {[
+              { label: "Active Clubs", value: schoolWideStats.totalClubs, icon: Users },
+              { label: "Students", value: schoolWideStats.totalMembers.toLocaleString(), icon: TrendingUp },
+              { label: "Discussions", value: discussionThreads.length, icon: MessageCircle },
+              { label: "This Week", value: weeklyOpportunities.length + " events", icon: Calendar },
+            ].map((s) => (
+              <div key={s.label} className="hero-stat min-w-[100px] px-4 py-3 text-center">
+                <s.icon size={14} className="mx-auto mb-1 text-secondary-400" />
+                <p className="text-lg font-bold leading-none">{s.value}</p>
+                <p className="mt-1 text-[10px] text-neutral-400">{s.label}</p>
+              </div>
+            ))}
           </div>
         </div>
-      </section>
+      </HeroSection>
 
       {}
       <div className="bg-white border-b-2 border-neutral-200 sticky top-0 z-30">

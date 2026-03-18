@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { safetyGuidelines } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import { AlertTriangle, BookOpen, CheckCircle, Heart, Phone, Shield, Users } from "lucide-react";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -37,13 +38,12 @@ const POLICIES = [
 export default function SafetyPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-700 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-red-200">Student Wellbeing</p>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Shield size={40} /> Safety & Guidelines</h1>
-          <p className="mt-3 max-w-2xl text-red-100 text-lg">Your safety is our top priority. Review safety guidelines, emergency contacts, and school policies for all club activities.</p>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Student Wellbeing"
+        title="Safety & Guidelines"
+        icon={<Shield size={40} />}
+        description="Your safety is our top priority. Review safety guidelines, emergency contacts, and school policies for all club activities."
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

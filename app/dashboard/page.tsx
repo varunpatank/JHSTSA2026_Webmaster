@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
+import HeroSection from "@/components/HeroSection";
 import {
   Bell, BookOpen, Calendar, ChevronRight, Clock, Edit3,
   Heart, LayoutDashboard, Lock, LogOut, PlusCircle,
@@ -189,8 +190,8 @@ function DashboardContent() {
 
     const loadDashboard = async () => {
       try {
-        const { data: authData } = await supabase.auth.getUser();
-        const user = authData.user;
+        const { data: sessionData } = await supabase.auth.getSession();
+        const user = sessionData.session?.user;
         if (!mounted || !user) {
           setLoading(false);
           return;
@@ -363,52 +364,44 @@ function DashboardContent() {
         </div>
       )}
       {}
-      <section className="bg-primary-700 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-5">
-          <div className="flex items-center gap-4">
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt={userName}
-                width={56}
-                height={56}
-                className="w-14 h-14 object-cover border-2 border-white/30"
-              />
-            ) : (
-              <div className="w-14 h-14 bg-white/20 border-2 border-white/30 flex items-center justify-center text-lg font-bold text-white">
-                {userName ? userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?'}
+      <HeroSection align="left" shellClassName="max-w-6xl">
+        <div className="flex items-center gap-4">
+          {avatarUrl ? (
+            <Image src={avatarUrl} alt={userName} width={56} height={56} className="w-14 h-14 object-cover border-2 border-white/30" />
+          ) : (
+            <div className="w-14 h-14 bg-white/20 border-2 border-white/30 flex items-center justify-center text-lg font-bold text-white">
+              {userName ? userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?'}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="hero-title mt-0 text-xl md:text-3xl"><span>{userName}</span></h1>
+              <span className="bg-secondary-500/90 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Officer</span>
+            </div>
+            <p className="hero-description mt-1 text-sm truncate">{userEmail}</p>
+          </div>
+          <div className="hidden md:flex items-center gap-6 text-center">
+            {[
+              { v: joinedClubs.length, l: 'Clubs' },
+              { v: myEvents.filter(e => e.rsvpStatus === 'going').length, l: 'Events' },
+              { v: achievements.filter(a => a.earnedDate).length, l: 'Badges' },
+            ].map(s => (
+              <div key={s.l}>
+                <div className="text-lg font-bold">{s.v}</div>
+                <div className="text-[10px] text-white/50 uppercase tracking-wider">{s.l}</div>
               </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold truncate">{userName}</h1>
-                <span className="bg-secondary-500/90 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Officer</span>
-              </div>
-              <p className="text-white/60 text-sm truncate">{userEmail}</p>
-            </div>
-            <div className="hidden md:flex items-center gap-6 text-center">
-              {[
-                { v: joinedClubs.length, l: 'Clubs' },
-                { v: myEvents.filter(e => e.rsvpStatus === 'going').length, l: 'Events' },
-                { v: achievements.filter(a => a.earnedDate).length, l: 'Badges' },
-              ].map(s => (
-                <div key={s.l}>
-                  <div className="text-lg font-bold">{s.v}</div>
-                  <div className="text-[10px] text-white/50 uppercase tracking-wider">{s.l}</div>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Link href="/resources" className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-2  text-sm font-medium transition-colors">
-                <BookOpen size={14} /> Resources
-              </Link>
-              <button onClick={() => setActiveTab('settings')} className="bg-white/10 hover:bg-white/20 p-2  transition-colors">
-                <Settings size={16} />
-              </button>
-            </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Link href="/resources" className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-2 text-sm font-medium transition-colors">
+              <BookOpen size={14} /> Resources
+            </Link>
+            <button onClick={() => setActiveTab('settings')} className="bg-white/10 hover:bg-white/20 p-2 transition-colors">
+              <Settings size={16} />
+            </button>
           </div>
         </div>
-      </section>
+      </HeroSection>
 
       {}
       <section className="bg-white border-b border-neutral-200 sticky top-[57px] z-20">

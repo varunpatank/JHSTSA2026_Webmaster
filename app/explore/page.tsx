@@ -23,6 +23,7 @@ import { chapters, events, quizQuestions, featuredAlumni, careerPanels } from "@
 import { formatChapterLocation, getPrimaryLocation } from "@/lib/location";
 import { clubProposalsApi, myClubsApi } from "@/lib/api";
 import { Rocket } from "lucide-react";
+import HeroSection from "@/components/HeroSection";
 
 const interestToCategory: Record<string, string> = {
   "Academic competitions": "Academic",
@@ -183,30 +184,22 @@ export default function ExplorePage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {}
-      <section className="bg-primary-500 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 animate-fade-up">
-          <p className="eyebrow text-primary-100">Guidance</p>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold">
-            Guidance &amp; Support
-          </h1>
-          <p className="mt-3 max-w-2xl text-primary-100 text-lg">
-            Get AI-powered club recommendations, connect with alumni mentors, access career panels, and join community discussions.
-          </p>
-
-          {}
-          <div className="mt-6 max-w-xl relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-            <input
-              type="text"
-              placeholder="Search clubs, events, or topics..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3  bg-white text-neutral-800 placeholder:text-neutral-400 border-2 border-transparent focus:border-secondary-500 focus:outline-none"
-            />
-          </div>
+      <HeroSection
+        eyebrow="Guidance"
+        title="Guidance & Support"
+        description="Get AI-powered club recommendations, connect with alumni mentors, access career panels, and join community discussions."
+      >
+        <div className="mt-6 max-w-xl relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search clubs, events, or topics..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border-2 border-transparent bg-white py-3 pl-10 pr-4 text-neutral-800 placeholder:text-neutral-400 focus:border-secondary-500 focus:outline-none"
+          />
         </div>
-      </section>
+      </HeroSection>
 
       {}
       {search.trim() && (

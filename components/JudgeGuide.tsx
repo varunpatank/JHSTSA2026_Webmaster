@@ -8,37 +8,30 @@ export default function JudgeGuide() {
  const [expanded, setExpanded] = useState(false);
 
  useEffect(() => {
-  if (typeof window !== "undefined" && !sessionStorage.getItem("guide-seen")) {
-   sessionStorage.setItem("guide-seen", "1");
+  if (typeof document === "undefined") return;
+
+  const autoOpenCookie = document.cookie
+   .split("; ")
+   .find((row) => row.startsWith("judge-guide-opened="));
+
+  if (!autoOpenCookie) {
    const t = setTimeout(() => setExpanded(true), 800);
+   document.cookie = "judge-guide-opened=1; Max-Age=1800; Path=/; SameSite=Lax";
    return () => clearTimeout(t);
   }
  }, []);
 
+ useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const handleOpenFromHeader = () => setExpanded(true);
+  window.addEventListener("open-judge-guide", handleOpenFromHeader);
+
+  return () => window.removeEventListener("open-judge-guide", handleOpenFromHeader);
+ }, []);
+
  return (
   <>
-   {/* Floating side tab */}
-   <button
-    onClick={() => setExpanded(v => !v)}
-    className="fixed top-1/4 right-0 z-50 bg-secondary-600 hover:bg-secondary-700 text-white shadow-lg flex flex-col items-center gap-0 text-xs font-bold transition-all hover:pr-1">
-    <div className="px-2.5 py-3 flex items-center gap-2 border-b border-secondary-500/40" style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}>
-     <BookMarked size={15} className="rotate-90" />
-     <span className="tracking-wide">REFERENCES</span>
-    </div>
-    <div className="px-2 py-2.5 flex flex-col items-center gap-1.5 text-[8px] leading-tight text-center text-white/90">
-     <div className="flex items-center gap-0.5" title="Database-backed pages">
-      <Database size={10} className="text-emerald-300" />
-      <span className="text-emerald-200">DB</span>
-     </div>
-     <div className="w-3 border-t border-white/30" />
-     <div className="flex items-center gap-0.5" title="UI-only hardcoded pages">
-      <Layout size={10} className="text-blue-300" />
-      <span className="text-blue-200">UI</span>
-     </div>
-     <p className="text-[7px] leading-[1.2] text-white/70 max-w-[3rem]">Some pages use DB, others hardcoded for UI</p>
-    </div>
-   </button>
-
    {/* Expanded panel */}
    {expanded && (
     <>

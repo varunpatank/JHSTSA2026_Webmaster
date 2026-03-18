@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import HeroSection from "@/components/HeroSection";
 import {
   BookOpen, CheckCircle, ChevronDown, Code2, FileText, Globe, ImageIcon,
   Layers, Library, Scale, Server, Shield, Wrench,
@@ -44,33 +45,28 @@ export default function ReferencesPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Hero */}
-      <section className="relative bg-primary-800 text-white border-b-4 border-secondary-500 overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px)" }} />
+      <HeroSection>
+        <div className="inline-flex items-center gap-2 rounded-full bg-secondary-500/20 px-3 py-1 text-xs font-semibold text-secondary-300">
+          <FileText size={12} /> Documentation &amp; Citations
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 text-center">
-          <div className="inline-flex items-center gap-2 bg-secondary-500/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-secondary-300 mb-4">
-            <FileText size={12} /> Documentation &amp; Citations
-          </div>
-          <h1 className="text-3xl md:text-4xl font-heading font-bold">References</h1>
-          <p className="mt-2 text-neutral-300 max-w-2xl mx-auto text-sm">
-            Complete documentation for ClubConnect &mdash; framework details, tech stack, work log, copyright checklist, libraries, image attributions, and a full feature walkthrough for judges.
-          </p>
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto">
-            {[
-              { label: 'Pages', value: '56+' },
-              { label: 'Clubs', value: '25+' },
-              { label: 'Resources', value: '20+' },
-              { label: 'APIs', value: '5' },
-            ].map(s => (
-              <div key={s.label} className="bg-white/10 border border-white/10 p-2 text-center">
-                <p className="text-lg font-bold">{s.value}</p>
-                <p className="text-[10px] text-neutral-300">{s.label}</p>
-              </div>
-            ))}
-          </div>
+        <h1 className="hero-title"><span>References</span></h1>
+        <p className="hero-description max-w-2xl text-sm">
+          Complete documentation for ClubConnect &mdash; framework details, tech stack, work log, copyright checklist, libraries, image attributions, and a full feature walkthrough for judges.
+        </p>
+        <div className="hero-stats max-w-xl">
+          {[
+            { label: 'Pages', value: '56+' },
+            { label: 'Clubs', value: '25+' },
+            { label: 'Resources', value: '20+' },
+            { label: 'APIs', value: '5' },
+          ].map(s => (
+            <div key={s.label} className="hero-stat p-2">
+              <p className="text-lg font-bold">{s.value}</p>
+              <p className="text-[10px] text-neutral-300">{s.label}</p>
+            </div>
+          ))}
         </div>
-      </section>
+      </HeroSection>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-4">
 

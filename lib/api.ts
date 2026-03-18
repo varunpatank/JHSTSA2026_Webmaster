@@ -10,8 +10,19 @@ if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in environment')
 }
 
+const browserStorage =
+    typeof window === 'undefined'
+        ? undefined
+        : {
+            getItem: (key: string) => window.localStorage.getItem(key),
+            setItem: (key: string, value: string) => window.localStorage.setItem(key, value),
+            removeItem: (key: string) => window.localStorage.removeItem(key),
+        }
+
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabasePublishableKey, {
     auth: {
+        storageKey: 'clubconnect.supabase.auth',
+        storage: browserStorage,
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
@@ -79,7 +90,7 @@ export const authApi = {
     },
 
 
-    isLoggedIn: async () => !!(await supabase.auth.getUser().then(({ data }) => data.user)),
+    isLoggedIn: async () => !!(await supabase.auth.getSession().then(({ data }) => data.session)),
 
 
     signInWithSSO: (provider: string, idToken?: string, options?: { redirectTo?: string }) =>
@@ -113,8 +124,8 @@ export const profilesApi = {
 export const membershipsApi = {
 
     getForCurrentUser: async () => {
-        const { data: authData } = await supabase.auth.getUser()
-        const userId = authData.user?.id
+        const { data: sessionData } = await supabase.auth.getSession()
+        const userId = sessionData.session?.user?.id
         if (!userId) return { data: [], error: { message: 'Not authenticated' } }
         return supabase.from('memberships').select('*, organizations(id, name, slug, category, logo_url)').eq('user_id', userId).limit(50)
     },

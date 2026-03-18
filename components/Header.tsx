@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X, User } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { BookMarked, Menu, X, User } from "lucide-react";
 import { supabase, profilesApi, storageApi } from "../lib/api";
 
 function ClubConnectLogo({ className = "" }: { className?: string }) {
@@ -64,6 +65,11 @@ function ClubConnectLogo({ className = "" }: { className?: string }) {
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const openReferencesPanel = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("open-judge-guide"));
+    }
+  };
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -76,17 +82,20 @@ export default function Header() {
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     let mounted = true;
 
     const loadUser = async () => {
       try {
-        const { data } = await supabase.auth.getUser();
-        const user = data.user;
+        const { data } = await supabase.auth.getSession();
+        const user = data.session?.user;
+        const sessionUserId = session?.user?.id;
+        const effectiveUserId = user?.id ?? sessionUserId;
         if (!mounted) return;
 
-        if (!user) {
+        if (!effectiveUserId) {
           setIsLoggedIn(false);
           setAvatarUrl(null);
           return;
@@ -94,7 +103,7 @@ export default function Header() {
 
         setIsLoggedIn(true);
 
-        const profileRes: any = await profilesApi.getById(user.id);
+        const profileRes: any = await profilesApi.getById(effectiveUserId);
         if (!mounted) return;
 
         if (!profileRes.error && profileRes.data && profileRes.data.avatar_url) {
@@ -114,7 +123,13 @@ export default function Header() {
 
     loadUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user && status !== "authenticated") {
+        setIsLoggedIn(false);
+        setAvatarUrl(null);
+        return;
+      }
+
       loadUser();
     });
 
@@ -124,7 +139,7 @@ export default function Header() {
         ;(authListener as any).subscription.unsubscribe();
       }
     };
-  }, []);
+  }, [session?.user?.id, status]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-primary-600 bg-primary-700 text-white">
@@ -147,6 +162,16 @@ export default function Header() {
                 </Link>
               ))}
             </nav>
+
+            <button
+              type="button"
+              onClick={openReferencesPanel}
+              className="hidden md:inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-primary-100 border border-primary-400 hover:bg-primary-600 hover:text-white transition-colors"
+              aria-label="Open references panel"
+            >
+              <BookMarked size={12} />
+              References
+            </button>
 
             <button
               type="button"
@@ -184,6 +209,18 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            <button
+              type="button"
+              onClick={() => {
+                openReferencesPanel();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full border border-primary-600 px-3 py-2 text-sm font-medium text-primary-100 hover:bg-primary-600 hover:text-white text-left inline-flex items-center gap-2"
+              aria-label="Open references panel"
+            >
+              <BookMarked size={14} />
+              References
+            </button>
           </nav>
         )}
       </div>

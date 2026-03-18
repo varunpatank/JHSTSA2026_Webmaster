@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { chapters, schoolWideStats } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import {
   ArrowRight, Award, BarChart3, BookOpen, Bot, Calendar, CheckCircle,
   Compass, Download, ExternalLink, Eye, FileText, Flame, Globe,
@@ -415,43 +416,35 @@ export default function ResourcesPage() {
   return (
     <div className="bg-neutral-50">
       {}
-      <section className="relative bg-primary-800 text-white border-b-4 border-secondary-500 overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px)" }} />
-        </div>
-        <div className="absolute top-8 right-12 opacity-20">
-          <StageRocket stageId="ignition" phase={1} />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-secondary-500/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-secondary-300 mb-3">
-                <BookOpen size={12} /> Resource Hub &amp; Knowledge Base
-              </div>
-              <h1 className="text-3xl md:text-4xl font-heading font-bold">Resource Center</h1>
-              <p className="mt-2 text-neutral-300 max-w-lg text-sm">Your launch pad for club success &mdash; guides, templates, tools, and smart recommendations organized by growth stage.</p>
+      <HeroSection align="left">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-secondary-500/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-secondary-300">
+              <BookOpen size={12} /> Resource Hub &amp; Knowledge Base
             </div>
-            <div className="flex flex-col gap-3 items-end">
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: "Resources", value: allResources.length },
-                  { label: "Downloads", value: totalDownloads.toLocaleString() },
-                  { label: "Clubs", value: schoolWideStats.totalClubs },
-                ].map(s => (
-                  <div key={s.label} className="bg-white/10 border border-white/10  p-2 text-center">
-                    <p className="text-lg font-bold">{s.value}</p>
-                    <p className="text-[10px] text-neutral-300">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="relative w-full md:w-72">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search resources..." className="w-full bg-white/10 border border-white/20 text-white placeholder:text-neutral-400 pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-secondary-400" />
-              </div>
+            <h1 className="hero-title"><span>Resource Center</span></h1>
+            <p className="hero-description max-w-lg text-sm">Your launch pad for club success &mdash; guides, templates, tools, and smart recommendations organized by growth stage.</p>
+          </div>
+          <div className="flex flex-col gap-3 items-end">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Resources", value: allResources.length },
+                { label: "Downloads", value: totalDownloads.toLocaleString() },
+                { label: "Clubs", value: schoolWideStats.totalClubs },
+              ].map(s => (
+                <div key={s.label} className="hero-stat p-2 text-center">
+                  <p className="text-lg font-bold">{s.value}</p>
+                  <p className="text-[10px] text-neutral-300">{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="relative w-full md:w-72">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search resources..." className="w-full bg-white/10 border border-white/20 text-white placeholder:text-neutral-400 pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-secondary-400" />
             </div>
           </div>
         </div>
-      </section>
+      </HeroSection>
 
       {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">

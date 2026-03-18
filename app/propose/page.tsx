@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import HeroSection from "@/components/HeroSection";
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle, FileText, Globe,
   Heart, HelpCircle, Lightbulb, MapPin, Phone, Send, Star, Upload,
@@ -117,17 +118,15 @@ export default function ProposeResourcePage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {}
-      <section className="bg-primary-800 text-white border-b-4 border-secondary-500">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 text-xs font-semibold mb-3">
-            <Lightbulb size={12} /> Community Resource Hub
-          </div>
-          <h1 className="text-3xl md:text-4xl font-heading font-bold">Suggest a New Resource</h1>
-          <p className="mt-2 text-primary-200 max-w-xl mx-auto text-sm">
-            Know a community resource that should be in our hub? Non-profits, support services, programs, events &mdash; help us grow our directory for everyone.
-          </p>
+      <HeroSection>
+        <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 text-xs font-semibold">
+          <Lightbulb size={12} /> Community Resource Hub
         </div>
-      </section>
+        <h1 className="hero-title"><span>Suggest a New Resource</span></h1>
+        <p className="hero-description max-w-xl text-sm">
+          Know a community resource that should be in our hub? Non-profits, support services, programs, events &mdash; help us grow our directory for everyone.
+        </p>
+      </HeroSection>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
         {}

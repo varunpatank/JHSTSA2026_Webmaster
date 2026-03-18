@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { chapters, schoolWideStats } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import {
   Award, BarChart3, Calendar, Heart, PieChart, TrendingUp, Users, Zap, Target, Activity,
 } from "lucide-react";
@@ -104,21 +105,24 @@ export default function AnalyticsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Insights</p>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold">School-Wide Analytics</h1>
-          <p className="mt-3 max-w-2xl text-primary-100 text-lg">Live statistics, growth trends, and engagement metrics across all {stats.totalClubs} clubs.</p>
-          <div className="mt-6 flex gap-2">
+      <HeroSection
+        eyebrow="Insights"
+        title="School-Wide Analytics"
+        description={`Live statistics, growth trends, and engagement metrics across all ${stats.totalClubs} clubs.`}
+        actions={
+          <>
             {(["month", "semester", "year"] as const).map(t => (
-              <button key={t} onClick={() => setTimeRange(t)}
-                className={`px-4 py-2  text-sm font-semibold transition-colors ${timeRange === t ? "bg-white text-primary-600" : "bg-white/10 text-white hover:bg-white/20"}`}>
+              <button
+                key={t}
+                onClick={() => setTimeRange(t)}
+                className={`px-4 py-2 text-sm font-semibold transition-colors ${timeRange === t ? "bg-white text-primary-600" : "bg-white/10 text-white hover:bg-white/20"}`}
+              >
                 {t === "month" ? "This Month" : t === "semester" ? "This Semester" : "This Year"}
               </button>
             ))}
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         {}

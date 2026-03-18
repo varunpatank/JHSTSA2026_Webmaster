@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import HeroSection from "@/components/HeroSection";
 import {
   ArrowRight, Award, BookOpen, Bot, Brain, Calendar, ChevronDown,
   Compass, GraduationCap, HelpCircle, Lightbulb, MessageCircle,
@@ -117,28 +118,25 @@ export default function GuidancePage() {
   return (
     <div className="bg-neutral-50">
       {}
-      <section className="bg-primary-700 text-white border-b-4 border-secondary-500 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
-        <div className="relative max-w-7xl mx-auto px-6 sm:px-8 py-8">
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14  bg-white/10 flex items-center justify-center"><Brain size={28} /></div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-heading font-bold">Guidance Center</h1>
-                <p className="text-primary-200 text-sm mt-1">AI-Powered Student Assistant &middot; Gemini 2.0 Flash</p>
-              </div>
-            </div>
-            <div className="hidden sm:flex gap-4 text-center">
-              {[{ v: "24/7", l: "AI" }, { v: "6+", l: "Mentors" }, { v: "30+", l: "Resources" }, { v: "8", l: "Pathways" }].map(s => (
-                <div key={s.l} className="bg-white/10  px-5 py-3">
-                  <p className="text-lg font-bold leading-tight">{s.v}</p>
-                  <p className="text-xs text-primary-200">{s.l}</p>
-                </div>
-              ))}
+      <HeroSection align="left">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/10 flex items-center justify-center"><Brain size={28} /></div>
+            <div>
+              <h1 className="hero-title mt-0"><span>Guidance Center</span></h1>
+              <p className="hero-description mt-1 text-sm">AI-Powered Student Assistant &middot; Gemini 2.0 Flash</p>
             </div>
           </div>
+          <div className="hidden sm:flex gap-4 text-center">
+            {[{ v: "24/7", l: "AI" }, { v: "6+", l: "Mentors" }, { v: "30+", l: "Resources" }, { v: "8", l: "Pathways" }].map(s => (
+              <div key={s.l} className="hero-stat px-5 py-3">
+                <p className="text-lg font-bold leading-tight">{s.v}</p>
+                <p className="text-xs text-primary-200">{s.l}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </section>
+      </HeroSection>
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6">
         {}

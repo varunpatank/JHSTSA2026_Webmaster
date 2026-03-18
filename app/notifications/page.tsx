@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import HeroSection from "@/components/HeroSection";
 import {
   Bell, Calendar, CheckCircle, ChevronDown, Clock, Filter, Info,
   MessageCircle, Settings, Star, Trash2, Users, Zap
@@ -77,13 +78,17 @@ export default function NotificationsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-700 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <h1 className="text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Bell size={36} /> Notifications</h1>
-          <p className="mt-3 max-w-2xl text-primary-100 text-lg">Stay updated with club events, achievements, and important announcements.</p>
-          {unreadCount > 0 && <p className="mt-3 text-sm bg-white/10  px-4 py-2 inline-block">You have <strong>{unreadCount}</strong> unread notification{unreadCount !== 1 ? "s" : ""}</p>}
-        </div>
-      </section>
+      <HeroSection
+        title="Notifications"
+        icon={<Bell size={36} />}
+        description="Stay updated with club events, achievements, and important announcements."
+      >
+        {unreadCount > 0 && (
+          <p className="mt-4 inline-block bg-white/10 px-4 py-2 text-sm">
+            You have <strong>{unreadCount}</strong> unread notification{unreadCount !== 1 ? "s" : ""}
+          </p>
+        )}
+      </HeroSection>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <div className="card p-4 mb-6 flex flex-wrap items-center justify-between gap-3">

@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   chapters, events, clubHistoryData, projectsData, meetingNotesData, sponsorsData,
 } from "@/lib/data";
-import { addJoinedClub, isLoggedIn } from "@/lib/clientState";
+import { addJoinedClub } from "@/lib/clientState";
 import { supabase, membershipsApi, organizationsApi, profilesApi } from "@/lib/api";
 import { formatChapterLocation } from "@/lib/location";
 import {
@@ -317,7 +317,8 @@ export default function ClubDetailPage() {
   const maxMembers = Math.max(...monthlyMembers.map(m => m.value));
 
   const handleJoin = async () => {
-    if (!isLoggedIn()) {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
       router.push(`/login?redirect=/directory/${chapter.id}&action=join&club=${chapter.id}`);
       return;
     }
@@ -326,7 +327,6 @@ export default function ClubDetailPage() {
 
     // Also create membership in Supabase if an org exists for this club
     try {
-      const { data: authData } = await supabase.auth.getUser();
       if (authData.user) {
         // Ensure profile exists first (FK constraint)
         const { data: profile } = await profilesApi.getById(authData.user.id);

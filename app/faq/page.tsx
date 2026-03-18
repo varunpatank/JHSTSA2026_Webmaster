@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { faqData, guidesData } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import { BookOpen, ChevronDown, HelpCircle, Search } from "lucide-react";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -43,21 +44,22 @@ export default function FAQPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Help Center</p>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold">Frequently Asked Questions</h1>
-          <p className="mt-3 max-w-2xl text-primary-100 text-lg">Find answers to common questions about clubs, membership, events, and more.</p>
-          <div className="mt-6 relative max-w-xl">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input
-              type="text" placeholder="Search questions..." value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3  bg-white text-neutral-800 placeholder-neutral-400 border-0 focus:ring-2 focus:ring-secondary-400"
-            />
-          </div>
+      <HeroSection
+        eyebrow="Help Center"
+        title="Frequently Asked Questions"
+        description="Find answers to common questions about clubs, membership, events, and more."
+      >
+        <div className="mt-6 relative max-w-xl">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <input
+            type="text"
+            placeholder="Search questions..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border-0 bg-white py-3 pl-10 pr-4 text-neutral-800 placeholder-neutral-400 focus:ring-2 focus:ring-secondary-400"
+          />
         </div>
-      </section>
+      </HeroSection>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-[260px_1fr] gap-6">
         {}

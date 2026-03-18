@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { chapters } from "@/lib/data";
 import DonationForm from "@/components/DonationForm";
+import HeroSection from "@/components/HeroSection";
 
 interface DonatePageProps {
   searchParams: Promise<{ club?: string; success?: string; canceled?: string }>;
@@ -15,18 +16,15 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-500 text-white border-b-4 border-secondary-500">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Support</p>
-          <h1 className="mt-2 text-4xl font-heading font-bold">Donations &amp; Fundraising</h1>
-          <p className="mt-2 text-neutral-100 max-w-2xl">
-            Help fund student organizations, competitions, and community events. Payments processed securely via Stripe.
-          </p>
-          <p className="mt-3 text-sm bg-white/10 inline-block px-3 py-1 ">
-            🧑‍⚖️ Judges: use promo code <strong>&quot;test&quot;</strong> to see the full payment flow at $0.
-          </p>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Support"
+        title="Donations & Fundraising"
+        description="Help fund student organizations, competitions, and community events. Payments processed securely via Stripe."
+      >
+        <p className="mt-4 inline-block bg-white/10 px-3 py-1 text-sm">
+          Judges: use promo code <strong>&quot;test&quot;</strong> to see the full payment flow at $0.
+        </p>
+      </HeroSection>
 
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8 grid md:grid-cols-3 gap-5">
         {}

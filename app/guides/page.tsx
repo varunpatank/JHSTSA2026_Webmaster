@@ -3,17 +3,16 @@
 import Link from "next/link";
 import { guidesData } from "@/lib/data";
 import { ArrowRight, BookOpen, Clock, FileText } from "lucide-react";
+import HeroSection from "@/components/HeroSection";
 
 export default function GuidesIndexPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Resources</p>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold">Guides & Handbooks</h1>
-          <p className="mt-3 max-w-2xl text-primary-100 text-lg">Step-by-step guides to help you navigate club life — from joining your first club to leading an organization.</p>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Resources"
+        title="Guides & Handbooks"
+        description="Step-by-step guides to help you navigate club life - from joining your first club to leading an organization."
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div className="grid sm:grid-cols-2 gap-6">
           {guidesData.map(guide => (

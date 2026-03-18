@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { getAdminClubs, getJoinedClubs } from "@/lib/clientState";
 import { supabase, authApi, profilesApi, membershipsApi, myClubsApi } from "@/lib/api";
 import AvatarUploader from "@/components/AvatarUploader";
+import HeroSection from "@/components/HeroSection";
 import {
   Activity,
   Award,
@@ -31,15 +33,17 @@ import {
 function ProfileSkeleton() {
   return (
     <div className="bg-neutral-100 min-h-screen animate-pulse">
-      <section className="bg-primary-500 border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 flex gap-4">
+      <div className="hero-section">
+        <div className="hero-section-shell max-w-7xl">
+          <div className="flex gap-4">
           <div className="w-16 h-16 rounded-full bg-primary-400" />
           <div className="flex-1 space-y-3">
             <div className="h-8 bg-primary-400 rounded w-48" />
             <div className="h-4 bg-primary-400 rounded w-64" />
           </div>
         </div>
-      </section>
+        </div>
+      </div>
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-3 gap-6">
         <div className="card p-6 space-y-4">
           <div className="h-6 bg-neutral-200 rounded w-32" />
@@ -77,30 +81,47 @@ export default function ProfilePage() {
   const [saveMsg, setSaveMsg] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set());
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     (async () => {
       try {
-        const signedIn = await authApi.isLoggedIn();
+        const hasSupabaseSession = await authApi.isLoggedIn();
+        const signedIn = status === "authenticated" || hasSupabaseSession;
         setLoggedIn(signedIn);
         if (signedIn) {
-          const { data } = await supabase.auth.getUser();
-          const user = data.user;
-          if (user?.id) {
-              setUserId(user.id);
-            const profileRes = await profilesApi.getById(user.id);
+          const { data } = await supabase.auth.getSession();
+          const supabaseUser = data.session?.user;
+          const effectiveUserId = supabaseUser?.id ?? session?.user?.id ?? null;
+
+          if (session?.user?.name) {
+            setName(session.user.name);
+          }
+
+          if (session?.user?.email) {
+            setEmail(session.user.email);
+          }
+
+          if (effectiveUserId) {
+              setUserId(effectiveUserId);
+            const profileRes = await profilesApi.getById(effectiveUserId);
             const profile = profileRes.data as any;
             if (profile) {
               setName(`${profile.name}` || "Student User");
-              setEmail(profile.email ?? user.email ?? "student@jhstsa.edu");
+              setEmail(profile.email ?? supabaseUser?.email ?? session?.user?.email ?? "student@jhstsa.edu");
               setAvatarUrl(profile.avatar_url ?? null);
               setPhone(profile.phone_number ?? "");
               setBio(profile.bio ?? "");
               setGrade(profile.grade ? String(profile.grade) : "");
               setSchool(profile.school ?? "");
             } else {
-              setName(user.user_metadata?.full_name || "Student User");
-              setEmail(user.email ?? "student@jhstsa.edu");
+              setName(
+                supabaseUser?.user_metadata?.name ||
+                  supabaseUser?.user_metadata?.full_name ||
+                  session?.user?.name ||
+                  "Student User",
+              );
+              setEmail(supabaseUser?.email ?? session?.user?.email ?? "student@jhstsa.edu");
             }
           }
 
@@ -108,6 +129,7 @@ export default function ProfilePage() {
           setAdminClubs(getAdminClubs());
 
           // Also load clubs from Supabase memberships
+          if (hasSupabaseSession) {
           try {
             const membershipRes: any = await membershipsApi.getForCurrentUser();
             if (!membershipRes.error && membershipRes.data) {
@@ -135,13 +157,14 @@ export default function ProfilePage() {
               if (dbAdmin.length > 0) setAdminClubs(dbAdmin);
             }
           } catch {}
+          }
         }
       } catch (e) {
       } finally {
         setReady(true);
       }
     })();
-  }, []);
+  }, [session?.user?.email, session?.user?.id, session?.user?.name, status]);
 
   const notifications = useMemo(() => {
     const joinNotifications = joinedClubs.map((club) =>
@@ -212,8 +235,8 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-500 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 flex items-center justify-between gap-4">
+      <HeroSection align="left">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-primary-400 overflow-hidden border-2 border-white flex items-center justify-center">
               {avatarUrl ? (
@@ -240,6 +263,7 @@ export default function ProfilePage() {
               className="btn-outline border-white text-white hover:bg-white hover:text-primary-500 flex items-center gap-2 text-sm"
               onClick={async () => {
                 await authApi.signOut();
+                await signOut({ redirect: false });
                 router.push("/");
               }}
             >
@@ -247,7 +271,7 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
-      </section>
+      </HeroSection>
 
       {saveMsg && (
         <div className={`max-w-7xl mx-auto px-4 sm:px-6 mt-4`}>

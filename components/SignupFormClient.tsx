@@ -3,8 +3,10 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { authApi } from "@/lib/api";
 import { loginUser } from "@/lib/clientState";
+import HeroSection from "@/components/HeroSection";
 import { BookOpen, Calendar, Shield, UserPlus, Users } from "lucide-react";
 
 interface SignupFormClientProps {
@@ -73,8 +75,20 @@ export default function SignupFormClient({ redirect = "/profile" }: SignupFormCl
         return;
       }
 
+      const nextAuthRes = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (nextAuthRes?.error) {
+        await authApi.signOut();
+        setError("Account created, but app session setup failed. Please sign in.");
+        return;
+      }
+
       loginUser(name, email);
-          setMissing({});
+      setMissing({});
 
       router.push(redirect);
     } catch (err: any) {
@@ -86,13 +100,11 @@ export default function SignupFormClient({ redirect = "/profile" }: SignupFormCl
 
   return (
     <div className="min-h-screen bg-neutral-100">
-      <section className="bg-primary-500 text-white border-b-4 border-secondary-500">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100">Account</p>
-          <h1 className="mt-1 text-4xl font-heading font-bold">Create Account</h1>
-          <p className="mt-2 text-primary-100">Join ClubConnect to discover clubs, attend events, and get involved.</p>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Account"
+        title="Create Account"
+        description="Join ClubConnect to discover clubs, attend events, and get involved."
+      />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2">

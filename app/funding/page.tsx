@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { chapters, sponsorsData } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
 import {
   ArrowRight, BarChart2, CheckCircle, ChevronDown, CreditCard, DollarSign,
   Download, FileText, Filter, PieChart, Plus, Search, TrendingUp, Users
@@ -68,19 +69,19 @@ export default function FundingPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <Link href="/hub" className="text-sm text-emerald-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><DollarSign size={36} /> Funding & Budgets</h1>
-          <p className="mt-3 max-w-2xl text-emerald-50 text-lg">Track club budgets, discover grants, and manage fundraising campaigns.</p>
-          <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">${(totalAllocated / 1000).toFixed(1)}k</p><p className="text-xs text-emerald-100">Total Budget</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">${(totalSpent / 1000).toFixed(1)}k</p><p className="text-xs text-emerald-100">Spent</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{GRANTS.filter(g => g.status !== "closed").length}</p><p className="text-xs text-emerald-100">Open Grants</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">${(totalRaised / 1000).toFixed(1)}k</p><p className="text-xs text-emerald-100">Raised</p></div>
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        title="Funding & Budgets"
+        icon={<DollarSign size={36} />}
+        description="Track club budgets, discover grants, and manage fundraising campaigns."
+        stats={[
+          { label: "Total Budget", value: `$${(totalAllocated / 1000).toFixed(1)}k` },
+          { label: "Spent", value: `$${(totalSpent / 1000).toFixed(1)}k` },
+          { label: "Open Grants", value: GRANTS.filter(g => g.status !== "closed").length },
+          { label: "Raised", value: `$${(totalRaised / 1000).toFixed(1)}k` },
+        ]}
+      >
+        <Link href="/hub" className="inline-block text-sm text-primary-100 hover:underline">← Back to Hub</Link>
+      </HeroSection>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-wrap gap-2 mb-6">
