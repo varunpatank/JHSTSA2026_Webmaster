@@ -38,11 +38,25 @@ const COMPETITIONS: Competition[] = [
   { id: "c8", name: "Environmental Innovation Challenge", organization: "Green Schools Alliance", description: "Develop creative solutions to local environmental problems. Present to a panel of judges.", category: "Service", deadline: "2026-04-05", dates: "April 26, 2026", location: "Zoom", locationType: "Virtual", entryFee: "Free", prizes: ["$500 Implementation Grant", "Mentorship from Green Earth Foundation"], teamSize: "Team (3-5)", difficulty: "Beginner-Friendly", featured: false, prepResources: [{ title: "Innovation Framework", type: "Template" }] },
 ];
 
+const COMP_LS_KEY = "clubconnect_competitions_registered";
+
+function loadRegistered(): Set<string> {
+  try { const s = localStorage.getItem(COMP_LS_KEY); if (s) return new Set(JSON.parse(s)); } catch {}
+  return new Set();
+}
+
 export default function CompetitionsPage() {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
   const [diffFilter, setDiffFilter] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [registeredIds, setRegisteredIds] = useState<Set<string>>(() => loadRegistered());
+
+  useEffect(() => { try { localStorage.setItem(COMP_LS_KEY, JSON.stringify([...registeredIds])); } catch {} }, [registeredIds]);
+
+  function handleRegister(compId: string) {
+    setRegisteredIds(prev => new Set(prev).add(compId));
+  }
 
   const categories = ["All", ...Array.from(new Set(COMPETITIONS.map(c => c.category)))];
   const difficulties = ["All", "Beginner-Friendly", "Intermediate", "Advanced", "All Levels"];
@@ -118,6 +132,7 @@ export default function CompetitionsPage() {
                     {c.prizes.map(p => <span key={p} className="text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700">{p}</span>)}
                   </div>
                   <p className="text-xs text-neutral-500 mt-2">Entry: {c.entryFee} · Difficulty: {c.difficulty}</p>
+                  <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-3 w-full py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-600 text-white hover:bg-primary-700"}`}>{registeredIds.has(c.id) ? "✓ Registered" : "Register Interest"}</button>
                 </div>
               ))}
             </div>
@@ -163,6 +178,7 @@ export default function CompetitionsPage() {
                         <div className="flex flex-wrap gap-2">{c.prepResources.map(r => <span key={r.title} className="text-xs px-2 py-1  bg-primary-50 text-primary-600">{r.title} ({r.type})</span>)}</div>
                       </div>
                     )}
+                    <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-2 px-4 py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-600 text-white hover:bg-primary-700"}`}>{registeredIds.has(c.id) ? "✓ Registered" : "Register Interest"}</button>
                   </div>
                 )}
               </div>

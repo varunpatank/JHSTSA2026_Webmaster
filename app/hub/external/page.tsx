@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -152,13 +152,22 @@ const externalResources: ExternalResource[] = [
 const categories = [...new Set(externalResources.map(r => r.category))];
 const types = ['All', 'Website', 'Tool', 'Template', 'Video', 'Course', 'Article', 'Community'];
 
+const SAVED_LS_KEY = "clubconnect_external_saved";
+
+function loadSaved(): string[] {
+  try { const s = localStorage.getItem(SAVED_LS_KEY); if (s) return JSON.parse(s); } catch {}
+  return [];
+}
+
 export default function ExternalResourcesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [showFreeOnly, setShowFreeOnly] = useState(false);
-  const [savedResources, setSavedResources] = useState<string[]>([]);
+  const [savedResources, setSavedResources] = useState<string[]>(() => loadSaved());
   const [showSavedOnly, setShowSavedOnly] = useState(false);
+
+  useEffect(() => { try { localStorage.setItem(SAVED_LS_KEY, JSON.stringify(savedResources)); } catch {} }, [savedResources]);
 
   const filteredResources = useMemo(() => {
     return externalResources.filter(resource => {

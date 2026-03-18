@@ -36,45 +36,68 @@ const SEED_MENTORS: Mentor[] = [
   { id: "m6", name: "Robert Tanaka", title: "Investment Analyst, BlackRock", expertise: ["Finance", "Economics", "Data Analysis", "Business Strategy"], bio: "Harvard MBA. Manages portfolios and runs financial literacy workshops. Mentors students interested in business and economics.", availability: "Monthly · Fridays", avatar: "RT", category: "Academic", yearsExperience: 10, sessionsDone: 18, rating: 4.6, offering: ["Career Workshops", "Financial Modeling", "College Guidance"] },
 ];
 
+const MENTORS_LS_KEY = "clubconnect_mentors";
+const MENTOR_REQ_LS_KEY = "clubconnect_mentor_requested";
+
+function loadMentors(): Mentor[] {
+  try { const s = localStorage.getItem(MENTORS_LS_KEY); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length) return p; } } catch {}
+  return SEED_MENTORS;
+}
+function loadRequestedIds(): Set<string> {
+  try { const s = localStorage.getItem(MENTOR_REQ_LS_KEY); if (s) return new Set(JSON.parse(s)); } catch {}
+  return new Set();
+}
+
 export default function MentorsPage() {
-  const [mentors, setMentors] = useState<Mentor[]>(SEED_MENTORS);
+  const [mentors, setMentors] = useState<Mentor[]>(() => loadMentors());
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
+  const [requestedIds, setRequestedIds] = useState<Set<string>>(() => loadRequestedIds());
   const [requestingId, setRequestingId] = useState<string | null>(null);
+
+  useEffect(() => { try { localStorage.setItem(MENTORS_LS_KEY, JSON.stringify(mentors)); } catch {} }, [mentors]);
+  useEffect(() => { try { localStorage.setItem(MENTOR_REQ_LS_KEY, JSON.stringify([...requestedIds])); } catch {} }, [requestedIds]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!cancelled && user) setCurrentUserId(user.id);
-      const { data } = await mentorsApi.getAll();
-      if (!cancelled && data && data.length > 0) {
-        const dbMentors: Mentor[] = data.map((d: any) => ({
-          id: d.id, name: d.name || "Mentor", title: d.title || "",
-          expertise: d.expertise || [], bio: d.bio || "",
-          availability: d.availability || "TBD",
-          avatar: (d.name || "M").split(" ").map((n: string) => n[0]).join("").slice(0, 2),
-          category: d.category || "General",
-          yearsExperience: d.years_experience || 0, sessionsDone: d.sessions_done || 0,
-          rating: d.rating || 5.0, offering: d.offering || [],
-        }));
-        setMentors([...dbMentors, ...SEED_MENTORS]);
-      }
+      try {
+        const { data } = await mentorsApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbMentors: Mentor[] = data.map((d: any) => ({
+            id: d.id, name: d.name || "Mentor", title: d.title || "",
+            expertise: d.expertise || [], bio: d.bio || "",
+            availability: d.availability || "TBD",
+            avatar: (d.name || "M").split(" ").map((n: string) => n[0]).join("").slice(0, 2),
+            category: d.category || "General",
+            yearsExperience: d.years_experience || 0, sessionsDone: d.sessions_done || 0,
+            rating: d.rating || 5.0, offering: d.offering || [],
+          }));
+          setMentors(prev => {
+            const ids = new Set(prev.map(m => m.id));
+            const newFromDb = dbMentors.filter(m => !ids.has(m.id));
+            const seedIds = new Set(SEED_MENTORS.map(s => s.id));
+            const localOnly = prev.filter(m => !seedIds.has(m.id) && !dbMentors.some(d => d.id === m.id));
+            return [...newFromDb, ...localOnly, ...SEED_MENTORS];
+          });
+        }
+      } catch (e) { console.error("DB load failed, using local:", e); }
     })();
     return () => { cancelled = true; };
   }, []);
 
   async function handleRequestMentorship(mentorId: string) {
-    if (!currentUserId || requestingId) return;
+    if (requestingId) return;
     setRequestingId(mentorId);
     try {
-      await mentorsApi.requestMentor({ mentor_id: mentorId, mentee_id: currentUserId, message: "I'd like to connect for mentorship." });
-      setRequestedIds(prev => new Set(prev).add(mentorId));
-    } catch (e) { console.error("Failed to request mentorship:", e); }
-    finally { setRequestingId(null); }
+      if (currentUserId) await mentorsApi.requestMentor({ mentor_id: mentorId, mentee_id: currentUserId, message: "I'd like to connect for mentorship." });
+    } catch (e) { console.error("DB request failed, keeping locally:", e); }
+    setRequestedIds(prev => new Set(prev).add(mentorId));
+    setRequestingId(null);
   }
 
   const categories = ["All", ...Array.from(new Set(mentors.map(m => m.category)))];

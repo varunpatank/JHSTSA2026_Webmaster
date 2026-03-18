@@ -45,8 +45,19 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   forming: { label: "Now Forming!", color: "bg-purple-100 text-purple-700" },
 };
 
+const IDEAS_LS_KEY = "clubconnect_ideas";
+
+function loadIdeas(): ClubIdea[] {
+  if (typeof window === "undefined") return SEED_IDEAS;
+  try {
+    const raw = localStorage.getItem(IDEAS_LS_KEY);
+    if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length > 0) return parsed; }
+  } catch {}
+  return SEED_IDEAS;
+}
+
 export default function IdeasPage() {
-  const [ideas, setIdeas] = useState<ClubIdea[]>(SEED_IDEAS);
+  const [ideas, setIdeas] = useState<ClubIdea[]>(loadIdeas);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -61,22 +72,34 @@ export default function IdeasPage() {
   const [formTags, setFormTags] = useState("");
 
   useEffect(() => {
+    localStorage.setItem(IDEAS_LS_KEY, JSON.stringify(ideas));
+  }, [ideas]);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!cancelled && user) setCurrentUserId(user.id);
-      const { data } = await clubIdeasApi.getAll();
-      if (!cancelled && data && data.length > 0) {
-        const dbIdeas: ClubIdea[] = data.map((d: any) => ({
-          id: d.id, title: d.title, description: d.description || "",
-          category: d.category || "General",
-          proposedBy: d.profiles?.name || "Anonymous",
-          date: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
-          upvotes: d.votes || 0, comments: 0, status: "open" as const,
-          interestCount: d.votes || 0, tags: [],
-        }));
-        setIdeas([...dbIdeas, ...SEED_IDEAS]);
-      }
+      try {
+        const { data } = await clubIdeasApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbIdeas: ClubIdea[] = data.map((d: any) => ({
+            id: d.id, title: d.title, description: d.description || "",
+            category: d.category || "General",
+            proposedBy: d.profiles?.name || "Anonymous",
+            date: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+            upvotes: d.votes || 0, comments: 0, status: "open" as const,
+            interestCount: d.votes || 0, tags: [],
+          }));
+          const existingIds = new Set(SEED_IDEAS.map(s => s.id));
+          const newFromDb = dbIdeas.filter(d => !existingIds.has(d.id));
+          setIdeas(prev => {
+            const localOnlyIds = new Set(prev.filter(p => !SEED_IDEAS.some(s => s.id === p.id) && !newFromDb.some(n => n.id === p.id)).map(p => p.id));
+            const localOnly = prev.filter(p => localOnlyIds.has(p.id));
+            return [...newFromDb, ...localOnly, ...SEED_IDEAS];
+          });
+        }
+      } catch {}
     })();
     return () => { cancelled = true; };
   }, []);
@@ -108,17 +131,23 @@ export default function IdeasPage() {
   }
 
   async function handleSubmitIdea() {
-    if (!formTitle.trim() || !formDescription.trim() || !currentUserId || submitting) return;
+    if (!formTitle.trim() || !formDescription.trim() || submitting) return;
     setSubmitting(true);
+    const newIdea: ClubIdea = {
+      id: `local-${Date.now()}`, title: formTitle.trim(), description: formDescription.trim(),
+      category: formCategory, proposedBy: "You", date: new Date().toISOString().split("T")[0],
+      upvotes: 0, comments: 0, status: "open", interestCount: 0,
+      tags: formTags.split(",").map(t => t.trim()).filter(Boolean),
+    };
     try {
-      const { data } = await clubIdeasApi.create({ author_id: currentUserId, title: formTitle.trim(), description: formDescription.trim(), category: formCategory });
-      if (data) {
-        const d = data as any;
-        setIdeas(prev => [{ id: d.id, title: d.title, description: d.description || "", category: formCategory, proposedBy: "You", date: new Date().toISOString().split("T")[0], upvotes: 0, comments: 0, status: "open", interestCount: 0, tags: formTags.split(",").map(t => t.trim()).filter(Boolean) }, ...prev]);
+      if (currentUserId) {
+        const { data } = await clubIdeasApi.create({ author_id: currentUserId, title: formTitle.trim(), description: formDescription.trim(), category: formCategory });
+        if (data) newIdea.id = (data as any).id;
       }
-      setFormTitle(""); setFormDescription(""); setFormTags(""); setShowForm(false);
-    } catch (e) { console.error("Failed to submit idea:", e); }
-    finally { setSubmitting(false); }
+    } catch (e) { console.error("DB save failed, keeping locally:", e); }
+    setIdeas(prev => [newIdea, ...prev]);
+    setFormTitle(""); setFormDescription(""); setFormTags(""); setShowForm(false);
+    setSubmitting(false);
   }
 
   return (

@@ -35,8 +35,19 @@ const SEED_STORIES: SuccessStory[] = [
   { id: "s6", title: "Drama Club: Sold Out Three Nights Running", club: "Drama Club", author: "Lily Martinez, Class of 2025", year: "2024-2025", category: "Arts", excerpt: "Our spring musical sold out all three performances, raised $8,000 for the arts department, and launched two students into conservatory programs.", fullStory: "Putting on a full musical with a student-run production team seemed impossibly ambitious. But our drama club proved that students can produce professional-quality theater. We chose 'Into the Woods' — a technically demanding show requiring complex staging and live orchestra. Over four months, 60+ students (actors, crew, orchestra, marketing) worked together to create something magical. All three performances sold out (850 seats each). The revenue funded new lighting equipment and scholarships. Two seniors received acceptances to prestigious theater conservatories, crediting their roles in the show.", impact: [{ label: "Performances Sold Out", value: "3/3" }, { label: "Revenue Raised", value: "$8,000" }, { label: "Students Involved", value: "60+" }], featured: false, image: "🎭" },
 ];
 
+const STORIES_LS_KEY = "clubconnect_stories";
+
+function loadStories(): SuccessStory[] {
+  if (typeof window === "undefined") return SEED_STORIES;
+  try {
+    const raw = localStorage.getItem(STORIES_LS_KEY);
+    if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length > 0) return parsed; }
+  } catch {}
+  return SEED_STORIES;
+}
+
 export default function StoriesPage() {
-  const [stories, setStories] = useState<SuccessStory[]>(SEED_STORIES);
+  const [stories, setStories] = useState<SuccessStory[]>(loadStories);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -47,40 +58,57 @@ export default function StoriesPage() {
   const [storyContent, setStoryContent] = useState("");
 
   useEffect(() => {
+    localStorage.setItem(STORIES_LS_KEY, JSON.stringify(stories));
+  }, [stories]);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!cancelled && user) setCurrentUserId(user.id);
-      const { data } = await successStoriesApi.getAll();
-      if (!cancelled && data && data.length > 0) {
-        const dbStories: SuccessStory[] = data.map((d: any) => ({
-          id: d.id, title: d.title || "Untitled",
-          club: d.organizations?.name || "A Club",
-          author: d.profiles?.name || "Anonymous",
-          year: d.created_at?.split("-")[0] || "2026",
-          category: "General", excerpt: (d.content || "").slice(0, 200),
-          fullStory: d.content || "",
-          impact: [], featured: d.is_featured || false,
-          image: "📖",
-        }));
-        setStories([...dbStories, ...SEED_STORIES]);
-      }
+      try {
+        const { data } = await successStoriesApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbStories: SuccessStory[] = data.map((d: any) => ({
+            id: d.id, title: d.title || "Untitled",
+            club: d.organizations?.name || "A Club",
+            author: d.profiles?.name || "Anonymous",
+            year: d.created_at?.split("-")[0] || "2026",
+            category: "General", excerpt: (d.content || "").slice(0, 200),
+            fullStory: d.content || "",
+            impact: [], featured: d.is_featured || false,
+            image: "📖",
+          }));
+          const existingIds = new Set(SEED_STORIES.map(s => s.id));
+          const newFromDb = dbStories.filter(d => !existingIds.has(d.id));
+          setStories(prev => {
+            const localOnly = prev.filter(p => !SEED_STORIES.some(s => s.id === p.id) && !newFromDb.some(n => n.id === p.id));
+            return [...newFromDb, ...localOnly, ...SEED_STORIES];
+          });
+        }
+      } catch {}
     })();
     return () => { cancelled = true; };
   }, []);
 
   async function handleSubmitStory() {
-    if (!storyTitle.trim() || !storyContent.trim() || !currentUserId || submitting) return;
+    if (!storyTitle.trim() || !storyContent.trim() || submitting) return;
     setSubmitting(true);
+    const newStory: SuccessStory = {
+      id: `local-${Date.now()}`, title: storyTitle.trim(), club: "Your Club", author: "You",
+      year: new Date().getFullYear().toString(), category: "General",
+      excerpt: storyContent.trim().slice(0, 200), fullStory: storyContent.trim(),
+      impact: [], featured: false, image: "📖",
+    };
     try {
-      const { data } = await successStoriesApi.create({ author_id: currentUserId, title: storyTitle.trim(), content: storyContent.trim() });
-      if (data) {
-        const d = data as any;
-        setStories(prev => [{ id: d.id, title: d.title, club: "Your Club", author: "You", year: new Date().getFullYear().toString(), category: "General", excerpt: (d.content || "").slice(0, 200), fullStory: d.content || "", impact: [], featured: false, image: "📖" }, ...prev]);
+      if (currentUserId) {
+        const { data } = await successStoriesApi.create({ author_id: currentUserId, title: storyTitle.trim(), content: storyContent.trim() });
+        if (data) newStory.id = (data as any).id;
       }
-      setStoryTitle(""); setStoryContent(""); setShowSubmit(false);
-    } catch (e) { console.error("Failed to submit story:", e); }
-    finally { setSubmitting(false); }
+    } catch (e) { console.error("DB save failed, keeping locally:", e); }
+    setStories(prev => [newStory, ...prev]);
+    setStoryTitle(""); setStoryContent(""); setShowSubmit(false);
+    setSubmitting(false);
   }
 
   const categories = ["All", ...Array.from(new Set(stories.map(s => s.category)))];

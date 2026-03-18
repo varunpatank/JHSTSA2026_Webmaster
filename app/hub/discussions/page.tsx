@@ -39,8 +39,19 @@ const SEED_DISCUSSIONS: Discussion[] = [
   { id: "d8", title: "Advisor appreciation ideas?", author: "Lily M.", avatar: "LM", category: "General", date: "2026-01-10", replies: 22, views: 267, upvotes: 44, pinned: false, solved: false, tags: ["Advisors", "Appreciation"], lastReply: { author: "Chris L.", date: "2026-01-18" }, preview: "Our advisor goes above and beyond. We want to do something special at the end of the year. What has your club done?" },
 ];
 
+const DISCUSSIONS_LS_KEY = "clubconnect_discussions";
+
+function loadDiscussions(): Discussion[] {
+  if (typeof window === "undefined") return SEED_DISCUSSIONS;
+  try {
+    const raw = localStorage.getItem(DISCUSSIONS_LS_KEY);
+    if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length > 0) return parsed; }
+  } catch {}
+  return SEED_DISCUSSIONS;
+}
+
 export default function DiscussionsPage() {
-  const [discussions, setDiscussions] = useState<Discussion[]>(SEED_DISCUSSIONS);
+  const [discussions, setDiscussions] = useState<Discussion[]>(loadDiscussions);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState<"recent" | "popular" | "replies">("recent");
@@ -55,31 +66,41 @@ export default function DiscussionsPage() {
   const [newContent, setNewContent] = useState("");
 
   useEffect(() => {
+    localStorage.setItem(DISCUSSIONS_LS_KEY, JSON.stringify(discussions));
+  }, [discussions]);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!cancelled && user) setCurrentUserId(user.id);
-
-      const { data } = await discussionsApi.getAll();
-      if (!cancelled && data && data.length > 0) {
-        const dbDiscs: Discussion[] = data.map((d: any) => ({
-          id: d.id,
-          title: d.title,
-          author: d.profiles?.name || "Anonymous",
-          avatar: (d.profiles?.name || "A").split(" ").map((n: string) => n[0]).join("").slice(0, 2),
-          category: d.category || "General",
-          date: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
-          replies: d.reply_count || 0,
-          views: d.view_count || 0,
-          upvotes: d.vote_count || 0,
-          pinned: d.is_pinned || false,
-          solved: false,
-          tags: d.tags || [],
-          lastReply: { author: "—", date: d.updated_at?.split("T")[0] || d.created_at?.split("T")[0] || "" },
-          preview: (d.content || "").slice(0, 160),
-        }));
-        setDiscussions([...dbDiscs, ...SEED_DISCUSSIONS]);
-      }
+      try {
+        const { data } = await discussionsApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbDiscs: Discussion[] = data.map((d: any) => ({
+            id: d.id,
+            title: d.title,
+            author: d.profiles?.name || "Anonymous",
+            avatar: (d.profiles?.name || "A").split(" ").map((n: string) => n[0]).join("").slice(0, 2),
+            category: d.category || "General",
+            date: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+            replies: d.reply_count || 0,
+            views: d.view_count || 0,
+            upvotes: d.vote_count || 0,
+            pinned: d.is_pinned || false,
+            solved: false,
+            tags: d.tags || [],
+            lastReply: { author: "—", date: d.updated_at?.split("T")[0] || d.created_at?.split("T")[0] || "" },
+            preview: (d.content || "").slice(0, 160),
+          }));
+          const existingIds = new Set(SEED_DISCUSSIONS.map(s => s.id));
+          const newFromDb = dbDiscs.filter(d => !existingIds.has(d.id));
+          setDiscussions(prev => {
+            const localOnly = prev.filter(p => !SEED_DISCUSSIONS.some(s => s.id === p.id) && !newFromDb.some(n => n.id === p.id));
+            return [...newFromDb, ...localOnly, ...SEED_DISCUSSIONS];
+          });
+        }
+      } catch {}
     })();
     return () => { cancelled = true; };
   }, []);
@@ -104,36 +125,24 @@ export default function DiscussionsPage() {
   const totalReplies = discussions.reduce((s, d) => s + d.replies, 0);
 
   async function handlePostDiscussion() {
-    if (!newTitle.trim() || !newContent.trim() || !currentUserId || submitting) return;
+    if (!newTitle.trim() || !newContent.trim() || submitting) return;
     setSubmitting(true);
+    const tags = newTags.split(",").map(t => t.trim()).filter(Boolean);
+    const newDisc: Discussion = {
+      id: `local-${Date.now()}`, title: newTitle.trim(), author: "You", avatar: "Y",
+      category: newCategory, date: new Date().toISOString().split("T")[0],
+      replies: 0, views: 0, upvotes: 0, pinned: false, solved: false, tags,
+      lastReply: { author: "—", date: "" }, preview: newContent.trim().slice(0, 160),
+    };
     try {
-      const tags = newTags.split(",").map(t => t.trim()).filter(Boolean);
-      const { data } = await discussionsApi.create({
-        author_id: currentUserId,
-        title: newTitle.trim(),
-        content: newContent.trim(),
-        // category and tags stored via content; discussions table has category column
-      });
-      if (data) {
-        const d = data as any;
-        const newDisc: Discussion = {
-          id: d.id,
-          title: d.title,
-          author: "You",
-          avatar: "Y",
-          category: newCategory,
-          date: new Date().toISOString().split("T")[0],
-          replies: 0, views: 0, upvotes: 0,
-          pinned: false, solved: false,
-          tags,
-          lastReply: { author: "—", date: "" },
-          preview: (d.content || "").slice(0, 160),
-        };
-        setDiscussions(prev => [newDisc, ...prev]);
+      if (currentUserId) {
+        const { data } = await discussionsApi.create({ author_id: currentUserId, title: newTitle.trim(), content: newContent.trim() });
+        if (data) newDisc.id = (data as any).id;
       }
-      setNewTitle(""); setNewContent(""); setNewTags(""); setShowNew(false);
-    } catch (e) { console.error("Failed to post discussion:", e); }
-    finally { setSubmitting(false); }
+    } catch (e) { console.error("DB save failed, keeping locally:", e); }
+    setDiscussions(prev => [newDisc, ...prev]);
+    setNewTitle(""); setNewContent(""); setNewTags(""); setShowNew(false);
+    setSubmitting(false);
   }
 
   async function handleVote(discId: string) {

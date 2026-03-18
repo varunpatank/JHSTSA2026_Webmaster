@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -109,7 +109,7 @@ const rarityColors: Record<string, string> = {
   Legendary: 'bg-amber-50 text-amber-700 border-amber-200',
 };
 
-export default function DashboardPage() {
+function DashboardContent() {
   const [savedItems, setSavedItems] = useState<SavedItem[]>(() => {
     if (typeof window !== 'undefined') {
       const s = localStorage.getItem('clubconnect_dashboard_saved');
@@ -882,4 +882,8 @@ export default function DashboardPage() {
       </section>
     </div>
   );
+}
+
+export default function DashboardPage() {
+  return <Suspense fallback={<div className="min-h-screen bg-neutral-100 flex items-center justify-center"><p className="text-neutral-500">Loading dashboard...</p></div>}><DashboardContent /></Suspense>;
 }

@@ -11,7 +11,7 @@ import {
   Upload, X, Bookmark, Share2, TrendingUp, Users,
   Calendar, Phone, MoreHorizontal, GraduationCap,
   Video, BookOpen, Award, Star, ArrowRight, Globe,
-  Clock,
+  Clock, Trophy,
 } from 'lucide-react';
 
 /*  Types  */
@@ -288,6 +288,64 @@ export default function CommunityPage() {
                 </div>
               </div>
             </div>
+
+            {/* Club Accomplishments */}
+            <div className="bg-white border border-neutral-200">
+              <div className="px-4 py-3 border-b border-neutral-200">
+                <h3 className="text-sm font-bold text-primary-700 flex items-center gap-1.5"><Award size={14} /> Club Highlights</h3>
+              </div>
+              <div className="divide-y divide-neutral-100">
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Trophy size={13} className="text-secondary-600 shrink-0" />
+                    <span className="text-xs font-bold text-primary-700">Model UN</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-500">Best Delegation — Pacific NW Conference 2025</p>
+                </div>
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Star size={13} className="text-accent-600 shrink-0" />
+                    <span className="text-xs font-bold text-primary-700">Robotics Team</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-500">Regional Champions — FIRST Robotics 2025</p>
+                </div>
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Award size={13} className="text-primary-600 shrink-0" />
+                    <span className="text-xs font-bold text-primary-700">NHS Chapter</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-500">500+ volunteer hours this semester</p>
+                </div>
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp size={13} className="text-green-600 shrink-0" />
+                    <span className="text-xs font-bold text-primary-700">Drama Club</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-500">3 sold-out performances — Spring Musical</p>
+                </div>
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Globe size={13} className="text-primary-500 shrink-0" />
+                    <span className="text-xs font-bold text-primary-700">CS Club</span>
+                  </div>
+                  <p className="text-[11px] text-neutral-500">1st Place — HackNW Hackathon 2025</p>
+                </div>
+              </div>
+              <div className="px-4 py-2 border-t border-neutral-100">
+                <Link href="/hub/stories" className="text-[10px] font-semibold text-secondary-600 hover:underline flex items-center gap-1">See all stories <ArrowRight size={10} /></Link>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="bg-white border border-neutral-200 p-4">
+              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">Community Stats</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs"><span className="text-neutral-600">Active Clubs</span><span className="font-bold text-primary-700">25</span></div>
+                <div className="flex justify-between text-xs"><span className="text-neutral-600">Total Members</span><span className="font-bold text-primary-700">847</span></div>
+                <div className="flex justify-between text-xs"><span className="text-neutral-600">Events This Month</span><span className="font-bold text-primary-700">12</span></div>
+                <div className="flex justify-between text-xs"><span className="text-neutral-600">Service Hours</span><span className="font-bold text-primary-700">2,450+</span></div>
+              </div>
+            </div>
           </div>
 
           {/*  CENTER FEED  */}
@@ -375,7 +433,7 @@ export default function CommunityPage() {
             </div>
 
             {/*  Feed Posts  */}
-            {filtered.map(post => (
+            {filtered.slice(0, 4).map(post => (
               <div key={post.id} className="bg-white border border-neutral-200">
                 {/* Header */}
                 <div className="flex items-center gap-3 px-5 pt-4 pb-2">
@@ -484,6 +542,12 @@ export default function CommunityPage() {
               <div className="bg-white border border-neutral-200 py-12 text-center">
                 <p className="text-sm text-neutral-400">No posts match this filter.</p>
               </div>
+            )}
+
+            {filtered.length > 4 && (
+              <button onClick={() => setActiveFilter('all')} className="w-full bg-white border border-neutral-200 py-3 text-xs font-semibold text-primary-600 hover:bg-primary-50 transition-colors">
+                View All {filtered.length} Posts →
+              </button>
             )}
           </div>
 

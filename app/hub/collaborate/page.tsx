@@ -45,48 +45,70 @@ const STATUS_COLORS: Record<string, { label: string; color: string }> = {
   completed: { label: "Completed", color: "bg-neutral-100 text-neutral-500" },
 };
 
+const COLLAB_LS_KEY = "clubconnect_collaborations";
+const JOINED_LS_KEY = "clubconnect_collab_joined";
+
+function loadCollaborations(): Collaboration[] {
+  try { const s = localStorage.getItem(COLLAB_LS_KEY); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length) return p; } } catch {}
+  return SEED_COLLABORATIONS;
+}
+function loadJoinedIds(): Set<string> {
+  try { const s = localStorage.getItem(JOINED_LS_KEY); if (s) return new Set(JSON.parse(s)); } catch {}
+  return new Set();
+}
+
 export default function CollaboratePage() {
-  const [collaborations, setCollaborations] = useState<Collaboration[]>(SEED_COLLABORATIONS);
+  const [collaborations, setCollaborations] = useState<Collaboration[]>(() => loadCollaborations());
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const [joinedIds, setJoinedIds] = useState<Set<string>>(() => loadJoinedIds());
   const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  useEffect(() => { try { localStorage.setItem(COLLAB_LS_KEY, JSON.stringify(collaborations)); } catch {} }, [collaborations]);
+  useEffect(() => { try { localStorage.setItem(JOINED_LS_KEY, JSON.stringify([...joinedIds])); } catch {} }, [joinedIds]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!cancelled && user) setCurrentUserId(user.id);
-      const { data } = await collaborationsApi.getAll();
-      if (!cancelled && data && data.length > 0) {
-        const dbCollabs: Collaboration[] = data.map((d: any) => ({
-          id: d.id, title: d.title || "Collaboration",
-          description: d.description || "",
-          type: (d.type || "event") as Collaboration["type"],
-          clubs: d.organizations ? [d.organizations.name] : [],
-          status: "seeking-partners" as const,
-          spots: 5, filled: 1, timeline: "TBD",
-          skills: [], contact: "",
-          postedDate: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
-        }));
-        setCollaborations([...dbCollabs, ...SEED_COLLABORATIONS]);
-      }
+      try {
+        const { data } = await collaborationsApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbCollabs: Collaboration[] = data.map((d: any) => ({
+            id: d.id, title: d.title || "Collaboration",
+            description: d.description || "",
+            type: (d.type || "event") as Collaboration["type"],
+            clubs: d.organizations ? [d.organizations.name] : [],
+            status: "seeking-partners" as const,
+            spots: 5, filled: 1, timeline: "TBD",
+            skills: [], contact: "",
+            postedDate: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+          }));
+          setCollaborations(prev => {
+            const ids = new Set(prev.map(c => c.id));
+            const newFromDb = dbCollabs.filter(c => !ids.has(c.id));
+            const seedIds = new Set(SEED_COLLABORATIONS.map(s => s.id));
+            const localOnly = prev.filter(c => !seedIds.has(c.id) && !dbCollabs.some(d => d.id === c.id));
+            return [...newFromDb, ...localOnly, ...SEED_COLLABORATIONS];
+          });
+        }
+      } catch (e) { console.error("DB load failed, using local:", e); }
     })();
     return () => { cancelled = true; };
   }, []);
 
   async function handleExpressInterest(collabId: string) {
-    if (!currentUserId || joiningId) return;
+    if (joiningId) return;
     setJoiningId(collabId);
     try {
-      // Use user ID as org_id placeholder since we're expressing personal interest
-      await collaborationsApi.join(collabId, currentUserId);
-      setJoinedIds(prev => new Set(prev).add(collabId));
-      setCollaborations(prev => prev.map(c => c.id === collabId ? { ...c, filled: c.filled + 1 } : c));
-    } catch (e) { console.error("Failed to express interest:", e); }
-    finally { setJoiningId(null); }
+      if (currentUserId) await collaborationsApi.join(collabId, currentUserId);
+    } catch (e) { console.error("DB join failed, keeping locally:", e); }
+    setJoinedIds(prev => new Set(prev).add(collabId));
+    setCollaborations(prev => prev.map(c => c.id === collabId ? { ...c, filled: c.filled + 1 } : c));
+    setJoiningId(null);
   }
 
   const types = ["All", "event", "project", "fundraiser", "competition", "workshop"];

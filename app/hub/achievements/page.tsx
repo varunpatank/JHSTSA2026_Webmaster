@@ -62,16 +62,29 @@ const LEADERBOARD = [
   { rank: 8, name: "Dev G.", badges: 7, points: 1250 },
 ];
 
+const ACHIEVEMENTS_LS_KEY = "clubconnect_achievements";
+
+function loadBadges(): AchievementBadge[] {
+  try {
+    const s = localStorage.getItem(ACHIEVEMENTS_LS_KEY);
+    if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length) return p; }
+  } catch {}
+  return BADGES;
+}
+
 export default function AchievementsPage() {
+  const [badges, setBadges] = useState<AchievementBadge[]>(() => loadBadges());
   const [tab, setTab] = useState<"all" | "unlocked" | "progress" | "leaderboard">("all");
   const [category, setCategory] = useState("All");
   const [rarity, setRarity] = useState("All");
 
-  const categories = ["All", ...Array.from(new Set(BADGES.map(b => b.category)))];
-  const unlocked = BADGES.filter(b => b.unlocked);
+  useEffect(() => { try { localStorage.setItem(ACHIEVEMENTS_LS_KEY, JSON.stringify(badges)); } catch {} }, [badges]);
+
+  const categories = ["All", ...Array.from(new Set(badges.map(b => b.category)))];
+  const unlocked = badges.filter(b => b.unlocked);
   const totalPoints = unlocked.length * 100;
 
-  const filtered = BADGES.filter(b => {
+  const filtered = badges.filter(b => {
     if (category !== "All" && b.category !== category) return false;
     if (rarity !== "All" && b.rarity !== rarity) return false;
     if (tab === "unlocked") return b.unlocked;

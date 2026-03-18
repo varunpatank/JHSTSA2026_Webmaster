@@ -27,7 +27,7 @@ interface Meeting {
   isVirtual: boolean; status: "upcoming" | "in-progress" | "completed";
 }
 
-const MEETINGS: Meeting[] = [
+const SEED_MEETINGS: Meeting[] = [
   { id: "mt1", title: "Weekly Build Session", club: "Robotics Club", date: "2026-03-05", time: "3:30 PM - 5:30 PM", location: "Room 204 (Engineering Lab)", type: "regular", agenda: ["Review build progress", "Work on autonomous programming", "Test drivetrain modifications"], attendees: 22, maxAttendees: 30, isVirtual: false, status: "upcoming" },
   { id: "mt2", title: "Conference Prep Meeting", club: "Model United Nations", date: "2026-03-07", time: "3:30 PM - 4:30 PM", location: "Room 115", type: "special", agenda: ["Assign committee placements", "Distribution of position paper guidelines", "Practice caucusing techniques", "Review conference logistics"], attendees: 18, maxAttendees: 25, isVirtual: false, status: "upcoming" },
   { id: "mt3", title: "Open Studio & Critique", club: "Art Club", date: "2026-03-10", time: "3:00 PM - 5:00 PM", location: "Art Room B210", type: "workshop", agenda: ["Open work time", "Group critique circle", "Spring Showcase planning"], attendees: 15, maxAttendees: 20, isVirtual: false, status: "upcoming" },
@@ -37,6 +37,25 @@ const MEETINGS: Meeting[] = [
   { id: "mt7", title: "Virtual Study Session", club: "Science Olympiad", date: "2026-03-06", time: "7:00 PM - 8:30 PM", location: "Google Meet", type: "workshop", agenda: ["Anatomy & Physiology review", "Practice test walkthrough", "Strategy for invitational"], attendees: 14, maxAttendees: 15, isVirtual: true, status: "upcoming" },
   { id: "mt8", title: "Officer Transition Planning", club: "Student Council", date: "2026-03-11", time: "3:30 PM - 4:15 PM", location: "Room 102", type: "planning", agenda: ["Review election timeline", "Discuss transition documents", "Plan candidate info session"], attendees: 8, maxAttendees: 12, isVirtual: false, status: "upcoming" },
 ];
+
+const MEETINGS_LS_KEY = "clubconnect_meetings";
+const RSVPS_LS_KEY = "clubconnect_meetings_rsvps";
+
+function loadMeetings(): Meeting[] {
+  try {
+    const raw = localStorage.getItem(MEETINGS_LS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return SEED_MEETINGS;
+}
+
+function loadRsvps(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(RSVPS_LS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return {};
+}
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   regular: { bg: "bg-blue-100", text: "text-blue-700" },
@@ -49,15 +68,53 @@ export default function MeetingsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [rsvps, setRsvps] = useState<Record<string, boolean>>({});
+  const [meetings, setMeetings] = useState<Meeting[]>(() => loadMeetings());
+  const [rsvps, setRsvps] = useState<Record<string, boolean>>(() => loadRsvps());
+  const [showForm, setShowForm] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
+  const [formClub, setFormClub] = useState("");
+  const [formDate, setFormDate] = useState("");
+  const [formStartTime, setFormStartTime] = useState("");
+  const [formEndTime, setFormEndTime] = useState("");
+  const [formLocation, setFormLocation] = useState("");
+  const [formType, setFormType] = useState<Meeting["type"]>("regular");
+  const [formAgenda, setFormAgenda] = useState("");
+  const [formMaxAttendees, setFormMaxAttendees] = useState("30");
+  const [formVirtual, setFormVirtual] = useState(false);
+
+  useEffect(() => { try { localStorage.setItem(MEETINGS_LS_KEY, JSON.stringify(meetings)); } catch {} }, [meetings]);
+  useEffect(() => { try { localStorage.setItem(RSVPS_LS_KEY, JSON.stringify(rsvps)); } catch {} }, [rsvps]);
 
   function toggleRsvp(id: string) {
     setRsvps(prev => ({ ...prev, [id]: !prev[id] }));
   }
 
+  function handleCreateMeeting(e: React.FormEvent) {
+    e.preventDefault();
+    if (!formTitle.trim() || !formClub.trim() || !formDate || !formStartTime) return;
+    const newMeeting: Meeting = {
+      id: `local-${Date.now()}`,
+      title: formTitle.trim(),
+      club: formClub.trim(),
+      date: formDate,
+      time: formEndTime ? `${formStartTime} - ${formEndTime}` : formStartTime,
+      location: formLocation.trim() || "TBD",
+      type: formType,
+      agenda: formAgenda.split("\n").map(a => a.trim()).filter(Boolean),
+      attendees: 0,
+      maxAttendees: parseInt(formMaxAttendees) || 30,
+      isVirtual: formVirtual,
+      status: "upcoming",
+    };
+    setMeetings(prev => [newMeeting, ...prev]);
+    setFormTitle(""); setFormClub(""); setFormDate(""); setFormStartTime(""); setFormEndTime("");
+    setFormLocation(""); setFormType("regular"); setFormAgenda(""); setFormMaxAttendees("30"); setFormVirtual(false);
+    setShowForm(false);
+  }
+
   const types = ["All", "regular", "special", "workshop", "planning"];
 
-  const filtered = MEETINGS.filter(m => {
+  const filtered = meetings.filter(m => {
     if (typeFilter !== "All" && m.type !== typeFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -85,6 +142,72 @@ export default function MeetingsPage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {showForm && (
+          <Reveal>
+            <form onSubmit={handleCreateMeeting} className="card p-6 mb-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-heading font-bold text-primary-700">Create New Meeting</h2>
+                <button type="button" onClick={() => setShowForm(false)} className="text-neutral-400 hover:text-neutral-600"><Plus size={18} className="rotate-45" /></button>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-600 mb-1">Meeting Title *</label>
+                  <input type="text" value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder="e.g. Weekly Club Meeting" className="input-field" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-neutral-600 mb-1">Club Name *</label>
+                  <input type="text" value={formClub} onChange={e => setFormClub(e.target.value)} placeholder="e.g. Robotics Club" className="input-field" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-neutral-600 mb-1">Date *</label>
+                  <input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="input-field" required />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-600 mb-1">Start Time *</label>
+                    <input type="time" value={formStartTime} onChange={e => setFormStartTime(e.target.value)} className="input-field" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-600 mb-1">End Time</label>
+                    <input type="time" value={formEndTime} onChange={e => setFormEndTime(e.target.value)} className="input-field" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-neutral-600 mb-1">Location</label>
+                  <input type="text" value={formLocation} onChange={e => setFormLocation(e.target.value)} placeholder="e.g. Room 204" className="input-field" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-600 mb-1">Type</label>
+                    <select value={formType} onChange={e => setFormType(e.target.value as Meeting["type"])} className="select-field">
+                      <option value="regular">Regular</option>
+                      <option value="special">Special</option>
+                      <option value="workshop">Workshop</option>
+                      <option value="planning">Planning</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-neutral-600 mb-1">Max Attendees</label>
+                    <input type="number" min="1" value={formMaxAttendees} onChange={e => setFormMaxAttendees(e.target.value)} className="input-field" />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-neutral-600 mb-1">Agenda Items (one per line)</label>
+                <textarea value={formAgenda} onChange={e => setFormAgenda(e.target.value)} rows={3} placeholder="Item 1&#10;Item 2&#10;Item 3" className="input-field" />
+              </div>
+              <label className="flex items-center gap-2 text-sm text-neutral-600">
+                <input type="checkbox" checked={formVirtual} onChange={e => setFormVirtual(e.target.checked)} className="accent-primary-600" />
+                Virtual meeting (online)
+              </label>
+              <div className="flex gap-3">
+                <button type="submit" className="btn-primary inline-flex items-center gap-2"><Plus size={14} /> Create Meeting</button>
+                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancel</button>
+              </div>
+            </form>
+          </Reveal>
+        )}
+
         <div className="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
