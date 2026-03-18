@@ -73,14 +73,12 @@ export default function ReferencesPage() {
         {/* Work Log & Copyright */}
         <div className="grid md:grid-cols-2 gap-4">
           <Accordion icon={<FileText size={16} />} title="Work Log" defaultOpen>
-            <div className="border border-neutral-300 bg-neutral-50 h-96 overflow-hidden mt-3">
-              <Image
-                src="/worklog.png"
-                alt="Technology Student Association Work Log"
-                width={800}
-                height={600}
-                className="w-full h-full object-contain"
-                unoptimized
+            <p className="text-xs text-neutral-500 mt-3 mb-2">Webmaster Work Log.pdf</p>
+            <div className="border border-neutral-300 bg-neutral-50 h-96 overflow-hidden">
+              <iframe
+                src="/Webmaster%20Work%20Log.pdf"
+                className="w-full h-full"
+                title="Webmaster Work Log PDF"
               />
             </div>
           </Accordion>

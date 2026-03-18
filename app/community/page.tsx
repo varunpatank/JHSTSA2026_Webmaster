@@ -253,14 +253,32 @@ export default function CommunityPage() {
       <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.png,.jpg,.jpeg,.gif,.svg,.txt,.md,.csv" onChange={handleFileSelect} />
 
       <HeroSection align="left">
-        <div className="flex items-center justify-between gap-4">
-          <div>
+        <div className="flex items-center gap-6">
+          <div className="shrink-0">
             <h1 className="hero-title mt-0"><span>Community</span></h1>
             <p className="hero-description mt-1 text-sm">Share resources, start discussions, connect with clubs</p>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-neutral-300">
-            <span className="hero-stat px-2.5 py-1 flex items-center gap-1"><TrendingUp size={12} /> {feed.length} Posts</span>
-            <span className="hero-stat px-2.5 py-1 flex items-center gap-1"><Users size={12} /> 47 Online</span>
+          <div className="hidden sm:grid grid-cols-5 gap-2 ml-auto">
+            <div className="bg-primary-500/40 border border-primary-400/30 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-white">{feed.length}</p>
+              <p className="text-[10px] text-primary-200 uppercase tracking-wider mt-0.5">Posts</p>
+            </div>
+            <div className="bg-secondary-500/30 border border-secondary-400/30 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-secondary-300">47</p>
+              <p className="text-[10px] text-secondary-200/70 uppercase tracking-wider mt-0.5">Online</p>
+            </div>
+            <div className="bg-accent-500/30 border border-accent-400/30 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-accent-300">25</p>
+              <p className="text-[10px] text-accent-200/70 uppercase tracking-wider mt-0.5">Clubs</p>
+            </div>
+            <div className="bg-emerald-500/25 border border-emerald-400/30 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-emerald-300">847</p>
+              <p className="text-[10px] text-emerald-200/70 uppercase tracking-wider mt-0.5">Members</p>
+            </div>
+            <div className="bg-violet-500/25 border border-violet-400/30 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-violet-300">12</p>
+              <p className="text-[10px] text-violet-200/70 uppercase tracking-wider mt-0.5">Events</p>
+            </div>
           </div>
         </div>
       </HeroSection>

@@ -59,9 +59,7 @@ const ROCKET_STAGES = [
       { href: "/hub/goals", label: "Goal Tracker", icon: Target },
       { href: "/hub/calendar", label: "Events Calendar", icon: Calendar },
       { href: "/hub/health", label: "Club Health", icon: Heart },
-      { href: "/hub/my-collections", label: "My Collections", icon: BookOpen },
       { href: "/hub/compare", label: "Compare Clubs", icon: BarChart3 },
-      { href: "/meetings", label: "Meetings Hub", icon: Clock },
     ],
   },
   {
@@ -78,7 +76,6 @@ const ROCKET_STAGES = [
       { href: "/hub/competitions", label: "Competitions Hub", icon: Trophy },
       { href: "/donate", label: "Donations & Funding", icon: Gift },
       { href: "/funding", label: "Funding Resources", icon: Download },
-      { href: "/students", label: "Student Network", icon: TrendingUp },
     ],
   },
   {

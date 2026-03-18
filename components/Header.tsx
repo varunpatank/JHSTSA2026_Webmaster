@@ -166,7 +166,7 @@ export default function Header() {
             <button
               type="button"
               onClick={openReferencesPanel}
-              className="hidden md:inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-primary-100 border border-primary-400 hover:bg-primary-600 hover:text-white transition-colors"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-secondary-300 border border-secondary-500/60 hover:bg-secondary-500/20 hover:text-secondary-200 transition-colors"
               aria-label="Open references panel"
             >
               <BookMarked size={12} />
@@ -195,7 +195,7 @@ export default function Header() {
                 </div>
               </Link>
             ) : (
-              <Link href="/login" className="ml-2 px-3 py-2 text-sm font-medium text-primary-100 border border-primary-300 hover:text-white hover:bg-primary-600 hover:border-primary-400 transition-colors">
+              <Link href="/login" className="ml-2 px-4 py-1.5 text-sm font-bold text-secondary-300 border border-secondary-500/60 hover:bg-secondary-500/20 hover:text-secondary-200 transition-colors">
                 Log in
               </Link>
             )}

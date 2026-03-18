@@ -61,7 +61,7 @@ export default function IdeasPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [sortBy, setSortBy] = useState<"upvotes" | "newest" | "interest">("upvotes");
+  const [sortBy, setSortBy] = useState<"upvotes" | "newest" | "interest">("newest");
   const [showForm, setShowForm] = useState(false);
   const [myVotes, setMyVotes] = useState<Set<string>>(new Set());
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);

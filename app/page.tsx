@@ -201,7 +201,7 @@ export default function HomePage() {
      </div>
 
      <div>
-      <h2 className="text-xl font-heading font-bold text-primary-700 mb-3">Quick Access</h2>
+      <h2 className="text-xl font-heading font-bold text-primary-700 mb-3 text-center">Quick Access</h2>
       <div className="space-y-2">
        {[
         { href: "/directory", icon: Compass, title: "Browse Clubs", desc: "Interactive directory with map and filters" },
