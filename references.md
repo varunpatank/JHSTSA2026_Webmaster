@@ -27,3 +27,8 @@ Source: Lucide Icons / lucide-react
 Author/Creator: Lucide Contributors
 Link: https://lucide.dev/icons
 License: ISC License (Lucide package license)
+
+## Profile Page Note (Implementation)
+
+Some parts of the profile page are intentionally hard-coded for UI/demo presentation.
+Examples include sample achievement badges, sample recent activity rows, and sample saved resource cards used to show interface behavior.

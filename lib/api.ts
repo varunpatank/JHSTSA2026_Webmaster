@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import type { Profile, Membership, Organization, OrganizationTag, Meeting, Event, EventTag, Location, Resource, ResourceTag } from './apiTypes'
 import type { } from './apiTypes'
+import { signIn, signOut as nextAuthSignOut, getSession } from 'next-auth/react'
 import webpfy from 'webpfy'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -31,8 +32,32 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabasePublis
 
 export const authApi = {
 
-    signInWithEmail: (email: string, password: string) =>
-        supabase.auth.signInWithPassword({ email, password }),
+    signInWithEmail: async (email: string, password: string) => {
+        const nextAuthRes = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+        })
+
+        if (nextAuthRes?.error) {
+            return { data: { user: null, session: null }, error: { message: nextAuthRes.error } as any }
+        }
+
+        const session = await getSession()
+        const accessToken = session?.supabase?.accessToken
+        const refreshToken = session?.supabase?.refreshToken
+
+        if (!accessToken || !refreshToken) {
+            return { data: { user: null, session: null }, error: { message: 'Missing Supabase session from app login.' } as any }
+        }
+
+        const restoreRes = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+        })
+
+        return restoreRes
+    },
 
 
     signInWithIdToken: (provider: string, idToken: string) =>
@@ -53,40 +78,36 @@ export const authApi = {
         school?: string
         is_adult?: boolean
     }) => {
-        const { name, email, grade, password, bio, phone_number, school, is_adult } = data
-
-        const authRes = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    name,
-                    grade: grade || null,
-                    school: school || null,
-                    is_adult: !!is_adult,
-                    bio: bio || null,
-                    phone_number: phone_number || null,
-                },
+        const response = await fetch('/api/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             },
+            body: JSON.stringify(data),
         })
 
-        if (authRes.error || !authRes.data.user) {
-            return { auth: authRes, profile: null }
+        const payload = await response.json()
+
+        if (!response.ok) {
+            return {
+                auth: {
+                    data: { user: null, session: null },
+                    error: { message: payload?.error || 'Sign up failed' },
+                },
+                profile: null,
+            }
         }
 
-        const userId = authRes.data.user.id
-        const profileRes = await profilesApi.create({
-            id: userId,
-            name,
-            email,
-            grade: grade || null,
-            school: school || null,
-            is_adult: !!is_adult,
-            bio: bio || null,
-            phone_number: phone_number || null,
-        })
-
-        return { auth: authRes, profile: profileRes.data ?? null }
+        return {
+            auth: {
+                data: {
+                    user: payload.user ?? null,
+                    session: payload.session ?? null,
+                },
+                error: null,
+            },
+            profile: payload.profile ?? null,
+        }
     },
 
 
@@ -99,7 +120,10 @@ export const authApi = {
             : supabase.auth.signInWithOAuth({ provider: provider as any, options }),
 
 
-    signOut: () => supabase.auth.signOut(),
+    signOut: async () => {
+        await supabase.auth.signOut()
+        await nextAuthSignOut({ redirect: false })
+    },
 }
 
 

@@ -59,6 +59,8 @@ export const authOptions: NextAuthOptions = {
             data.user.user_metadata?.full_name ||
             data.user.email?.split("@")[0] ||
             "ClubConnect User",
+          supabaseAccessToken: data.session?.access_token,
+          supabaseRefreshToken: data.session?.refresh_token,
         };
       },
     }),
@@ -67,10 +69,23 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.supabaseAccessToken = (user as any).supabaseAccessToken;
+        token.supabaseRefreshToken = (user as any).supabaseRefreshToken;
+      }
+
+      return token;
+    },
     async session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
       }
+
+      session.supabase = {
+        accessToken: token.supabaseAccessToken,
+        refreshToken: token.supabaseRefreshToken,
+      };
 
       return session;
     },

@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import AuthRequiredNotice from '@/components/AuthRequiredNotice';
 import { supabase, collectionsApi } from '@/lib/api';
+import { useAuthGate } from '@/lib/useAuthGate';
 
 interface Collection {
   id: string;
@@ -75,6 +77,7 @@ const demoCollections: Collection[] = [
 ];
 
 export default function MyCollectionsPage() {
+  const { ready, loggedIn } = useAuthGate();
   const [collections, setCollections] = useState<Collection[]>(demoCollections);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -134,6 +137,19 @@ export default function MyCollectionsPage() {
     { value: 'bg-pink-500', label: 'Pink' },
     { value: 'bg-orange-500', label: 'Orange' },
   ];
+
+  if (!ready) {
+    return <div className="min-h-screen bg-neutral-100 flex items-center justify-center"><p className="text-neutral-500">Loading collections...</p></div>;
+  }
+
+  if (!loggedIn) {
+    return (
+      <AuthRequiredNotice
+        message="Your saved collections are available after login."
+        redirectTo="/hub/my-collections"
+      />
+    );
+  }
 
   const createCollection = async () => {
     if (!newCollection.name.trim()) return;

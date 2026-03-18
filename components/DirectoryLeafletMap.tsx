@@ -72,7 +72,11 @@ type SchoolGroup = {
 const districtCenter: LatLng = { lat: 47.705, lng: -122.14 };
 const BUILDING_FOOTPRINT_LAYER_ID = "clubconnect-building-footprints";
 const BUILDING_EXTRUSION_LAYER_ID = "clubconnect-3d-buildings";
-const BUILDING_SOURCE_LAYER_CANDIDATES = ["building", "buildings", "building:part"];
+const BUILDING_SOURCE_LAYER_CANDIDATES = [
+  "building",
+  "buildings",
+  "building:part",
+];
 
 function toLngLat(coordinates: LatLng): [number, number] {
   return [coordinates.lng, coordinates.lat];
@@ -120,7 +124,7 @@ function pointInRing(point: [number, number], ring: [number, number][]) {
     const [xj, yj] = ring[j];
     const intersects =
       yi > y !== yj > y &&
-      x < ((xj - xi) * (y - yi)) / ((yj - yi) || Number.EPSILON) + xi;
+      x < ((xj - xi) * (y - yi)) / (yj - yi || Number.EPSILON) + xi;
     if (intersects) inside = !inside;
   }
 
@@ -224,10 +228,7 @@ function getInteriorPointForPolygon(
   return null;
 }
 
-function getAnchorFromRenderedFootprints(
-  map: maplibregl.Map,
-  center: LatLng,
-) {
+function getAnchorFromRenderedFootprints(map: maplibregl.Map, center: LatLng) {
   if (!map.getLayer(BUILDING_FOOTPRINT_LAYER_ID)) return null;
 
   const target: [number, number] = [center.lng, center.lat];
@@ -276,13 +277,12 @@ function getAnchorFromRenderedFootprints(
 export default function DirectoryLeafletMap({
   chapters,
   activeRoom,
-  onSelectRoom: _onSelectRoom,
+  onSelectRoom,
 }: DirectoryLeafletMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [popupChapterId, setPopupChapterId] = useState<string | null>(null);
-  const [popupChapterPosition, setPopupChapterPosition] = useState<LatLng | null>(
-    null,
-  );
+  const [popupChapterPosition, setPopupChapterPosition] =
+    useState<LatLng | null>(null);
   const [popupBuildingId, setPopupBuildingId] = useState<string | null>(null);
   const [isThreeD, setIsThreeD] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -300,8 +300,6 @@ export default function DirectoryLeafletMap({
     pitch: 0,
     padding: { top: 0, bottom: 0, left: 0, right: 0 },
   });
-
-  void _onSelectRoom;
 
   const schools = useMemo<SchoolGroup[]>(() => {
     const bySchool = new Map<string, SchoolGroup>();
@@ -342,8 +340,9 @@ export default function DirectoryLeafletMap({
     return chapters.map((chapter) => {
       const room = getPrimaryLocation(chapter.meetingLocation);
       const building =
-        chapter.meetingLocation.parentOrg ||
         chapter.meetingLocation.internalLocation ||
+        chapter.meetingLocation.room ||
+        chapter.meetingLocation.parentOrg ||
         "Campus";
       const coordinates: LatLng = {
         lat: chapter.meetingLocation.lat,
@@ -370,9 +369,11 @@ export default function DirectoryLeafletMap({
 
       const clubs = [...existing.clubs, marker];
       const avgLat =
-        clubs.reduce((sum, item) => sum + item.coordinates.lat, 0) / clubs.length;
+        clubs.reduce((sum, item) => sum + item.coordinates.lat, 0) /
+        clubs.length;
       const avgLng =
-        clubs.reduce((sum, item) => sum + item.coordinates.lng, 0) / clubs.length;
+        clubs.reduce((sum, item) => sum + item.coordinates.lng, 0) /
+        clubs.length;
 
       byBuilding.set(marker.building, {
         id: marker.building,
@@ -396,16 +397,25 @@ export default function DirectoryLeafletMap({
     }));
   }, [groupedBuildings, buildingAnchorMap, viewState.zoom, hasLoaded]);
 
-  const activeMarker = markers.find((item) => item.chapter.id === popupChapterId);
+  const activeMarker = markers.find(
+    (item) => item.chapter.id === popupChapterId,
+  );
   const activeBuilding = groupedBuildingsWithAnchors.find(
     (item) => item.id === popupBuildingId,
   );
 
-  const showSchoolMarkers = viewState.zoom < DIRECTORY_MAP_CONFIG.zoom.schoolMarkersMax;
-  const showClubMarkers = viewState.zoom >= DIRECTORY_MAP_CONFIG.zoom.schoolMarkersMax;
-  const showSplitClubDots = viewState.zoom >= DIRECTORY_MAP_CONFIG.zoom.clubSplit;
+  const showSchoolMarkers =
+    viewState.zoom < DIRECTORY_MAP_CONFIG.zoom.schoolMarkersMax;
+  const showClubMarkers =
+    viewState.zoom >= DIRECTORY_MAP_CONFIG.zoom.schoolMarkersMax;
+  const showSplitClubDots =
+    viewState.zoom >= DIRECTORY_MAP_CONFIG.zoom.clubSplit;
 
-  function flyToCoordinates(coordinates: LatLng, zoom: number, duration: number) {
+  function flyToCoordinates(
+    coordinates: LatLng,
+    zoom: number,
+    duration: number,
+  ) {
     mapRef.current?.flyTo({
       center: toLngLat(coordinates),
       zoom,
@@ -428,6 +438,7 @@ export default function DirectoryLeafletMap({
   function focusDistrict() {
     setActiveSchool(null);
     setPopupBuildingId(null);
+    onSelectRoom("Any");
     mapRef.current?.flyTo({
       center: toLngLat(districtCenter),
       zoom: DIRECTORY_MAP_CONFIG.zoom.districtDefault,
@@ -441,6 +452,8 @@ export default function DirectoryLeafletMap({
   function focusCluster(cluster: BuildingGroup) {
     setPopupBuildingId(cluster.id);
     setPopupChapterId(null);
+    const firstRoom = cluster.clubs[0]?.room;
+    if (firstRoom) onSelectRoom(firstRoom);
     flyToCoordinates(
       cluster.center,
       Math.max(viewState.zoom, DIRECTORY_MAP_CONFIG.zoom.focusCluster),
@@ -455,6 +468,7 @@ export default function DirectoryLeafletMap({
     setPopupChapterId(clubMarker.chapter.id);
     setPopupChapterPosition(popupPosition);
     setPopupBuildingId(null);
+    onSelectRoom(clubMarker.room);
     flyToCoordinates(
       popupPosition,
       Math.max(viewState.zoom, DIRECTORY_MAP_CONFIG.zoom.focusClub),
@@ -623,7 +637,8 @@ export default function DirectoryLeafletMap({
                     {school.name}
                   </p>
                   <p className="text-[9px] text-neutral-500">
-                    {school.clubs.length} club{school.clubs.length !== 1 ? "s" : ""}
+                    {school.clubs.length} club
+                    {school.clubs.length !== 1 ? "s" : ""}
                   </p>
                 </div>
               </div>
@@ -634,7 +649,8 @@ export default function DirectoryLeafletMap({
                       <span
                         className="w-1.5 h-1.5 shrink-0"
                         style={{
-                          backgroundColor: categoryDotColors[club.category] || "#6b7280",
+                          backgroundColor:
+                            categoryDotColors[club.category] || "#6b7280",
                         }}
                       />
                       <span className="text-[10px] text-neutral-400 truncate">
@@ -719,20 +735,30 @@ export default function DirectoryLeafletMap({
                 offset={24}
               >
                 <div className="min-w-[180px] pr-1">
-                  <p className="font-bold text-primary-700 text-sm">{school.name}</p>
+                  <p className="font-bold text-primary-700 text-sm">
+                    {school.name}
+                  </p>
                   <p className="text-xs text-neutral-500 mb-1.5">
-                    {school.clubs.length} club{school.clubs.length !== 1 ? "s" : ""} &middot; Click to explore
+                    {school.clubs.length} club
+                    {school.clubs.length !== 1 ? "s" : ""} &middot; Click to
+                    explore
                   </p>
                   <div className="space-y-1 max-h-[200px] overflow-y-auto">
                     {school.clubs.map((club) => (
-                      <div key={club.id} className="flex items-center gap-2 py-0.5">
+                      <div
+                        key={club.id}
+                        className="flex items-center gap-2 py-0.5"
+                      >
                         <span
                           className="w-2 h-2 shrink-0"
                           style={{
-                            backgroundColor: categoryDotColors[club.category] || "#6b7280",
+                            backgroundColor:
+                              categoryDotColors[club.category] || "#6b7280",
                           }}
                         />
-                        <span className="text-xs text-neutral-700">{club.name}</span>
+                        <span className="text-xs text-neutral-700">
+                          {club.name}
+                        </span>
                         <span className="text-[9px] text-neutral-400 ml-auto">
                           {club.category}
                         </span>
@@ -827,10 +853,13 @@ export default function DirectoryLeafletMap({
             closeOnClick={false}
             onClose={() => setPopupChapterId(null)}
             offset={12}
+            className="club-map-popup"
           >
-            <div className="space-y-2 text-sm pr-2 min-w-[210px]">
+            <div className="space-y-2 text-sm pr-2 min-w-[210px] p-2">
               <div className="space-y-1">
-                <p className="font-semibold text-primary-700">{activeMarker.chapter.name}</p>
+                <p className="font-semibold text-primary-700">
+                  {activeMarker.chapter.name}
+                </p>
                 <p className="text-neutral-700">
                   {formatChapterLocation(activeMarker.chapter.meetingLocation)}
                 </p>
@@ -864,9 +893,12 @@ export default function DirectoryLeafletMap({
             closeOnClick={false}
             onClose={() => setPopupBuildingId(null)}
             offset={12}
+            className="club-map-popup"
           >
             <div className="space-y-2 text-sm pr-2 min-w-[210px]">
-              <p className="font-semibold text-primary-700">{activeBuilding.building}</p>
+              <p className="font-semibold text-primary-700">
+                {activeBuilding.building}
+              </p>
               <p className="text-xs text-neutral-500">
                 {activeBuilding.clubs.length} clubs in this building
               </p>
@@ -921,7 +953,8 @@ export default function DirectoryLeafletMap({
         )}
       </div>
       <div className="pointer-events-none absolute bottom-3 left-3 border border-neutral-700/80 bg-neutral-900/85 px-2 py-1 text-[11px] font-semibold tracking-wide text-neutral-100">
-        {activeSchool ? activeSchool : "DISTRICT VIEW"} &middot; {isThreeD ? "3D" : "FLAT"}
+        {activeSchool ? activeSchool : "DISTRICT VIEW"} &middot;{" "}
+        {isThreeD ? "3D" : "FLAT"}
       </div>
     </div>
   );
