@@ -1,436 +1,189 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { achievements } from '@/lib/hubData';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import {
+  Award, CheckCircle, Crown, Lock, Medal, Search, Shield, Star, Trophy, Users, Zap
+} from "lucide-react";
 
-const categories = ['All', 'Leadership', 'Growth', 'Events', 'Community', 'Innovation', 'Competition'];
-const tierOrder = { 'Legendary': 0, 'Epic': 1, 'Rare': 2, 'Uncommon': 3, 'Common': 4 };
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
 
-type TierKey = keyof typeof tierOrder;
+interface AchievementBadge {
+  id: string; name: string; description: string; icon: string; category: string;
+  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary";
+  requirement: string; earnedBy: number; progress?: number; unlocked: boolean;
+}
 
-const tierColors = {
-  'Legendary': 'from-amber-400 to-orange-500 border-amber-400',
-  'Epic': 'from-purple-400 to-indigo-500 border-purple-400',
-  'Rare': 'from-blue-400 to-cyan-500 border-blue-400',
-  'Uncommon': 'from-green-300 to-teal-400 border-green-300',
-  'Common': 'from-neutral-300 to-neutral-400 border-neutral-300'
+const BADGES: AchievementBadge[] = [
+  { id: "a1", name: "First Steps", description: "Join your first club", icon: "👣", category: "Getting Started", rarity: "common", requirement: "Join 1 club", earnedBy: 892, progress: 100, unlocked: true },
+  { id: "a2", name: "Social Butterfly", description: "Join 3 or more clubs", icon: "🦋", category: "Getting Started", rarity: "uncommon", requirement: "Join 3 clubs", earnedBy: 234, progress: 66, unlocked: false },
+  { id: "a3", name: "Event Explorer", description: "Attend 5 club events", icon: "🗺️", category: "Participation", rarity: "common", requirement: "Attend 5 events", earnedBy: 567, progress: 80, unlocked: false },
+  { id: "a4", name: "Regular", description: "Attend 10 consecutive meetings", icon: "📅", category: "Participation", rarity: "uncommon", requirement: "10 consecutive meetings", earnedBy: 312, progress: 70, unlocked: false },
+  { id: "a5", name: "Helping Hand", description: "Complete 20 hours of community service", icon: "🤝", category: "Service", rarity: "uncommon", requirement: "20 service hours", earnedBy: 189, progress: 100, unlocked: true },
+  { id: "a6", name: "Service Star", description: "Complete 100 hours of community service", icon: "⭐", category: "Service", rarity: "rare", requirement: "100 service hours", earnedBy: 45, progress: 52, unlocked: false },
+  { id: "a7", name: "Leader", description: "Become a club officer", icon: "👑", category: "Leadership", rarity: "rare", requirement: "Hold officer position", earnedBy: 87, progress: 100, unlocked: true },
+  { id: "a8", name: "Visionary", description: "Successfully propose and launch a new club", icon: "🚀", category: "Leadership", rarity: "epic", requirement: "Found a new club", earnedBy: 12, progress: 0, unlocked: false },
+  { id: "a9", name: "Champion", description: "Win first place at a state competition", icon: "🏆", category: "Competitions", rarity: "epic", requirement: "1st place at state", earnedBy: 23, progress: 0, unlocked: false },
+  { id: "a10", name: "Fundraiser", description: "Help raise $500+ for your club", icon: "💰", category: "Contributions", rarity: "rare", requirement: "Raise $500+", earnedBy: 56, progress: 40, unlocked: false },
+  { id: "a11", name: "Mentor", description: "Mentor 3 newer members", icon: "🎓", category: "Leadership", rarity: "rare", requirement: "Mentor 3 members", earnedBy: 67, progress: 33, unlocked: false },
+  { id: "a12", name: "Collaborator", description: "Participate in a cross-club project", icon: "🔗", category: "Participation", rarity: "uncommon", requirement: "Join cross-club event", earnedBy: 156, progress: 100, unlocked: true },
+  { id: "a13", name: "All-Star", description: "Earn badges in 5 different categories", icon: "🌟", category: "Special", rarity: "epic", requirement: "5 category badges", earnedBy: 8, progress: 60, unlocked: false },
+  { id: "a14", name: "Legend", description: "Earn 15+ badges and hold a leadership position", icon: "🏅", category: "Special", rarity: "legendary", requirement: "15 badges + officer", earnedBy: 3, progress: 27, unlocked: false },
+  { id: "a15", name: "Innovator", description: "Submit a winning idea to the Ideas Board", icon: "💡", category: "Contributions", rarity: "rare", requirement: "Approved club idea", earnedBy: 34, progress: 0, unlocked: false },
+  { id: "a16", name: "Storyteller", description: "Have your success story featured on the hub", icon: "📖", category: "Contributions", rarity: "rare", requirement: "Featured story", earnedBy: 18, progress: 0, unlocked: false },
+];
+
+const RARITY_COLORS: Record<string, { bg: string; border: string; text: string; glow: string }> = {
+  common: { bg: "bg-neutral-50", border: "border-neutral-300", text: "text-neutral-600", glow: "" },
+  uncommon: { bg: "bg-green-50", border: "border-green-300", text: "text-green-700", glow: "" },
+  rare: { bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", glow: "shadow-blue-100" },
+  epic: { bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", glow: "shadow-purple-100 shadow-lg" },
+  legendary: { bg: "bg-gradient-to-br from-yellow-50 to-amber-50", border: "border-yellow-400", text: "text-yellow-700", glow: "shadow-yellow-200 shadow-lg" },
 };
 
-const tierBg = {
-  'Legendary': 'bg-gradient-to-br from-amber-50 to-orange-50',
-  'Epic': 'bg-gradient-to-br from-purple-50 to-indigo-50',
-  'Rare': 'bg-gradient-to-br from-blue-50 to-cyan-50',
-  'Uncommon': 'bg-gradient-to-br from-green-50 to-teal-50',
-  'Common': 'bg-neutral-50'
-};
+const LEADERBOARD = [
+  { rank: 1, name: "Emma W.", badges: 14, points: 2450 },
+  { rank: 2, name: "Jason L.", badges: 12, points: 2100 },
+  { rank: 3, name: "Sarah K.", badges: 11, points: 1980 },
+  { rank: 4, name: "Marcus C.", badges: 10, points: 1750 },
+  { rank: 5, name: "Priya M.", badges: 9, points: 1620 },
+  { rank: 6, name: "Alex R.", badges: 9, points: 1580 },
+  { rank: 7, name: "Taylor N.", badges: 8, points: 1400 },
+  { rank: 8, name: "Dev G.", badges: 7, points: 1250 },
+];
 
-// Simulated user progress
-const userProgress = {
-  unlockedAchievements: ['ach-1', 'ach-3', 'ach-5', 'ach-9'],
-  totalPoints: 450,
-  rank: 12,
-  streak: 5
-};
+const ACHIEVEMENTS_LS_KEY = "clubconnect_achievements";
+
+function loadBadges(): AchievementBadge[] {
+  try {
+    const s = localStorage.getItem(ACHIEVEMENTS_LS_KEY);
+    if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length) return p; }
+  } catch {}
+  return BADGES;
+}
 
 export default function AchievementsPage() {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [showUnlockedOnly, setShowUnlockedOnly] = useState(false);
-  const [selectedAchievement, setSelectedAchievement] = useState<typeof achievements[0] | null>(null);
+  const [badges, setBadges] = useState<AchievementBadge[]>(() => loadBadges());
+  const [tab, setTab] = useState<"all" | "unlocked" | "progress" | "leaderboard">("all");
+  const [category, setCategory] = useState("All");
+  const [rarity, setRarity] = useState("All");
 
-  const filteredAchievements = useMemo(() => {
-    return achievements
-      .filter((ach) => {
-        if (selectedCategory !== 'All' && ach.category !== selectedCategory) return false;
-        if (showUnlockedOnly && !userProgress.unlockedAchievements.includes(ach.id)) return false;
-        return true;
-      })
-      .sort((a, b) => tierOrder[a.rarity as TierKey] - tierOrder[b.rarity as TierKey]);
-  }, [selectedCategory, showUnlockedOnly]);
+  useEffect(() => { try { localStorage.setItem(ACHIEVEMENTS_LS_KEY, JSON.stringify(badges)); } catch {} }, [badges]);
 
-  const unlockedCount = achievements.filter(a => userProgress.unlockedAchievements.includes(a.id)).length;
-  const totalPoints = achievements
-    .filter(a => userProgress.unlockedAchievements.includes(a.id))
-    .reduce((sum, a) => sum + a.points, 0);
+  const categories = ["All", ...Array.from(new Set(badges.map(b => b.category)))];
+  const unlocked = badges.filter(b => b.unlocked);
+  const totalPoints = unlocked.length * 100;
 
-  // Leaderboard data (simulated)
-  const leaderboard = [
-    { rank: 1, name: 'Robotics Club', points: 1250, badges: 18 },
-    { rank: 2, name: 'Debate Society', points: 1180, badges: 16 },
-    { rank: 3, name: 'Science Olympiad', points: 1050, badges: 15 },
-    { rank: 4, name: 'DECA Chapter', points: 980, badges: 14 },
-    { rank: 5, name: 'Key Club', points: 920, badges: 13 },
-    { rank: 6, name: 'Drama Club', points: 850, badges: 12 },
-    { rank: 7, name: 'Math League', points: 780, badges: 11 },
-    { rank: 8, name: 'Environmental Club', points: 720, badges: 10 },
-    { rank: 9, name: 'Photography Club', points: 680, badges: 9 },
-    { rank: 10, name: 'Chess Club', points: 620, badges: 8 },
-  ];
+  const filtered = badges.filter(b => {
+    if (category !== "All" && b.category !== category) return false;
+    if (rarity !== "All" && b.rarity !== rarity) return false;
+    if (tab === "unlocked") return b.unlocked;
+    if (tab === "progress") return !b.unlocked && (b.progress ?? 0) > 0;
+    return true;
+  });
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=1920&q=80"
-            alt="Achievements"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-600/95 to-yellow-500/80"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
-            ← Back to Hub
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 text-white">
-            🏆 Achievements & Badges
-          </h1>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl">
-            Earn badges for your club&apos;s accomplishments, compete on the leaderboard, 
-            and showcase your achievements. Every milestone counts!
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a href="#badges" className="btn-secondary">
-              View Badges
-            </a>
-            <a href="#leaderboard" className="bg-white/20 backdrop-blur text-white px-6 py-2.5 font-semibold border-2 border-white/50 hover:bg-white hover:text-amber-600 transition-all rounded-lg">
-              See Leaderboard
-            </a>
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+          <Link href="/hub" className="text-sm text-yellow-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Award size={36} /> Achievement Badges</h1>
+          <p className="mt-3 max-w-2xl text-yellow-50 text-lg">Track your progress, earn badges, and compete on the leaderboard.</p>
+          <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{unlocked.length}/{BADGES.length}</p><p className="text-xs text-yellow-100">Earned</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{totalPoints}</p><p className="text-xs text-yellow-100">Points</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{BADGES.filter(b => b.rarity === "legendary").length}</p><p className="text-xs text-yellow-100">Legendary</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{categories.length - 1}</p><p className="text-xs text-yellow-100">Categories</p></div>
           </div>
         </div>
       </section>
 
-      {/* User Stats */}
-      <section className="bg-white py-6 border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">{unlockedCount}/{achievements.length}</div>
-              <div className="text-sm text-neutral-600">Badges Earned</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">{totalPoints}</div>
-              <div className="text-sm text-neutral-600">Total Points</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">#{userProgress.rank}</div>
-              <div className="text-sm text-neutral-600">Current Rank</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">🔥 {userProgress.streak}</div>
-              <div className="text-sm text-neutral-600">Week Streak</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Progress Bar */}
-      <section className="py-8 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-neutral-700 font-heading">Progress to Next Rank</h3>
-              <span className="text-sm text-neutral-500">550 points to rank up</span>
-            </div>
-            <div className="h-4 bg-neutral-200 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500"
-                style={{ width: `${(totalPoints / 1000) * 100}%` }}
-              ></div>
-            </div>
-            <div className="flex justify-between mt-2 text-sm text-neutral-500">
-              <span>Rank #{userProgress.rank}</span>
-              <span>Rank #{userProgress.rank - 1}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Unlocks */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="section-title mb-6">🎉 Recently Unlocked</h2>
-          <div className="flex gap-4 overflow-x-auto pb-4">
-            {achievements
-              .filter(a => userProgress.unlockedAchievements.includes(a.id))
-              .slice(0, 4)
-              .map((ach) => (
-                <div 
-                  key={ach.id} 
-                  className={`flex-shrink-0 w-48 p-4 border-2 ${tierBg[ach.rarity as TierKey]} ${tierColors[ach.rarity as TierKey].split(' ')[2]} cursor-pointer hover:scale-105 transition-transform`}
-                  onClick={() => setSelectedAchievement(ach)}
-                >
-                  <div className="text-4xl text-center mb-2">{ach.icon}</div>
-                  <h4 className="font-bold text-sm text-center text-neutral-700">{ach.name}</h4>
-                  <div className="text-xs text-center text-neutral-500 mt-1">+{ach.points} pts</div>
-                </div>
-              ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Filters */}
-      <section id="badges" className="py-8 bg-white border-y border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 font-semibold transition-all
-                    ${selectedCategory === cat
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                    }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-            <label className="flex items-center gap-2 ml-auto cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showUnlockedOnly}
-                onChange={(e) => setShowUnlockedOnly(e.target.checked)}
-                className="w-5 h-5"
-              />
-              <span className="text-sm font-medium">Unlocked Only</span>
-            </label>
-          </div>
-        </div>
-      </section>
-
-      {/* All Badges */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <p className="text-neutral-600 mb-6">{filteredAchievements.length} badges</p>
-
-          {/* Grouped by rarity */}
-          {(['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common'] as TierKey[]).map((tier) => {
-            const tierAchievements = filteredAchievements.filter(a => a.rarity === tier);
-            if (tierAchievements.length === 0) return null;
-
-            return (
-              <div key={tier} className="mb-8">
-                <h3 className={`text-lg font-bold font-heading mb-4 flex items-center gap-2
-                  ${tier === 'Legendary' ? 'text-amber-600' : 
-                    tier === 'Epic' ? 'text-purple-600' : 
-                    tier === 'Rare' ? 'text-blue-600' : 
-                    tier === 'Uncommon' ? 'text-green-600' : 'text-neutral-600'}`}>
-                  {tier === 'Legendary' && '✨'} 
-                  {tier === 'Epic' && '💎'} 
-                  {tier === 'Rare' && '💠'} 
-                  {tier === 'Uncommon' && '◆'} 
-                  {tier === 'Common' && '○'} 
-                  {tier} ({tierAchievements.length})
-                </h3>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {tierAchievements.map((ach) => {
-                    const isUnlocked = userProgress.unlockedAchievements.includes(ach.id);
-
-                    return (
-                      <div
-                        key={ach.id}
-                        onClick={() => setSelectedAchievement(ach)}
-                        className={`relative p-4 border-2 cursor-pointer transition-all hover:scale-105 ${
-                          isUnlocked 
-                            ? `${tierBg[tier]} ${tierColors[tier].split(' ')[2]}` 
-                            : 'bg-neutral-100 border-neutral-200 opacity-60'
-                        }`}
-                      >
-                        {!isUnlocked && (
-                          <div className="absolute top-2 right-2 text-lg">🔒</div>
-                        )}
-                        <div className={`text-4xl text-center mb-2 ${!isUnlocked && 'grayscale'}`}>
-                          {ach.icon}
-                        </div>
-                        <h4 className="font-bold text-sm text-center text-neutral-700 line-clamp-1">
-                          {ach.name}
-                        </h4>
-                        <div className="text-xs text-center text-neutral-500 mt-1">
-                          {ach.points} pts
-                        </div>
-                        {isUnlocked && (
-                          <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1">
-                            ✓
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Leaderboard */}
-      <section id="leaderboard" className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="section-title mb-8">🏅 Club Leaderboard</h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Top 3 */}
-            <div className="md:col-span-2">
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                {/* 2nd Place */}
-                <div className="pt-8">
-                  <div className="card p-4 text-center bg-gradient-to-b from-neutral-100 to-white border-neutral-300">
-                    <div className="text-3xl mb-2">🥈</div>
-                    <div className="font-bold text-neutral-700">{leaderboard[1].name}</div>
-                    <div className="text-2xl font-bold text-primary-500 font-heading">{leaderboard[1].points}</div>
-                    <div className="text-xs text-neutral-500">{leaderboard[1].badges} badges</div>
-                  </div>
-                </div>
-
-                {/* 1st Place */}
-                <div>
-                  <div className="card p-4 text-center bg-gradient-to-b from-amber-100 to-white border-amber-300 border-2">
-                    <div className="text-4xl mb-2">🥇</div>
-                    <div className="font-bold text-neutral-700">{leaderboard[0].name}</div>
-                    <div className="text-3xl font-bold text-secondary-500 font-heading">{leaderboard[0].points}</div>
-                    <div className="text-xs text-neutral-500">{leaderboard[0].badges} badges</div>
-                  </div>
-                </div>
-
-                {/* 3rd Place */}
-                <div className="pt-12">
-                  <div className="card p-4 text-center bg-gradient-to-b from-amber-50 to-white border-amber-200">
-                    <div className="text-2xl mb-2">🥉</div>
-                    <div className="font-bold text-neutral-700 text-sm">{leaderboard[2].name}</div>
-                    <div className="text-xl font-bold text-primary-500 font-heading">{leaderboard[2].points}</div>
-                    <div className="text-xs text-neutral-500">{leaderboard[2].badges} badges</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rest of leaderboard */}
-              <div className="card">
-                <table className="w-full">
-                  <thead className="bg-neutral-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-600">Rank</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-600">Club</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-600">Points</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-600">Badges</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leaderboard.slice(3).map((entry) => (
-                      <tr key={entry.rank} className="border-t border-neutral-100 hover:bg-neutral-50">
-                        <td className="px-4 py-3 font-semibold text-neutral-500">#{entry.rank}</td>
-                        <td className="px-4 py-3 font-medium text-neutral-700">{entry.name}</td>
-                        <td className="px-4 py-3 text-right font-bold text-primary-500">{entry.points}</td>
-                        <td className="px-4 py-3 text-right text-neutral-500">{entry.badges}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Your Position */}
-            <div>
-              <div className="card p-6 bg-gradient-to-br from-primary-50 to-white sticky top-4">
-                <h3 className="font-bold text-neutral-700 font-heading mb-4">Your Club&apos;s Position</h3>
-                <div className="text-center py-6">
-                  <div className="text-5xl font-bold text-primary-500 font-heading">#{userProgress.rank}</div>
-                  <div className="text-neutral-500 mt-2">Current Rank</div>
-                </div>
-                <div className="space-y-3 border-t border-neutral-200 pt-4">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Total Points</span>
-                    <span className="font-bold text-primary-500">{totalPoints}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Badges Earned</span>
-                    <span className="font-bold text-primary-500">{unlockedCount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-600">Points to #11</span>
-                    <span className="font-bold text-green-600">+170</span>
-                  </div>
-                </div>
-                <Link href="/hub/health" className="btn-primary w-full mt-6 text-center block">
-                  Improve Your Score
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Achievement Modal */}
-      {selectedAchievement && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className={`bg-white max-w-md w-full p-8 ${tierBg[selectedAchievement.rarity as TierKey]}`}>
-            <div className="flex items-center justify-between mb-6">
-              <span className={`px-3 py-1 text-sm font-bold ${
-                selectedAchievement.rarity === 'Legendary' ? 'bg-amber-500 text-white' :
-                selectedAchievement.rarity === 'Epic' ? 'bg-purple-500 text-white' :
-                selectedAchievement.rarity === 'Rare' ? 'bg-blue-500 text-white' :
-                selectedAchievement.rarity === 'Uncommon' ? 'bg-green-500 text-white' :
-                'bg-neutral-400 text-white'
-              }`}>
-                {selectedAchievement.rarity}
-              </span>
-              <button 
-                onClick={() => setSelectedAchievement(null)}
-                className="text-neutral-500 hover:text-neutral-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="text-center mb-6">
-              <div className={`text-6xl mb-4 ${!userProgress.unlockedAchievements.includes(selectedAchievement.id) && 'grayscale'}`}>
-                {selectedAchievement.icon}
-              </div>
-              <h2 className="text-2xl font-bold text-primary-500 font-heading">{selectedAchievement.name}</h2>
-              <p className="text-neutral-600 mt-2">{selectedAchievement.description}</p>
-            </div>
-
-            <div className="bg-white/80 p-4 mb-6">
-              <h4 className="font-semibold text-neutral-700 mb-2">How to Earn</h4>
-              <ul className="text-sm text-neutral-600 space-y-1">
-                {selectedAchievement.requirements.map((req, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-primary-500">•</span> {req}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <span className="text-2xl font-bold text-secondary-500 font-heading">{selectedAchievement.points}</span>
-                <span className="text-neutral-500 ml-1">points</span>
-              </div>
-              <span className={`px-3 py-1 text-sm font-semibold ${
-                userProgress.unlockedAchievements.includes(selectedAchievement.id)
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-neutral-100 text-neutral-500'
-              }`}>
-                {userProgress.unlockedAchievements.includes(selectedAchievement.id) ? '✓ Unlocked' : '🔒 Locked'}
-              </span>
-            </div>
-
-            <button 
-              onClick={() => setSelectedAchievement(null)}
-              className="btn-primary w-full"
-            >
-              Close
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {(["all", "unlocked", "progress", "leaderboard"] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)} className={`px-4 py-2  text-sm font-semibold transition-all ${tab === t ? "bg-primary-600 text-white" : "bg-white text-neutral-600 hover:bg-primary-50"}`}>
+              {t === "all" ? `All Badges (${BADGES.length})` : t === "unlocked" ? `Unlocked (${unlocked.length})` : t === "progress" ? "In Progress" : "Leaderboard"}
             </button>
-          </div>
+          ))}
         </div>
-      )}
+
+        {tab === "leaderboard" ? (
+          <Reveal>
+            <div className="card overflow-hidden">
+              <div className="bg-primary-700 p-4 text-white">
+                <h2 className="font-bold text-lg flex items-center gap-2"><Trophy size={20} /> Achievement Leaderboard</h2>
+              </div>
+              <div className="divide-y divide-neutral-100">
+                {LEADERBOARD.map(entry => (
+                  <div key={entry.rank} className={`p-4 flex items-center gap-4 ${entry.rank <= 3 ? "bg-yellow-50/30" : ""}`}>
+                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${entry.rank === 1 ? "bg-yellow-400 text-yellow-900" : entry.rank === 2 ? "bg-neutral-300 text-neutral-700" : entry.rank === 3 ? "bg-amber-600 text-white" : "bg-neutral-100 text-neutral-500"}`}>{entry.rank}</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-primary-800">{entry.name}</p>
+                      <p className="text-xs text-neutral-500">{entry.badges} badges earned</p>
+                    </div>
+                    <span className="font-bold text-primary-600">{entry.points} pts</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        ) : (
+          <>
+            {}
+            <div className="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
+              <select value={category} onChange={e => setCategory(e.target.value)} className="select-field text-sm">{categories.map(c => <option key={c}>{c}</option>)}</select>
+              <select value={rarity} onChange={e => setRarity(e.target.value)} className="select-field text-sm">
+                <option value="All">All Rarities</option>
+                {["common", "uncommon", "rare", "epic", "legendary"].map(r => <option key={r} value={r} className="capitalize">{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
+              </select>
+            </div>
+
+            {}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map(badge => {
+                const rc = RARITY_COLORS[badge.rarity];
+                return (
+                  <Reveal key={badge.id}>
+                    <div className={`card p-4 border-2 ${rc.border} ${rc.bg} ${rc.glow} relative ux-hover-lift-sm ${!badge.unlocked ? "opacity-80" : ""}`}>
+                      {!badge.unlocked && <div className="absolute top-2 right-2"><Lock size={14} className="text-neutral-400" /></div>}
+                      <div className="text-3xl mb-2">{badge.icon}</div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${rc.text} ${rc.bg} border ${rc.border}`}>{badge.rarity}</span>
+                      </div>
+                      <h3 className="font-bold text-primary-800">{badge.name}</h3>
+                      <p className="text-xs text-neutral-600 mt-1">{badge.description}</p>
+                      <p className="text-[11px] text-neutral-400 mt-1">{badge.requirement}</p>
+                      {}
+                      {badge.progress !== undefined && (
+                        <div className="mt-2">
+                          <div className="flex justify-between text-[10px] text-neutral-500"><span>{badge.progress}%</span><span>{badge.earnedBy} earned</span></div>
+                          <div className="h-1.5 bg-neutral-200 rounded-full mt-0.5"><div className={`h-1.5 rounded-full ${badge.unlocked ? "bg-green-500" : "bg-primary-400"}`} style={{ width: `${badge.progress}%` }} /></div>
+                        </div>
+                      )}
+                      {badge.unlocked && <div className="mt-2 text-xs text-green-600 flex items-center gap-1"><CheckCircle size={12} /> Earned!</div>}
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+
+            {filtered.length === 0 && (
+              <div className="card p-8 text-center"><Award size={40} className="mx-auto text-neutral-300" /><p className="mt-3 text-neutral-500">No badges match your filters.</p></div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

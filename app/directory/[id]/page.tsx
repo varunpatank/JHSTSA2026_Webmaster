@@ -1,261 +1,1103 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { notFound } from 'next/navigation';
-import { chapters } from '@/lib/data';
+"use client";
 
-interface ChapterPageProps {
-  params: Promise<{
-    id: string;
-  }>;
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import {
+  chapters, events, clubHistoryData, projectsData, meetingNotesData, sponsorsData,
+} from "@/lib/data";
+import { addJoinedClub, getCreatedChapters, updateCreatedChapter } from "@/lib/clientState";
+import { supabase, membershipsApi, organizationsApi, profilesApi, eventsApi } from "@/lib/api";
+import { formatChapterLocation } from "@/lib/location";
+import {
+  ArrowRight, Award, BarChart3, BookOpen, Calendar, CheckCircle, ChevronDown,
+  ChevronRight, Clock, Compass, Edit, ExternalLink, FileText, Globe, Heart, History,
+  Instagram, LinkIcon, Mail, MapPin, Megaphone, MessageSquare, Milestone,
+  PenTool, Phone, Plus, Rocket, Send, Settings, Shield, Star, Target,
+  Trophy, Twitter, TrendingUp, UserPlus, Users, Video, Zap,
+} from "lucide-react";
+
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } },
+      { threshold: 0.1 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
 }
 
-export default async function ChapterPage({ params }: ChapterPageProps) {
-  const { id } = await params;
-  const chapter = chapters.find((c) => c.id === id);
-
-  if (!chapter) {
-    notFound();
-  }
-
+function BarSegment({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   return (
-    <div className="bg-neutral-100 min-h-screen">
-      <section className="relative py-16 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=1920&q=80"
-            alt="Chapter community"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/95 to-primary-500/85"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-2 text-white/70 mb-4">
-            <Link href="/directory" className="hover:text-white transition-colors">Directory</Link>
-            <span>/</span>
-            <span className="text-white">{chapter.name}</span>
-          </div>
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-24 h-24 bg-secondary-500 flex items-center justify-center flex-shrink-0 rounded-xl shadow-lg">
-              <span className="text-4xl font-bold text-white font-heading">
-                {chapter.name.split(' ').map(w => w[0]).join('').slice(0, 3)}
-              </span>
-            </div>
-            <div className="flex-grow">
-              <div className="flex flex-wrap gap-2 mb-2">
-                <span className="badge badge-secondary">{chapter.category}</span>
-                <span className="badge bg-white/20 text-white">{chapter.membershipStatus}</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold font-heading mb-2 text-white">{chapter.name}</h1>
-              <p className="text-white/80">{chapter.description}</p>
-            </div>
-            <div className="flex-shrink-0">
-              <button className="btn-secondary">
-                Request to Join
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <div className="card p-6">
-              <h2 className="section-title text-xl mb-4">About This Chapter</h2>
-              <p className="text-neutral-700">{chapter.description}</p>
-              
-              <div className="grid sm:grid-cols-2 gap-6 mt-6">
-                <div>
-                  <h3 className="font-semibold text-primary-500 mb-2">Meeting Schedule</h3>
-                  <p className="text-neutral-600">{chapter.meetingSchedule}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary-500 mb-2">Location</h3>
-                  <p className="text-neutral-600">{chapter.meetingLocation}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary-500 mb-2">Grade Level</h3>
-                  <p className="text-neutral-600">{chapter.gradeLevel}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary-500 mb-2">Founded</h3>
-                  <p className="text-neutral-600">{chapter.foundedYear}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="card p-6">
-              <h2 className="section-title text-xl mb-4">Membership Information</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-primary-500 mb-2">Requirements</h3>
-                  <p className="text-neutral-600">{chapter.membershipRequirements}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary-500 mb-2">Dues</h3>
-                  <p className="text-neutral-600">{chapter.dues}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="card p-6">
-              <h2 className="section-title text-xl mb-4">Chapter Officers</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {chapter.officers.map((officer, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 bg-neutral-50 border border-neutral-200">
-                    <div className="w-14 h-14 bg-primary-500 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xl font-bold text-white">
-                        {officer.name.split(' ').map(n => n[0]).join('')}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-primary-500">{officer.name}</p>
-                      <p className="text-sm text-secondary-500 font-medium">{officer.position}</p>
-                      <p className="text-sm text-neutral-500">Grade {officer.grade}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {chapter.achievements.length > 0 && (
-              <div className="card p-6">
-                <h2 className="section-title text-xl mb-4">Achievements & Highlights</h2>
-                <ul className="space-y-3">
-                  {chapter.achievements.map((achievement, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <span className="w-6 h-6 bg-secondary-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="square" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </span>
-                      <span className="text-neutral-700">{achievement}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            <div className="card p-6">
-              <h3 className="font-bold text-lg text-primary-500 mb-4 font-heading">Quick Facts</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center pb-3 border-b border-neutral-200">
-                  <span className="text-neutral-600">Members</span>
-                  <span className="font-bold text-primary-500">{chapter.memberCount}</span>
-                </div>
-                <div className="flex justify-between items-center pb-3 border-b border-neutral-200">
-                  <span className="text-neutral-600">Meeting Frequency</span>
-                  <span className="font-bold text-primary-500">{chapter.meetingFrequency}</span>
-                </div>
-                <div className="flex justify-between items-center pb-3 border-b border-neutral-200">
-                  <span className="text-neutral-600">Meeting Time</span>
-                  <span className="font-bold text-primary-500">{chapter.meetingTime}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-neutral-600">Status</span>
-                  <span className="badge badge-primary">Active</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="card p-6">
-              <h3 className="font-bold text-lg text-primary-500 mb-4 font-heading">Faculty Advisor</h3>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-neutral-200 flex items-center justify-center flex-shrink-0">
-                  <span className="text-2xl font-bold text-neutral-500">
-                    {chapter.advisor.name.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-semibold text-primary-500">{chapter.advisor.name}</p>
-                  <p className="text-sm text-neutral-500">{chapter.advisor.department}</p>
-                </div>
-              </div>
-              <div className="mt-4 space-y-2 text-sm">
-                <a 
-                  href={`mailto:${chapter.advisor.email}`} 
-                  className="flex items-center gap-2 text-primary-500 hover:underline"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="square" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {chapter.advisor.email}
-                </a>
-                {chapter.advisor.phone && (
-                  <p className="flex items-center gap-2 text-neutral-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="square" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    {chapter.advisor.phone}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {(chapter.socialLinks.website || chapter.socialLinks.instagram || chapter.socialLinks.twitter || chapter.socialLinks.discord) && (
-              <div className="card p-6">
-                <h3 className="font-bold text-lg text-primary-500 mb-4 font-heading">Connect With Us</h3>
-                <div className="space-y-3">
-                  {chapter.socialLinks.website && (
-                    <a 
-                      href={chapter.socialLinks.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-neutral-600 hover:text-primary-500 transition-colors"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="square" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                      </svg>
-                      Website
-                    </a>
-                  )}
-                  {chapter.socialLinks.instagram && (
-                    <a 
-                      href={`https://instagram.com/${chapter.socialLinks.instagram.replace('@', '')}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 text-neutral-600 hover:text-primary-500 transition-colors"
-                    >
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                      </svg>
-                      {chapter.socialLinks.instagram}
-                    </a>
-                  )}
-                  {chapter.socialLinks.discord && (
-                    <span className="flex items-center gap-3 text-neutral-600">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-                      </svg>
-                      {chapter.socialLinks.discord}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="card p-6 bg-primary-500 text-white">
-              <h3 className="font-bold text-lg mb-2 font-heading">Interested in Joining?</h3>
-              <p className="text-neutral-200 text-sm mb-4">
-                Click below to send a join request to the chapter advisor.
-              </p>
-              <button className="btn-secondary w-full">
-                Request to Join
-              </button>
-            </div>
-          </div>
-        </div>
+    <div>
+      <div className="flex justify-between text-xs mb-1">
+        <span className="text-neutral-600 font-medium">{label}</span>
+        <span className="font-bold text-primary-700">{value}%</span>
+      </div>
+      <div className="h-3 bg-neutral-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${color} animate-progress-fill`} style={{ width: `${(value / max) * 100}%` }} />
       </div>
     </div>
   );
 }
 
-export async function generateStaticParams() {
-  return chapters.map((chapter) => ({
-    id: chapter.id,
-  }));
+function DonutChart({ value, label, color }: { value: number; label: string; color: string }) {
+  const circumference = 2 * Math.PI * 36;
+  const offset = circumference - (value / 100) * circumference;
+  return (
+    <div className="text-center">
+      <svg width="88" height="88" className="mx-auto">
+        <circle cx="44" cy="44" r="36" fill="none" strokeWidth="8" stroke="#f0f0f0" />
+        <circle cx="44" cy="44" r="36" fill="none" strokeWidth="8" stroke={color}
+          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+          className="transition-all duration-1000 ease-out" transform="rotate(-90 44 44)" />
+        <text x="44" y="48" textAnchor="middle" className="fill-primary-700 text-lg font-bold">{value}</text>
+      </svg>
+      <p className="text-xs text-neutral-500 mt-1">{label}</p>
+    </div>
+  );
+}
+
+interface LocalComment { id: number; author: string; text: string; time: string; }
+
+const clubIcons: Record<string, { emoji: string; label: string }> = {
+  "model-un": { emoji: "🌍", label: "Global Diplomacy" },
+  "robotics": { emoji: "🤖", label: "Innovation & Engineering" },
+  "community-service": { emoji: "🤝", label: "Community Impact" },
+  "drama-club": { emoji: "🎭", label: "Performing Arts" },
+  "debate-team": { emoji: "⚖️", label: "Critical Thinking" },
+  "cultural-club": { emoji: "🌎", label: "Cultural Exchange" },
+  "environmental-club": { emoji: "🌱", label: "Sustainability" },
+  "student-newspaper": { emoji: "📰", label: "Student Media" },
+};
+
+function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
+  const info = clubIcons[clubId] || { emoji: "⭐", label: name };
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [clickSpark, setClickSpark] = useState(false);
+  const lastPos = useRef({ x: 0, y: 0 });
+
+
+  useEffect(() => {
+    if (isDragging) return;
+    let frame: number;
+    let t = 0;
+    const animate = () => {
+      t += 0.012;
+      setRotation({ x: Math.sin(t * 0.7) * 12, y: Math.sin(t) * 25 });
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [isDragging]);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    lastPos.current = { x: e.clientX, y: e.clientY };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastPos.current.x;
+    const dy = e.clientY - lastPos.current.y;
+    setRotation(r => ({ x: Math.max(-40, Math.min(40, r.x - dy * 0.5)), y: r.y + dx * 0.5 }));
+    lastPos.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handlePointerUp = () => setIsDragging(false);
+
+  const handleClick = () => {
+    setClickSpark(true);
+    setTimeout(() => setClickSpark(false), 600);
+  };
+
+
+  const baseColor = clubIcons[clubId]?.emoji === "🌍" ? "#1e3a5f" : clubIcons[clubId]?.emoji === "🤖" ? "#4a90d9" : clubIcons[clubId]?.emoji === "🤝" ? "#e74c3c" : clubIcons[clubId]?.emoji === "🎭" ? "#9b59b6" : clubIcons[clubId]?.emoji === "⚖️" ? "#e67e22" : clubIcons[clubId]?.emoji === "🌎" ? "#27ae60" : clubIcons[clubId]?.emoji === "🌱" ? "#2ecc71" : clubIcons[clubId]?.emoji === "📰" ? "#34495e" : "#b8860b";
+
+  return (
+    <div className="relative shrink-0 select-none flex flex-col items-center" style={{ width: 240 }}>
+      {/* Glow */}
+      <div className="absolute inset-4 blur-2xl animate-pulse" style={{ background: `radial-gradient(circle, ${baseColor}55, transparent 70%)` }} />
+      {/* Sparks */}
+      {clickSpark && (
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="absolute w-2 h-2" style={{
+              left: "50%", top: "50%", background: baseColor,
+              animation: `sparkOut 0.6s ease-out forwards`,
+              transform: `rotate(${i * 45}deg) translateX(0)`,
+              imageRendering: "pixelated",
+            }} />
+          ))}
+        </div>
+      )}
+      {/* 3D cube on swivel */}
+      <div
+        ref={containerRef}
+        className="relative cursor-grab active:cursor-grabbing"
+        style={{
+          width: 220, height: 220,
+          perspective: "600px",
+          touchAction: "none",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onClick={handleClick}
+      >
+        <div
+          className="w-full h-full flex flex-col items-center justify-center border-2 border-white/25 shadow-2xl"
+          style={{
+            transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+            transformStyle: "preserve-3d",
+            transition: isDragging ? "none" : "transform 0.08s linear",
+            background: `linear-gradient(135deg, ${baseColor}cc, ${baseColor}88)`,
+            imageRendering: "pixelated",
+          }}
+        >
+          {/* Pixel grid overlay */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 7px, rgba(255,255,255,0.06) 7px, rgba(255,255,255,0.06) 8px), repeating-linear-gradient(90deg, transparent, transparent 7px, rgba(255,255,255,0.06) 7px, rgba(255,255,255,0.06) 8px)`,
+            imageRendering: "pixelated",
+          }} />
+          {/* Shine */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: `linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.15) 100%)`,
+          }} />
+          <span className="text-8xl drop-shadow-lg relative z-10" style={{ imageRendering: "pixelated", filter: "contrast(1.1)" }}>{info.emoji}</span>
+        </div>
+      </div>
+      {/* Swivel stand */}
+      <div className="relative -mt-1 flex flex-col items-center">
+        <div className="w-3 h-6 bg-white/20" style={{ imageRendering: "pixelated" }} />
+        <div className="w-20 h-3 bg-white/15 border-t border-white/20" style={{ imageRendering: "pixelated" }} />
+      </div>
+
+      <style>{`
+        @keyframes sparkOut {
+          0% { transform: rotate(var(--r, 0deg)) translateX(0) scale(1); opacity: 1; }
+          100% { transform: rotate(var(--r, 0deg)) translateX(60px) scale(0); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function RadarChart({ data }: { data: { label: string; value: number }[] }) {
+  const cx = 100, cy = 100, r = 80;
+  const n = data.length;
+  const points = data.map((d, i) => {
+    const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+    const dist = (d.value / 100) * r;
+    return { x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist, lx: cx + Math.cos(angle) * (r + 14), ly: cy + Math.sin(angle) * (r + 14), label: d.label, value: d.value };
+  });
+  const polygon = points.map(p => `${p.x},${p.y}`).join(" ");
+  return (
+    <svg viewBox="0 0 200 200" className="w-full max-w-[240px] mx-auto">
+      {[20, 40, 60, 80, 100].map(pct => {
+        const ring = data.map((_, i) => {
+          const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+          const d = (pct / 100) * r;
+          return `${cx + Math.cos(angle) * d},${cy + Math.sin(angle) * d}`;
+        }).join(" ");
+        return <polygon key={pct} points={ring} fill="none" stroke="#e5e7eb" strokeWidth="0.5" />;
+      })}
+      {data.map((_, i) => {
+        const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+        return <line key={i} x1={cx} y1={cy} x2={cx + Math.cos(angle) * r} y2={cy + Math.sin(angle) * r} stroke="#e5e7eb" strokeWidth="0.5" />;
+      })}
+      <polygon points={polygon} fill="rgba(30,58,95,0.2)" stroke="#1e3a5f" strokeWidth="1.5" />
+      {points.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r="3" fill="#1e3a5f" />
+          <text x={p.lx} y={p.ly} textAnchor="middle" dominantBaseline="middle" className="fill-neutral-500 text-[7px]">{p.label}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function ActivityHeatmap({ clubId }: { clubId: string }) {
+  const seed = clubId.length;
+  const weeks = 12;
+  const days = 7;
+  const dayLabels = ["Mon", "", "Wed", "", "Fri", "", ""];
+  return (
+    <div>
+      <div className="flex gap-0.5">
+        <div className="flex flex-col gap-0.5 mr-1">
+          {dayLabels.map((d, i) => <div key={i} className="h-3 text-[8px] text-neutral-400 flex items-center">{d}</div>)}
+        </div>
+        {Array.from({ length: weeks }, (_, w) => (
+          <div key={w} className="flex flex-col gap-0.5">
+            {Array.from({ length: days }, (_, d) => {
+              const val = ((seed * (w + 1) * (d + 3) + w * 7 + d * 13) % 100);
+              const level = val < 15 ? "bg-neutral-100" : val < 40 ? "bg-primary-100" : val < 65 ? "bg-primary-300" : val < 85 ? "bg-primary-500" : "bg-primary-700";
+              return <div key={d} className={`w-3 h-3 ${level} rounded-[2px]`} title={`Week ${w + 1}, Day ${d + 1}: ${val}% activity`} />;
+            })}
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-1 mt-2 text-[9px] text-neutral-400">
+        <span>Less</span>
+        {["bg-neutral-100", "bg-primary-100", "bg-primary-300", "bg-primary-500", "bg-primary-700"].map(c => <div key={c} className={`w-3 h-3 ${c} rounded-[2px]`} />)}
+        <span>More</span>
+      </div>
+    </div>
+  );
+}
+
+// Deterministic seed from string
+function hashStr(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0; return Math.abs(h); }
+
+function generateClubTabData(id: string, name: string) {
+  const h = hashStr(id);
+  const cat = name.split(/\s+/)[0] || "Club";
+  const genEvents: import("@/types").Event[] = [
+    { id: `${id}-e1`, title: `${name} Welcome Meeting`, description: `Introductory meeting for all interested students.`, date: "2026-01-20", startTime: "3:30 PM", endTime: "4:30 PM", location: `Room ${100 + (h % 200)}`, chapterId: id, chapterName: name, category: "Academic" as any, isPublic: true, requiresRSVP: false, currentAttendees: 12 + (h % 20) },
+    { id: `${id}-e2`, title: `${cat} Workshop`, description: `Hands-on workshop covering key skills and fundamentals.`, date: "2026-02-10", startTime: "3:30 PM", endTime: "5:00 PM", location: `Room ${100 + (h % 200)}`, chapterId: id, chapterName: name, category: "Academic" as any, isPublic: true, requiresRSVP: true, maxAttendees: 30, currentAttendees: 18 + (h % 10) },
+    { id: `${id}-e3`, title: `${name} Social Event`, description: `End-of-month social and team building activity.`, date: "2026-03-05", startTime: "4:00 PM", endTime: "5:30 PM", location: "Student Commons", chapterId: id, chapterName: name, category: "Academic" as any, isPublic: true, requiresRSVP: false, currentAttendees: 22 + (h % 15) },
+  ];
+  const genHistory = [
+    { id: "h1", eventType: "founded", title: "Club Founded", description: `${name} was established by a group of passionate students.`, eventDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-01` },
+    { id: "h2", eventType: "milestone", title: "First Meeting Held", description: `The inaugural meeting drew ${10 + (h % 15)} enthusiastic members.`, eventDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-08` },
+    { id: "h3", eventType: "achievement", title: "Interest Growing", description: `Membership quickly grew as word spread across campus.`, eventDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-15` },
+  ];
+  const genProjects = [
+    { id: "p1", title: `${cat} Community Outreach`, description: `Planning outreach events to invite more students and build community partnerships.`, status: "in_progress", startDate: "2026-01-15" },
+    { id: "p2", title: `${name} Website`, description: `Building a club website and social media presence.`, status: "planning", startDate: "2026-02-01" },
+  ];
+  const genNotes = [
+    { id: "mn1", title: "Founding Meeting", meetingDate: new Date().toISOString().slice(0, 10), attendeeCount: 8 + (h % 12), content: `Discussed club goals, meeting schedule, and officer roles. Set up communication channels and planned first activities.`, actionItems: [{ task: "Create group chat", assignee: "President", completed: true }, { task: "Draft first event plan", assignee: "VP", completed: false }, { task: "Design club logo", assignee: "Secretary", completed: false }] },
+    { id: "mn2", title: "Planning Session", meetingDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10), attendeeCount: 10 + (h % 10), content: `Reviewed progress on action items. Discussed upcoming workshop and assigned roles for the event.`, actionItems: [{ task: "Book room for workshop", assignee: "Treasurer", completed: true }, { task: "Create sign-up form", assignee: "Secretary", completed: false }] },
+  ];
+  return { genEvents, genHistory, genProjects, genNotes };
+}
+
+export default function ClubDetailPage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const allChapters = mounted ? [...chapters, ...getCreatedChapters()] : chapters;
+  const chapter = allChapters.find((c) => c.id === params.id);
+
+  const [activeTab, setActiveTab] = useState<"overview" | "events" | "stats" | "projects" | "history" | "notes">("overview");
+  const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState<LocalComment[]>([
+    { id: 1, author: "Student", text: "Great club! Learned a lot this semester.", time: "3 days ago" },
+    { id: 2, author: "Officer", text: "Reminder: next meeting agenda is posted.", time: "1 week ago" },
+    { id: 3, author: "Alex T.", text: "Does anyone have the study guide from last week?", time: "2 weeks ago" },
+  ]);
+  const [showOfficerPanel, setShowOfficerPanel] = useState(false);
+  const [announcementText, setAnnouncementText] = useState("");
+  const [announcements, setAnnouncements] = useState([
+    { id: 1, text: "Welcome to the new semester! First meeting is next Tuesday.", date: "Mar 10, 2026" },
+    { id: 2, text: "Club t-shirt orders due by Friday. See sign-up sheet.", date: "Mar 5, 2026" },
+  ]);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [draftValue, setDraftValue] = useState("");
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [draftDescription, setDraftDescription] = useState("");
+  const [draftSchedule, setDraftSchedule] = useState("");
+  const [draftTime, setDraftTime] = useState("");
+  const [draftDues, setDraftDues] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
+  const [addingEvent, setAddingEvent] = useState(false);
+  const [newEventTitle, setNewEventTitle] = useState("");
+  const [newEventDate, setNewEventDate] = useState("");
+  const [localEvents, setLocalEvents] = useState<{ id: string; title: string; date: string }[]>([]);
+  const [dbEvents, setDbEvents] = useState<{ id: string; title: string; date: string }[]>([]);
+  const isFounder = mounted && getCreatedChapters().some(c => c.id === params.id);
+
+  // Fetch events saved to Supabase for this club
+  useEffect(() => {
+    if (!mounted || !params.id) return;
+    (async () => {
+      try {
+        const { data: matchedOrg } = await organizationsApi.getBySlug(params.id as string);
+        if (matchedOrg) {
+          const { data: evts } = await eventsApi.getByOrg(matchedOrg.id);
+          if (evts && evts.length > 0) {
+            setDbEvents(evts.map((e: any) => ({ id: e.id, title: e.name, date: e.time ? e.time.slice(0, 10) : '' })));
+          }
+        }
+      } catch (e) {
+        console.error('Fetch events error:', e);
+      }
+    })();
+  }, [mounted, params.id]);
+
+  if (!chapter) {
+    if (!mounted) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+          <p className="text-neutral-400 text-sm">Loading...</p>
+        </div>
+      );
+    }
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-100 px-4">
+        <div className="card p-8 max-w-xl w-full text-center">
+          <h1 className="text-2xl font-heading font-bold text-primary-600">Club Not Found</h1>
+          <p className="text-neutral-600 mt-2">The selected club could not be located.</p>
+          <Link href="/directory" className="btn-primary inline-block mt-5">Back to Directory</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const _generated = generateClubTabData(chapter.id, chapter.name);
+  const chapterEvents = events.filter((e) => e.chapterId === chapter.id).length > 0
+    ? events.filter((e) => e.chapterId === chapter.id)
+    : _generated.genEvents;
+  const history = clubHistoryData[chapter.id] || _generated.genHistory;
+  const projects = projectsData[chapter.id] || _generated.genProjects;
+  const notes = meetingNotesData[chapter.id] || _generated.genNotes;
+  const chapterSponsors = sponsorsData.filter((_s, i) => i % 2 === (chapter.id === "robotics" ? 0 : 1)).slice(0, 3);
+  const visibleHistory = showAllHistory ? history : history.slice(0, 4);
+  const yearsSinceFounded = new Date().getFullYear() - chapter.foundedYear;
+
+  const engagement = Math.min(95, 60 + chapter.memberCount);
+  const retention = Math.min(92, 55 + (chapter.memberCount / 2));
+  const satisfaction = Math.min(98, 70 + (yearsSinceFounded * 2));
+  const growthRate = Math.floor(Math.random() * 15) + 5;
+
+  const monthlyMembers = [
+    { month: "Sep", value: Math.floor(chapter.memberCount * 0.6) },
+    { month: "Oct", value: Math.floor(chapter.memberCount * 0.7) },
+    { month: "Nov", value: Math.floor(chapter.memberCount * 0.8) },
+    { month: "Dec", value: Math.floor(chapter.memberCount * 0.85) },
+    { month: "Jan", value: Math.floor(chapter.memberCount * 0.9) },
+    { month: "Feb", value: Math.floor(chapter.memberCount * 0.95) },
+    { month: "Mar", value: chapter.memberCount },
+  ];
+  const maxMembers = Math.max(...monthlyMembers.map(m => m.value));
+
+  const handleJoin = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      router.push(`/login?redirect=/directory/${chapter.id}&action=join&club=${chapter.id}`);
+      return;
+    }
+    const status = chapter.membershipStatus === "Open Enrollment" ? "member" : "pending";
+    addJoinedClub({ id: chapter.id, name: chapter.name, status });
+
+    // Also create membership in Supabase if an org exists for this club
+    try {
+      if (authData.user) {
+        // Ensure profile exists first (FK constraint)
+        const { data: profile } = await profilesApi.getById(authData.user.id);
+        if (!profile) {
+          await profilesApi.create({
+            id: authData.user.id,
+            name: authData.user.email?.split('@')[0] || 'Student',
+            email: authData.user.email || '',
+          });
+        }
+        const { data: matchedOrg } = await organizationsApi.getBySlug(chapter.id);
+        if (matchedOrg) {
+          await membershipsApi.create({
+            org_id: matchedOrg.id,
+            user_id: authData.user.id,
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Join error:', e);
+    }
+
+    router.push("/dashboard?tab=clubs&joined=true");
+  };
+
+  const tabs = [
+    { key: "overview", label: "Overview", icon: BookOpen },
+    { key: "stats", label: "Statistics", icon: BarChart3 },
+    { key: "events", label: "Events", icon: Calendar, count: chapterEvents.length + localEvents.length + dbEvents.length },
+    { key: "projects", label: "Projects", icon: Rocket, count: projects.length },
+    { key: "history", label: "History", icon: History, count: history.length },
+    { key: "notes", label: "Notes", icon: FileText, count: notes.length },
+  ] as const;
+
+  const categoryImages: Record<string, string> = {
+    Academic: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80",
+    STEM: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1400&q=80",
+    Service: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1400&q=80",
+    Arts: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=1400&q=80",
+    Cultural: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
+    Media: "https://images.unsplash.com/photo-1504711434969-e33886168d6c?auto=format&fit=crop&w=1400&q=80",
+    Sports: "https://images.unsplash.com/photo-1461896836934-bd45ba688b72?auto=format&fit=crop&w=1400&q=80",
+    Leadership: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=80",
+  };
+  const heroBg = categoryImages[chapter.category] || categoryImages.Academic;
+
+  return (
+    <div className="bg-neutral-50 min-h-screen">
+      <section className="relative text-white border-b-4 border-secondary-500 overflow-hidden">
+        <div className="absolute inset-0">
+          <img src={heroBg} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-primary-800/80" />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 relative z-10">
+          <Link href="/directory" className="text-sm text-neutral-300 hover:text-white hover:underline inline-flex items-center gap-1 transition-colors">
+            <ChevronRight size={14} className="rotate-180" /> Back to Directory
+          </Link>
+
+          {/* Banner: spinning icon LEFT, text RIGHT */}
+          <div className="mt-6 flex items-start gap-6">
+            {/* Left: large pixelated 3D club logo on swivel stand */}
+            <SpinningClubIcon clubId={chapter.id} name={chapter.name} />
+
+            {/* Right: all text content */}
+            <div className="flex-1 min-w-0 space-y-3 pt-2">
+              {/* Badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-white text-primary-700">{chapter.category}</span>
+                <span className="px-3 py-1 text-xs font-semibold bg-primary-400/30 text-white border border-white/20">{chapter.membershipStatus}</span>
+                <span className="px-3 py-1 text-xs font-semibold bg-green-500/20 text-green-100 border border-green-400/30">Active</span>
+              </div>
+
+              {/* Title */}
+              <h1 className="text-4xl md:text-5xl font-heading font-bold leading-tight tracking-tight">{chapter.name}</h1>
+
+              {/* Description */}
+              <p className="text-neutral-200 text-base leading-relaxed max-w-xl">{chapter.description}</p>
+
+              {/* Stats row */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-1">
+                {[
+                  { label: "Members", value: chapter.memberCount, icon: Users },
+                  { label: "Founded", value: chapter.foundedYear, icon: Clock },
+                  { label: "Events", value: chapterEvents.length + localEvents.length + dbEvents.length, icon: Calendar },
+                  { label: "Growth", value: `+${growthRate}%`, icon: TrendingUp },
+                ].map(stat => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={stat.label} className="flex items-center gap-2">
+                      <Icon size={16} className="text-secondary-300" />
+                      <span className="font-heading font-bold text-lg text-secondary-300">{stat.value}</span>
+                      <span className="text-white/50 text-xs uppercase tracking-wide">{stat.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button onClick={handleJoin} className="btn-secondary btn-ripple btn-magnetic inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold">
+                  <UserPlus size={16} /> Join Club
+                </button>
+                <Link href={`/call/preview?room=${chapter.id}`} className="btn-outline border-white text-white hover:bg-white hover:text-primary-600 btn-magnetic inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold">
+                  <Video size={16} /> Join Meeting
+                </Link>
+                <Link href={`/donate?club=${chapter.id}`} className="btn-outline border-white/40 text-white/80 hover:bg-white hover:text-primary-600 inline-flex items-center gap-2 px-4 py-2.5 text-sm">
+                  <Heart size={16} /> Donate
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex gap-1 overflow-x-auto border-b border-neutral-200 -mb-px mt-4">
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            const count = "count" in tab ? (tab as unknown as { count: number }).count : 0;
+            return (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key as typeof activeTab)}
+                className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.key ? "border-primary-500 text-primary-700 bg-primary-50/50" : "border-transparent text-neutral-500 hover:text-primary-600 hover:border-primary-200"}`}>
+                <Icon size={14} /> {tab.label}
+                {count > 0 && <span className="ml-0.5 px-1.5 py-0.5 text-[10px] rounded-full bg-primary-100 text-primary-700">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 space-y-5">
+
+          {activeTab === "overview" && (
+            <>
+              <Reveal>
+                <div className="card p-5">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-heading font-bold text-primary-600">Club Information</h2>
+                    {isFounder && !editingField && (
+                      <button onClick={() => { setEditingField("info"); setDraftDescription(chapter.description); setDraftSchedule(chapter.meetingSchedule); setDraftTime(chapter.meetingTime); setDraftDues(chapter.dues || ""); }} className="text-xs text-primary-500 hover:text-primary-700 flex items-center gap-1"><Edit size={12} /> Edit</button>
+                    )}
+                  </div>
+                  {editingField === "info" ? (
+                    <div className="mt-3 space-y-3">
+                      <div>
+                        <label className="text-xs font-semibold text-neutral-600">Description</label>
+                        <textarea className="input-field min-h-[60px] resize-none w-full text-sm mt-1" value={draftDescription} onChange={e => setDraftDescription(e.target.value)} />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-semibold text-neutral-600">Meeting Schedule</label>
+                          <input className="input-field text-sm w-full mt-1" value={draftSchedule} onChange={e => setDraftSchedule(e.target.value)} placeholder="e.g. Every Tuesday" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-neutral-600">Meeting Time</label>
+                          <input className="input-field text-sm w-full mt-1" value={draftTime} onChange={e => setDraftTime(e.target.value)} placeholder="e.g. 3:00 PM – 4:00 PM" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-neutral-600">Dues</label>
+                          <input className="input-field text-sm w-full mt-1" value={draftDues} onChange={e => setDraftDues(e.target.value)} placeholder="e.g. $10/year or None" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => setEditingField(null)} className="btn-outline text-xs px-3 py-1">Cancel</button>
+                        <button disabled={savingEdit} onClick={async () => {
+                          setSavingEdit(true);
+                          const updates: Partial<typeof chapter> = {
+                            description: draftDescription,
+                            meetingSchedule: draftSchedule,
+                            meetingTime: draftTime as typeof chapter.meetingTime,
+                            dues: draftDues || "None",
+                          };
+                          // Update localStorage chapter
+                          updateCreatedChapter(chapter.id, updates);
+                          // Also try to persist to Supabase
+                          try {
+                            const { data: matchedOrg } = await organizationsApi.getBySlug(chapter.id);
+                            if (matchedOrg) {
+                              await organizationsApi.update(matchedOrg.id, {
+                                description: draftDescription,
+                              });
+                            }
+                          } catch (e) {
+                            console.error("Save error:", e);
+                          }
+                          // Reflect changes locally by reloading chapter data
+                          Object.assign(chapter, updates);
+                          setSavingEdit(false);
+                          setEditingField(null);
+                        }} className="btn-primary text-xs px-3 py-1">{savingEdit ? "Saving..." : "Save"}</button>
+                      </div>
+                    </div>
+                  ) : (
+                  <div className="mt-3 grid sm:grid-cols-2 gap-3 text-sm text-neutral-700">
+                    {[
+                      { label: "Schedule", value: chapter.meetingSchedule },
+                      { label: "Frequency", value: chapter.meetingFrequency },
+                      { label: "Time", value: chapter.meetingTime },
+                      { label: "Location", value: formatChapterLocation(chapter.meetingLocation) },
+                      { label: "Founded", value: String(chapter.foundedYear) },
+                      { label: "Dues", value: chapter.dues || "None" },
+                      { label: "Grade Level", value: chapter.gradeLevel },
+                      { label: "Affiliation", value: chapter.meetingLocation.parentOrg || "Juanita High School" },
+                    ].map(item => (
+                      <div key={item.label} className="flex items-start gap-2">
+                        <span className="font-semibold text-primary-700 min-w-[90px]">{item.label}:</span>
+                        <span>{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  )}
+                </div>
+              </Reveal>
+
+              <Reveal>
+                <div className="card p-5">
+                  <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2"><Target size={16} /> Requirements</h2>
+                  <div className="mt-3 space-y-2 text-sm text-neutral-700">
+                    <div className="p-3 bg-primary-50/50  border border-primary-100">
+                      <span className="font-semibold text-primary-700">Status:</span> {chapter.membershipStatus}
+                    </div>
+                    <p><span className="font-semibold">Requirements:</span> {chapter.membershipRequirements}</p>
+                    <p><span className="font-semibold">Grade:</span> {chapter.gradeLevel}</p>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal>
+                <div className="card p-5">
+                  <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2"><Shield size={16} /> Leadership</h2>
+                  <div className="mt-3 grid sm:grid-cols-2 gap-3">
+                    {chapter.officers.map(officer => (
+                      <div key={officer.email} className="bg-gradient-to-br from-primary-50/60 to-white border border-primary-100  p-3 ux-hover-lift-sm group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10  bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold group-hover:scale-110 transition-transform">
+                            {officer.name.split(" ").map(n => n[0]).join("")}
+                          </div>
+                          <div>
+                            <p className="font-bold text-primary-800 text-sm">{officer.name}</p>
+                            <p className="text-xs text-secondary-600 font-semibold">{officer.position}</p>
+                            <p className="text-[10px] text-neutral-500">Grade {officer.grade}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 p-3 bg-secondary-50/50 border border-secondary-100  flex items-center gap-3">
+                    <div className="w-10 h-10  bg-secondary-100 text-secondary-700 flex items-center justify-center"><Star size={16} /></div>
+                    <div>
+                      <p className="font-bold text-primary-800 text-sm">{chapter.advisor.name}</p>
+                      <p className="text-xs text-secondary-600 font-semibold">Faculty Advisor · {chapter.advisor.department}</p>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+
+              {chapter.achievements.length > 0 && (
+                <Reveal>
+                  <div className="card p-5">
+                    <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2"><Trophy size={16} /> Achievements</h2>
+                    <div className="mt-3 space-y-2">
+                      {chapter.achievements.map((ach, i) => (
+                        <div key={ach} className="flex items-start gap-3 p-3 bg-gradient-to-r from-yellow-50/60 to-white border border-yellow-100  ux-hover-lift-sm">
+                          <div className="w-7 h-7  bg-yellow-100 text-yellow-700 flex items-center justify-center shrink-0"><Trophy size={12} /></div>
+                          <div>
+                            <p className="text-sm font-semibold text-primary-800">{ach}</p>
+                            {i === 0 && <span className="text-[10px] text-yellow-600 font-medium">Most Recent</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Reveal>
+              )}
+            </>
+          )}
+
+          {activeTab === "stats" && (
+            <div className="grid grid-cols-2 gap-3">
+              {}
+              {[
+                { label: "Meetings", value: "18", icon: Calendar, color: "text-primary-600" },
+                { label: "Service Hrs", value: chapter.id === "community-service" ? "2,450" : "120", icon: Heart, color: "text-accent-600" },
+                { label: "Competitions", value: chapter.id === "robotics" ? "6" : "3", icon: Award, color: "text-secondary-600" },
+                { label: "Growth", value: `+${growthRate}%`, icon: TrendingUp, color: "text-green-600" },
+              ].map(stat => {
+                const Icon = stat.icon;
+                return (
+                  <div key={stat.label} className="card p-2.5 text-center">
+                    <Icon size={14} className={`mx-auto ${stat.color}`} />
+                    <p className="text-lg font-bold text-primary-800 leading-tight">{stat.value}</p>
+                    <p className="text-[9px] text-neutral-500">{stat.label}</p>
+                  </div>
+                );
+              })}
+
+              {}
+              <div className="card p-3 col-span-2">
+                <h3 className="text-xs font-bold text-primary-600 mb-2 flex items-center gap-1"><BarChart3 size={12} /> Performance</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  <DonutChart value={engagement} label="Engagement" color="#1e3a5f" />
+                  <DonutChart value={retention} label="Retention" color="#b8860b" />
+                  <DonutChart value={satisfaction} label="Satisfaction" color="#16a34a" />
+                </div>
+              </div>
+
+              {}
+              <div className="card p-3">
+                <h3 className="text-xs font-bold text-primary-600 mb-1 flex items-center gap-1"><TrendingUp size={12} /> Growth</h3>
+                <div className="flex items-end gap-1 h-24">
+                  {monthlyMembers.map(m => (
+                    <div key={m.month} className="flex-1 flex flex-col items-center">
+                      <span className="text-[7px] font-bold text-primary-700">{m.value}</span>
+                      <div className="w-full bg-gradient-to-t from-primary-500 to-primary-400 rounded-t animate-progress-fill"
+                        style={{ height: `${(m.value / maxMembers) * 100}%` }} />
+                      <span className="text-[7px] text-neutral-400">{m.month}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {}
+              <div className="card p-3">
+                <h3 className="text-xs font-bold text-primary-600 mb-1 flex items-center gap-1"><Compass size={12} /> Radar</h3>
+                <RadarChart data={[
+                  { label: "Engage", value: engagement },
+                  { label: "Growth", value: Math.min(95, 50 + growthRate * 3) },
+                  { label: "Events", value: Math.min(100, (chapterEvents.length + localEvents.length + dbEvents.length) * 25) },
+                  { label: "Retain", value: retention },
+                  { label: "Impact", value: Math.min(90, 50 + chapter.memberCount / 2) },
+                  { label: "Lead", value: Math.min(95, 60 + chapter.officers.length * 8) },
+                ]} />
+              </div>
+
+              {}
+              <div className="card p-3 col-span-2">
+                <h3 className="text-xs font-bold text-primary-600 mb-2 flex items-center gap-1"><Award size={12} /> Key Metrics</h3>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                  <BarSegment label="Engagement" value={engagement} max={100} color="bg-primary-500" />
+                  <BarSegment label="Attendance" value={Math.min(95, 65 + yearsSinceFounded * 3)} max={100} color="bg-primary-400" />
+                  <BarSegment label="Retention" value={retention} max={100} color="bg-secondary-500" />
+                  <BarSegment label="Impact" value={Math.min(90, 50 + chapter.memberCount / 2)} max={100} color="bg-secondary-400" />
+                  <BarSegment label="Leadership" value={Math.min(95, 60 + chapter.officers.length * 8)} max={100} color="bg-primary-600" />
+                </div>
+              </div>
+
+              {}
+              <div className="card p-3">
+                <h3 className="text-xs font-bold text-primary-600 mb-1.5 flex items-center gap-1"><Users size={12} /> Demographics</h3>
+                {[
+                  { grade: "9th", pct: 15 },
+                  { grade: "10th", pct: 28 },
+                  { grade: "11th", pct: 35 },
+                  { grade: "12th", pct: 22 },
+                ].map(g => (
+                  <div key={g.grade} className="mb-1">
+                    <div className="flex justify-between text-[9px] mb-0.5">
+                      <span className="text-neutral-500">{g.grade}</span>
+                      <span className="font-bold text-primary-700">{g.pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full animate-progress-fill" style={{ width: `${g.pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {}
+              <div className="card p-3">
+                <h3 className="text-xs font-bold text-primary-600 mb-1.5 flex items-center gap-1"><Calendar size={12} /> Attendance</h3>
+                <div className="flex items-end gap-0.5 h-20">
+                  {[78, 82, 75, 88, 92, 85, 90, 94, 87, 91, 95, 89].map((v, i) => (
+                    <div key={i} className="flex-1">
+                      <div className="w-full bg-gradient-to-t from-secondary-500 to-secondary-400 rounded-t animate-progress-fill" style={{ height: `${v}%` }} />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between text-[7px] text-neutral-400 mt-0.5">
+                  <span>Sep</span><span>Nov</span><span>Jan</span><span>Mar</span>
+                </div>
+              </div>
+
+              {}
+              <div className="card p-3 col-span-2">
+                <h3 className="text-xs font-bold text-primary-600 mb-1.5 flex items-center gap-1"><Zap size={12} /> Activity Heatmap</h3>
+                <ActivityHeatmap clubId={chapter.id} />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "events" && (
+            <Reveal>
+              <div className="card p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2"><Calendar size={16} /> Club Events</h2>
+                  {isFounder && !addingEvent && (
+                    <button onClick={() => setAddingEvent(true)} className="btn-outline text-xs flex items-center gap-1"><Plus size={12} /> Add Event</button>
+                  )}
+                </div>
+                {isFounder && addingEvent && (
+                  <div className="mb-4 border border-primary-200 bg-primary-50/40 p-3 space-y-2">
+                    <input type="text" placeholder="Event title" value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} className="input-field text-sm w-full" />
+                    <input type="date" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} className="input-field text-sm w-full" />
+                    <div className="flex gap-2 justify-end">
+                      <button onClick={() => { setAddingEvent(false); setNewEventTitle(""); setNewEventDate(""); }} className="btn-outline text-xs px-3 py-1">Cancel</button>
+                      <button onClick={async () => {
+                        if (!newEventTitle.trim() || !newEventDate) return;
+                        const title = newEventTitle.trim();
+                        const date = newEventDate;
+                        // Save to local state immediately as optimistic update
+                        const tempId = `local-${Date.now()}`;
+                        setLocalEvents(prev => [...prev, { id: tempId, title, date }]);
+                        setNewEventTitle(""); setNewEventDate(""); setAddingEvent(false);
+                        // Persist to Supabase
+                        try {
+                          const { data: matchedOrg } = await organizationsApi.getBySlug(chapter.id);
+                          if (matchedOrg) {
+                            const { data: session } = await supabase.auth.getSession();
+                            const userId = session?.session?.user?.id;
+                            const { data: saved } = await eventsApi.create({
+                              name: title,
+                              org_id: matchedOrg.id,
+                              time: new Date(date).toISOString(),
+                              is_public: true,
+                              ...(userId ? { created_by: userId } : {}),
+                            });
+                            if (saved) {
+                              // Move from local to db events so it persists on refresh
+                              setLocalEvents(prev => prev.filter(e => e.id !== tempId));
+                              setDbEvents(prev => [...prev, { id: saved.id, title: saved.name, date: saved.time?.slice(0, 10) || date }]);
+                            }
+                          }
+                        } catch (e) {
+                          console.error('Event save error:', e);
+                        }
+                      }} className="btn-primary text-xs px-3 py-1">Add</button>
+                    </div>
+                  </div>
+                )}
+                {chapterEvents.length === 0 && localEvents.length === 0 && dbEvents.length === 0 ? (
+                  <p className="text-neutral-500 text-sm py-8 text-center">No upcoming events scheduled.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {localEvents.map(ev => (
+                      <div key={ev.id} className="block border border-secondary-200 bg-secondary-50/30 p-4 transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="text-center bg-gradient-to-b from-secondary-500 to-secondary-600 text-white p-2 min-w-[48px] shadow-sm">
+                            <div className="text-[9px]">{new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}</div>
+                            <div className="text-lg font-bold">{new Date(ev.date).getDate()}</div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-primary-700 text-sm">{ev.title}</p>
+                            <p className="text-xs text-neutral-500 mt-0.5">{new Date(ev.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 bg-secondary-100 text-secondary-700 font-semibold">New</span>
+                        </div>
+                      </div>
+                    ))}
+                    {dbEvents.map(ev => (
+                      <div key={ev.id} className="block border border-emerald-200 bg-emerald-50/30 p-4 transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="text-center bg-gradient-to-b from-emerald-500 to-emerald-600 text-white p-2 min-w-[48px] shadow-sm">
+                            <div className="text-[9px]">{new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}</div>
+                            <div className="text-lg font-bold">{new Date(ev.date).getDate()}</div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-primary-700 text-sm">{ev.title}</p>
+                            <p className="text-xs text-neutral-500 mt-0.5">{new Date(ev.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 font-semibold">Saved</span>
+                        </div>
+                      </div>
+                    ))}
+                    {chapterEvents.map(event => (
+                      <Link href={`/events/${event.id}`} key={event.id} className="block  border border-neutral-200 p-4 hover:border-primary-300 hover:bg-primary-50/40 ux-hover-lift-sm group transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="text-center bg-gradient-to-b from-primary-500 to-primary-600 text-white p-2 min-w-[48px] shadow-sm ">
+                            <div className="text-[9px]">{new Date(event.date).toLocaleDateString("en-US", { month: "short" })}</div>
+                            <div className="text-lg font-bold">{new Date(event.date).getDate()}</div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-primary-700 group-hover:text-primary-600 text-sm">{event.title}</p>
+                            <p className="text-xs text-neutral-500 mt-0.5">{event.startTime} - {event.endTime} · {event.location}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            {event.requiresRSVP && <span className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-semibold">RSVP</span>}
+                            <span className="text-[10px] text-neutral-400">{event.currentAttendees} attending</span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Reveal>
+          )}
+
+          {activeTab === "projects" && (
+            <Reveal>
+              <div className="card p-5">
+                <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><Rocket size={16} /> Club Projects</h2>
+                {projects.length === 0 ? (
+                  <p className="text-neutral-500 text-sm py-8 text-center">No projects listed yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {projects.map(project => (
+                      <div key={project.id} className=" border border-neutral-200 p-4 hover:border-primary-200 transition-colors ux-hover-lift-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${project.status === "in_progress" ? "bg-blue-100 text-blue-700" : project.status === "completed" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                              {project.status === "in_progress" ? "In Progress" : project.status === "completed" ? "Completed" : "Planning"}
+                            </span>
+                            <h3 className="font-bold text-primary-800 mt-2 text-sm">{project.title}</h3>
+                            <p className="text-sm text-neutral-600 mt-1">{project.description}</p>
+                          </div>
+                          <div className={`w-8 h-8  flex items-center justify-center shrink-0 ${project.status === "in_progress" ? "bg-blue-50 text-blue-600" : project.status === "completed" ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-600"}`}>
+                            {project.status === "completed" ? <CheckCircle size={16} /> : project.status === "in_progress" ? <Zap size={16} /> : <Target size={16} />}
+                          </div>
+                        </div>
+                        {project.status === "in_progress" && (
+                          <div className="mt-3 h-2 bg-neutral-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-primary-500 to-blue-500 rounded-full animate-progress-fill" style={{ width: "65%" }} />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Reveal>
+          )}
+
+          {activeTab === "history" && (
+            <Reveal>
+              <div className="card p-5">
+                <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><History size={16} /> Club Timeline</h2>
+                {history.length === 0 ? (
+                  <p className="text-neutral-500 text-sm py-8 text-center">No history available yet.</p>
+                ) : (
+                  <div className="relative">
+                    <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-primary-100" />
+                    <div className="space-y-3">
+                      {visibleHistory.map(event => {
+                        const typeColors: Record<string, string> = {
+                          founded: "bg-green-100 text-green-700", milestone: "bg-blue-100 text-blue-700",
+                          achievement: "bg-yellow-100 text-yellow-700", competition_result: "bg-purple-100 text-purple-700",
+                          membership_milestone: "bg-teal-100 text-teal-700", event_highlight: "bg-orange-100 text-orange-700",
+                        };
+                        const color = typeColors[event.eventType] || "bg-primary-100 text-primary-700";
+                        return (
+                          <div key={event.id} className="relative pl-12">
+                            <div className={`absolute left-[11px] w-7 h-7 rounded-full ${color} flex items-center justify-center text-xs z-10`}>
+                              {event.eventType === "founded" ? <Star size={12} /> : event.eventType === "achievement" ? <Trophy size={12} /> : <Milestone size={12} />}
+                            </div>
+                            <div className=" border border-neutral-200 p-3 hover:border-primary-200 transition-colors ux-hover-lift-sm">
+                              <div className="flex items-baseline justify-between gap-2">
+                                <h3 className="font-bold text-primary-800 text-sm">{event.title}</h3>
+                                <span className="text-[10px] text-neutral-400 shrink-0">{new Date(event.eventDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
+                              </div>
+                              <p className="text-sm text-neutral-600 mt-1">{event.description}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {history.length > 4 && (
+                      <button onClick={() => setShowAllHistory(!showAllHistory)} className="mt-3 ml-12 text-sm font-semibold text-primary-600 hover:underline flex items-center gap-1">
+                        {showAllHistory ? "Show less" : `Show all ${history.length} events`} <ChevronDown size={14} className={`transition-transform ${showAllHistory ? "rotate-180" : ""}`} />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Reveal>
+          )}
+
+          {activeTab === "notes" && (
+            <Reveal>
+              <div className="card p-5">
+                <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><FileText size={16} /> Meeting Notes</h2>
+                {notes.length === 0 ? (
+                  <p className="text-neutral-500 text-sm py-8 text-center">No meeting notes available.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {notes.map(note => (
+                      <div key={note.id} className=" border border-neutral-200 p-4 ux-hover-lift-sm">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-bold text-primary-800 text-sm">{note.title}</h3>
+                            <p className="text-[10px] text-neutral-500">{new Date(note.meetingDate).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · {note.attendeeCount} attendees</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-neutral-700">{note.content}</p>
+                        {note.actionItems.length > 0 && (
+                          <div className="mt-3 bg-primary-50/40 border border-primary-100  p-3">
+                            <h4 className="text-[10px] font-bold text-primary-700 mb-1.5">ACTION ITEMS</h4>
+                            <div className="space-y-1">
+                              {note.actionItems.map(item => (
+                                <div key={item.task} className="flex items-start gap-2 text-sm">
+                                  <span className={`mt-0.5 ${item.completed ? "text-green-600" : "text-neutral-400"}`}>
+                                    {item.completed ? <CheckCircle size={12} /> : <div className="w-3 h-3 rounded-full border-2 border-neutral-300" />}
+                                  </span>
+                                  <span className={`text-xs ${item.completed ? "line-through text-neutral-400" : "text-neutral-700"}`}>{item.task} <span className="text-neutral-400">— {item.assignee}</span></span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Reveal>
+          )}
+
+
+
+        </div>
+
+        <aside className="space-y-5">
+          <div className="card p-5 bg-gradient-to-br from-primary-50/60 to-white border-primary-100">
+            <h2 className="text-base font-heading font-bold text-primary-600">Quick Facts</h2>
+            <div className="mt-3 text-sm text-neutral-700 space-y-2">
+              {[
+                { label: "Members", value: String(chapter.memberCount), icon: Users },
+                { label: "Category", value: chapter.category, icon: BookOpen },
+                { label: "Status", value: "Active", icon: CheckCircle },
+                { label: "Meets", value: `${chapter.meetingFrequency}, ${chapter.meetingTime}`, icon: Clock },
+                { label: "Founded", value: String(chapter.foundedYear), icon: Calendar },
+              ].map(item => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="flex items-center gap-2"><Icon size={12} className="text-primary-400 shrink-0" /><span className="font-semibold text-primary-700 text-xs">{item.label}:</span><span className="text-xs">{item.value}</span></div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="card p-5">
+            <h2 className="text-base font-heading font-bold text-primary-600 flex items-center gap-2"><Mail size={14} /> Contact</h2>
+            <div className="mt-3 flex items-start gap-3">
+              <div className="w-8 h-8  bg-primary-50 text-primary-600 flex items-center justify-center shrink-0"><Star size={14} /></div>
+              <div>
+                <p className="font-semibold text-neutral-800 text-sm">{chapter.advisor.name}</p>
+                <p className="text-[10px] text-neutral-500">{chapter.advisor.department}</p>
+                <a href={`mailto:${chapter.advisor.email}`} className="text-xs text-primary-600 hover:underline">{chapter.advisor.email}</a>
+                {chapter.advisor.phone && <p className="text-[10px] text-neutral-500 flex items-center gap-1 mt-0.5"><Phone size={9} /> {chapter.advisor.phone}</p>}
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-5">
+            <h2 className="text-base font-heading font-bold text-primary-600 flex items-center gap-2"><MapPin size={14} /> Location</h2>
+            <div className="mt-3 text-sm space-y-1">
+              <p className="font-semibold text-neutral-700">{chapter.meetingLocation.room || "Campus"}</p>
+              {chapter.meetingLocation.internalLocation && <p className="text-xs text-neutral-500">{chapter.meetingLocation.internalLocation}</p>}
+              <Link href="/directory" className="text-primary-600 hover:underline text-xs mt-2 inline-block">View on Map →</Link>
+            </div>
+          </div>
+
+          <div className="card p-5">
+            <h2 className="text-base font-heading font-bold text-primary-600 flex items-center gap-2"><Globe size={14} /> Links</h2>
+            <div className="mt-3 space-y-1.5 text-sm">
+              {chapter.socialLinks.website && <a href={chapter.socialLinks.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary-600 hover:underline p-1.5  hover:bg-primary-50 text-xs"><ExternalLink size={12} /> Website</a>}
+              {chapter.socialLinks.instagram && <div className="flex items-center gap-2 text-neutral-700 text-xs p-1.5"><Instagram size={12} className="text-pink-500" /> {chapter.socialLinks.instagram}</div>}
+              {chapter.socialLinks.twitter && <div className="flex items-center gap-2 text-neutral-700 text-xs p-1.5"><Twitter size={12} className="text-blue-400" /> {chapter.socialLinks.twitter}</div>}
+              {chapter.socialLinks.discord && <div className="flex items-center gap-2 text-neutral-700 text-xs p-1.5"><MessageSquare size={12} className="text-indigo-500" /> {chapter.socialLinks.discord}</div>}
+            </div>
+          </div>
+
+          {chapterSponsors.length > 0 && (
+            <div className="card p-5">
+              <h2 className="text-base font-heading font-bold text-primary-600 flex items-center gap-2"><Heart size={14} /> Sponsors</h2>
+              <div className="mt-3 space-y-2">
+                {chapterSponsors.map(s => (
+                  <div key={s.id} className="flex items-center gap-2 text-sm p-1.5  hover:bg-primary-50/50">
+                    <div className="w-7 h-7  bg-secondary-50 text-secondary-700 flex items-center justify-center text-[10px] font-bold shrink-0">{s.name.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
+                    <div>
+                      <p className="font-semibold text-neutral-800 text-xs">{s.name}</p>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${s.tier === "platinum" ? "bg-purple-100 text-purple-700" : s.tier === "gold" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-700"}`}>{s.tier}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="card p-5">
+            <h2 className="text-base font-heading font-bold text-primary-600">Related Clubs</h2>
+            <div className="mt-3 space-y-2">
+              {chapters.filter(c => c.category === chapter.category && c.id !== chapter.id).slice(0, 3).map(c => (
+                <Link key={c.id} href={`/directory/${c.id}`} className="flex items-center gap-2 p-1.5  hover:bg-primary-50 transition-colors group">
+                  <div className="w-7 h-7  bg-primary-100 text-primary-700 flex items-center justify-center text-[10px] font-bold group-hover:scale-110 transition-transform">{c.name.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
+                  <div className="flex-1 min-w-0"><p className="text-xs font-semibold text-primary-700 truncate">{c.name}</p><p className="text-[10px] text-neutral-500">{c.memberCount} members</p></div>
+                  <ArrowRight size={10} className="text-neutral-400" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </section>
+    </div>
+  );
 }

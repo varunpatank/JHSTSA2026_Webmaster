@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { supabase, collectionsApi } from '@/lib/api';
 
 interface Collection {
   id: string;
@@ -81,6 +82,46 @@ export default function MyCollectionsPage() {
   const [newCollection, setNewCollection] = useState({ name: '', description: '', icon: '📁', color: 'bg-primary-500', isPublic: false });
   const [newItem, setNewItem] = useState({ title: '', type: 'link' as CollectionItem['type'], url: '', note: '' });
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Load from DB on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) {
+        setCurrentUserId(user.id);
+        const { data } = await collectionsApi.getByUser(user.id);
+        if (!cancelled && data && data.length > 0) {
+          const dbCollections: Collection[] = data.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            description: c.description || '',
+            icon: c.icon || '📁',
+            color: c.color || 'bg-primary-500',
+            isPublic: c.is_public || false,
+            createdAt: c.created_at?.split('T')[0] || '',
+            updatedAt: c.updated_at?.split('T')[0] || '',
+            items: (c.collection_items || []).map((i: any) => ({
+              id: i.id,
+              title: i.title,
+              type: i.item_type || 'link',
+              url: i.url || undefined,
+              note: i.note || undefined,
+              addedAt: i.added_at?.split('T')[0] || '',
+            })),
+          }));
+          setCollections([...dbCollections, ...demoCollections]);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Also keep localStorage as fallback
+  useEffect(() => {
+    localStorage.setItem('clubconnect_collections', JSON.stringify(collections));
+  }, [collections]);
 
   const iconOptions = ['📁', '🏆', '📚', '💡', '🎯', '⭐', '💰', '🎨', '🔬', '🌍', '🎵', '💻', '📝', '🤝', '🎓'];
   const colorOptions = [
@@ -94,10 +135,22 @@ export default function MyCollectionsPage() {
     { value: 'bg-orange-500', label: 'Orange' },
   ];
 
-  const createCollection = () => {
+  const createCollection = async () => {
     if (!newCollection.name.trim()) return;
+    let id = Date.now().toString();
+    if (currentUserId) {
+      const { data } = await collectionsApi.create({
+        user_id: currentUserId,
+        name: newCollection.name,
+        description: newCollection.description,
+        icon: newCollection.icon,
+        color: newCollection.color,
+        is_public: newCollection.isPublic,
+      });
+      if (data) id = (data as any).id;
+    }
     const collection: Collection = {
-      id: Date.now().toString(),
+      id,
       name: newCollection.name,
       description: newCollection.description,
       icon: newCollection.icon,
@@ -113,18 +166,29 @@ export default function MyCollectionsPage() {
     setSelectedCollection(collection);
   };
 
-  const addItemToCollection = () => {
+  const addItemToCollection = async () => {
     if (!selectedCollection || !newItem.title.trim()) return;
+    let id = Date.now().toString();
+    if (currentUserId) {
+      const { data } = await collectionsApi.addItem({
+        collection_id: selectedCollection.id,
+        title: newItem.title,
+        item_type: newItem.type,
+        url: newItem.url || undefined,
+        note: newItem.note || undefined,
+      });
+      if (data) id = (data as any).id;
+    }
     const item: CollectionItem = {
-      id: Date.now().toString(),
+      id,
       title: newItem.title,
       type: newItem.type,
       url: newItem.url || undefined,
       note: newItem.note || undefined,
       addedAt: new Date().toISOString().split('T')[0]
     };
-    const updated = collections.map(c => 
-      c.id === selectedCollection.id 
+    const updated = collections.map(c =>
+      c.id === selectedCollection.id
         ? { ...c, items: [...c.items, item], updatedAt: new Date().toISOString().split('T')[0] }
         : c
     );
@@ -134,11 +198,12 @@ export default function MyCollectionsPage() {
     setIsAddingItem(false);
   };
 
-  const removeItem = (itemId: string) => {
+  const removeItem = async (itemId: string) => {
     if (!selectedCollection) return;
+    if (currentUserId) await collectionsApi.removeItem(itemId);
     const updatedItems = selectedCollection.items.filter(item => item.id !== itemId);
-    const updated = collections.map(c => 
-      c.id === selectedCollection.id 
+    const updated = collections.map(c =>
+      c.id === selectedCollection.id
         ? { ...c, items: updatedItems, updatedAt: new Date().toISOString().split('T')[0] }
         : c
     );
@@ -146,15 +211,18 @@ export default function MyCollectionsPage() {
     setSelectedCollection({ ...selectedCollection, items: updatedItems });
   };
 
-  const deleteCollection = (collectionId: string) => {
+  const deleteCollection = async (collectionId: string) => {
+    if (currentUserId) await collectionsApi.delete(collectionId);
     setCollections(collections.filter(c => c.id !== collectionId));
     if (selectedCollection?.id === collectionId) {
       setSelectedCollection(null);
     }
   };
 
-  const togglePublic = (collectionId: string) => {
-    const updated = collections.map(c => 
+  const togglePublic = async (collectionId: string) => {
+    const col = collections.find(c => c.id === collectionId);
+    if (currentUserId && col) await collectionsApi.update(collectionId, { is_public: !col.isPublic });
+    const updated = collections.map(c =>
       c.id === collectionId ? { ...c, isPublic: !c.isPublic } : c
     );
     setCollections(updated);
@@ -171,14 +239,14 @@ export default function MyCollectionsPage() {
     'note': '📝'
   };
 
-  const filteredCollections = collections.filter(c => 
+  const filteredCollections = collections.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
+      {}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0">
           <Image
@@ -188,7 +256,7 @@ export default function MyCollectionsPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-violet-600/95 to-purple-600/80"></div>
+          <div className="absolute inset-0 bg-primary-600/90"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
@@ -204,11 +272,11 @@ export default function MyCollectionsPage() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar - Collections List */}
+            {}
             <div className="lg:w-80 flex-shrink-0">
               <div className="card p-4 sticky top-4">
                 <div className="flex items-center justify-between mb-4">
@@ -263,9 +331,9 @@ export default function MyCollectionsPage() {
               </div>
             </div>
 
-            {/* Main Content Area */}
+            {}
             <div className="flex-grow">
-              {/* Create Collection Modal */}
+              {}
               {isCreating && (
                 <div className="card p-6 mb-6 border-2 border-primary-300">
                   <h3 className="text-lg font-bold text-primary-500 mb-4">Create New Collection</h3>
@@ -299,8 +367,8 @@ export default function MyCollectionsPage() {
                               key={icon}
                               onClick={() => setNewCollection({ ...newCollection, icon })}
                               className={`w-8 h-8 text-lg border transition-all ${
-                                newCollection.icon === icon 
-                                  ? 'border-primary-500 bg-primary-50' 
+                                newCollection.icon === icon
+                                  ? 'border-primary-500 bg-primary-50'
                                   : 'border-neutral-200 hover:border-neutral-300'
                               }`}
                             >
@@ -317,8 +385,8 @@ export default function MyCollectionsPage() {
                               key={color.value}
                               onClick={() => setNewCollection({ ...newCollection, color: color.value })}
                               className={`w-8 h-8 ${color.value} border-2 transition-all ${
-                                newCollection.color === color.value 
-                                  ? 'border-neutral-800 scale-110' 
+                                newCollection.color === color.value
+                                  ? 'border-neutral-800 scale-110'
                                   : 'border-transparent'
                               }`}
                               title={color.label}
@@ -348,7 +416,7 @@ export default function MyCollectionsPage() {
                 </div>
               )}
 
-              {/* Selected Collection View */}
+              {}
               {selectedCollection ? (
                 <div className="card p-6">
                   <div className="flex items-start gap-4 mb-6">
@@ -387,7 +455,7 @@ export default function MyCollectionsPage() {
                     </div>
                   </div>
 
-                  {/* Add Item Button */}
+                  {}
                   <div className="mb-6">
                     <button
                       onClick={() => setIsAddingItem(true)}
@@ -397,7 +465,7 @@ export default function MyCollectionsPage() {
                     </button>
                   </div>
 
-                  {/* Add Item Form */}
+                  {}
                   {isAddingItem && (
                     <div className="p-4 bg-neutral-50 border border-neutral-200 mb-6">
                       <h4 className="font-bold text-neutral-700 mb-3">Add New Item</h4>
@@ -462,7 +530,7 @@ export default function MyCollectionsPage() {
                     </div>
                   )}
 
-                  {/* Items List */}
+                  {}
                   {selectedCollection.items.length > 0 ? (
                     <div className="space-y-3">
                       {selectedCollection.items.map(item => (
@@ -471,9 +539,9 @@ export default function MyCollectionsPage() {
                           <div className="flex-grow">
                             <h4 className="font-semibold text-neutral-700">{item.title}</h4>
                             {item.url && (
-                              <a 
-                                href={item.url} 
-                                target="_blank" 
+                              <a
+                                href={item.url}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-sm text-primary-500 hover:underline"
                               >
@@ -523,7 +591,7 @@ export default function MyCollectionsPage() {
         </div>
       </section>
 
-      {/* Tips Section */}
+      {}
       <section className="py-12 bg-white border-t border-neutral-200">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-2xl font-bold font-heading text-primary-500 text-center mb-8">Collection Tips</h2>

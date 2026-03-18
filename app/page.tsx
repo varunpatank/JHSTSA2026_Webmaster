@@ -1,497 +1,252 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { stats, events, announcements, chapters } from '@/lib/data';
+import Link from "next/link";
+import Image from "next/image";
+import {
+ ArrowRight, BookOpen, Calendar, Compass, FileText, GraduationCap,
+ MapPin, Rocket, Users,
+} from "lucide-react";
+import {
+ announcements, events, stats, schoolWideStats, chapters,
+} from "@/lib/data";
+
+
+const CLUB_ICONS: Record<string, string> = {
+ "Model United Nations": "\u{1F30D}",
+ "Robotics Engineering Club": "\u{1F916}",
+ "Community Service League": "\u2764\uFE0F",
+ "Drama & Theatre Society": "\u{1F3AD}",
+ "Debate Team": "\u{1F3A4}",
+ "Cultural Heritage Club": "\u{1F30F}",
+ "Environmental Action Group": "\u{1F33F}",
+ "School Newspaper": "\u{1F4F0}",
+};
+
+function HomeAnnouncementStrip() {
+  return (
+    <div className="relative z-10 border-t border-primary-700/50 bg-primary-800/80 backdrop-blur-sm text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="bg-secondary-500 text-white text-[10px] font-bold px-2.5 py-0.5 shrink-0 uppercase tracking-wider">
+            Live
+          </span>
+          <p className="text-sm font-medium truncate">{chapters.length}+ active clubs &middot; {events.length} upcoming events &middot; Join the community</p>
+        </div>
+        <Link
+          href="/directory"
+          className="text-xs font-semibold text-secondary-300 hover:text-white whitespace-nowrap flex items-center gap-1"
+        >
+          Explore <ArrowRight size={12} />
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const upcomingEvents = events.slice(0, 4);
-  const featuredChapters = chapters.slice(0, 4);
+  const featuredClubs = chapters.slice(0, 6);
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative min-h-[600px] flex items-center">
+    <div className="bg-neutral-50">
+      <section className="relative overflow-hidden border-b border-primary-700">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1920&q=80"
-            alt="Students collaborating"
+            src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1800&q=80"
+            alt="Students gathered at a school event"
             fill
-            className="object-cover"
             priority
+            className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/95 via-primary-500/80 to-primary-500/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/90 via-primary-600/60 to-primary-800/80" />
         </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 py-20">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="inline-block bg-secondary-500 text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
-                 Your School Community Hub
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-5 md:pt-8 md:pb-6">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <div className="text-white">
+              <span className="inline-flex items-center bg-secondary-500 text-white text-sm font-semibold px-4 py-1.5">
+                Your School Community Hub
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading mb-6 text-white">
-                Welcome to ClubConnect
+              <h1 className="mt-4 text-2xl md:text-5xl font-heading font-bold leading-[1.02] tracking-tight">
+                <span className="animate-fade-up inline-block">Welcome to</span>
+                <br />
+                <span className="hero-title-reveal hero-title-glow inline-block">ClubConnect</span>
+                <span className="block h-1 bg-secondary-400 mt-2 hero-line-expand" />
               </h1>
-              <p className="text-xl text-white/90 mb-8 leading-relaxed">
-                Your central hub for school clubs, chapters, and student organizations. 
-                Discover, connect, and thrive with fellow students who share your passions.
+              <p className="mt-4 max-w-xl text-lg text-white/90 leading-relaxed">
+                Your central hub for school clubs, chapters, and student
+                organizations. Discover, connect, and thrive with peers who
+                share your passions.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/directory" className="btn-secondary">
-                  Browse Clubs
-                </Link>
-                <Link href="/propose" className="bg-white/20 backdrop-blur text-white px-6 py-2.5 font-semibold border-2 border-white/50 hover:bg-white hover:text-primary-500 transition-all rounded-lg">
+              <div className="mt-6 flex flex-col gap-3 w-auto sm:flex-row">
+                <Link
+                  href="/start-a-club"
+                  className="inline-flex items-center justify-center border border-white/80 hover:bg-white hover:text-primary-700 text-white px-6 py-2.5 font-semibold transition-colors"
+                >
                   Start a New Club
                 </Link>
-              </div>
-            </div>
-            
-            <div className="hidden md:grid grid-cols-2 gap-4">
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center">
-                <div className="text-5xl font-bold text-secondary-400 font-heading">{stats.activeChapters}</div>
-                <div className="text-white/80 mt-2">Active Clubs</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center">
-                <div className="text-5xl font-bold text-secondary-400 font-heading">{stats.totalMembers.toLocaleString()}</div>
-                <div className="text-white/80 mt-2">Student Members</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center">
-                <div className="text-5xl font-bold text-secondary-400 font-heading">{stats.upcomingEvents}</div>
-                <div className="text-white/80 mt-2">Upcoming Events</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center">
-                <div className="text-5xl font-bold text-secondary-400 font-heading">+{stats.newMembersThisMonth}</div>
-                <div className="text-white/80 mt-2">New This Month</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mobile Stats */}
-      <section className="md:hidden bg-gradient-to-b from-neutral-100 to-white py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="stat-card">
-              <div className="stat-number">{stats.activeChapters}</div>
-              <div className="stat-label">Active Clubs</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{stats.totalMembers.toLocaleString()}</div>
-              <div className="stat-label">Members</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{stats.upcomingEvents}</div>
-              <div className="stat-label">Upcoming Events</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{stats.newMembersThisMonth}</div>
-              <div className="stat-label">New This Month</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Announcement Banner */}
-      <section className="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white py-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-4">
-            <span className="bg-white text-secondary-500 px-3 py-1 font-bold text-sm rounded-full">
-               NEW
-            </span>
-            <p className="font-medium">{announcements[0].title}</p>
-            <Link href="/announcements" className="ml-auto text-sm underline hover:no-underline whitespace-nowrap">
-              View All 
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Navigation - 6 Main Sections */}
-      <section className="py-16 bg-gradient-to-b from-neutral-100 to-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-heading text-primary-500 mb-4">
-              Explore ClubConnect
-            </h2>
-            <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-              Everything you need to discover, join, and lead student organizations.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Link href="/directory" className="group bg-white border-2 border-neutral-200 p-8 hover:border-primary-500 hover:shadow-xl transition-all">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-3xl text-white shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
-                  
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2 font-heading text-primary-500">Club Directory</h3>
-                  <p className="text-neutral-600 text-sm">Browse all {stats.activeChapters} active clubs and find the perfect fit for your interests.</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/events" className="group bg-white border-2 border-neutral-200 p-8 hover:border-secondary-500 hover:shadow-xl transition-all">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-xl flex items-center justify-center text-3xl text-white shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
-                  
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2 font-heading text-primary-500">Events Calendar</h3>
-                  <p className="text-neutral-600 text-sm">Stay updated with {stats.upcomingEvents} upcoming meetings, competitions, and activities.</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/resources" className="group bg-white border-2 border-neutral-200 p-8 hover:border-purple-500 hover:shadow-xl transition-all">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-3xl text-white shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
-                  
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2 font-heading text-primary-500">Resources</h3>
-                  <p className="text-neutral-600 text-sm">Templates, guides, training materials, and tools for club success.</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/community" className="group bg-white border-2 border-neutral-200 p-8 hover:border-green-500 hover:shadow-xl transition-all">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-3xl text-white shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
-                  
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2 font-heading text-primary-500">Community</h3>
-                  <p className="text-neutral-600 text-sm">Discussions, success stories, spotlights, and alumni connections.</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/my-space" className="group bg-white border-2 border-neutral-200 p-8 hover:border-accent-500 hover:shadow-xl transition-all">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center text-3xl text-white shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
-                  
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2 font-heading text-primary-500">My Space</h3>
-                  <p className="text-neutral-600 text-sm">Your personal dashboard, goals, collections, and club management.</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/propose" className="group bg-white border-2 border-neutral-200 p-8 hover:border-yellow-500 hover:shadow-xl transition-all">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center text-3xl text-white shadow-lg group-hover:scale-110 transition-transform flex-shrink-0">
-                  
-                </div>
-                <div>
-                  <h3 className="font-bold text-xl mb-2 font-heading text-primary-500">Start a Club</h3>
-                  <p className="text-neutral-600 text-sm">Have an idea? Submit a proposal to start your own student organization.</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Events & Quick Actions */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <h2 className="section-title flex items-center gap-3">
-                <span className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center rounded-xl shadow-md">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </span>
-                Upcoming Events
-              </h2>
-              <div className="space-y-4">
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} className="card p-5 flex flex-col md:flex-row gap-4 hover:shadow-lg transition-shadow">
-                    <div className="bg-gradient-to-br from-primary-500 to-primary-600 text-white p-4 text-center min-w-[80px] rounded-xl shadow-md">
-                      <div className="text-2xl font-bold">{new Date(event.date).getDate()}</div>
-                      <div className="text-sm opacity-90">{new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}</div>
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="font-bold text-lg text-primary-500">{event.title}</h3>
-                      <p className="text-neutral-600 text-sm mb-2">{event.chapterName}</p>
-                      <div className="flex flex-wrap gap-4 text-sm text-neutral-500">
-                        <span className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {event.startTime} - {event.endTime}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          {event.location}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <span className={`badge ${event.isPublic ? 'badge-primary' : 'badge-outline'}`}>
-                        {event.isPublic ? 'Open Event' : 'Members Only'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-8">
-                <Link href="/events" className="btn-outline inline-flex items-center gap-2">
-                  View Full Calendar
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
+                <Link
+                  href="/directory"
+                  className="inline-flex items-center justify-center gap-2 bg-secondary-500 hover:bg-secondary-600 border border-secondary-500 text-white px-6 py-2.5 font-semibold transition-colors animate-jump-right"
+                >
+                  Browse Clubs
+                  <ArrowRight size={18} />
                 </Link>
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="card p-6">
-                <h3 className="font-bold text-lg text-primary-500 mb-4 font-heading">Quick Tools</h3>
-                <div className="space-y-3">
-                  <Link href="/hub/quiz" className="flex items-center gap-3 p-3 border border-neutral-200 hover:border-primary-400 hover:bg-neutral-50 transition-colors">
-                    <span className="text-2xl"></span>
-                    <div>
-                      <div className="font-medium text-primary-600">Club Finder Quiz</div>
-                      <div className="text-xs text-neutral-500">Find your perfect club match</div>
-                    </div>
-                  </Link>
-                  <Link href="/hub/compare" className="flex items-center gap-3 p-3 border border-neutral-200 hover:border-primary-400 hover:bg-neutral-50 transition-colors">
-                    <span className="text-2xl"></span>
-                    <div>
-                      <div className="font-medium text-primary-600">Compare Clubs</div>
-                      <div className="text-xs text-neutral-500">Side-by-side comparison</div>
-                    </div>
-                  </Link>
-                  <Link href="/hub/health" className="flex items-center gap-3 p-3 border border-neutral-200 hover:border-primary-400 hover:bg-neutral-50 transition-colors">
-                    <span className="text-2xl"></span>
-                    <div>
-                      <div className="font-medium text-primary-600">Club Health Check</div>
-                      <div className="text-xs text-neutral-500">Diagnose & improve your club</div>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="card p-6">
-                <h3 className="font-bold text-lg text-primary-500 mb-4 font-heading">Announcements</h3>
-                <div className="space-y-4">
-                  {announcements.map((announcement) => (
-                    <div key={announcement.id} className="border-l-4 border-secondary-500 pl-4">
-                      <p className="font-semibold text-sm">{announcement.title}</p>
-                      <p className="text-xs text-neutral-500 mt-1">{announcement.date}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="grid grid-cols-2 gap-3 ">
+              <article className="border border-white/25 bg-white/15 backdrop-blur-sm p-5 text-center text-white hover:bg-white/25 transition-colors">
+                <p className="text-5xl font-heading font-bold text-secondary-300">
+                  {stats.activeChapters}
+                </p>
+                <p className="mt-1 text-lg text-white/90">Active Clubs</p>
+              </article>
+              <article className="border border-white/25 bg-white/15 backdrop-blur-sm p-5 text-center text-white hover:bg-white/25 transition-colors">
+                <p className="text-5xl font-heading font-bold text-secondary-300">
+                  {stats.totalMembers.toLocaleString()}
+                </p>
+                <p className="mt-1 text-lg text-white/90">Student Members</p>
+              </article>
+              <article className="border border-white/25 bg-white/15 backdrop-blur-sm p-5 text-center text-white hover:bg-white/25 transition-colors">
+                <p className="text-5xl font-heading font-bold text-secondary-300">
+                  {stats.upcomingEvents}
+                </p>
+                <p className="mt-1 text-lg text-white/90">Upcoming Events</p>
+              </article>
+              <article className="border border-white/25 bg-white/15 backdrop-blur-sm p-5 text-center text-white hover:bg-white/25 transition-colors">
+                <p className="text-5xl font-heading font-bold text-secondary-300">
+                  +{stats.newMembersThisMonth}
+                </p>
+                <p className="mt-1 text-lg text-white/90">New This Month</p>
+              </article>
             </div>
           </div>
         </div>
+
+        <HomeAnnouncementStrip />
       </section>
 
-      {/* Featured Clubs */}
-      <section className="py-16 bg-gradient-to-b from-neutral-100 to-neutral-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-10">
-            <h2 className="section-title inline-block">Featured Clubs</h2>
-            <p className="text-neutral-600 mt-2 max-w-2xl mx-auto">Discover some of our most active and impactful student organizations</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredChapters.map((chapter, index) => {
-              const images = [
-                'https://images.unsplash.com/photo-1529390079861-591de354faf5?w=400&q=80',
-                'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&q=80',
-                'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&q=80',
-                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
-              ];
-              return (
-                <Link key={chapter.id} href={`/directory/${chapter.id}`} className="card-hover block group overflow-hidden">
-                  <div className="relative h-40 overflow-hidden">
-                    <Image
-                      src={images[index % images.length]}
-                      alt={chapter.name}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <span className="absolute bottom-3 left-3 badge badge-secondary text-xs">{chapter.category}</span>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-bold text-primary-500 text-lg">{chapter.name}</h3>
-                    <p className="text-sm text-neutral-600 mt-1 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      {chapter.memberCount} members
-                    </p>
-                    <p className="text-sm text-neutral-500 mt-3 line-clamp-2">{chapter.description}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-          <div className="mt-10 text-center">
-            <Link href="/directory" className="btn-primary inline-flex items-center gap-2">
-              View All Clubs
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          </div>
+   <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+    {/* Announcements */}
+    <section className="card p-5">
+     <h3 className="text-base font-heading font-bold text-primary-700 mb-3">Announcements</h3>
+     <div className="space-y-2.5">
+      {announcements.slice(0, 3).map(ann => (
+       <div key={ann.id} className="flex items-start gap-2.5 p-3 border border-neutral-100 hover:bg-primary-50/30 transition-colors">
+        <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${ann.priority === "high" ? "bg-red-500" : "bg-yellow-500"}`} />
+        <div>
+         <p className="font-semibold text-sm text-primary-800">{ann.title}</p>
+         <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{ann.content}</p>
         </div>
-      </section>
+       </div>
+      ))}
+     </div>
+    </section>
 
-      {/* Resource Highlights */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-10">
-            <h2 className="section-title inline-block">Resources & Tools</h2>
-            <p className="text-neutral-600 mt-2 max-w-2xl mx-auto">Everything you need to succeed as a club member or leader</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Link href="/hub" className="card p-6 hover:shadow-lg transition-all group">
-              <div className="text-4xl mb-4"></div>
-              <h3 className="font-bold text-primary-500 mb-2">Starter Guides</h3>
-              <p className="text-sm text-neutral-600">Step-by-step guides to start and run clubs successfully.</p>
-            </Link>
-            <Link href="/hub/competitions" className="card p-6 hover:shadow-lg transition-all group">
-              <div className="text-4xl mb-4"></div>
-              <h3 className="font-bold text-primary-500 mb-2">Competitions</h3>
-              <p className="text-sm text-neutral-600">Find and track student competitions nationwide.</p>
-            </Link>
-            <Link href="/hub/mentors" className="card p-6 hover:shadow-lg transition-all group">
-              <div className="text-4xl mb-4"></div>
-              <h3 className="font-bold text-primary-500 mb-2">Mentorship</h3>
-              <p className="text-sm text-neutral-600">Connect with alumni and advisors for guidance.</p>
-            </Link>
-            <Link href="/hub/external" className="card p-6 hover:shadow-lg transition-all group">
-              <div className="text-4xl mb-4"></div>
-              <h3 className="font-bold text-primary-500 mb-2">External Resources</h3>
-              <p className="text-sm text-neutral-600">100+ curated links to helpful external resources.</p>
-            </Link>
-          </div>
-          <div className="mt-10 text-center">
-            <Link href="/resources" className="btn-outline inline-flex items-center gap-2">
-              View All Resources
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          </div>
+    {/* Featured Clubs */}
+    <section>
+     <div className="flex items-end justify-between mb-3">
+      <div>
+       <p className="eyebrow">Trending Now</p>
+       <h2 className="mt-0.5 text-lg md:text-xl font-heading text-primary-800">Featured Clubs</h2>
+      </div>
+      <Link href="/directory" className="text-xs font-semibold text-primary-600 hover:underline inline-flex items-center gap-1">
+       View all {chapters.length} clubs <ArrowRight size={12} />
+      </Link>
+     </div>
+     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {featuredClubs.map(club => (
+       <Link key={club.id} href={`/directory/${club.id}`} className="card p-4 hover:border-primary-400 ux-hover-lift group">
+        <div className="flex items-center gap-2 mb-2">
+         <span className="text-lg">{CLUB_ICONS[club.name] || "\u2B50"}</span>
+         <span className="badge badge-outline text-xs">{club.category}</span>
+         <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${club.membershipStatus === "Open Enrollment" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+          {club.membershipStatus === "Open Enrollment" ? "Open" : "Apply"}
+         </span>
         </div>
-      </section>
-
-      {/* Suggested Clubs (new) */}
-      <section className="py-8 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-6">
-            <h2 className="section-title inline-block">Suggested Clubs For You</h2>
-            <p className="text-neutral-600 mt-2 max-w-2xl mx-auto">Personalized suggestions based on popularity and recent activity.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredChapters.slice(0,3).map((chapter) => (
-              <Link key={chapter.id} href={`/directory/${chapter.id}`} className="card p-6 hover:shadow-lg transition-all group">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-neutral-100 flex items-center justify-center rounded-lg text-xl">{chapter.name.charAt(0)}</div>
-                  <div>
-                    <h3 className="font-bold text-primary-500 mb-1">{chapter.name}</h3>
-                    <p className="text-sm text-neutral-600">{chapter.description.slice(0, 80)}...</p>
-                    <div className="text-xs text-neutral-400 mt-3">{chapter.memberCount} members — {chapter.meetingFrequency}</div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+        <h3 className="font-bold text-primary-800 text-sm group-hover:text-primary-600">{club.name}</h3>
+        <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{club.description}</p>
+        <div className="mt-2 flex items-center justify-between text-[10px] text-neutral-400">
+         <span className="flex items-center gap-1"><Users size={10} /> {club.memberCount} members</span>
+         <span className="flex items-center gap-1"><MapPin size={10} /> {club.meetingLocation.room}</span>
         </div>
-      </section>
+       </Link>
+      ))}
+     </div>
+    </section>
 
-      {/* Promo cards: About / Partners / Meetings (moved to their own pages) */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-6">
-            <h2 className="section-title">Learn more about ClubConnect</h2>
-            <p className="text-neutral-600 mt-2 max-w-2xl mx-auto">Detailed pages for our mission, partners, and meeting management have their own dedicated spaces — cleaner, faster, and focused.</p>
+    {/* Events + Quick Access */}
+    <div className="grid lg:grid-cols-3 gap-5">
+     <div className="lg:col-span-2">
+      <div className="flex items-end justify-between mb-3">
+       <h2 className="text-xl font-heading font-bold text-primary-700">Upcoming Events</h2>
+       <Link href="/events" className="text-sm font-semibold text-primary-600 hover:underline flex items-center gap-1">View all <ArrowRight size={14} /></Link>
+      </div>
+      <div className="space-y-3">
+       {upcomingEvents.map(event => (
+        <Link href={`/events/${event.id}`} key={event.id} className="card p-4 flex items-center gap-4 ux-hover-lift-sm group">
+         <div className="text-center bg-gradient-to-b from-primary-500 to-primary-600 text-white px-3 py-2 min-w-[52px] shadow-sm">
+          <div className="text-[10px]">{new Date(event.date).toLocaleDateString("en-US", { month: "short" })}</div>
+          <div className="text-lg font-bold">{new Date(event.date).getDate()}</div>
+         </div>
+         <div className="flex-1 min-w-0">
+          <p className="font-semibold text-primary-700 group-hover:text-primary-600">{event.title}</p>
+          <p className="text-sm text-neutral-500">{event.chapterName} &middot; {event.startTime}&ndash;{event.endTime}</p>
+         </div>
+         <div className="hidden sm:flex items-center gap-2">
+          <span className="text-xs text-neutral-400 flex items-center gap-1"><MapPin size={12} /> {event.location}</span>
+         </div>
+        </Link>
+       ))}
+      </div>
+     </div>
+
+     <div>
+      <h2 className="text-xl font-heading font-bold text-primary-700 mb-3 text-center">Quick Access</h2>
+      <div className="space-y-2">
+       {[
+        { href: "/directory", icon: Compass, title: "Browse Clubs", desc: "Interactive directory with map and filters" },
+        { href: "/resources", icon: BookOpen, title: "Resource Library", desc: "Guides, templates, and handbooks" },
+        { href: "/start-a-club", icon: Rocket, title: "Start a Club", desc: "Step-by-step creation wizard" },
+        { href: "/hub/mentors", icon: GraduationCap, title: "Mentors", desc: "Connect with professionals and alumni" },
+        { href: "/events", icon: Calendar, title: "Events", desc: "Community events and calendar" },
+        { href: "/references", icon: FileText, title: "References", desc: "Documentation, citations, and judge's guide" },
+       ].map(item => {
+        const Icon = item.icon;
+        return (
+         <Link key={item.title} href={item.href} className="card p-3.5 flex items-center gap-3 hover:border-primary-300 transition-colors group">
+          <div className="w-9 h-9 bg-primary-50 text-primary-600 flex items-center justify-center">
+           <Icon size={16} />
           </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <a href="/about" className="card p-6 hover:shadow-lg transition-all group animate-fade-up">
-              <div className="text-3xl mb-2">📘</div>
-              <h3 className="font-bold text-lg">About</h3>
-              <p className="text-neutral-500 text-sm mt-2">Our mission, principles, and how ClubConnect supports student leaders.</p>
-            </a>
-
-            <a href="/about#partners" className="card p-6 hover:shadow-lg transition-all group animate-fade-up" style={{ animationDelay: '80ms' }}>
-              <div className="text-3xl mb-2">🤝</div>
-              <h3 className="font-bold text-lg">Partners</h3>
-              <p className="text-neutral-500 text-sm mt-2">See our partner organizations — now included on the About page.</p>
-            </a>
-
-            <a href="/meetings" className="card p-6 hover:shadow-lg transition-all group animate-fade-up" style={{ animationDelay: '160ms' }}>
-              <div className="text-3xl mb-2">📅</div>
-              <h3 className="font-bold text-lg">Meetings</h3>
-              <p className="text-neutral-500 text-sm mt-2">Manage your scheduled meetings, invites, and join full‑screen ClubConnect calls.</p>
-            </a>
+          <div className="flex-1 min-w-0">
+           <p className="font-bold text-sm text-primary-700 group-hover:text-primary-600">{item.title}</p>
+           <p className="text-xs text-neutral-500">{item.desc}</p>
           </div>
-        </div>
-      </section>
-
-      {/* Partners — scrolling marquee */}
-      <section className="py-8 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <h3 className="section-title">Partners & Supporters</h3>
-          <p className="text-neutral-600 mb-4">Proud partners who support student leadership, competitions, and programs.</p>
-
-          <div className="marquee">
-            <div className="marquee-track">
-              {['State TSA','Local Library','City Bank','TechCo','Arts Guild','University Partner','Community Center'].map((p) => (
-                <div key={p} className="marquee-item" aria-hidden>
-                  <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-sm font-bold text-primary-600">{p.split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
-                  <div className="text-sm text-neutral-700">{p}</div>
-                </div>
-              ))}
-
-              {/* duplicate for continuous scroll */}
-              {['State TSA','Local Library','City Bank','TechCo','Arts Guild','University Partner','Community Center'].map((p, i) => (
-                <div key={`${p}-repeat-${i}`} className="marquee-item" aria-hidden>
-                  <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-sm font-bold text-primary-600">{p.split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
-                  <div className="text-sm text-neutral-700">{p}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1920&q=80"
-            alt="Students celebrating"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-primary-500/90"></div>
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4 text-white">Have an Idea for a New Club?</h2>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            We&apos;re always looking for new student organizations. If you have a passion and want to share it with others,
-            submit a proposal to start your own club.
-          </p>
-          <Link href="/propose" className="btn-secondary inline-flex items-center gap-2">
-            Submit a Proposal
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
-        </div>
-      </section>
+          <ArrowRight size={14} className="text-neutral-300 group-hover:text-primary-400" />
+         </Link>
+        );
+       })}
+      </div>
+     </div>
     </div>
-  );
+
+    {/* CTA */}
+    <section className="border border-primary-200 bg-gradient-to-r from-primary-700 via-primary-600 to-secondary-600 p-4 md:p-6 text-center text-white relative overflow-hidden">
+     <Image src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80" alt="" fill className="object-cover opacity-10" loading="lazy" />
+     <div className="relative">
+      <h2 className="text-xl font-heading font-bold">Ready to get involved?</h2>
+      <p className="mt-1 max-w-2xl mx-auto text-white/90 text-sm">Whether you&rsquo;re looking for a club, a mentor, resources, or a way to make an impact &mdash; it all starts here.</p>
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+       <Link href="/directory" className="inline-flex items-center gap-2 px-5 py-2 bg-white text-primary-700 font-semibold text-sm hover:bg-neutral-100 btn-magnetic btn-ripple">
+        Browse Directory <ArrowRight size={16} />
+       </Link>
+       <Link href="/students" className="inline-flex items-center gap-2 px-5 py-2 border-2 border-white text-white font-semibold text-sm hover:bg-white hover:text-primary-700 btn-magnetic">
+        <Users size={16} /> Community
+       </Link>
+      </div>
+     </div>
+    </section>
+   </div>
+
+  </div>
+ );
 }

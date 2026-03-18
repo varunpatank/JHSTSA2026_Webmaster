@@ -41,7 +41,7 @@ export default function EmbeddedCall({ room, displayName, onClose }: { room: str
         height: 480,
         parentNode: containerRef.current,
         interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [] // hide default toolbar to use our own
+          TOOLBAR_BUTTONS: []
         },
         configOverwrite: { disableDeepLinking: true }
       };
@@ -87,7 +87,7 @@ export default function EmbeddedCall({ room, displayName, onClose }: { room: str
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={hangup} />
-      <div className="relative bg-white rounded-lg overflow-hidden w-full max-w-5xl shadow-2xl">
+      <div className="relative bg-white  overflow-hidden w-full max-w-5xl shadow-2xl">
         <div className="flex items-center justify-between p-3 border-b border-neutral-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-xl">📞</div>

@@ -1,454 +1,236 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { successStories } from '@/lib/hubData';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import {
+  Award, BookOpen, ChevronDown, Heart, Loader2, Quote, Search, Star, Trophy, Users
+} from "lucide-react";
+import { supabase, successStoriesApi } from "@/lib/api";
 
-const categories = ['All', 'Growth', 'Competition', 'Community Impact', 'Innovation', 'Fundraising'];
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
 
-export default function SuccessStoriesPage() {
-  const [selectedCategory, setSelectedCategory] = useState('All');
+interface SuccessStory {
+  id: string; title: string; club: string; author: string; year: string;
+  category: string; excerpt: string; fullStory: string;
+  impact: { label: string; value: string }[];
+  featured: boolean; image: string;
+}
+
+const SEED_STORIES: SuccessStory[] = [
+  { id: "s1", title: "From Classroom to Capitol: Our Model UN Journey", club: "Model United Nations", author: "Sarah Kim, Class of 2025", year: "2024-2025", category: "Academic", excerpt: "How our Model UN delegation went from 5 members to winning Best Delegation at the Pacific Northwest Conference.", fullStory: "When I joined Model UN as a sophomore, we had just five members and no conference experience. Fast forward two years: we sent 15 delegates to three conferences, won Best Delegation at PACMUN, and two members received Outstanding Delegate awards at the national conference. The key was mentorship — upperclassmen teaching underclassmen research methods, public speaking, and diplomatic negotiation. We created a structured training program that new members could follow, and our weekly practice sessions became the highlight of everyone's week.", impact: [{ label: "Members Grown", value: "5 → 35" }, { label: "Conferences Attended", value: "3" }, { label: "Awards Won", value: "7" }], featured: true, image: "🏛️" },
+  { id: "s2", title: "Building a Robot, Building a Community", club: "Robotics Club", author: "Marcus Chen, Class of 2025", year: "2024-2025", category: "STEM", excerpt: "Our robotics team qualified for state finals while running workshops for middle schoolers, proving STEM outreach and competition can coexist.", fullStory: "Our team faced a choice: focus solely on competition or invest time in community outreach. We chose both. Every Saturday morning, our members ran free robotics workshops for 6th-8th graders at the local library. The result was unexpected — teaching fundamentals to younger students actually strengthened our own understanding. When competition season came, we built our most innovative robot yet, qualified for state finals, and our workshop program grew to serve 40+ middle schoolers weekly. Three of our mentees have since joined the high school team.", impact: [{ label: "State Ranking", value: "Top 5" }, { label: "Students Mentored", value: "40+" }, { label: "Workshop Hours", value: "200+" }], featured: true, image: "🤖" },
+  { id: "s3", title: "Painting a Brighter Future", club: "Art Club", author: "Emily Torres, Class of 2026", year: "2025-2026", category: "Arts", excerpt: "Our community mural project transformed a neglected underpass into a public art landmark, earning a city beautification award.", fullStory: "What started as a simple idea — 'let's paint something big' — became our most ambitious project ever. We partnered with the city parks department to transform a 120-foot concrete underpass near school into a community mural. Over 8 weekends, 25 students designed and painted scenes celebrating Kirkland's history and diversity. The project required fundraising ($2,000 for supplies), city permits, community input sessions, and a lot of paint-stained clothes. The finished mural was featured in the Kirkland Reporter and earned us the City Beautification Award.", impact: [{ label: "Mural Length", value: "120 ft" }, { label: "Students Involved", value: "25" }, { label: "Funds Raised", value: "$2,000" }], featured: false, image: "🎨" },
+  { id: "s4", title: "Feeding the Community, One Meal at a Time", club: "Community Service Club", author: "Aiden Park, Class of 2025", year: "2024-2025", category: "Service", excerpt: "Our food drive and meal packaging program provided 5,000+ meals to families in need throughout the school year.", fullStory: "Food insecurity affects more families in our community than most people realize. Our Community Service Club partnered with the Kirkland Food Bank to run a year-long meal packaging and distribution program. We organized monthly food drives, hosted three large meal-packaging events (each producing 1,000+ meals), and set up a weekly fresh produce distribution at the school. The hardest part was logistics — coordinating volunteers, managing donations, and ensuring food safety. But seeing the impact on families made every challenge worthwhile. We're now expanding to partner with two more schools next year.", impact: [{ label: "Meals Provided", value: "5,000+" }, { label: "Volunteers", value: "80" }, { label: "Partner Schools", value: "3" }], featured: false, image: "🍱" },
+  { id: "s5", title: "Coding for Change: Our App Won a Hackathon", club: "CS Club", author: "Dev Gupta, Class of 2026", year: "2025-2026", category: "STEM", excerpt: "We built an app connecting senior citizens with volunteer student tutors for technology help, winning first place at HackNW.", fullStory: "The idea came from a member whose grandmother struggled with her new smartphone. We built 'TechBridge' — a mobile app matching senior citizens with student volunteers for one-on-one technology tutoring sessions. After 48 hours of caffeine-fueled coding at HackNW, we won first place and a $2,000 prize. But the real win came after: we piloted TechBridge at the Kirkland Senior Center, helping 30+ seniors with everything from video calling to online grocery ordering. The app is now being adopted by two more senior centers in the Eastside.", impact: [{ label: "Hackathon Place", value: "1st" }, { label: "Seniors Helped", value: "30+" }, { label: "Centers Adopted", value: "3" }], featured: false, image: "💻" },
+  { id: "s6", title: "Drama Club: Sold Out Three Nights Running", club: "Drama Club", author: "Lily Martinez, Class of 2025", year: "2024-2025", category: "Arts", excerpt: "Our spring musical sold out all three performances, raised $8,000 for the arts department, and launched two students into conservatory programs.", fullStory: "Putting on a full musical with a student-run production team seemed impossibly ambitious. But our drama club proved that students can produce professional-quality theater. We chose 'Into the Woods' — a technically demanding show requiring complex staging and live orchestra. Over four months, 60+ students (actors, crew, orchestra, marketing) worked together to create something magical. All three performances sold out (850 seats each). The revenue funded new lighting equipment and scholarships. Two seniors received acceptances to prestigious theater conservatories, crediting their roles in the show.", impact: [{ label: "Performances Sold Out", value: "3/3" }, { label: "Revenue Raised", value: "$8,000" }, { label: "Students Involved", value: "60+" }], featured: false, image: "🎭" },
+];
+
+const STORIES_LS_KEY = "clubconnect_stories";
+
+function loadStories(): SuccessStory[] {
+  if (typeof window === "undefined") return SEED_STORIES;
+  try {
+    const raw = localStorage.getItem(STORIES_LS_KEY);
+    if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length > 0) return parsed; }
+  } catch {}
+  return SEED_STORIES;
+}
+
+export default function StoriesPage() {
+  const [stories, setStories] = useState<SuccessStory[]>(loadStories);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [likedStories, setLikedStories] = useState<string[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showSubmit, setShowSubmit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [storyTitle, setStoryTitle] = useState("");
+  const [storyContent, setStoryContent] = useState("");
 
-  const filteredStories = useMemo(() => {
-    return successStories.filter((story) => {
-      if (selectedCategory !== 'All' && story.category !== selectedCategory) return false;
-      return true;
-    });
-  }, [selectedCategory]);
+  useEffect(() => {
+    localStorage.setItem(STORIES_LS_KEY, JSON.stringify(stories));
+  }, [stories]);
 
-  const featuredStory = successStories.find(s => s.featured);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+      try {
+        const { data } = await successStoriesApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbStories: SuccessStory[] = data.map((d: any) => ({
+            id: d.id, title: d.title || "Untitled",
+            club: d.organizations?.name || "A Club",
+            author: d.profiles?.name || "Anonymous",
+            year: d.created_at?.split("-")[0] || "2026",
+            category: "General", excerpt: (d.content || "").slice(0, 200),
+            fullStory: d.content || "",
+            impact: [], featured: d.is_featured || false,
+            image: "📖",
+          }));
+          const existingIds = new Set(SEED_STORIES.map(s => s.id));
+          const newFromDb = dbStories.filter(d => !existingIds.has(d.id));
+          setStories(prev => {
+            const localOnly = prev.filter(p => !SEED_STORIES.some(s => s.id === p.id) && !newFromDb.some(n => n.id === p.id));
+            return [...newFromDb, ...localOnly, ...SEED_STORIES];
+          });
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const handleLike = (id: string) => {
-    if (likedStories.includes(id)) {
-      setLikedStories(likedStories.filter(s => s !== id));
-    } else {
-      setLikedStories([...likedStories, id]);
+  async function handleSubmitStory() {
+    if (!storyTitle.trim() || !storyContent.trim() || submitting) return;
+    setSubmitting(true);
+    const newStory: SuccessStory = {
+      id: `local-${Date.now()}`, title: storyTitle.trim(), club: "Your Club", author: "You",
+      year: new Date().getFullYear().toString(), category: "General",
+      excerpt: storyContent.trim().slice(0, 200), fullStory: storyContent.trim(),
+      impact: [], featured: false, image: "📖",
+    };
+    try {
+      if (currentUserId) {
+        const { data } = await successStoriesApi.create({ author_id: currentUserId, title: storyTitle.trim(), content: storyContent.trim() });
+        if (data) newStory.id = (data as any).id;
+      }
+    } catch (e) { console.error("DB save failed, keeping locally:", e); }
+    setStories(prev => [newStory, ...prev]);
+    setStoryTitle(""); setStoryContent(""); setShowSubmit(false);
+    setSubmitting(false);
+  }
+
+  const categories = ["All", ...Array.from(new Set(stories.map(s => s.category)))];
+  const featured = stories.filter(s => s.featured);
+
+  const filtered = stories.filter(s => {
+    if (category !== "All" && s.category !== category) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      return s.title.toLowerCase().includes(q) || s.club.toLowerCase().includes(q) || s.excerpt.toLowerCase().includes(q);
     }
-  };
+    return true;
+  });
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=1920&q=80"
-            alt="Success"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-600/95 to-orange-500/80"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
-            ← Back to Hub
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 text-white">
-            🌟 Success Stories
-          </h1>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl">
-            Real stories from real clubs. Get inspired by how student organizations overcame 
-            challenges, achieved their goals, and made a lasting impact.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a href="#stories" className="btn-secondary">
-              Read Stories
-            </a>
-            <button 
-              onClick={() => setShowSubmitModal(true)}
-              className="bg-white/20 backdrop-blur text-white px-6 py-2.5 font-semibold border-2 border-white/50 hover:bg-white hover:text-amber-600 transition-all rounded-lg"
-            >
-              Share Your Story
-            </button>
-          </div>
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+          <Link href="/hub" className="text-sm text-rose-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><BookOpen size={36} /> Success Stories</h1>
+          <p className="mt-3 max-w-2xl text-rose-50 text-lg">Inspiring stories from clubs that made an impact. Read how students turned ideas into action.</p>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="bg-white py-6 border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">{successStories.length}</div>
-              <div className="text-sm text-neutral-600">Success Stories</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">
-                {successStories.reduce((sum, s) => sum + s.likes, 0).toLocaleString()}
-              </div>
-              <div className="text-sm text-neutral-600">Total Likes</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">45+</div>
-              <div className="text-sm text-neutral-600">Clubs Featured</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">
-                {new Set(successStories.map(s => s.category)).size}
-              </div>
-              <div className="text-sm text-neutral-600">Categories</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Story */}
-      {featuredStory && (
-        <section className="py-12 bg-gradient-to-r from-amber-500 to-orange-500">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-white font-heading mb-8">⭐ Featured Story</h2>
-            <div className="bg-white p-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <div className="relative h-64 md:h-full">
-                    <Image
-                      src={featuredStory.images?.[0] || 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&q=80'}
-                      alt={featuredStory.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute top-4 left-4 bg-secondary-500 text-white px-3 py-1 text-sm font-semibold">
-                      {featuredStory.category}
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-neutral-500 mb-2">{featuredStory.chapterName || 'Student Organization'}</div>
-                  <h3 className="text-2xl font-bold text-primary-500 font-heading mb-4">{featuredStory.title}</h3>
-                  <p className="text-neutral-600 mb-6 leading-relaxed">{featuredStory.summary}</p>
-                  
-                  {featuredStory.impactMetrics && featuredStory.impactMetrics.length > 0 && (
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-neutral-700 mb-2">Key Impact</h4>
-                      <ul className="space-y-1">
-                        {featuredStory.impactMetrics.map((metric, idx) => (
-                          <li key={idx} className="text-sm text-neutral-600 flex items-start gap-2">
-                            <span className="text-green-500">✓</span> {metric.label}: {metric.value}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <blockquote className="border-l-4 border-secondary-500 pl-4 italic text-neutral-600 mb-6">
-                    &ldquo;{featuredStory.fullStory.substring(0, 200)}...&rdquo;
-                    <footer className="text-sm text-neutral-500 mt-2 not-italic">
-                      — {featuredStory.authorName}, {featuredStory.authorRole}
-                    </footer>
-                  </blockquote>
-
-                  <div className="flex items-center gap-4">
-                    <button 
-                      onClick={() => handleLike(featuredStory.id)}
-                      className={`flex items-center gap-2 px-4 py-2 border-2 transition-all
-                        ${likedStories.includes(featuredStory.id) 
-                          ? 'bg-red-50 border-red-200 text-red-600' 
-                          : 'border-neutral-200 text-neutral-600 hover:border-red-200'}`}
-                    >
-                      {likedStories.includes(featuredStory.id) ? '❤️' : '🤍'} 
-                      {featuredStory.likes + (likedStories.includes(featuredStory.id) ? 1 : 0)}
-                    </button>
-                    <span className="text-sm text-neutral-500">{featuredStory.shares} shares</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Category Filter */}
-      <section id="stories" className="py-8 bg-white border-y border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 font-semibold transition-all
-                  ${selectedCategory === cat
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stories Grid */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <p className="text-neutral-600 mb-6">{filteredStories.length} stories found</p>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStories.map((story) => (
-              <div key={story.id} className="card overflow-hidden group">
-                {/* Image */}
-                <div className="relative h-48">
-                  <Image
-                    src={story.images?.[0] || '/placeholder-story.jpg'}
-                    alt={story.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-2 py-0.5 text-xs font-semibold text-primary-600">
-                    {story.category}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <div className="text-xs text-neutral-500 mb-1">{story.chapterName || 'Student Organization'} • {new Date(story.datePublished).getFullYear()}</div>
-                  <h3 className="font-bold text-lg text-primary-500 font-heading mb-2 group-hover:text-secondary-500 transition-colors">
-                    {story.title}
-                  </h3>
-                  <p className="text-sm text-neutral-600 line-clamp-3 mb-4">{story.summary}</p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {story.tags.slice(0, 3).map((tag, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-neutral-100 text-neutral-600 text-xs">
-                        {tag}
-                      </span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {}
+        {featured.length > 0 && (
+          <Reveal>
+            <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><Star size={18} /> Featured Stories</h2>
+            <div className="grid sm:grid-cols-2 gap-4 mb-8">
+              {featured.map(story => (
+                <div key={story.id} className="card p-6 border-2 border-secondary-200 bg-gradient-to-br from-secondary-50/30 to-white ux-hover-lift">
+                  <span className="text-4xl">{story.image}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-bold ml-3">Featured</span>
+                  <h3 className="font-bold text-primary-800 text-lg mt-3">{story.title}</h3>
+                  <p className="text-xs text-neutral-500">{story.club} · {story.author}</p>
+                  <p className="text-sm text-neutral-600 mt-2">{story.excerpt}</p>
+                  <div className="mt-3 flex gap-3">
+                    {story.impact.map(imp => (
+                      <div key={imp.label} className="bg-primary-50 px-3 py-1.5  text-center">
+                        <p className="font-bold text-primary-700 text-sm">{imp.value}</p>
+                        <p className="text-[10px] text-primary-500">{imp.label}</p>
+                      </div>
                     ))}
                   </div>
-
-                  {/* Expand/Collapse */}
-                  <button
-                    onClick={() => setExpandedId(expandedId === story.id ? null : story.id)}
-                    className="text-primary-500 text-sm font-semibold hover:underline"
-                  >
-                    {expandedId === story.id ? 'Show Less ▲' : 'Read More ▼'}
+                  <button onClick={() => setExpandedId(expandedId === story.id ? null : story.id)} className="text-primary-600 text-sm font-semibold mt-3 hover:underline">
+                    {expandedId === story.id ? "Show Less" : "Read Full Story →"}
                   </button>
+                  {expandedId === story.id && <p className="text-sm text-neutral-600 mt-3 leading-relaxed">{story.fullStory}</p>}
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        )}
 
-                  {expandedId === story.id && (
-                    <div className="mt-4 pt-4 border-t border-neutral-200 space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-neutral-700 text-sm mb-2">Full Story</h4>
-                        <p className="text-sm text-neutral-600">{story.fullStory}</p>
-                      </div>
+        {}
+        <div className="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input type="text" placeholder="Search stories..." value={search} onChange={e => setSearch(e.target.value)} className="input-field pl-9 text-sm" />
+          </div>
+          <select value={category} onChange={e => setCategory(e.target.value)} className="select-field text-sm w-auto">{categories.map(c => <option key={c}>{c}</option>)}</select>
+        </div>
 
-                      {story.impactMetrics && story.impactMetrics.length > 0 && (
-                        <div>
-                          <h4 className="font-semibold text-neutral-700 text-sm mb-2">Impact Metrics</h4>
-                          <ul className="space-y-1">
-                            {story.impactMetrics.map((metric, idx) => (
-                              <li key={idx} className="text-sm text-neutral-600 flex items-start gap-2">
-                                <span className="text-green-500">✓</span> {metric.label}: {metric.value}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <blockquote className="border-l-4 border-secondary-500 pl-4 italic text-neutral-600 text-sm">
-                        &ldquo;{story.fullStory.substring(0, 150)}...&rdquo;
-                        <footer className="text-xs text-neutral-500 mt-1 not-italic">
-                          — {story.authorName}, {story.authorRole}
-                        </footer>
-                      </blockquote>
+        {}
+        <div className="space-y-4">
+          {filtered.filter(s => !s.featured || expandedId === s.id).map(story => (
+            <Reveal key={story.id}>
+              <div className="card p-5 ux-hover-lift-sm">
+                <div className="flex gap-4">
+                  <span className="text-3xl shrink-0">{story.image}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">{story.category}</span>
+                      <span className="text-xs text-neutral-400">{story.year}</span>
                     </div>
-                  )}
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-neutral-100">
-                    <button 
-                      onClick={() => handleLike(story.id)}
-                      className={`flex items-center gap-1 text-sm transition-colors
-                        ${likedStories.includes(story.id) ? 'text-red-500' : 'text-neutral-500 hover:text-red-500'}`}
-                    >
-                      {likedStories.includes(story.id) ? '❤️' : '🤍'} 
-                      {story.likes + (likedStories.includes(story.id) ? 1 : 0)}
+                    <h3 className="font-bold text-primary-800 text-lg">{story.title}</h3>
+                    <p className="text-xs text-neutral-500">{story.club} · {story.author}</p>
+                    <p className="text-sm text-neutral-600 mt-2">{story.excerpt}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {story.impact.map(imp => (
+                        <span key={imp.label} className="text-xs px-2 py-1  bg-rose-50 text-rose-700">{imp.label}: <strong>{imp.value}</strong></span>
+                      ))}
+                    </div>
+                    <button onClick={() => setExpandedId(expandedId === story.id ? null : story.id)} className="text-primary-600 text-sm font-semibold mt-3 hover:underline flex items-center gap-1">
+                      {expandedId === story.id ? "Show Less" : "Read Full Story"} <ChevronDown size={14} className={expandedId === story.id ? "rotate-180" : ""} />
                     </button>
-                    <span className="text-xs text-neutral-400">{story.shares} shares</span>
+                    {expandedId === story.id && <p className="text-sm text-neutral-600 mt-3 leading-relaxed bg-neutral-50 p-4 ">{story.fullStory}</p>}
                   </div>
                 </div>
               </div>
-            ))}
+            </Reveal>
+          ))}
+        </div>
+
+        {filtered.length === 0 && (
+          <div className="card p-8 text-center"><BookOpen size={40} className="mx-auto text-neutral-300" /><p className="mt-3 text-neutral-500">No stories match your search.</p></div>
+        )}
+
+        {}
+        <Reveal>
+          <div className="mt-8 card p-6 bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-200">
+            <h3 className="font-heading font-bold text-xl text-primary-700 text-center">Share Your Club&rsquo;s Story</h3>
+            <p className="text-sm text-neutral-600 mt-1 text-center">Every club has a story worth telling. Submit yours and inspire the next generation.</p>
+            {!showSubmit ? (
+              <div className="text-center"><button onClick={() => setShowSubmit(true)} className="btn-primary mt-4">Submit Your Story</button></div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                <input type="text" placeholder="Story title..." value={storyTitle} onChange={e => setStoryTitle(e.target.value)} className="input-field" />
+                <textarea placeholder="Write your success story..." value={storyContent} onChange={e => setStoryContent(e.target.value)} className="input-field h-32 resize-none" />
+                <div className="flex gap-2">
+                  <button onClick={handleSubmitStory} disabled={submitting || !storyTitle.trim() || !storyContent.trim()} className="btn-primary text-sm disabled:opacity-50 flex items-center gap-1">
+                    {submitting ? <><Loader2 size={13} className="animate-spin" /> Submitting…</> : "Submit Story"}
+                  </button>
+                  <button onClick={() => setShowSubmit(false)} className="text-sm text-neutral-500 hover:text-neutral-700">Cancel</button>
+                </div>
+                {!currentUserId && <p className="text-xs text-red-500">Sign in to submit stories.</p>}
+              </div>
+            )}
           </div>
-
-          {filteredStories.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-neutral-500">No stories found in this category.</p>
-              <button
-                onClick={() => setSelectedCategory('All')}
-                className="text-primary-500 hover:underline mt-2"
-              >
-                View all stories
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-amber-600 to-orange-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold font-heading mb-4">Your Story Could Be Next</h2>
-          <p className="text-lg text-white/90 mb-8">
-            Has your club achieved something amazing? Overcome a major challenge? 
-            Share your story to inspire others and get recognized!
-          </p>
-          <button 
-            onClick={() => setShowSubmitModal(true)}
-            className="btn-secondary"
-          >
-            Submit Your Story
-          </button>
-        </div>
-      </section>
-
-      {/* Submit Modal */}
-      {showSubmitModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-primary-500 font-heading">Share Your Success Story</h2>
-              <button 
-                onClick={() => setShowSubmitModal(false)}
-                className="text-neutral-500 hover:text-neutral-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <form className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Your Name *</label>
-                  <input type="text" className="input-field" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Your Role *</label>
-                  <input type="text" className="input-field" placeholder="e.g., Club President" required />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Club Name *</label>
-                  <input type="text" className="input-field" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Year *</label>
-                  <select className="select-field" required>
-                    <option value="">Select year...</option>
-                    <option value="2024-25">2024-25</option>
-                    <option value="2023-24">2023-24</option>
-                    <option value="2022-23">2022-23</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Story Title *</label>
-                <input type="text" className="input-field" placeholder="Give your story a compelling title" required />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Category *</label>
-                <select className="select-field" required>
-                  <option value="">Select category...</option>
-                  {categories.filter(c => c !== 'All').map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Summary *</label>
-                <textarea 
-                  className="input-field min-h-[80px]" 
-                  placeholder="Brief summary of your story (2-3 sentences)"
-                  required
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">The Challenge *</label>
-                <textarea 
-                  className="input-field min-h-[80px]" 
-                  placeholder="What challenge did your club face?"
-                  required
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">The Solution *</label>
-                <textarea 
-                  className="input-field min-h-[80px]" 
-                  placeholder="How did your club overcome the challenge?"
-                  required
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Key Outcomes *</label>
-                <textarea 
-                  className="input-field min-h-[80px]" 
-                  placeholder="List 3-5 key outcomes or achievements (one per line)"
-                  required
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Lessons Learned</label>
-                <textarea 
-                  className="input-field min-h-[80px]" 
-                  placeholder="What advice would you give to other clubs? (one per line)"
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Quote/Testimonial *</label>
-                <textarea 
-                  className="input-field min-h-[60px]" 
-                  placeholder="A memorable quote about your experience"
-                  required
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Tags (comma-separated)</label>
-                <input type="text" className="input-field" placeholder="e.g., leadership, teamwork, innovation" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Photo/Image URL</label>
-                <input type="url" className="input-field" placeholder="https://..." />
-                <p className="text-xs text-neutral-500 mt-1">Link to an image representing your story</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Your Email *</label>
-                <input type="email" className="input-field" required />
-                <p className="text-xs text-neutral-500 mt-1">We&apos;ll contact you for approval before publishing</p>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button type="submit" className="btn-primary flex-1">
-                  Submit Story
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setShowSubmitModal(false)}
-                  className="btn-outline"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+        </Reveal>
+      </div>
     </div>
   );
 }

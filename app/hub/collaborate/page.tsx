@@ -1,466 +1,229 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { collaborationOpportunities } from '@/lib/hubData';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import {
+  ArrowRight, Calendar, CheckCircle, GitMerge, Handshake, Loader2, Search, Star, Tag, Users, Zap
+} from "lucide-react";
+import { supabase, collaborationsApi } from "@/lib/api";
 
-const typeFilters = ['All', 'Joint Event', 'Fundraiser', 'Community Service', 'Competition Team', 'Workshop', 'Resource Sharing'];
-const statusColors = {
-  'Open': 'bg-green-500',
-  'In Progress': 'bg-blue-500',
-  'Completed': 'bg-neutral-500',
-  'Cancelled': 'bg-red-500'
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
+
+interface Collaboration {
+  id: string; title: string; description: string; type: "event" | "project" | "fundraiser" | "competition" | "workshop";
+  clubs: string[]; status: "seeking-partners" | "active" | "completed"; spots: number; filled: number;
+  timeline: string; skills: string[]; contact: string; postedDate: string;
+}
+
+const SEED_COLLABORATIONS: Collaboration[] = [
+  { id: "cl1", title: "STEM Fair Showcase", description: "Joint robotics demonstration and science experiments for elementary school outreach. Need clubs for booth design, demonstrations, and student mentoring.", type: "event", clubs: ["Robotics Club", "Science Olympiad"], status: "seeking-partners", spots: 4, filled: 2, timeline: "March 15-16, 2026", skills: ["Teaching", "Presentation", "STEM Knowledge"], contact: "robotics@school.edu", postedDate: "2026-01-15" },
+  { id: "cl2", title: "Spring Carnival Fundraiser", description: "Annual school-wide carnival with club-run booths, food vendors, and entertainment. All proceeds split between participating clubs.", type: "fundraiser", clubs: ["Student Council", "Key Club", "Art Club"], status: "active", spots: 10, filled: 6, timeline: "May 3, 2026", skills: ["Event Planning", "Food Service", "Entertainment", "Marketing"], contact: "studentcouncil@school.edu", postedDate: "2026-01-10" },
+  { id: "cl3", title: "Environmental Documentary", description: "Create a short documentary about local environmental issues. Need writers, videographers, researchers, and environmental science students.", type: "project", clubs: ["Environmental Club", "Film Club"], status: "seeking-partners", spots: 3, filled: 2, timeline: "Feb-April 2026", skills: ["Video Production", "Writing", "Research", "Science"], contact: "enviroclub@school.edu", postedDate: "2026-01-20" },
+  { id: "cl4", title: "Hackathon for Good", description: "24-hour coding event focused on building apps for community nonprofits. Need designers, coders, and project managers.", type: "competition", clubs: ["CS Club"], status: "seeking-partners", spots: 5, filled: 1, timeline: "April 12, 2026", skills: ["Programming", "UI/UX Design", "Project Management"], contact: "csclub@school.edu", postedDate: "2026-01-22" },
+  { id: "cl5", title: "Cultural Heritage Night", description: "Evening showcase of food, performances, and presentations from diverse cultural backgrounds. Looking for performance groups and cultural clubs.", type: "event", clubs: ["Cultural Exchange Club", "Drama Club", "Dance Team"], status: "active", spots: 8, filled: 5, timeline: "March 28, 2026", skills: ["Performance", "Cooking", "Presentation", "Organization"], contact: "culture@school.edu", postedDate: "2026-01-08" },
+  { id: "cl6", title: "Mental Health Awareness Week", description: "Week-long campaign with workshops, peer counseling pop-ups, and resource distribution. Need clubs to support various initiatives.", type: "workshop", clubs: ["Psychology Club", "Peer Counselors"], status: "seeking-partners", spots: 6, filled: 2, timeline: "March 3-7, 2026", skills: ["Communication", "Counseling", "Graphic Design", "Social Media"], contact: "wellness@school.edu", postedDate: "2026-01-18" },
+];
+
+const TYPE_COLORS: Record<string, string> = {
+  event: "bg-blue-100 text-blue-700", project: "bg-purple-100 text-purple-700",
+  fundraiser: "bg-green-100 text-green-700", competition: "bg-red-100 text-red-700",
+  workshop: "bg-yellow-100 text-yellow-700",
+};
+const STATUS_COLORS: Record<string, { label: string; color: string }> = {
+  "seeking-partners": { label: "Seeking Partners", color: "bg-orange-100 text-orange-700" },
+  active: { label: "Active", color: "bg-green-100 text-green-700" },
+  completed: { label: "Completed", color: "bg-neutral-100 text-neutral-500" },
 };
 
+const COLLAB_LS_KEY = "clubconnect_collaborations";
+const JOINED_LS_KEY = "clubconnect_collab_joined";
+
+function loadCollaborations(): Collaboration[] {
+  try { const s = localStorage.getItem(COLLAB_LS_KEY); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length) return p; } } catch {}
+  return SEED_COLLABORATIONS;
+}
+function loadJoinedIds(): Set<string> {
+  try { const s = localStorage.getItem(JOINED_LS_KEY); if (s) return new Set(JSON.parse(s)); } catch {}
+  return new Set();
+}
+
 export default function CollaboratePage() {
-  const [selectedType, setSelectedType] = useState('All');
-  const [showProposalModal, setShowProposalModal] = useState(false);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [interests, setInterests] = useState<string[]>([]);
-  const [showInterestConfirm, setShowInterestConfirm] = useState<string | null>(null);
+  const [collaborations, setCollaborations] = useState<Collaboration[]>(() => loadCollaborations());
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [joinedIds, setJoinedIds] = useState<Set<string>>(() => loadJoinedIds());
+  const [joiningId, setJoiningId] = useState<string | null>(null);
 
-  const filteredOpportunities = useMemo(() => {
-    return collaborationOpportunities.filter((opp) => {
-      if (selectedType !== 'All' && opp.type !== selectedType) return false;
-      return true;
-    });
-  }, [selectedType]);
+  useEffect(() => { try { localStorage.setItem(COLLAB_LS_KEY, JSON.stringify(collaborations)); } catch {} }, [collaborations]);
+  useEffect(() => { try { localStorage.setItem(JOINED_LS_KEY, JSON.stringify([...joinedIds])); } catch {} }, [joinedIds]);
 
-  const featuredOpps = collaborationOpportunities.filter(o => o.status === 'Open').slice(0, 2);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+      try {
+        const { data } = await collaborationsApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbCollabs: Collaboration[] = data.map((d: any) => ({
+            id: d.id, title: d.title || "Collaboration",
+            description: d.description || "",
+            type: (d.type || "event") as Collaboration["type"],
+            clubs: d.organizations ? [d.organizations.name] : [],
+            status: "seeking-partners" as const,
+            spots: 5, filled: 1, timeline: "TBD",
+            skills: [], contact: "",
+            postedDate: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+          }));
+          setCollaborations(prev => {
+            const ids = new Set(prev.map(c => c.id));
+            const newFromDb = dbCollabs.filter(c => !ids.has(c.id));
+            const seedIds = new Set(SEED_COLLABORATIONS.map(s => s.id));
+            const localOnly = prev.filter(c => !seedIds.has(c.id) && !dbCollabs.some(d => d.id === c.id));
+            return [...newFromDb, ...localOnly, ...SEED_COLLABORATIONS];
+          });
+        }
+      } catch (e) { console.error("DB load failed, using local:", e); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const handleExpressInterest = (id: string) => {
-    if (interests.includes(id)) {
-      setInterests(interests.filter(i => i !== id));
-    } else {
-      setInterests([...interests, id]);
-      setShowInterestConfirm(id);
-      setTimeout(() => setShowInterestConfirm(null), 2000);
+  async function handleExpressInterest(collabId: string) {
+    if (joiningId) return;
+    setJoiningId(collabId);
+    try {
+      if (currentUserId) await collaborationsApi.join(collabId, currentUserId);
+    } catch (e) { console.error("DB join failed, keeping locally:", e); }
+    setJoinedIds(prev => new Set(prev).add(collabId));
+    setCollaborations(prev => prev.map(c => c.id === collabId ? { ...c, filled: c.filled + 1 } : c));
+    setJoiningId(null);
+  }
+
+  const types = ["All", "event", "project", "fundraiser", "competition", "workshop"];
+
+  const filtered = collaborations.filter(c => {
+    if (typeFilter !== "All" && c.type !== typeFilter) return false;
+    if (statusFilter !== "All" && c.status !== statusFilter) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      return c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q) || c.clubs.some(cl => cl.toLowerCase().includes(q));
     }
-  };
+    return true;
+  });
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80"
-            alt="Collaboration"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-green-600/95 to-teal-600/80"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
-            ← Back to Hub
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 text-white">
-            🤝 Collaboration Finder
-          </h1>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl">
-            Discover opportunities to partner with other clubs, share resources, and create 
-            amazing cross-chapter projects. Two clubs are better than one!
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a href="#opportunities" className="btn-secondary">
-              Browse Opportunities
-            </a>
-            <button 
-              onClick={() => setShowProposalModal(true)}
-              className="bg-white/20 backdrop-blur text-white px-6 py-2.5 font-semibold border-2 border-white/50 hover:bg-white hover:text-green-600 transition-all rounded-lg"
-            >
-              Propose Collaboration
-            </button>
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+          <Link href="/hub" className="text-sm text-indigo-200 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Handshake size={36} /> Collaboration Finder</h1>
+          <p className="mt-3 max-w-2xl text-indigo-100 text-lg">Find cross-club partnerships, joint events, and collaborative projects to amplify your impact.</p>
+          <div className="mt-6 grid grid-cols-3 gap-3 max-w-md">
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{collaborations.length}</p><p className="text-xs text-indigo-100">Opportunities</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{collaborations.filter(c => c.status === "seeking-partners").length}</p><p className="text-xs text-indigo-100">Seeking Partners</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{collaborations.reduce((s, c) => s + c.clubs.length, 0)}</p><p className="text-xs text-indigo-100">Clubs Involved</p></div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="bg-white py-6 border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">
-                {collaborationOpportunities.length}
-              </div>
-              <div className="text-sm text-neutral-600">Active Opportunities</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">24</div>
-              <div className="text-sm text-neutral-600">Clubs Collaborating</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">12</div>
-              <div className="text-sm text-neutral-600">Completed Projects</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">1.5K+</div>
-              <div className="text-sm text-neutral-600">Students Involved</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits */}
-      <section className="py-12 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="section-title mb-8">Why Collaborate?</h2>
-          <div className="grid md:grid-cols-4 gap-6">
-            <div className="card p-6 text-center">
-              <div className="text-4xl mb-4">🌐</div>
-              <h3 className="font-bold text-primary-500 font-heading mb-2">Expand Your Network</h3>
-              <p className="text-sm text-neutral-600">Connect with students from different clubs and build lasting relationships.</p>
-            </div>
-            <div className="card p-6 text-center">
-              <div className="text-4xl mb-4">💡</div>
-              <h3 className="font-bold text-primary-500 font-heading mb-2">Share Ideas</h3>
-              <p className="text-sm text-neutral-600">Learn from different perspectives and bring fresh approaches to your club.</p>
-            </div>
-            <div className="card p-6 text-center">
-              <div className="text-4xl mb-4">📈</div>
-              <h3 className="font-bold text-primary-500 font-heading mb-2">Bigger Impact</h3>
-              <p className="text-sm text-neutral-600">Pool resources to host larger events and reach more students.</p>
-            </div>
-            <div className="card p-6 text-center">
-              <div className="text-4xl mb-4">🏆</div>
-              <h3 className="font-bold text-primary-500 font-heading mb-2">Build Your Resume</h3>
-              <p className="text-sm text-neutral-600">Cross-functional leadership experience stands out on college applications.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Opportunities */}
-      {featuredOpps.length > 0 && (
-        <section className="py-12 bg-gradient-to-r from-teal-600 to-green-600">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-white font-heading mb-8">⭐ Featured Opportunities</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {featuredOpps.map((opp) => (
-                <div key={opp.id} className="bg-white/95 backdrop-blur p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <span className="px-2 py-0.5 bg-teal-100 text-teal-700 text-xs font-semibold mb-2 inline-block">
-                        {opp.type}
-                      </span>
-                      <h3 className="font-bold text-xl text-primary-500 font-heading">{opp.title}</h3>
-                    </div>
-                    <div className={`w-3 h-3 rounded-full ${statusColors[opp.status as keyof typeof statusColors]}`} title={opp.status}></div>
-                  </div>
-                  <p className="text-neutral-600 mb-4">{opp.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {opp.requirements.slice(0, 3).map((req: string, idx: number) => (
-                      <span key={idx} className="px-2 py-0.5 bg-neutral-100 text-neutral-600 text-xs">
-                        {req}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-neutral-500">
-                      <span className="font-medium">{opp.currentInterest}</span> clubs interested
-                    </div>
-                    <button 
-                      onClick={() => handleExpressInterest(opp.id)}
-                      className={`btn-primary text-sm ${interests.includes(opp.id) ? 'bg-green-600' : ''}`}
-                    >
-                      {interests.includes(opp.id) ? '✓ Interested' : 'Express Interest'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Filter Tabs */}
-      <section id="opportunities" className="py-8 bg-white border-y border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-wrap gap-2">
-            {typeFilters.map((type) => (
-              <button
-                key={type}
-                onClick={() => setSelectedType(type)}
-                className={`px-4 py-2 font-semibold transition-all
-                  ${selectedType === type
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                  }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Opportunities List */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <p className="text-neutral-600 mb-6">{filteredOpportunities.length} opportunities found</p>
-
-          <div className="space-y-4">
-            {filteredOpportunities.map((opp) => (
-              <div key={opp.id} className="card">
-                {/* Header */}
-                <div 
-                  className="p-6 cursor-pointer"
-                  onClick={() => setExpandedId(expandedId === opp.id ? null : opp.id)}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="text-4xl">{
-                      opp.type === 'Joint Event' ? '🎉' :
-                      opp.type === 'Fundraiser' ? '💰' :
-                      opp.type === 'Community Service' ? '❤️' :
-                      opp.type === 'Competition Team' ? '🏆' :
-                      opp.type === 'Workshop' ? '📚' : '🤝'
-                    }</div>
-                    <div className="flex-grow">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="px-2 py-0.5 bg-primary-100 text-primary-600 text-xs font-semibold">
-                          {opp.type}
-                        </span>
-                        <div className={`w-2 h-2 rounded-full ${statusColors[opp.status as keyof typeof statusColors]}`}></div>
-                        <span className="text-xs text-neutral-500">{opp.status}</span>
-                      </div>
-                      <h3 className="font-bold text-lg text-primary-500 font-heading">{opp.title}</h3>
-                      <p className="text-neutral-600 text-sm mt-1 line-clamp-2">{opp.description}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-sm text-neutral-500">
-                        <span className="font-medium text-primary-500">{opp.currentInterest}</span> interested
-                      </div>
-                      <div className="text-xs text-neutral-400 mt-1">
-                        Due: {new Date(opp.deadline).toLocaleDateString()}
-                      </div>
-                      <div className={`mt-2 transform transition-transform ${expandedId === opp.id ? 'rotate-180' : ''}`}>
-                        ▼
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Expanded Content */}
-                {expandedId === opp.id && (
-                  <div className="px-6 pb-6 border-t border-neutral-200">
-                    <div className="grid md:grid-cols-2 gap-6 pt-6">
-                      {/* Left Column */}
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-semibold text-neutral-700 mb-2">Proposed Date</h4>
-                          <p className="text-sm text-neutral-600">{opp.proposedDate ? new Date(opp.proposedDate).toLocaleDateString() : 'TBD'}</p>
-                        </div>
-
-                        <div>
-                          <h4 className="font-semibold text-neutral-700 mb-2">Requirements</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {opp.requirements.map((req: string, idx: number) => (
-                              <span key={idx} className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs">
-                                {req}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <h4 className="font-semibold text-neutral-700 mb-2">Target Chapters</h4>
-                          <div className="flex flex-wrap gap-1">
-                            {opp.targetChapters.map((target: string, idx: number) => (
-                              <span key={idx} className="px-2 py-0.5 bg-green-50 text-green-600 text-xs">
-                                {target}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right Column */}
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-semibold text-neutral-700 mb-2">Benefits</h4>
-                          <ul className="space-y-1">
-                            {opp.benefits.map((benefit: string, idx: number) => (
-                              <li key={idx} className="text-sm text-neutral-600 flex items-start gap-2">
-                                <span className="text-green-500">✓</span> {benefit}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div>
-                          <h4 className="font-semibold text-neutral-700 mb-2">Posted By</h4>
-                          <p className="text-sm text-neutral-600">
-                            {opp.hostChapterName} on {new Date(opp.datePosted).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-4 mt-6 pt-4 border-t border-neutral-100">
-                      <button 
-                        onClick={() => handleExpressInterest(opp.id)}
-                        className={`btn-primary flex items-center gap-2 ${interests.includes(opp.id) ? 'bg-green-600' : ''}`}
-                      >
-                        {interests.includes(opp.id) ? '✓ Interest Expressed' : '🙋 Express Interest'}
-                      </button>
-                      <button className="btn-outline">
-                        💬 Message Poster
-                      </button>
-                      <button className="btn-outline">
-                        📋 View Details
-                      </button>
-                    </div>
-
-                    {showInterestConfirm === opp.id && (
-                      <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 text-sm">
-                        ✓ Your interest has been recorded! The collaboration leader will be notified.
-                      </div>
-                    )}
-                  </div>
-                )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {}
+        <Reveal>
+          <div className="grid sm:grid-cols-4 gap-3 mb-6">
+            {[
+              { icon: <Users size={18} />, title: "Expand Your Network", desc: "Meet students from other clubs" },
+              { icon: <Zap size={18} />, title: "Bigger Impact", desc: "Combined resources go further" },
+              { icon: <Star size={18} />, title: "Build Your Resume", desc: "Cross-functional experience" },
+              { icon: <GitMerge size={18} />, title: "New Perspectives", desc: "Diverse approaches to problems" },
+            ].map(b => (
+              <div key={b.title} className="card p-3 text-center">
+                <div className="text-indigo-500 flex justify-center mb-1">{b.icon}</div>
+                <h4 className="font-bold text-primary-700 text-xs">{b.title}</h4>
+                <p className="text-[11px] text-neutral-500">{b.desc}</p>
               </div>
             ))}
           </div>
+        </Reveal>
 
-          {filteredOpportunities.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-neutral-500">No opportunities match your filter.</p>
-              <button
-                onClick={() => setSelectedType('All')}
-                className="text-primary-500 hover:underline mt-2"
-              >
-                View all opportunities
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-teal-600 to-green-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold font-heading mb-4">Have an Idea for a Collaboration?</h2>
-          <p className="text-lg text-white/90 mb-8">
-            Post your own collaboration opportunity and find partner clubs to make it happen.
-          </p>
-          <button 
-            onClick={() => setShowProposalModal(true)}
-            className="btn-secondary"
-          >
-            Propose a Collaboration
-          </button>
-        </div>
-      </section>
-
-      {/* Proposal Modal */}
-      {showProposalModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-primary-500 font-heading">Propose a Collaboration</h2>
-              <button 
-                onClick={() => setShowProposalModal(false)}
-                className="text-neutral-500 hover:text-neutral-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Collaboration Title *</label>
-                <input type="text" className="input-field" placeholder="Give your collaboration a clear, descriptive title" required />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Type *</label>
-                  <select className="select-field" required>
-                    <option value="">Select type...</option>
-                    <option value="Event Partnership">Event Partnership</option>
-                    <option value="Joint Project">Joint Project</option>
-                    <option value="Resource Sharing">Resource Sharing</option>
-                    <option value="Skill Exchange">Skill Exchange</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Difficulty *</label>
-                  <select className="select-field" required>
-                    <option value="">Select difficulty...</option>
-                    <option value="Easy">Easy - Minimal coordination</option>
-                    <option value="Medium">Medium - Some planning required</option>
-                    <option value="Hard">Hard - Significant commitment</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Description *</label>
-                <textarea 
-                  className="input-field min-h-[100px]" 
-                  placeholder="Describe the collaboration, what you're hoping to achieve, and what you're looking for in a partner club..."
-                  required
-                ></textarea>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Timeline</label>
-                  <input type="text" className="input-field" placeholder="e.g., Fall 2025" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">Time Commitment</label>
-                  <input type="text" className="input-field" placeholder="e.g., 2-3 hours/week" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Skills Needed (comma-separated)</label>
-                <input type="text" className="input-field" placeholder="e.g., Event planning, Social media, Budgeting" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Ideal Partner Club Types (comma-separated)</label>
-                <input type="text" className="input-field" placeholder="e.g., Service clubs, STEM clubs" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Expected Outcomes</label>
-                <textarea 
-                  className="input-field min-h-[80px]" 
-                  placeholder="What will the collaboration achieve? List expected outcomes..."
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Your Information</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <input type="text" className="input-field" placeholder="Your name" required />
-                  <input type="text" className="input-field" placeholder="Your club" required />
-                </div>
-                <input type="email" className="input-field mt-2" placeholder="Your email" required />
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button type="submit" className="btn-primary flex-1">
-                  Submit Proposal
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setShowProposalModal(false)}
-                  className="btn-outline"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+        {}
+        <div className="card p-4 mb-6 grid sm:grid-cols-3 gap-3">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input type="text" placeholder="Search collaborations..." value={search} onChange={e => setSearch(e.target.value)} className="input-field pl-9 text-sm" />
           </div>
+          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="select-field text-sm capitalize">{types.map(t => <option key={t} value={t}>{t === "All" ? "All Types" : t.charAt(0).toUpperCase() + t.slice(1)}</option>)}</select>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="select-field text-sm">
+            <option value="All">All Status</option>
+            {Object.entries(STATUS_COLORS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
         </div>
-      )}
+
+        {}
+        <div className="space-y-4">
+          {filtered.map(collab => (
+            <Reveal key={collab.id}>
+              <div className="card p-5 ux-hover-lift-sm">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full capitalize font-semibold ${TYPE_COLORS[collab.type]}`}>{collab.type}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${STATUS_COLORS[collab.status].color}`}>{STATUS_COLORS[collab.status].label}</span>
+                </div>
+                <h3 className="font-bold text-primary-800 text-lg">{collab.title}</h3>
+                <p className="text-sm text-neutral-600 mt-1">{collab.description}</p>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="text-xs text-neutral-600 font-semibold">Involved:</span>
+                  {collab.clubs.map(cl => <span key={cl} className="text-xs px-2 py-0.5 rounded-full bg-primary-50 text-primary-600">{cl}</span>)}
+                </div>
+
+                <div className="mt-3 grid sm:grid-cols-2 gap-2 text-sm text-neutral-600">
+                  <span className="flex items-center gap-1"><Calendar size={14} className="text-primary-400" /> {collab.timeline}</span>
+                  <span className="flex items-center gap-1"><Users size={14} className="text-primary-400" /> {collab.filled}/{collab.spots} clubs joined</span>
+                </div>
+
+                {}
+                <div className="mt-3">
+                  <div className="h-2 bg-neutral-200 rounded-full"><div className="h-2 bg-indigo-500 rounded-full transition-all" style={{ width: `${(collab.filled / collab.spots) * 100}%` }} /></div>
+                  <p className="text-xs text-neutral-400 mt-1">{collab.spots - collab.filled} spots remaining</p>
+                </div>
+
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {collab.skills.map(s => <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600">{s}</span>)}
+                </div>
+
+                <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-3">
+                  <span className="text-xs text-neutral-400">Posted {new Date(collab.postedDate).toLocaleDateString()}</span>
+                  {collab.status === "seeking-partners" && (
+                    joinedIds.has(collab.id) ? (
+                      <span className="text-sm text-green-600 flex items-center gap-1"><CheckCircle size={14} /> Interest Sent</span>
+                    ) : (
+                      <button onClick={() => handleExpressInterest(collab.id)} disabled={!currentUserId || joiningId === collab.id} className="btn-primary text-sm px-4 py-1.5 disabled:opacity-50 flex items-center gap-1">
+                        {joiningId === collab.id ? <><Loader2 size={13} className="animate-spin" /> Sending…</> : "Express Interest"}
+                      </button>
+                    )
+                  )}
+                  {collab.status === "active" && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle size={14} /> Partnership Active</span>}
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        {filtered.length === 0 && (
+          <div className="card p-8 text-center"><Handshake size={40} className="mx-auto text-neutral-300" /><p className="mt-3 text-neutral-500">No collaborations match your filters.</p></div>
+        )}
+      </div>
     </div>
   );
 }

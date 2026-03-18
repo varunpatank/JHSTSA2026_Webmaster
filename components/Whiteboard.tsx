@@ -12,14 +12,13 @@ export default function Whiteboard({ width = 800, height = 480 }: { width?: numb
 
   useEffect(() => {
     const c = canvasRef.current!;
-    c.width = width * 2; // high DPI
+    c.width = width * 2;
     c.height = height * 2;
     c.style.width = `${width}px`;
     c.style.height = `${height}px`;
     const ctx = c.getContext('2d')!;
     ctx.scale(2, 2);
     redraw();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function getCtx() {
@@ -72,7 +71,6 @@ export default function Whiteboard({ width = 800, height = 480 }: { width?: numb
     const p = pointerPos(e);
     currentStrokeRef.current.points.push(p);
     const ctx = getCtx();
-    // draw incremental
     drawStroke(ctx, { ...currentStrokeRef.current, points: [...currentStrokeRef.current.points.slice(-2)] });
   }
 

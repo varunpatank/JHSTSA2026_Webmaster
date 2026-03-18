@@ -1,560 +1,284 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import {
+  ArrowUp, CheckCircle, ChevronDown, Clock, Filter, Loader2, MessageCircle,
+  Pin, Plus, Search, ThumbsUp, Users
+} from "lucide-react";
+import { supabase, discussionsApi } from "@/lib/api";
+
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
 
 interface Discussion {
-  id: string;
-  title: string;
-  content: string;
-  author: { name: string; avatar: string; role: string };
-  category: string;
-  club?: string;
-  createdAt: string;
-  replies: Reply[];
-  views: number;
-  likes: number;
-  isPinned: boolean;
-  isLocked: boolean;
-  tags: string[];
+  id: string; title: string; author: string; avatar: string; category: string;
+  date: string; replies: number; views: number; upvotes: number;
+  pinned: boolean; solved: boolean; tags: string[];
+  lastReply: { author: string; date: string };
+  preview: string;
 }
 
-interface Reply {
-  id: string;
-  content: string;
-  author: { name: string; avatar: string; role: string };
-  createdAt: string;
-  likes: number;
-  isAnswer?: boolean;
-}
-
-const demoDiscussions: Discussion[] = [
-  {
-    id: '1',
-    title: 'Tips for recruiting new members at the beginning of the year?',
-    content: 'Our club lost a lot of seniors last year and we need to rebuild. What strategies have worked for you to attract new members during club fair and the first few weeks of school?',
-    author: { name: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80', role: 'President' },
-    category: 'Recruiting',
-    createdAt: '2026-02-09T10:30:00',
-    views: 234,
-    likes: 18,
-    isPinned: true,
-    isLocked: false,
-    tags: ['recruiting', 'membership', 'growth'],
-    replies: [
-      {
-        id: '1a',
-        content: 'We created an interactive demo at our club fair booth - it really helped draw people in! Also, having current members wear club shirts creates visibility.',
-        author: { name: 'Marcus Johnson', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80', role: 'Vice President' },
-        createdAt: '2026-02-09T11:45:00',
-        likes: 12,
-        isAnswer: true
-      },
-      {
-        id: '1b',
-        content: 'Social media presence before school starts helps a lot. We post teaser content on Instagram over the summer.',
-        author: { name: 'Emily Rodriguez', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80', role: 'Member' },
-        createdAt: '2026-02-09T14:20:00',
-        likes: 8
-      }
-    ]
-  },
-  {
-    id: '2',
-    title: 'How to handle disagreements between officers?',
-    content: 'Two of our officers have very different visions for the club direction and it\'s causing tension. Looking for advice on conflict resolution in leadership teams.',
-    author: { name: 'Jordan Lee', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80', role: 'Advisor' },
-    category: 'Leadership',
-    createdAt: '2026-02-08T16:00:00',
-    views: 156,
-    likes: 24,
-    isPinned: false,
-    isLocked: false,
-    tags: ['leadership', 'conflict', 'teamwork'],
-    replies: [
-      {
-        id: '2a',
-        content: 'Schedule a dedicated meeting to discuss the vision openly. Sometimes writing down everyone\'s ideas helps depersonalize the conflict.',
-        author: { name: 'Dr. Patricia Williams', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&q=80', role: 'Mentor' },
-        createdAt: '2026-02-08T17:30:00',
-        likes: 15,
-        isAnswer: true
-      }
-    ]
-  },
-  {
-    id: '3',
-    title: 'Best fundraising ideas that actually work?',
-    content: 'We need to raise $500 for our upcoming competition. What fundraisers have been most successful for your clubs? Looking for ideas beyond the usual bake sales.',
-    author: { name: 'Alex Martinez', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80', role: 'Treasurer' },
-    category: 'Fundraising',
-    club: 'Technology Student Association',
-    createdAt: '2026-02-08T09:15:00',
-    views: 312,
-    likes: 31,
-    isPinned: false,
-    isLocked: false,
-    tags: ['fundraising', 'money', 'competition'],
-    replies: [
-      {
-        id: '3a',
-        content: 'We did a car wash and made over $800 in one day! The key is picking a high-traffic location and promoting heavily.',
-        author: { name: 'Chris Taylor', avatar: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=100&q=80', role: 'President' },
-        createdAt: '2026-02-08T10:00:00',
-        likes: 9
-      },
-      {
-        id: '3b',
-        content: 'Spirit wear sales work great for us. We design custom club merchandise and sell it to members and their families.',
-        author: { name: 'Maya Patel', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80', role: 'Secretary' },
-        createdAt: '2026-02-08T12:45:00',
-        likes: 14,
-        isAnswer: true
-      }
-    ]
-  },
-  {
-    id: '4',
-    title: 'Virtual club meetings - how do you keep them engaging?',
-    content: 'We still have some hybrid members who attend virtually. What tools and techniques do you use to keep online participants engaged?',
-    author: { name: 'Nina Okafor', avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=100&q=80', role: 'Vice President' },
-    category: 'Meetings',
-    createdAt: '2026-02-07T14:30:00',
-    views: 178,
-    likes: 11,
-    isPinned: false,
-    isLocked: false,
-    tags: ['virtual', 'meetings', 'hybrid', 'engagement'],
-    replies: []
-  },
-  {
-    id: '5',
-    title: 'TSA Webmaster Competition - Theme Interpretation',
-    content: 'How are other teams interpreting the "Community Resource Hub" theme? Looking to exchange ideas without giving away competitive secrets!',
-    author: { name: 'David Kim', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80', role: 'Team Lead' },
-    category: 'Competitions',
-    club: 'Technology Student Association',
-    createdAt: '2026-02-06T11:00:00',
-    views: 445,
-    likes: 52,
-    isPinned: true,
-    isLocked: false,
-    tags: ['tsa', 'webmaster', 'competition', 'theme'],
-    replies: [
-      {
-        id: '5a',
-        content: 'We\'re focusing on making it actually useful for real students. The key is interactivity and user-created content.',
-        author: { name: 'Sophie Zhang', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&q=80', role: 'Developer' },
-        createdAt: '2026-02-06T13:15:00',
-        likes: 21
-      }
-    ]
-  }
+const SEED_DISCUSSIONS: Discussion[] = [
+  { id: "d1", title: "Best practices for running a successful fundraiser?", author: "Emma W.", avatar: "EW", category: "Tips & Advice", date: "2026-01-25", replies: 18, views: 245, upvotes: 32, pinned: true, solved: true, tags: ["Fundraising", "Events"], lastReply: { author: "Mrs. Johnson", date: "2026-01-28" }, preview: "We've been trying different approaches for our spring fundraiser. What's worked best for your club? We raised $3,000 last year with..." },
+  { id: "d2", title: "How to recruit more freshmen to STEM clubs?", author: "Marcus C.", avatar: "MC", category: "Recruitment", date: "2026-01-23", replies: 12, views: 189, upvotes: 24, pinned: false, solved: false, tags: ["Recruitment", "STEM"], lastReply: { author: "Alex R.", date: "2026-01-27" }, preview: "Our robotics club has been struggling with freshman recruitment. We do demos at the activities fair but most freshmen seem intimidated..." },
+  { id: "d3", title: "Meeting format ideas to increase attendance", author: "Sarah K.", avatar: "SK", category: "Tips & Advice", date: "2026-01-20", replies: 25, views: 312, upvotes: 41, pinned: true, solved: false, tags: ["Meetings", "Engagement"], lastReply: { author: "Priya M.", date: "2026-01-26" }, preview: "We switched from lecture-style meetings to workshop format and saw a 40% increase in attendance. What creative formats have you tried?" },
+  { id: "d4", title: "Cross-club collaboration: interested in a joint community service day?", author: "Aiden P.", avatar: "AP", category: "Collaboration", date: "2026-01-22", replies: 8, views: 156, upvotes: 19, pinned: false, solved: false, tags: ["Service", "Collaboration"], lastReply: { author: "Maya W.", date: "2026-01-25" }, preview: "Planning a school-wide service day in April. Looking for 5+ clubs to partner. Each club would lead a station..." },
+  { id: "d5", title: "How do you handle conflicts between club members?", author: "Jordan K.", avatar: "JK", category: "Leadership", date: "2026-01-18", replies: 15, views: 278, upvotes: 28, pinned: false, solved: true, tags: ["Leadership", "Conflict Resolution"], lastReply: { author: "Dr. Chen", date: "2026-01-24" }, preview: "Had a situation where two officers disagreed on the direction of a project. It was affecting the whole team dynamic..." },
+  { id: "d6", title: "Suggestions for TSA competition prep?", author: "Dev G.", avatar: "DG", category: "Competitions", date: "2026-01-15", replies: 20, views: 340, upvotes: 35, pinned: false, solved: true, tags: ["TSA", "Competition", "Preparation"], lastReply: { author: "Jason L.", date: "2026-01-22" }, preview: "State conference is coming up in April. What are the best resources for preparing for events like Webmaster and Coding?" },
+  { id: "d7", title: "Budget management tools for club treasurers", author: "Taylor N.", avatar: "TN", category: "Tips & Advice", date: "2026-01-12", replies: 9, views: 134, upvotes: 15, pinned: false, solved: false, tags: ["Budget", "Tools"], lastReply: { author: "Robert T.", date: "2026-01-19" }, preview: "Looking for recommendations on simple tools to track club finances. We've been using spreadsheets but it's getting messy..." },
+  { id: "d8", title: "Advisor appreciation ideas?", author: "Lily M.", avatar: "LM", category: "General", date: "2026-01-10", replies: 22, views: 267, upvotes: 44, pinned: false, solved: false, tags: ["Advisors", "Appreciation"], lastReply: { author: "Chris L.", date: "2026-01-18" }, preview: "Our advisor goes above and beyond. We want to do something special at the end of the year. What has your club done?" },
 ];
 
-const categories = ['All', 'Recruiting', 'Leadership', 'Fundraising', 'Meetings', 'Events', 'Competitions', 'General'];
+const DISCUSSIONS_LS_KEY = "clubconnect_discussions";
+
+function loadDiscussions(): Discussion[] {
+  if (typeof window === "undefined") return SEED_DISCUSSIONS;
+  try {
+    const raw = localStorage.getItem(DISCUSSIONS_LS_KEY);
+    if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length > 0) return parsed; }
+  } catch {}
+  return SEED_DISCUSSIONS;
+}
 
 export default function DiscussionsPage() {
-  const [discussions, setDiscussions] = useState<Discussion[]>(demoDiscussions);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'unanswered'>('recent');
-  const [selectedDiscussion, setSelectedDiscussion] = useState<Discussion | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newDiscussion, setNewDiscussion] = useState({ title: '', content: '', category: 'General', tags: '' });
-  const [newReply, setNewReply] = useState('');
+  const [discussions, setDiscussions] = useState<Discussion[]>(loadDiscussions);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [sortBy, setSortBy] = useState<"recent" | "popular" | "replies">("recent");
+  const [showNew, setShowNew] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [myVotes, setMyVotes] = useState<Set<string>>(new Set());
+  const [submitting, setSubmitting] = useState(false);
+  // New discussion form
+  const [newTitle, setNewTitle] = useState("");
+  const [newCategory, setNewCategory] = useState("Tips & Advice");
+  const [newTags, setNewTags] = useState("");
+  const [newContent, setNewContent] = useState("");
 
-  const filteredDiscussions = discussions
-    .filter(d => {
-      if (selectedCategory !== 'All' && d.category !== selectedCategory) return false;
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return d.title.toLowerCase().includes(query) || 
-               d.content.toLowerCase().includes(query) ||
-               d.tags.some(t => t.toLowerCase().includes(query));
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
-      if (sortBy === 'recent') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sortBy === 'popular') return (b.likes + b.replies.length) - (a.likes + a.replies.length);
-      if (sortBy === 'unanswered') return a.replies.length - b.replies.length;
-      return 0;
-    });
+  useEffect(() => {
+    localStorage.setItem(DISCUSSIONS_LS_KEY, JSON.stringify(discussions));
+  }, [discussions]);
 
-  const createDiscussion = () => {
-    if (!newDiscussion.title.trim() || !newDiscussion.content.trim()) return;
-    const discussion: Discussion = {
-      id: Date.now().toString(),
-      title: newDiscussion.title,
-      content: newDiscussion.content,
-      author: { name: 'You', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80', role: 'Member' },
-      category: newDiscussion.category,
-      createdAt: new Date().toISOString(),
-      replies: [],
-      views: 0,
-      likes: 0,
-      isPinned: false,
-      isLocked: false,
-      tags: newDiscussion.tags.split(',').map(t => t.trim()).filter(t => t)
-    };
-    setDiscussions([discussion, ...discussions]);
-    setNewDiscussion({ title: '', content: '', category: 'General', tags: '' });
-    setIsCreating(false);
-    setSelectedDiscussion(discussion);
-  };
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+      try {
+        const { data } = await discussionsApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbDiscs: Discussion[] = data.map((d: any) => ({
+            id: d.id,
+            title: d.title,
+            author: d.profiles?.name || "Anonymous",
+            avatar: (d.profiles?.name || "A").split(" ").map((n: string) => n[0]).join("").slice(0, 2),
+            category: d.category || "General",
+            date: d.created_at?.split("T")[0] || new Date().toISOString().split("T")[0],
+            replies: d.reply_count || 0,
+            views: d.view_count || 0,
+            upvotes: d.vote_count || 0,
+            pinned: d.is_pinned || false,
+            solved: false,
+            tags: d.tags || [],
+            lastReply: { author: "—", date: d.updated_at?.split("T")[0] || d.created_at?.split("T")[0] || "" },
+            preview: (d.content || "").slice(0, 160),
+          }));
+          const existingIds = new Set(SEED_DISCUSSIONS.map(s => s.id));
+          const newFromDb = dbDiscs.filter(d => !existingIds.has(d.id));
+          setDiscussions(prev => {
+            const localOnly = prev.filter(p => !SEED_DISCUSSIONS.some(s => s.id === p.id) && !newFromDb.some(n => n.id === p.id));
+            return [...newFromDb, ...localOnly, ...SEED_DISCUSSIONS];
+          });
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const addReply = () => {
-    if (!newReply.trim() || !selectedDiscussion) return;
-    const reply: Reply = {
-      id: Date.now().toString(),
-      content: newReply,
-      author: { name: 'You', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80', role: 'Member' },
-      createdAt: new Date().toISOString(),
-      likes: 0
-    };
-    const updated = discussions.map(d => 
-      d.id === selectedDiscussion.id ? { ...d, replies: [...d.replies, reply] } : d
-    );
-    setDiscussions(updated);
-    setSelectedDiscussion({ ...selectedDiscussion, replies: [...selectedDiscussion.replies, reply] });
-    setNewReply('');
-  };
+  const categories = ["All", ...Array.from(new Set(discussions.map(d => d.category)))];
 
-  const likeDiscussion = (id: string) => {
-    setDiscussions(discussions.map(d => d.id === id ? { ...d, likes: d.likes + 1 } : d));
-    if (selectedDiscussion?.id === id) {
-      setSelectedDiscussion({ ...selectedDiscussion, likes: selectedDiscussion.likes + 1 });
+  const filtered = discussions.filter(d => {
+    if (category !== "All" && d.category !== category) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      return d.title.toLowerCase().includes(q) || d.tags.some(t => t.toLowerCase().includes(q)) || d.preview.toLowerCase().includes(q);
     }
-  };
+    return true;
+  }).sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    if (sortBy === "popular") return b.upvotes - a.upvotes;
+    if (sortBy === "replies") return b.replies - a.replies;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-    if (hours < 1) return 'Just now';
-    if (hours < 24) return `${hours}h ago`;
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString();
-  };
+  const totalReplies = discussions.reduce((s, d) => s + d.replies, 0);
+
+  async function handlePostDiscussion() {
+    if (!newTitle.trim() || !newContent.trim() || submitting) return;
+    setSubmitting(true);
+    const tags = newTags.split(",").map(t => t.trim()).filter(Boolean);
+    const newDisc: Discussion = {
+      id: `local-${Date.now()}`, title: newTitle.trim(), author: "You", avatar: "Y",
+      category: newCategory, date: new Date().toISOString().split("T")[0],
+      replies: 0, views: 0, upvotes: 0, pinned: false, solved: false, tags,
+      lastReply: { author: "—", date: "" }, preview: newContent.trim().slice(0, 160),
+    };
+    try {
+      if (currentUserId) {
+        const { data } = await discussionsApi.create({ author_id: currentUserId, title: newTitle.trim(), content: newContent.trim() });
+        if (data) newDisc.id = (data as any).id;
+      }
+    } catch (e) { console.error("DB save failed, keeping locally:", e); }
+    setDiscussions(prev => [newDisc, ...prev]);
+    setNewTitle(""); setNewContent(""); setNewTags(""); setShowNew(false);
+    setSubmitting(false);
+  }
+
+  async function handleVote(discId: string) {
+    if (!currentUserId) return;
+    const wasVoted = myVotes.has(discId);
+    setMyVotes(prev => { const n = new Set(prev); wasVoted ? n.delete(discId) : n.add(discId); return n; });
+    setDiscussions(prev => prev.map(d => d.id === discId ? { ...d, upvotes: wasVoted ? d.upvotes - 1 : d.upvotes + 1 } : d));
+    if (wasVoted) {
+      await discussionsApi.removeVote(discId, currentUserId);
+    } else {
+      await discussionsApi.vote(discId, currentUserId, 1);
+    }
+  }
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
-      <section className="relative py-12 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80"
-            alt="Discussions"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/95 to-violet-600/80"></div>
-        </div>
-        <div className="relative max-w-6xl mx-auto px-4">
-          <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
-            ← Back to Hub
-          </Link>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold font-heading text-white">
-                💬 Community Discussions
-              </h1>
-              <p className="text-white/80 mt-2">
-                Ask questions, share experiences, and connect with other student leaders.
-              </p>
-            </div>
-            <button
-              onClick={() => setIsCreating(true)}
-              className="btn-secondary"
-            >
-              + Start Discussion
-            </button>
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+          <Link href="/hub" className="text-sm text-violet-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><MessageCircle size={36} /> Discussion Forums</h1>
+          <p className="mt-3 max-w-2xl text-violet-50 text-lg">Ask questions, share advice, and connect with fellow club leaders and members.</p>
+          <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{discussions.length}</p><p className="text-xs text-violet-100">Topics</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{totalReplies}</p><p className="text-xs text-violet-100">Replies</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{discussions.filter(d => d.solved).length}</p><p className="text-xs text-violet-100">Solved</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{categories.length - 1}</p><p className="text-xs text-violet-100">Categories</p></div>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar */}
-            <div className="lg:w-64 flex-shrink-0">
-              <div className="card p-4 sticky top-4">
-                <h3 className="font-bold text-neutral-700 mb-3">Categories</h3>
-                <div className="space-y-1">
-                  {categories.map(category => (
-                    <button
-                      key={category}
-                      onClick={() => { setSelectedCategory(category); setSelectedDiscussion(null); }}
-                      className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                        selectedCategory === category
-                          ? 'bg-primary-100 text-primary-700 font-semibold'
-                          : 'text-neutral-600 hover:bg-neutral-100'
-                      }`}
-                    >
-                      {category}
-                      <span className="float-right text-neutral-400">
-                        {category === 'All' 
-                          ? discussions.length 
-                          : discussions.filter(d => d.category === category).length}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                <hr className="my-4" />
-
-                <h3 className="font-bold text-neutral-700 mb-3">Popular Tags</h3>
-                <div className="flex flex-wrap gap-1">
-                  {['leadership', 'recruiting', 'fundraising', 'tsa', 'competition'].map(tag => (
-                    <button
-                      key={tag}
-                      onClick={() => setSearchQuery(tag)}
-                      className="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs hover:bg-primary-100 hover:text-primary-700 transition-colors"
-                    >
-                      #{tag}
-                    </button>
-                  ))}
-                </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="lg:grid lg:grid-cols-4 lg:gap-6">
+          {}
+          <aside className="space-y-4 mb-6 lg:mb-0">
+            <button onClick={() => setShowNew(!showNew)} className="btn-primary w-full text-sm flex items-center justify-center gap-2"><Plus size={16} /> New Discussion</button>
+            <div className="card p-4">
+              <h3 className="font-bold text-primary-700 text-sm mb-2">Categories</h3>
+              <ul className="space-y-1">{categories.map(c => (
+                <li key={c}><button onClick={() => setCategory(c)} className={`w-full text-left text-sm px-2 py-1  transition-colors ${category === c ? "bg-primary-100 text-primary-700 font-semibold" : "text-neutral-600 hover:bg-neutral-50"}`}>{c} {c !== "All" && <span className="text-neutral-400">({discussions.filter(d => d.category === c).length})</span>}</button></li>
+              ))}</ul>
+            </div>
+            <div className="card p-4">
+              <h3 className="font-bold text-primary-700 text-sm mb-2">Popular Tags</h3>
+              <div className="flex flex-wrap gap-1">
+                {Array.from(new Set(discussions.flatMap(d => d.tags))).map(tag => (
+                  <button key={tag} onClick={() => setSearch(tag)} className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 hover:bg-violet-100">#{tag}</button>
+                ))}
               </div>
             </div>
-
-            {/* Main Content */}
-            <div className="flex-grow">
-              {/* Create Discussion Form */}
-              {isCreating && (
-                <div className="card p-6 mb-6 border-2 border-primary-300">
-                  <h3 className="text-lg font-bold text-primary-500 mb-4">Start a New Discussion</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-neutral-700 mb-1">Title *</label>
-                      <input
-                        type="text"
-                        value={newDiscussion.title}
-                        onChange={(e) => setNewDiscussion({ ...newDiscussion, title: e.target.value })}
-                        placeholder="What's your question or topic?"
-                        className="input-field"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-neutral-700 mb-1">Content *</label>
-                      <textarea
-                        value={newDiscussion.content}
-                        onChange={(e) => setNewDiscussion({ ...newDiscussion, content: e.target.value })}
-                        placeholder="Provide more details..."
-                        className="input-field"
-                        rows={4}
-                      />
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-neutral-700 mb-1">Category</label>
-                        <select
-                          value={newDiscussion.category}
-                          onChange={(e) => setNewDiscussion({ ...newDiscussion, category: e.target.value })}
-                          className="select-field"
-                        >
-                          {categories.filter(c => c !== 'All').map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-neutral-700 mb-1">Tags</label>
-                        <input
-                          type="text"
-                          value={newDiscussion.tags}
-                          onChange={(e) => setNewDiscussion({ ...newDiscussion, tags: e.target.value })}
-                          placeholder="comma, separated, tags"
-                          className="input-field"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <button onClick={createDiscussion} className="btn-primary">Post Discussion</button>
-                      <button onClick={() => setIsCreating(false)} className="btn-outline">Cancel</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Selected Discussion View */}
-              {selectedDiscussion ? (
-                <div>
-                  <button
-                    onClick={() => setSelectedDiscussion(null)}
-                    className="text-primary-500 hover:text-primary-700 text-sm mb-4 flex items-center gap-1"
-                  >
-                    ← Back to discussions
-                  </button>
-
-                  <div className="card p-6 mb-6">
-                    <div className="flex items-start gap-4">
-                      <Image
-                        src={selectedDiscussion.author.avatar}
-                        alt={selectedDiscussion.author.name}
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 object-cover"
-                      />
-                      <div className="flex-grow">
-                        <h2 className="text-xl font-bold text-neutral-800 mb-2">{selectedDiscussion.title}</h2>
-                        <p className="text-neutral-600 mb-4">{selectedDiscussion.content}</p>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {selectedDiscussion.tags.map(tag => (
-                            <span key={tag} className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-xs">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-neutral-500">
-                          <span>{selectedDiscussion.author.name} • {selectedDiscussion.author.role}</span>
-                          <span>{formatTime(selectedDiscussion.createdAt)}</span>
-                          <span>👁 {selectedDiscussion.views}</span>
-                          <button
-                            onClick={() => likeDiscussion(selectedDiscussion.id)}
-                            className="flex items-center gap-1 hover:text-red-500"
-                          >
-                            ❤️ {selectedDiscussion.likes}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Replies */}
-                  <h3 className="font-bold text-neutral-700 mb-4">
-                    {selectedDiscussion.replies.length} {selectedDiscussion.replies.length === 1 ? 'Reply' : 'Replies'}
-                  </h3>
-                  <div className="space-y-4 mb-6">
-                    {selectedDiscussion.replies.map(reply => (
-                      <div key={reply.id} className={`card p-4 ${reply.isAnswer ? 'border-l-4 border-l-green-500 bg-green-50' : ''}`}>
-                        <div className="flex items-start gap-3">
-                          <Image
-                            src={reply.author.avatar}
-                            alt={reply.author.name}
-                            width={40}
-                            height={40}
-                            className="w-10 h-10 object-cover"
-                          />
-                          <div className="flex-grow">
-                            {reply.isAnswer && (
-                              <span className="text-green-600 text-xs font-semibold mb-1 block">✓ Best Answer</span>
-                            )}
-                            <p className="text-neutral-700">{reply.content}</p>
-                            <div className="flex items-center gap-4 mt-2 text-sm text-neutral-500">
-                              <span>{reply.author.name} • {reply.author.role}</span>
-                              <span>{formatTime(reply.createdAt)}</span>
-                              <span>❤️ {reply.likes}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Reply Form */}
-                  {!selectedDiscussion.isLocked && (
-                    <div className="card p-4">
-                      <h4 className="font-semibold text-neutral-700 mb-3">Add Your Reply</h4>
-                      <textarea
-                        value={newReply}
-                        onChange={(e) => setNewReply(e.target.value)}
-                        placeholder="Share your thoughts or advice..."
-                        className="input-field mb-3"
-                        rows={3}
-                      />
-                      <button onClick={addReply} className="btn-primary">
-                        Post Reply
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {/* Search and Sort */}
-                  <div className="flex flex-wrap gap-4 mb-6">
-                    <input
-                      type="text"
-                      placeholder="Search discussions..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="input-field flex-grow"
-                    />
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                      className="select-field"
-                    >
-                      <option value="recent">Most Recent</option>
-                      <option value="popular">Most Popular</option>
-                      <option value="unanswered">Unanswered</option>
-                    </select>
-                  </div>
-
-                  {/* Discussions List */}
-                  <div className="space-y-4">
-                    {filteredDiscussions.map(discussion => (
-                      <div
-                        key={discussion.id}
-                        className={`card p-5 cursor-pointer hover:shadow-md transition-shadow ${
-                          discussion.isPinned ? 'border-l-4 border-l-secondary-500' : ''
-                        }`}
-                        onClick={() => setSelectedDiscussion(discussion)}
-                      >
-                        <div className="flex items-start gap-4">
-                          <Image
-                            src={discussion.author.avatar}
-                            alt={discussion.author.name}
-                            width={40}
-                            height={40}
-                            className="w-10 h-10 object-cover"
-                          />
-                          <div className="flex-grow min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              {discussion.isPinned && <span className="text-secondary-500 text-sm">📌</span>}
-                              <h3 className="font-bold text-neutral-800 hover:text-primary-500 transition-colors">
-                                {discussion.title}
-                              </h3>
-                            </div>
-                            <p className="text-sm text-neutral-600 line-clamp-2 mb-2">{discussion.content}</p>
-                            <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500">
-                              <span>{discussion.author.name}</span>
-                              <span className="bg-primary-100 text-primary-700 px-2 py-0.5">{discussion.category}</span>
-                              <span>{formatTime(discussion.createdAt)}</span>
-                              <span>💬 {discussion.replies.length}</span>
-                              <span>👁 {discussion.views}</span>
-                              <span>❤️ {discussion.likes}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {filteredDiscussions.length === 0 && (
-                      <div className="text-center py-16 card">
-                        <div className="text-5xl mb-4">💬</div>
-                        <h3 className="text-xl font-bold text-neutral-700 mb-2">No discussions found</h3>
-                        <p className="text-neutral-600 mb-4">Be the first to start a conversation!</p>
-                        <button onClick={() => setIsCreating(true)} className="btn-primary">
-                          Start Discussion
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
+            <div className="card p-4">
+              <h3 className="font-bold text-primary-700 text-sm mb-2">Guidelines</h3>
+              <ul className="text-xs text-neutral-600 space-y-1">
+                <li>• Be respectful and constructive</li>
+                <li>• Search before posting duplicates</li>
+                <li>• Mark helpful answers as solutions</li>
+                <li>• Keep discussions school-appropriate</li>
+              </ul>
             </div>
+          </aside>
+
+          {}
+          <div className="lg:col-span-3 space-y-4">
+            {}
+            <div className="card p-4 flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input type="text" placeholder="Search discussions..." value={search} onChange={e => setSearch(e.target.value)} className="input-field pl-9 text-sm" />
+              </div>
+              <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)} className="select-field text-sm w-auto">
+                <option value="recent">Most Recent</option><option value="popular">Most Popular</option><option value="replies">Most Replies</option>
+              </select>
+            </div>
+
+            {showNew && (
+              <Reveal>
+                <div className="card p-5 border-2 border-violet-200">
+                  <h3 className="font-bold text-primary-700 mb-3">Start a New Discussion</h3>
+                  <input type="text" placeholder="Discussion title..." value={newTitle} onChange={e => setNewTitle(e.target.value)} className="input-field mb-3" />
+                  <div className="grid sm:grid-cols-2 gap-3 mb-3">
+                    <select value={newCategory} onChange={e => setNewCategory(e.target.value)} className="select-field text-sm">{categories.filter(c => c !== "All").map(c => <option key={c}>{c}</option>)}</select>
+                    <input type="text" placeholder="Tags (comma-separated)" value={newTags} onChange={e => setNewTags(e.target.value)} className="input-field text-sm" />
+                  </div>
+                  <textarea placeholder="Write your discussion..." value={newContent} onChange={e => setNewContent(e.target.value)} className="input-field h-24 resize-none mb-3" />
+                  <div className="flex gap-2">
+                    <button onClick={handlePostDiscussion} disabled={submitting || !newTitle.trim() || !newContent.trim()} className="btn-primary text-sm disabled:opacity-50 flex items-center gap-1">
+                      {submitting ? <><Loader2 size={13} className="animate-spin" /> Posting…</> : "Post Discussion"}
+                    </button>
+                    <button onClick={() => setShowNew(false)} className="text-sm text-neutral-500 hover:text-neutral-700">Cancel</button>
+                  </div>
+                  {!currentUserId && <p className="text-xs text-red-500 mt-2">Sign in to post discussions.</p>}
+                </div>
+              </Reveal>
+            )}
+
+            {}
+            {filtered.map(disc => (
+              <Reveal key={disc.id}>
+                <div className={`card p-5 ux-hover-lift-sm ${disc.pinned ? "border-l-4 border-primary-500" : ""}`}>
+                  <div className="flex gap-4">
+                    {}
+                    <div className="flex flex-col items-center gap-0.5 min-w-[40px] text-center">
+                      <ArrowUp size={16} onClick={() => handleVote(disc.id)} className={`cursor-pointer transition-colors ${myVotes.has(disc.id) ? "text-primary-600" : "text-neutral-400 hover:text-primary-600"}`} />
+                      <span className="font-bold text-primary-700 text-sm">{disc.upvotes}</span>
+                    </div>
+                    {}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        {disc.pinned && <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 flex items-center gap-1"><Pin size={10} /> Pinned</span>}
+                        {disc.solved && <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 flex items-center gap-1"><CheckCircle size={10} /> Solved</span>}
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">{disc.category}</span>
+                      </div>
+                      <h3 className="font-bold text-primary-800 text-lg hover:text-primary-600 cursor-pointer">{disc.title}</h3>
+                      <p className="text-sm text-neutral-500 mt-1 line-clamp-2">{disc.preview}</p>
+                      <div className="flex flex-wrap gap-1 mt-2">{disc.tags.map(t => <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-600">#{t}</span>)}</div>
+                      <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-neutral-400">
+                        <span className="flex items-center gap-1">
+                          <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-600 text-[10px] flex items-center justify-center font-bold">{disc.avatar}</span>
+                          {disc.author}
+                        </span>
+                        <span>{new Date(disc.date).toLocaleDateString()}</span>
+                        <span className="flex items-center gap-1"><MessageCircle size={12} /> {disc.replies} replies</span>
+                        <span>{disc.views} views</span>
+                        <span>Last reply by {disc.lastReply.author}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+
+            {filtered.length === 0 && (
+              <div className="card p-8 text-center"><MessageCircle size={40} className="mx-auto text-neutral-300" /><p className="mt-3 text-neutral-500">No discussions match your search.</p></div>
+            )}
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

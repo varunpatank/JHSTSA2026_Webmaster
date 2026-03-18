@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 type State = {
   members: number;
   funds: number;
-  reputation: number; // 0-100
+  reputation: number;
   events: number;
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -109,6 +109,10 @@ const colorOptions = [
 const logoOptions = ['🔧', '🎨', '📚', '🎭', '🌍', '💻', '🎵', '⚽', '🔬', '📷', '✍️', '🤝', '🌱', '💼', '🎯'];
 const socialPlatforms = ['Instagram', 'Twitter', 'Discord', 'Facebook', 'YouTube', 'TikTok', 'Website', 'Email'];
 
+const LS_CLUB = "clubconnect_managed_club";
+const LS_EVENTS = "clubconnect_managed_events";
+const LS_ANN = "clubconnect_managed_announcements";
+
 export default function ClubManagerPage() {
   const [club, setClub] = useState<ClubDraft>(demoClub);
   const [events, setEvents] = useState<Event[]>(demoEvents);
@@ -116,8 +120,20 @@ export default function ClubManagerPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'officers' | 'events' | 'announcements' | 'settings' | 'preview'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ ...club });
-  
-  // New item states
+
+  useEffect(() => {
+    try {
+      const c = localStorage.getItem(LS_CLUB); if (c) { const p = JSON.parse(c); setClub(p); setEditForm(p); }
+      const e = localStorage.getItem(LS_EVENTS); if (e) setEvents(JSON.parse(e));
+      const a = localStorage.getItem(LS_ANN); if (a) setAnnouncements(JSON.parse(a));
+    } catch {}
+  }, []);
+
+  const persistClub = useCallback((c: ClubDraft) => { setClub(c); try { localStorage.setItem(LS_CLUB, JSON.stringify(c)); } catch {} }, []);
+  const persistEvents = useCallback((e: Event[]) => { setEvents(e); try { localStorage.setItem(LS_EVENTS, JSON.stringify(e)); } catch {} }, []);
+  const persistAnn = useCallback((a: Announcement[]) => { setAnnouncements(a); try { localStorage.setItem(LS_ANN, JSON.stringify(a)); } catch {} }, []);
+
+
   const [showOfficerForm, setShowOfficerForm] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
   const [showAnnouncementForm, setShowAnnouncementForm] = useState(false);
@@ -126,52 +142,53 @@ export default function ClubManagerPage() {
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', pinned: false });
 
   const saveProfile = () => {
-    setClub({ ...editForm, lastUpdated: new Date().toISOString().split('T')[0] });
+    const updated = { ...editForm, lastUpdated: new Date().toISOString().split('T')[0] };
+    persistClub(updated);
     setIsEditing(false);
   };
 
   const addOfficer = () => {
     if (!newOfficer.name || !newOfficer.role) return;
     const officer: Officer = { id: Date.now().toString(), ...newOfficer };
-    setClub({ ...club, officers: [...club.officers, officer] });
+    persistClub({ ...club, officers: [...club.officers, officer] });
     setNewOfficer({ name: '', role: '', email: '', bio: '' });
     setShowOfficerForm(false);
   };
 
   const removeOfficer = (id: string) => {
-    setClub({ ...club, officers: club.officers.filter(o => o.id !== id) });
+    persistClub({ ...club, officers: club.officers.filter(o => o.id !== id) });
   };
 
   const addEvent = () => {
     if (!newEvent.title || !newEvent.date) return;
     const event: Event = { id: Date.now().toString(), ...newEvent };
-    setEvents([...events, event]);
+    persistEvents([...events, event]);
     setNewEvent({ title: '', date: '', time: '', location: '', description: '', type: 'meeting' });
     setShowEventForm(false);
   };
 
   const removeEvent = (id: string) => {
-    setEvents(events.filter(e => e.id !== id));
+    persistEvents(events.filter(e => e.id !== id));
   };
 
   const addAnnouncement = () => {
     if (!newAnnouncement.title || !newAnnouncement.content) return;
-    const announcement: Announcement = { 
-      id: Date.now().toString(), 
-      ...newAnnouncement, 
-      date: new Date().toISOString().split('T')[0] 
+    const announcement: Announcement = {
+      id: Date.now().toString(),
+      ...newAnnouncement,
+      date: new Date().toISOString().split('T')[0]
     };
-    setAnnouncements([announcement, ...announcements]);
+    persistAnn([announcement, ...announcements]);
     setNewAnnouncement({ title: '', content: '', pinned: false });
     setShowAnnouncementForm(false);
   };
 
   const togglePinned = (id: string) => {
-    setAnnouncements(announcements.map(a => a.id === id ? { ...a, pinned: !a.pinned } : a));
+    persistAnn(announcements.map(a => a.id === id ? { ...a, pinned: !a.pinned } : a));
   };
 
   const removeAnnouncement = (id: string) => {
-    setAnnouncements(announcements.filter(a => a.id !== id));
+    persistAnn(announcements.filter(a => a.id !== id));
   };
 
   const eventTypeColors: Record<string, string> = {
@@ -183,7 +200,7 @@ export default function ClubManagerPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
+      {}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0">
           <Image
@@ -193,7 +210,7 @@ export default function ClubManagerPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/95 to-neutral-800/80"></div>
+          <div className="absolute inset-0 bg-primary-800/90"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
@@ -223,7 +240,7 @@ export default function ClubManagerPage() {
         </div>
       </section>
 
-      {/* Tab Navigation */}
+      {}
       <section className="bg-white border-b border-neutral-200 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-1 overflow-x-auto">
@@ -251,16 +268,16 @@ export default function ClubManagerPage() {
         </div>
       </section>
 
-      {/* Main Content */}
+      {}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Profile Tab */}
+          {}
           {activeTab === 'profile' && (
             <div className="max-w-3xl mx-auto">
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-primary-500">Club Profile</h2>
-                  <button 
+                  <button
                     onClick={() => { setIsEditing(!isEditing); setEditForm({ ...club }); }}
                     className="text-primary-500 hover:underline"
                   >
@@ -433,7 +450,7 @@ export default function ClubManagerPage() {
                 )}
               </div>
 
-              {/* Requirements & Benefits */}
+              {}
               <div className="grid md:grid-cols-2 gap-6 mt-6">
                 <div className="card p-6">
                   <h3 className="text-lg font-bold text-primary-500 mb-4">Membership Requirements</h3>
@@ -461,7 +478,7 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Officers Tab */}
+          {}
           {activeTab === 'officers' && (
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-between mb-6">
@@ -555,7 +572,7 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Events Tab */}
+          {}
           {activeTab === 'events' && (
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-between mb-6">
@@ -680,7 +697,7 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Announcements Tab */}
+          {}
           {activeTab === 'announcements' && (
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-between mb-6">
@@ -774,12 +791,12 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Settings Tab */}
+          {}
           {activeTab === 'settings' && (
             <div className="max-w-3xl mx-auto space-y-6">
               <h2 className="text-xl font-bold text-primary-500">Club Settings</h2>
 
-              {/* Social Links */}
+              {}
               <div className="card p-6">
                 <h3 className="text-lg font-bold text-neutral-700 mb-4">Social Links</h3>
                 <div className="space-y-3">
@@ -794,7 +811,7 @@ export default function ClubManagerPage() {
                 <button className="btn-outline text-sm mt-4">+ Add Social Link</button>
               </div>
 
-              {/* Club Status */}
+              {}
               <div className="card p-6">
                 <h3 className="text-lg font-bold text-neutral-700 mb-4">Club Status</h3>
                 <div className="flex items-center justify-between p-4 bg-neutral-50">
@@ -814,7 +831,7 @@ export default function ClubManagerPage() {
                 </div>
               </div>
 
-              {/* Danger Zone */}
+              {}
               <div className="card p-6 border-red-200">
                 <h3 className="text-lg font-bold text-red-600 mb-4">Danger Zone</h3>
                 <div className="space-y-4">
@@ -841,11 +858,11 @@ export default function ClubManagerPage() {
             </div>
           )}
 
-          {/* Preview Tab */}
+          {}
           {activeTab === 'preview' && (
             <div className="max-w-4xl mx-auto">
               <div className="bg-white border border-neutral-200 shadow-lg">
-                {/* Preview Header */}
+                {}
                 <div className="relative h-48">
                   <Image
                     src={club.coverImage}
@@ -865,10 +882,10 @@ export default function ClubManagerPage() {
                   </div>
                 </div>
 
-                {/* Preview Content */}
+                {}
                 <div className="p-6">
                   <p className="text-neutral-700 mb-6">{club.description}</p>
-                  
+
                   <div className="grid md:grid-cols-2 gap-6 mb-6">
                     <div className="p-4 bg-neutral-50">
                       <h4 className="font-bold text-primary-500 mb-2">📅 Meeting Info</h4>
@@ -903,7 +920,7 @@ export default function ClubManagerPage() {
 
               <div className="text-center mt-6 p-4 bg-primary-50 border border-primary-200">
                 <p className="text-primary-700">
-                  This is how your club page will appear to visitors. 
+                  This is how your club page will appear to visitors.
                   <button onClick={() => setActiveTab('profile')} className="text-primary-500 underline ml-1">
                     Edit Profile
                   </button>

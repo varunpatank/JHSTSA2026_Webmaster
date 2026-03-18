@@ -1,383 +1,194 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { chapters } from '@/lib/data';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { chapters, sponsorsData } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
+import {
+  ArrowRight, BarChart2, CheckCircle, ChevronDown, CreditCard, DollarSign,
+  Download, FileText, Filter, PieChart, Plus, Search, TrendingUp, Users
+} from "lucide-react";
 
-const budgetAllocations = [
-  { chapter: 'Model United Nations', allocated: 3500, spent: 2100, remaining: 1400 },
-  { chapter: 'Robotics Team', allocated: 8000, spent: 5500, remaining: 2500 },
-  { chapter: 'Drama Club', allocated: 4500, spent: 3200, remaining: 1300 },
-  { chapter: 'Community Service Club', allocated: 1500, spent: 800, remaining: 700 },
-  { chapter: 'Debate Team', allocated: 2500, spent: 1900, remaining: 600 },
-  { chapter: 'Environmental Club', allocated: 1200, spent: 650, remaining: 550 },
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
+
+interface BudgetEntry {
+  id: string; club: string; category: string; allocated: number; spent: number; remaining: number;
+}
+
+const BUDGETS: BudgetEntry[] = [
+  { id: "b1", club: "Robotics Club", category: "STEM", allocated: 8500, spent: 5200, remaining: 3300 },
+  { id: "b2", club: "Model United Nations", category: "Academic", allocated: 3200, spent: 2100, remaining: 1100 },
+  { id: "b3", club: "Drama Club", category: "Arts", allocated: 6000, spent: 4800, remaining: 1200 },
+  { id: "b4", club: "Community Service Club", category: "Service", allocated: 2000, spent: 800, remaining: 1200 },
+  { id: "b5", club: "Art Club", category: "Arts", allocated: 2500, spent: 1900, remaining: 600 },
+  { id: "b6", club: "Environmental Club", category: "STEM", allocated: 1500, spent: 700, remaining: 800 },
+  { id: "b7", club: "CS Club", category: "STEM", allocated: 3000, spent: 1200, remaining: 1800 },
+  { id: "b8", club: "Science Olympiad", category: "Academic", allocated: 4000, spent: 2800, remaining: 1200 },
 ];
 
-const purchaseRequests = [
-  { id: 1, chapter: 'Robotics Team', item: 'Motor Controllers (x5)', amount: 450, status: 'Pending', date: '2026-01-10' },
-  { id: 2, chapter: 'Drama Club', item: 'Costume Materials', amount: 320, status: 'Approved', date: '2026-01-08' },
-  { id: 3, chapter: 'Model UN', item: 'Conference Registration', amount: 800, status: 'Pending', date: '2026-01-05' },
+interface Grant {
+  id: string; name: string; provider: string; amount: string; deadline: string; status: "open" | "closing-soon" | "closed"; eligibility: string; description: string;
+}
+
+const GRANTS: Grant[] = [
+  { id: "gr1", name: "STEM Education Innovation Grant", provider: "Washington STEM", amount: "$500 - $2,000", deadline: "2026-03-31", status: "open", eligibility: "STEM clubs", description: "Supports innovative hands-on STEM projects and equipment." },
+  { id: "gr2", name: "Youth Service Leadership Award", provider: "Rotary Club of Kirkland", amount: "Up to $1,000", deadline: "2026-03-15", status: "closing-soon", eligibility: "Service-focused clubs", description: "For clubs demonstrating exceptional community service impact." },
+  { id: "gr3", name: "Arts in Schools Micro-Grant", provider: "Kirkland Arts Center", amount: "$250 - $750", deadline: "2026-04-15", status: "open", eligibility: "Arts clubs", description: "Supports student-led art exhibitions, performances, and workshops." },
+  { id: "gr4", name: "Student Innovation Fund", provider: "LWSD Foundation", amount: "$500 - $5,000", deadline: "2026-02-28", status: "closed", eligibility: "All clubs", description: "District-wide grant for innovative student projects and programs." },
+  { id: "gr5", name: "Environmental Action Grant", provider: "Green Schools Alliance", amount: "$300 - $1,500", deadline: "2026-04-30", status: "open", eligibility: "Environmental clubs", description: "Fund sustainability projects, garden programs, and eco-initiatives." },
 ];
 
-const grants = [
-  { 
-    id: 1, 
-    title: 'Innovation Grant', 
-    amount: '$2,500', 
-    deadline: '2026-02-15',
-    description: 'For chapters developing new technology or innovative programs.',
-    eligibility: 'STEM and Academic chapters'
-  },
-  { 
-    id: 2, 
-    title: 'Community Impact Award', 
-    amount: '$1,500', 
-    deadline: '2026-03-01',
-    description: 'For chapters with outstanding community service projects.',
-    eligibility: 'Service and Cultural chapters'
-  },
-  { 
-    id: 3, 
-    title: 'Arts Enrichment Fund', 
-    amount: '$2,000', 
-    deadline: '2026-02-28',
-    description: 'Support for arts programs, productions, and equipment.',
-    eligibility: 'Arts and Media chapters'
-  },
+interface FundraiserEvent {
+  id: string; name: string; club: string; date: string; raised: number; goal: number; type: string;
+}
+
+const FUNDRAISERS: FundraiserEvent[] = [
+  { id: "f1", name: "Robot-a-thon Pledge Drive", club: "Robotics Club", date: "2026-02-15", raised: 2800, goal: 3000, type: "Pledge" },
+  { id: "f2", name: "Spring Bake Sale", club: "Model UN", date: "2026-02-22", raised: 450, goal: 500, type: "Sale" },
+  { id: "f3", name: "Drama Dinner Theater", club: "Drama Club", date: "2026-03-01", raised: 1200, goal: 1500, type: "Event" },
+  { id: "f4", name: "Car Wash for a Cause", club: "Community Service", date: "2026-03-08", raised: 380, goal: 400, type: "Service" },
+  { id: "f5", name: "Art Print Sale", club: "Art Club", date: "2026-03-15", raised: 620, goal: 800, type: "Sale" },
 ];
 
 export default function FundingPage() {
-  const [activeTab, setActiveTab] = useState<'budgets' | 'requests' | 'grants' | 'fundraising'>('budgets');
-  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [tab, setTab] = useState<"budgets" | "grants" | "fundraisers">("budgets");
 
-  const totalAllocated = budgetAllocations.reduce((sum, b) => sum + b.allocated, 0);
-  const totalSpent = budgetAllocations.reduce((sum, b) => sum + b.spent, 0);
-  const totalRemaining = totalAllocated - totalSpent;
+  const totalAllocated = BUDGETS.reduce((s, b) => s + b.allocated, 0);
+  const totalSpent = BUDGETS.reduce((s, b) => s + b.spent, 0);
+  const totalRaised = FUNDRAISERS.reduce((s, f) => s + f.raised, 0);
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="relative py-16 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1920&q=80"
-            alt="Financial planning"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/95 to-primary-500/85"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <h1 className="page-title text-white">Funding & Budget Center</h1>
-          <p className="text-xl text-white/90 max-w-2xl">
-            Manage chapter budgets, submit purchase requests, and explore funding opportunities.
-          </p>
-        </div>
-      </section>
+      <HeroSection
+        title="Funding & Budgets"
+        icon={<DollarSign size={36} />}
+        description="Track club budgets, discover grants, and manage fundraising campaigns."
+        stats={[
+          { label: "Total Budget", value: `$${(totalAllocated / 1000).toFixed(1)}k` },
+          { label: "Spent", value: `$${(totalSpent / 1000).toFixed(1)}k` },
+          { label: "Open Grants", value: GRANTS.filter(g => g.status !== "closed").length },
+          { label: "Raised", value: `$${(totalRaised / 1000).toFixed(1)}k` },
+        ]}
+      >
+        <Link href="/hub" className="inline-block text-sm text-primary-100 hover:underline">← Back to Hub</Link>
+      </HeroSection>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <div className="stat-card border-l-4 border-l-primary-500">
-            <div className="stat-number text-2xl">${totalAllocated.toLocaleString()}</div>
-            <div className="stat-label">Total Allocated</div>
-          </div>
-          <div className="stat-card border-l-4 border-l-secondary-500">
-            <div className="stat-number text-2xl">${totalSpent.toLocaleString()}</div>
-            <div className="stat-label">Total Spent</div>
-          </div>
-          <div className="stat-card border-l-4 border-l-green-500">
-            <div className="stat-number text-2xl">${totalRemaining.toLocaleString()}</div>
-            <div className="stat-label">Remaining</div>
-          </div>
-          <div className="stat-card border-l-4 border-l-yellow-500">
-            <div className="stat-number text-2xl">{purchaseRequests.filter(r => r.status === 'Pending').length}</div>
-            <div className="stat-label">Pending Requests</div>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-wrap gap-2 mb-6">
+          {(["budgets", "grants", "fundraisers"] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)} className={`px-5 py-2  text-sm font-semibold transition-all ${tab === t ? "bg-primary-600 text-white" : "bg-white text-neutral-600 hover:bg-primary-50"}`}>
+              {t === "budgets" ? "Budget Allocations" : t === "grants" ? `Grants (${GRANTS.filter(g => g.status !== "closed").length} Open)` : "Fundraisers"}
+            </button>
+          ))}
         </div>
 
-        <div className="card mb-8">
-          <div className="flex flex-wrap border-b border-neutral-200">
-            {[
-              { key: 'budgets', label: 'Budget Allocations' },
-              { key: 'requests', label: 'Purchase Requests' },
-              { key: 'grants', label: 'Grant Opportunities' },
-              { key: 'fundraising', label: 'Fundraising Tracker' },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                className={`px-6 py-4 font-medium transition-colors ${
-                  activeTab === tab.key
-                    ? 'text-primary-500 border-b-2 border-primary-500 bg-primary-500/5'
-                    : 'text-neutral-600 hover:text-primary-500 hover:bg-neutral-50'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {activeTab === 'budgets' && (
-          <div className="space-y-6">
-            <div className="card overflow-hidden">
-              <div className="p-4 border-b border-neutral-200 flex justify-between items-center">
-                <h2 className="text-lg font-bold text-primary-500 font-heading">Chapter Budget Allocations</h2>
-                <span className="text-sm text-neutral-500">Academic Year 2025-2026</span>
-              </div>
-              <table className="w-full">
-                <thead>
-                  <tr>
-                    <th className="table-header">Chapter</th>
-                    <th className="table-header">Allocated</th>
-                    <th className="table-header">Spent</th>
-                    <th className="table-header">Remaining</th>
-                    <th className="table-header">Usage</th>
-                  </tr>
-                </thead>
+        {tab === "budgets" && (
+          <Reveal>
+            <div className="card overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="border-b border-neutral-200 bg-primary-50/50">
+                  <th className="text-left p-4 font-bold text-primary-700">Club</th>
+                  <th className="text-left p-4 font-bold text-primary-700">Category</th>
+                  <th className="text-right p-4 font-bold text-primary-700">Allocated</th>
+                  <th className="text-right p-4 font-bold text-primary-700">Spent</th>
+                  <th className="text-right p-4 font-bold text-primary-700">Remaining</th>
+                  <th className="p-4 font-bold text-primary-700">Usage</th>
+                </tr></thead>
                 <tbody>
-                  {budgetAllocations.map((budget) => {
-                    const usage = Math.round((budget.spent / budget.allocated) * 100);
+                  {BUDGETS.map((b, i) => {
+                    const pct = Math.round((b.spent / b.allocated) * 100);
                     return (
-                      <tr key={budget.chapter} className="table-row-hover">
-                        <td className="table-cell font-medium">{budget.chapter}</td>
-                        <td className="table-cell">${budget.allocated.toLocaleString()}</td>
-                        <td className="table-cell">${budget.spent.toLocaleString()}</td>
-                        <td className="table-cell text-green-600 font-medium">${budget.remaining.toLocaleString()}</td>
-                        <td className="table-cell">
+                      <tr key={b.id} className={i % 2 === 0 ? "bg-white" : "bg-neutral-50/50"}>
+                        <td className="p-4 font-semibold text-primary-800">{b.club}</td>
+                        <td className="p-4"><span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">{b.category}</span></td>
+                        <td className="p-4 text-right">${b.allocated.toLocaleString()}</td>
+                        <td className="p-4 text-right text-red-600">${b.spent.toLocaleString()}</td>
+                        <td className="p-4 text-right text-green-600 font-semibold">${b.remaining.toLocaleString()}</td>
+                        <td className="p-4 w-32">
                           <div className="flex items-center gap-2">
-                            <div className="flex-grow bg-neutral-200 h-2 w-24">
-                              <div 
-                                className={`h-full ${usage > 80 ? 'bg-red-500' : usage > 50 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                                style={{ width: `${usage}%` }}
-                              />
-                            </div>
-                            <span className="text-sm">{usage}%</span>
+                            <div className="flex-1 h-2 bg-neutral-200 rounded-full"><div className={`h-2 rounded-full ${pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-500" : "bg-green-500"}`} style={{ width: `${pct}%` }} /></div>
+                            <span className="text-xs text-neutral-500 w-8 text-right">{pct}%</span>
                           </div>
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
+                <tfoot><tr className="border-t-2 border-primary-200 bg-primary-50/30 font-bold">
+                  <td className="p-4 text-primary-700">Total</td><td className="p-4" /><td className="p-4 text-right">${totalAllocated.toLocaleString()}</td>
+                  <td className="p-4 text-right text-red-600">${totalSpent.toLocaleString()}</td>
+                  <td className="p-4 text-right text-green-600">${(totalAllocated - totalSpent).toLocaleString()}</td>
+                  <td className="p-4"><span className="text-xs text-neutral-500">{Math.round((totalSpent / totalAllocated) * 100)}% used</span></td>
+                </tr></tfoot>
               </table>
             </div>
-          </div>
+          </Reveal>
         )}
 
-        {activeTab === 'requests' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-primary-500 font-heading">Purchase Requests</h2>
-              <button onClick={() => setShowRequestForm(true)} className="btn-primary">
-                + New Request
-              </button>
-            </div>
-
-            {showRequestForm && (
-              <div className="card p-6">
-                <h3 className="text-lg font-bold text-primary-500 mb-4 font-heading">Submit Purchase Request</h3>
-                <form className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2">Chapter *</label>
-                    <select className="select-field">
-                      <option value="">Select chapter</option>
-                      {chapters.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
+        {tab === "grants" && (
+          <div className="space-y-4">
+            {GRANTS.map(grant => (
+              <Reveal key={grant.id}>
+                <div className={`card p-5 ux-hover-lift-sm ${grant.status === "closed" ? "opacity-60" : ""}`}>
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${grant.status === "open" ? "bg-green-100 text-green-700" : grant.status === "closing-soon" ? "bg-yellow-100 text-yellow-700" : "bg-neutral-100 text-neutral-500"}`}>
+                      {grant.status === "open" ? "Open" : grant.status === "closing-soon" ? "Closing Soon" : "Closed"}
+                    </span>
+                    <span className="text-xs text-neutral-400">{grant.eligibility}</span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2">Amount ($) *</label>
-                    <input type="number" className="input-field" placeholder="0.00" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2">Item Description *</label>
-                    <input type="text" className="input-field" placeholder="What are you purchasing?" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2">Justification *</label>
-                    <textarea className="input-field" rows={3} placeholder="Why is this purchase necessary?" />
-                  </div>
-                  <div className="md:col-span-2 flex gap-4">
-                    <button type="submit" className="btn-primary">Submit Request</button>
-                    <button type="button" onClick={() => setShowRequestForm(false)} className="btn-outline">Cancel</button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            <div className="card overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr>
-                    <th className="table-header">Chapter</th>
-                    <th className="table-header">Item</th>
-                    <th className="table-header">Amount</th>
-                    <th className="table-header">Date</th>
-                    <th className="table-header">Status</th>
-                    <th className="table-header">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {purchaseRequests.map((request) => (
-                    <tr key={request.id} className="table-row-hover">
-                      <td className="table-cell font-medium">{request.chapter}</td>
-                      <td className="table-cell">{request.item}</td>
-                      <td className="table-cell">${request.amount}</td>
-                      <td className="table-cell">{new Date(request.date).toLocaleDateString()}</td>
-                      <td className="table-cell">
-                        <span className={`badge ${
-                          request.status === 'Approved' ? 'bg-green-100 text-green-700' :
-                          request.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>{request.status}</span>
-                      </td>
-                      <td className="table-cell">
-                        <button className="text-primary-500 hover:underline text-sm">View</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'grants' && (
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-primary-500 font-heading">Available Grants</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {grants.map((grant) => (
-                <div key={grant.id} className="card overflow-hidden">
-                  <div className="bg-secondary-500 p-4 text-white">
-                    <h3 className="text-lg font-bold font-heading">{grant.title}</h3>
-                    <p className="text-2xl font-bold mt-2">{grant.amount}</p>
-                  </div>
-                  <div className="p-6">
-                    <p className="text-neutral-600 mb-4">{grant.description}</p>
-                    <div className="space-y-2 text-sm mb-4">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Deadline</span>
-                        <span className="font-medium">{new Date(grant.deadline).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Eligibility</span>
-                        <span className="font-medium">{grant.eligibility}</span>
-                      </div>
+                  <h3 className="font-bold text-primary-800 text-lg">{grant.name}</h3>
+                  <p className="text-xs text-neutral-500">{grant.provider}</p>
+                  <p className="text-sm text-neutral-600 mt-2">{grant.description}</p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="flex gap-4 text-sm">
+                      <span className="text-green-600 font-bold">{grant.amount}</span>
+                      <span className="text-neutral-400">Deadline: {new Date(grant.deadline).toLocaleDateString()}</span>
                     </div>
-                    <button className="btn-primary w-full">Apply Now</button>
+                    {grant.status !== "closed" && <button className="btn-primary text-sm px-4 py-1.5">Apply Now</button>}
                   </div>
                 </div>
-              ))}
-            </div>
-
-            <div className="card p-6 mt-8">
-              <h2 className="text-lg font-bold text-primary-500 font-heading mb-4">Community Partnership Opportunities</h2>
-              <p className="text-neutral-600 mb-4">
-                Connect with local businesses and organizations for sponsorships and collaborative funding.
-              </p>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="p-4 border border-neutral-200">
-                  <h4 className="font-semibold text-neutral-800">Local Business Sponsorships</h4>
-                  <p className="text-sm text-neutral-500 mt-1">Partner with local businesses for event and equipment sponsorships.</p>
-                </div>
-                <div className="p-4 border border-neutral-200">
-                  <h4 className="font-semibold text-neutral-800">Corporate Matching</h4>
-                  <p className="text-sm text-neutral-500 mt-1">Many companies match employee donations to school organizations.</p>
-                </div>
-                <div className="p-4 border border-neutral-200">
-                  <h4 className="font-semibold text-neutral-800">Community Foundations</h4>
-                  <p className="text-sm text-neutral-500 mt-1">Apply for grants from local community foundations and trusts.</p>
-                </div>
-              </div>
-            </div>
+              </Reveal>
+            ))}
           </div>
         )}
 
-        {activeTab === 'fundraising' && (
-          <div className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="card p-6">
-                <h2 className="text-lg font-bold text-primary-500 font-heading mb-4">Active Fundraisers</h2>
-                <div className="space-y-4">
-                  {[
-                    { name: 'Robotics Team - Robot Parts Fund', goal: 3000, raised: 1850, daysLeft: 15 },
-                    { name: 'Drama Club - Spring Musical', goal: 2000, raised: 1200, daysLeft: 30 },
-                    { name: 'Model UN - Conference Travel', goal: 5000, raised: 3200, daysLeft: 21 },
-                  ].map((fund, idx) => (
-                    <div key={idx} className="p-4 border border-neutral-200">
-                      <h4 className="font-semibold text-neutral-800">{fund.name}</h4>
-                      <div className="flex justify-between text-sm mt-2 mb-1">
-                        <span className="text-neutral-600">${fund.raised.toLocaleString()} of ${fund.goal.toLocaleString()}</span>
-                        <span className="text-secondary-500 font-medium">{fund.daysLeft} days left</span>
-                      </div>
-                      <div className="bg-neutral-200 h-2">
-                        <div 
-                          className="bg-secondary-500 h-full" 
-                          style={{ width: `${(fund.raised / fund.goal) * 100}%` }}
-                        />
-                      </div>
+        {tab === "fundraisers" && (
+          <div className="space-y-4">
+            {FUNDRAISERS.map(f => {
+              const pct = Math.round((f.raised / f.goal) * 100);
+              return (
+                <Reveal key={f.id}>
+                  <div className="card p-5 ux-hover-lift-sm">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">{f.type}</span>
+                      <span className="text-xs text-neutral-400">{new Date(f.date).toLocaleDateString()}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="card p-6">
-                <h2 className="text-lg font-bold text-primary-500 font-heading mb-4">Start a Fundraiser</h2>
-                <p className="text-neutral-600 mb-4">
-                  Launch a crowdfunding campaign for your chapter&apos;s projects and activities.
-                </p>
-                <form className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2">Campaign Title</label>
-                    <input type="text" className="input-field" placeholder="e.g., Spring Conference Fund" />
+                    <h3 className="font-bold text-primary-800 text-lg">{f.name}</h3>
+                    <p className="text-xs text-neutral-500">{f.club}</p>
+                    <div className="mt-3">
+                      <div className="flex justify-between text-sm mb-1"><span className="text-green-600 font-bold">${f.raised.toLocaleString()} raised</span><span className="text-neutral-400">Goal: ${f.goal.toLocaleString()}</span></div>
+                      <div className="h-3 bg-neutral-200 rounded-full"><div className={`h-3 rounded-full ${pct >= 100 ? "bg-green-500" : "bg-primary-500"}`} style={{ width: `${Math.min(pct, 100)}%` }} /></div>
+                      <p className="text-xs text-neutral-400 mt-1">{pct}% of goal</p>
+                    </div>
+                    {pct >= 100 && <p className="text-xs text-green-600 font-semibold mt-2 flex items-center gap-1"><CheckCircle size={12} /> Goal reached!</p>}
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2">Goal Amount ($)</label>
-                    <input type="number" className="input-field" placeholder="0" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-2">Description</label>
-                    <textarea className="input-field" rows={3} placeholder="Describe what you're raising funds for..." />
-                  </div>
-                  <button type="submit" className="btn-primary w-full">Create Fundraiser</button>
-                </form>
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="p-4 border-b border-neutral-200">
-                <h2 className="text-lg font-bold text-primary-500 font-heading">Fundraising History</h2>
-              </div>
-              <table className="w-full">
-                <thead>
-                  <tr>
-                    <th className="table-header">Campaign</th>
-                    <th className="table-header">Chapter</th>
-                    <th className="table-header">Goal</th>
-                    <th className="table-header">Raised</th>
-                    <th className="table-header">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { campaign: 'Fall Competition Fund', chapter: 'Robotics Team', goal: 2500, raised: 2750, status: 'Completed' },
-                    { campaign: 'Winter Musical Costumes', chapter: 'Drama Club', goal: 1500, raised: 1500, status: 'Completed' },
-                    { campaign: 'National Qualifiers Travel', chapter: 'Debate Team', goal: 4000, raised: 3800, status: 'Completed' },
-                  ].map((item, idx) => (
-                    <tr key={idx} className="table-row-hover">
-                      <td className="table-cell font-medium">{item.campaign}</td>
-                      <td className="table-cell">{item.chapter}</td>
-                      <td className="table-cell">${item.goal.toLocaleString()}</td>
-                      <td className="table-cell text-green-600">${item.raised.toLocaleString()}</td>
-                      <td className="table-cell">
-                        <span className="badge bg-green-100 text-green-700">{item.status}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                </Reveal>
+              );
+            })}
+            <div className="card p-5 bg-gradient-to-r from-emerald-50 to-green-50 text-center border-2 border-emerald-200">
+              <h3 className="font-bold text-primary-700">Start a Fundraiser</h3>
+              <p className="text-sm text-neutral-600 mt-1">Ready to raise funds for your club? Create a campaign and start collecting donations.</p>
+              <Link href="/donate" className="btn-primary mt-3 inline-block text-sm">Create Campaign</Link>
             </div>
           </div>
         )}

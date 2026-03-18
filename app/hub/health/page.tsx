@@ -1,521 +1,179 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { clubHealthMetrics } from '@/lib/hubData';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { chapters } from "@/lib/data";
+import {
+  Activity, AlertTriangle, ArrowDown, ArrowUp, CheckCircle, Heart,
+  Info, TrendingDown, TrendingUp, Users, Zap
+} from "lucide-react";
 
-// Benchmark values for each metric
-const benchmarkValues: Record<string, number> = {
-  memberRetention: 75,
-  eventAttendance: 70,
-  memberSatisfaction: 7.5,
-  leadershipDevelopment: 60,
-  communityImpact: 100,
-  financialHealth: 80,
-  growthRate: 10,
-  engagementScore: 75
-};
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
 
-const metricInfo = {
-  memberRetention: { label: 'Member Retention', icon: '👥', unit: '%', description: 'Percentage of members who continue year-over-year' },
-  eventAttendance: { label: 'Event Attendance', icon: '📅', unit: '%', description: 'Average attendance rate at events' },
-  memberSatisfaction: { label: 'Member Satisfaction', icon: '😊', unit: '/10', description: 'Average satisfaction score from surveys' },
-  leadershipDevelopment: { label: 'Leadership Dev', icon: '🌟', unit: '%', description: 'Members taking on leadership roles' },
-  communityImpact: { label: 'Community Impact', icon: '❤️', unit: 'hrs', description: 'Volunteer hours contributed' },
-  financialHealth: { label: 'Financial Health', icon: '💰', unit: '%', description: 'Budget utilization and reserves' },
-  growthRate: { label: 'Growth Rate', icon: '📈', unit: '%', description: 'Year-over-year membership growth' },
-  engagementScore: { label: 'Engagement', icon: '🔥', unit: '/100', description: 'Overall engagement composite score' }
-};
+interface ClubHealthMetrics {
+  id: string; name: string; category: string; overallScore: number;
+  metrics: { label: string; score: number; trend: "up" | "down" | "stable" }[];
+  strengths: string[]; concerns: string[]; recommendations: string[];
+}
 
-type MetricKey = keyof typeof metricInfo;
+const CLUB_HEALTH: ClubHealthMetrics[] = [
+  { id: "ch1", name: "Model United Nations", category: "Academic", overallScore: 92, metrics: [{ label: "Membership", score: 95, trend: "up" }, { label: "Meeting Attendance", score: 88, trend: "stable" }, { label: "Event Participation", score: 94, trend: "up" }, { label: "Member Retention", score: 90, trend: "stable" }, { label: "Budget Health", score: 85, trend: "up" }], strengths: ["Strong recruitment pipeline", "Active competition schedule", "Experienced leadership team"], concerns: ["Meeting space occasionally insufficient"], recommendations: ["Request larger meeting room for next semester", "Create alumni mentorship program"] },
+  { id: "ch2", name: "Robotics Club", category: "STEM", overallScore: 88, metrics: [{ label: "Membership", score: 85, trend: "stable" }, { label: "Meeting Attendance", score: 92, trend: "up" }, { label: "Event Participation", score: 90, trend: "up" }, { label: "Member Retention", score: 82, trend: "down" }, { label: "Budget Health", score: 78, trend: "down" }], strengths: ["High engagement at meetings", "Strong competition results", "Active mentorship from sponsors"], concerns: ["Budget strain from competition costs", "Freshman retention needs improvement"], recommendations: ["Launch targeted fundraising campaign", "Create freshman onboarding buddy system", "Apply for STEM education grants"] },
+  { id: "ch3", name: "Community Service Club", category: "Service", overallScore: 85, metrics: [{ label: "Membership", score: 80, trend: "up" }, { label: "Meeting Attendance", score: 78, trend: "down" }, { label: "Event Participation", score: 95, trend: "up" }, { label: "Member Retention", score: 88, trend: "stable" }, { label: "Budget Health", score: 90, trend: "up" }], strengths: ["Highest event participation rate", "Strong community partnerships", "Excellent budget management"], concerns: ["Meeting attendance declining", "Need more consistent weekly activities"], recommendations: ["Restructure meetings with activity-based format", "Add social elements to regular meetings"] },
+  { id: "ch4", name: "Environmental Club", category: "STEM", overallScore: 79, metrics: [{ label: "Membership", score: 72, trend: "down" }, { label: "Meeting Attendance", score: 75, trend: "down" }, { label: "Event Participation", score: 88, trend: "stable" }, { label: "Member Retention", score: 70, trend: "down" }, { label: "Budget Health", score: 82, trend: "stable" }], strengths: ["Impactful community projects", "Good partnership with city"], concerns: ["Declining membership trend", "Low meeting attendance", "Leadership transition needed"], recommendations: ["Host a high-visibility Earth Day event to boost recruitment", "Partner with other clubs for joint events", "Identify and train next year's officers now"] },
+  { id: "ch5", name: "Art Club", category: "Arts", overallScore: 83, metrics: [{ label: "Membership", score: 88, trend: "up" }, { label: "Meeting Attendance", score: 85, trend: "stable" }, { label: "Event Participation", score: 80, trend: "stable" }, { label: "Member Retention", score: 82, trend: "up" }, { label: "Budget Health", score: 75, trend: "down" }], strengths: ["Growing membership", "Inclusive and welcoming culture", "Regular showcases"], concerns: ["Supply costs rising", "Limited exhibition space"], recommendations: ["Partner with local galleries for exhibition space", "Launch supply donation drive", "Apply for arts education grants"] },
+  { id: "ch6", name: "Drama Club", category: "Arts", overallScore: 90, metrics: [{ label: "Membership", score: 90, trend: "stable" }, { label: "Meeting Attendance", score: 95, trend: "up" }, { label: "Event Participation", score: 88, trend: "stable" }, { label: "Member Retention", score: 92, trend: "up" }, { label: "Budget Health", score: 85, trend: "up" }], strengths: ["Outstanding attendance and retention", "Revenue-generating performances", "Strong school community presence"], concerns: ["Audition competitiveness may discourage newcomers"], recommendations: ["Create non-audition ensemble roles", "Add workshop series open to all students"] },
+];
 
-export default function ClubHealthPage() {
-  const [selectedClub, setSelectedClub] = useState(clubHealthMetrics[0]);
-  const [showRecommendations, setShowRecommendations] = useState(false);
-  const [showBenchmarkComparison, setShowBenchmarkComparison] = useState(false);
+function getScoreColor(score: number) {
+  if (score >= 90) return "text-green-600";
+  if (score >= 80) return "text-blue-600";
+  if (score >= 70) return "text-yellow-600";
+  return "text-red-600";
+}
 
-  const getHealthColor = (value: number, benchmark: number) => {
-    const ratio = value / benchmark;
-    if (ratio >= 1) return 'bg-green-500';
-    if (ratio >= 0.8) return 'bg-yellow-500';
-    if (ratio >= 0.6) return 'bg-orange-500';
-    return 'bg-red-500';
-  };
+function getScoreBg(score: number) {
+  if (score >= 90) return "bg-green-500";
+  if (score >= 80) return "bg-blue-500";
+  if (score >= 70) return "bg-yellow-500";
+  return "bg-red-500";
+}
 
-  const getHealthLabel = (value: number, benchmark: number) => {
-    const ratio = value / benchmark;
-    if (ratio >= 1) return { text: 'Excellent', color: 'text-green-600' };
-    if (ratio >= 0.8) return { text: 'Good', color: 'text-yellow-600' };
-    if (ratio >= 0.6) return { text: 'Needs Work', color: 'text-orange-600' };
-    return { text: 'Critical', color: 'text-red-600' };
-  };
+function TrendIcon({ trend }: { trend: "up" | "down" | "stable" }) {
+  if (trend === "up") return <TrendingUp size={12} className="text-green-500" />;
+  if (trend === "down") return <TrendingDown size={12} className="text-red-500" />;
+  return <span className="text-neutral-300">—</span>;
+}
 
-  const calculateOverallHealth = () => {
-    const metrics = ['memberRetention', 'eventAttendance', 'memberSatisfaction', 'leadershipDevelopment', 'financialHealth', 'growthRate'] as MetricKey[];
-    let total = 0;
-    metrics.forEach(metric => {
-      const value = selectedClub[metric] as number;
-      const benchmark = benchmarkValues[metric] || 75;
-      total += Math.min((value / benchmark) * 100, 100);
-    });
-    return Math.round(total / metrics.length);
-  };
+const HEALTH_LS_KEY = "clubconnect_health_prefs";
 
-  const overallHealth = calculateOverallHealth();
+function loadHealthPrefs(): { sortBy: "score" | "name" } {
+  try { const s = localStorage.getItem(HEALTH_LS_KEY); if (s) return JSON.parse(s); } catch {}
+  return { sortBy: "score" };
+}
 
-  const recommendations = [
-    {
-      metric: 'memberRetention',
-      condition: selectedClub.memberRetention < benchmarkValues.memberRetention,
-      priority: 'high',
-      title: 'Improve Member Retention',
-      tips: [
-        'Conduct exit surveys to understand why members leave',
-        'Create a mentorship program pairing new members with veterans',
-        'Host exclusive member appreciation events',
-        'Develop a clear path for member growth and involvement'
-      ]
-    },
-    {
-      metric: 'eventAttendance',
-      condition: selectedClub.eventAttendance < benchmarkValues.eventAttendance,
-      priority: 'medium',
-      title: 'Boost Event Attendance',
-      tips: [
-        'Survey members on preferred event types and times',
-        'Send multiple reminders through different channels',
-        'Create FOMO with limited spots or exclusive experiences',
-        'Post event recaps to show what attendees missed'
-      ]
-    },
-    {
-      metric: 'memberSatisfaction',
-      condition: selectedClub.memberSatisfaction < benchmarkValues.memberSatisfaction,
-      priority: 'high',
-      title: 'Increase Member Satisfaction',
-      tips: [
-        'Regularly collect anonymous feedback',
-        'Act on feedback and communicate changes',
-        'Create more social bonding opportunities',
-        'Ensure activities align with member interests'
-      ]
-    },
-    {
-      metric: 'leadershipDevelopment',
-      condition: selectedClub.leadershipDevelopment < benchmarkValues.leadershipDevelopment,
-      priority: 'medium',
-      title: 'Develop Future Leaders',
-      tips: [
-        'Create committee chair positions',
-        'Offer leadership training workshops',
-        'Give members ownership of specific projects',
-        'Start a junior officer program'
-      ]
-    },
-    {
-      metric: 'financialHealth',
-      condition: selectedClub.financialHealth < benchmarkValues.financialHealth,
-      priority: 'high',
-      title: 'Strengthen Financial Position',
-      tips: [
-        'Diversify fundraising methods',
-        'Apply for school and community grants',
-        'Build a reserve fund (target: 20% of annual budget)',
-        'Track expenses and create a budget forecast'
-      ]
-    },
-    {
-      metric: 'growthRate',
-      condition: selectedClub.growthRate < benchmarkValues.growthRate,
-      priority: 'low',
-      title: 'Accelerate Membership Growth',
-      tips: [
-        'Create a referral program with incentives',
-        'Present at freshmen orientation',
-        'Partner with other clubs for joint recruitment',
-        'Improve social media presence and engagement'
-      ]
-    }
-  ];
+export default function HealthPage() {
+  const prefs = loadHealthPrefs();
+  const [sortBy, setSortBy] = useState<"score" | "name">(prefs.sortBy);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const activeRecommendations = recommendations.filter(r => r.condition);
+  useEffect(() => { try { localStorage.setItem(HEALTH_LS_KEY, JSON.stringify({ sortBy })); } catch {} }, [sortBy]);
+
+  const sorted = [...CLUB_HEALTH].sort((a, b) => sortBy === "score" ? b.overallScore - a.overallScore : a.name.localeCompare(b.name));
+
+  const avgScore = Math.round(CLUB_HEALTH.reduce((s, c) => s + c.overallScore, 0) / CLUB_HEALTH.length);
+  const improving = CLUB_HEALTH.filter(c => c.metrics.filter(m => m.trend === "up").length >= 3).length;
+  const needsAttention = CLUB_HEALTH.filter(c => c.overallScore < 80).length;
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&q=80"
-            alt="Analytics"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/95 to-purple-600/80"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
-            ← Back to Hub
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 text-white">
-            📊 Club Health Dashboard
-          </h1>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl">
-            Track your club&apos;s vital signs, compare against benchmarks, and get 
-            personalized recommendations to strengthen your organization.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a href="#metrics" className="btn-secondary">
-              View Metrics
-            </a>
-            <button 
-              onClick={() => setShowRecommendations(true)}
-              className="bg-white/20 backdrop-blur text-white px-6 py-2.5 font-semibold border-2 border-white/50 hover:bg-white hover:text-indigo-600 transition-all rounded-lg"
-            >
-              Get Recommendations
-            </button>
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+          <Link href="/hub" className="text-sm text-emerald-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Activity size={36} /> Club Health Dashboard</h1>
+          <p className="mt-3 max-w-2xl text-emerald-50 text-lg">Monitor club vitality, spot trends, and get recommendations for improvement.</p>
+          <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{CLUB_HEALTH.length}</p><p className="text-xs text-emerald-100">Tracked</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{avgScore}</p><p className="text-xs text-emerald-100">Avg Score</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{improving}</p><p className="text-xs text-emerald-100">Improving</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{needsAttention}</p><p className="text-xs text-emerald-100">Need Help</p></div>
           </div>
         </div>
       </section>
 
-      {/* Club Selector */}
-      <section className="bg-white py-6 border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="font-semibold text-neutral-700">Select Club:</span>
-            <select
-              value={selectedClub.clubId}
-              onChange={(e) => {
-                const club = clubHealthMetrics.find(c => c.clubId === e.target.value);
-                if (club) setSelectedClub(club);
-              }}
-              className="select-field max-w-xs"
-            >
-              {clubHealthMetrics.map((club) => (
-                <option key={club.clubId} value={club.clubId}>
-                  {club.clubName}
-                </option>
-              ))}
-            </select>
-            <span className="text-sm text-neutral-500 ml-auto">
-              Last updated: {new Date(selectedClub.lastUpdated).toLocaleDateString()}
-            </span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {}
+        <div className="card p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-3 text-xs">
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500" /> 90-100 Excellent</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-500" /> 80-89 Good</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-yellow-500" /> 70-79 Fair</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500" /> Below 70</span>
           </div>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)} className="select-field text-sm w-auto">
+            <option value="score">Sort by Score</option><option value="name">Sort by Name</option>
+          </select>
         </div>
-      </section>
 
-      {/* Overall Health Score */}
-      <section className="py-12 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Health Score */}
-            <div className="card p-8 text-center">
-              <h3 className="font-bold text-neutral-700 mb-4 font-heading">Overall Health Score</h3>
-              <div className="relative w-40 h-40 mx-auto mb-4">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="#e5e5e5"
-                    strokeWidth="10"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke={overallHealth >= 80 ? '#22c55e' : overallHealth >= 60 ? '#eab308' : overallHealth >= 40 ? '#f97316' : '#ef4444'}
-                    strokeWidth="10"
-                    strokeDasharray={`${overallHealth * 2.83} 283`}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-primary-500 font-heading">{overallHealth}</span>
-                </div>
-              </div>
-              <div className={`font-semibold ${overallHealth >= 80 ? 'text-green-600' : overallHealth >= 60 ? 'text-yellow-600' : overallHealth >= 40 ? 'text-orange-600' : 'text-red-600'}`}>
-                {overallHealth >= 80 ? 'Excellent Health' : overallHealth >= 60 ? 'Good Health' : overallHealth >= 40 ? 'Needs Attention' : 'Critical'}
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="card p-6">
-              <h3 className="font-bold text-neutral-700 mb-4 font-heading">Quick Stats</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">Total Members</span>
-                  <span className="font-bold text-primary-500">{selectedClub.totalMembers}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">Active Members</span>
-                  <span className="font-bold text-primary-500">{selectedClub.activeMembers}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">Events This Month</span>
-                  <span className="font-bold text-secondary-500">{selectedClub.eventsThisMonth}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-600">New Members (30d)</span>
-                  <span className="font-bold text-green-600">+{selectedClub.newMembersLast30Days}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Alerts */}
-            <div className="card p-6">
-              <h3 className="font-bold text-neutral-700 mb-4 font-heading">🚨 Attention Needed</h3>
-              {activeRecommendations.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">🎉</div>
-                  <p className="text-green-600 font-semibold">All metrics look great!</p>
-                  <p className="text-sm text-neutral-500">Keep up the excellent work.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {activeRecommendations.slice(0, 3).map((rec, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`p-3 border-l-4 ${
-                        rec.priority === 'high' ? 'border-red-500 bg-red-50' :
-                        rec.priority === 'medium' ? 'border-yellow-500 bg-yellow-50' :
-                        'border-blue-500 bg-blue-50'
-                      }`}
-                    >
-                      <div className="font-semibold text-sm">{rec.title}</div>
-                      <div className="text-xs text-neutral-500">{rec.priority} priority</div>
+        {}
+        <div className="space-y-4">
+          {sorted.map(club => (
+            <Reveal key={club.id}>
+              <div className="card overflow-hidden ux-hover-lift-sm">
+                <button onClick={() => setExpandedId(expandedId === club.id ? null : club.id)} className="w-full p-5 text-left hover:bg-neutral-50/50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    {}
+                    <div className="relative w-16 h-16 shrink-0">
+                      <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="5" />
+                        <circle cx="32" cy="32" r="28" fill="none" stroke={club.overallScore >= 90 ? "#22c55e" : club.overallScore >= 80 ? "#3b82f6" : club.overallScore >= 70 ? "#eab308" : "#ef4444"} strokeWidth="5" strokeDasharray={`${(club.overallScore / 100) * 175.93} 175.93`} strokeLinecap="round" />
+                      </svg>
+                      <span className={`absolute inset-0 flex items-center justify-center font-bold text-sm ${getScoreColor(club.overallScore)}`}>{club.overallScore}</span>
                     </div>
-                  ))}
-                  {activeRecommendations.length > 3 && (
-                    <button 
-                      onClick={() => setShowRecommendations(true)}
-                      className="text-primary-500 text-sm font-semibold hover:underline"
-                    >
-                      View all {activeRecommendations.length} recommendations →
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Detailed Metrics */}
-      <section id="metrics" className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="section-title">Detailed Metrics</h2>
-            <button
-              onClick={() => setShowBenchmarkComparison(!showBenchmarkComparison)}
-              className={`text-sm font-semibold px-4 py-2 transition-all ${showBenchmarkComparison ? 'bg-primary-500 text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'}`}
-            >
-              {showBenchmarkComparison ? '✓ Showing Benchmarks' : 'Compare to Benchmarks'}
-            </button>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(Object.keys(metricInfo) as MetricKey[]).map((key) => {
-              const info = metricInfo[key];
-              const value = selectedClub[key] as number;
-              const benchmark = benchmarkValues[key] || 75;
-              const health = getHealthLabel(value, benchmark);
-
-              return (
-                <div key={key} className="card p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-2xl">{info.icon}</span>
-                    <div>
-                      <h3 className="font-bold text-neutral-700 font-heading">{info.label}</h3>
-                      <p className="text-xs text-neutral-500">{info.description}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-end justify-between mb-2">
-                    <div className="text-3xl font-bold text-primary-500 font-heading">
-                      {value}{info.unit}
-                    </div>
-                    <span className={`text-sm font-semibold ${health.color}`}>
-                      {health.text}
-                    </span>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="h-3 bg-neutral-200 overflow-hidden">
-                    <div 
-                      className={`h-full transition-all duration-500 ${getHealthColor(value, benchmark)}`}
-                      style={{ width: `${Math.min((value / benchmark) * 100, 100)}%` }}
-                    ></div>
-                  </div>
-
-                  {showBenchmarkComparison && (
-                    <div className="mt-3 pt-3 border-t border-neutral-100 text-sm">
-                      <div className="flex justify-between text-neutral-500">
-                        <span>Benchmark: {benchmark}{info.unit}</span>
-                        <span className={value >= benchmark ? 'text-green-600' : 'text-red-600'}>
-                          {value >= benchmark ? '+' : ''}{(value - benchmark).toFixed(1)}{info.unit}
-                        </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">{club.category}</span>
+                        {club.overallScore >= 90 && <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">⭐ Top Performer</span>}
+                        {club.overallScore < 80 && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">⚠ Needs Attention</span>}
+                      </div>
+                      <h3 className="font-bold text-primary-800 text-lg">{club.name}</h3>
+                      {}
+                      <div className="mt-2 grid grid-cols-5 gap-2">
+                        {club.metrics.map(m => (
+                          <div key={m.label} className="text-center">
+                            <div className="h-1.5 bg-neutral-200 rounded-full"><div className={`h-1.5 rounded-full ${getScoreBg(m.score)}`} style={{ width: `${m.score}%` }} /></div>
+                            <span className="text-[9px] text-neutral-400 leading-none mt-0.5 block">{m.label.split(' ')[0]}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Trend Section */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="section-title mb-8">6-Month Trend</h2>
-          <div className="card p-6">
-            <div className="grid md:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="text-sm text-neutral-500 mb-2">Member Growth</div>
-                <div className="text-2xl font-bold text-green-600 font-heading">+{selectedClub.growthRate}%</div>
-                <div className="text-xs text-neutral-400">vs last semester</div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-neutral-500 mb-2">Event Attendance</div>
-                <div className="text-2xl font-bold text-primary-500 font-heading">{selectedClub.eventAttendance}%</div>
-                <div className="text-xs text-neutral-400">avg per event</div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-neutral-500 mb-2">Satisfaction Trend</div>
-                <div className="text-2xl font-bold text-secondary-500 font-heading">↑ 0.5</div>
-                <div className="text-xs text-neutral-400">points improvement</div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-neutral-500 mb-2">Engagement</div>
-                <div className="text-2xl font-bold text-purple-600 font-heading">{selectedClub.engagementScore}/100</div>
-                <div className="text-xs text-neutral-400">composite score</div>
-              </div>
-            </div>
-
-            {/* Simple Chart Visualization */}
-            <div className="mt-8 pt-6 border-t border-neutral-200">
-              <div className="h-40 flex items-end justify-between gap-4">
-                {['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'].map((month, idx) => {
-                  const height = 40 + Math.random() * 50;
-                  return (
-                    <div key={month} className="flex-1 flex flex-col items-center">
-                      <div 
-                        className="w-full bg-gradient-to-t from-primary-500 to-primary-400 transition-all hover:from-primary-600 hover:to-primary-500"
-                        style={{ height: `${height}%` }}
-                      ></div>
-                      <span className="text-xs text-neutral-500 mt-2">{month}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-center text-sm text-neutral-500 mt-4">Engagement Score Over Time</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold font-heading mb-4">Ready to Improve?</h2>
-          <p className="text-lg text-white/90 mb-8">
-            Get personalized recommendations based on your club&apos;s metrics and see what 
-            top-performing clubs are doing differently.
-          </p>
-          <button 
-            onClick={() => setShowRecommendations(true)}
-            className="btn-secondary"
-          >
-            View Recommendations
-          </button>
-        </div>
-      </section>
-
-      {/* Recommendations Modal */}
-      {showRecommendations && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-primary-500 font-heading">
-                Recommendations for {selectedClub.clubName}
-              </h2>
-              <button 
-                onClick={() => setShowRecommendations(false)}
-                className="text-neutral-500 hover:text-neutral-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            {activeRecommendations.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🎉</div>
-                <h3 className="text-xl font-bold text-green-600 mb-2">Congratulations!</h3>
-                <p className="text-neutral-600">
-                  Your club is meeting or exceeding all benchmarks. Keep up the amazing work!
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {activeRecommendations.map((rec, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`p-6 border-l-4 ${
-                      rec.priority === 'high' ? 'border-red-500 bg-red-50' :
-                      rec.priority === 'medium' ? 'border-yellow-500 bg-yellow-50' :
-                      'border-blue-500 bg-blue-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-2xl">{metricInfo[rec.metric as MetricKey].icon}</span>
-                      <div>
-                        <h3 className="font-bold text-lg font-heading">{rec.title}</h3>
-                        <span className={`text-xs font-semibold px-2 py-0.5 ${
-                          rec.priority === 'high' ? 'bg-red-200 text-red-700' :
-                          rec.priority === 'medium' ? 'bg-yellow-200 text-yellow-700' :
-                          'bg-blue-200 text-blue-700'
-                        }`}>
-                          {rec.priority.toUpperCase()} PRIORITY
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <div className="text-sm text-neutral-600 mb-1">
-                        Current: <span className="font-semibold">{selectedClub[rec.metric as MetricKey]}</span>
-                        {' '}| Benchmark: <span className="font-semibold">{benchmarkValues[rec.metric]}</span>
-                      </div>
-                    </div>
-
-                    <h4 className="font-semibold text-neutral-700 mb-2">Actionable Tips:</h4>
-                    <ul className="space-y-2">
-                      {rec.tips.map((tip, tipIdx) => (
-                        <li key={tipIdx} className="text-sm text-neutral-600 flex items-start gap-2">
-                          <span className="text-green-500">→</span> {tip}
-                        </li>
+                  </div>
+                </button>
+                {expandedId === club.id && (
+                  <div className="px-5 pb-5 border-t border-neutral-100 space-y-4">
+                    {}
+                    <div className="mt-3 grid sm:grid-cols-5 gap-3">
+                      {club.metrics.map(m => (
+                        <div key={m.label} className="bg-neutral-50 p-3  text-center">
+                          <p className="text-xs text-neutral-500 mb-1">{m.label}</p>
+                          <p className={`text-xl font-bold ${getScoreColor(m.score)}`}>{m.score}</p>
+                          <div className="flex items-center justify-center gap-1 mt-1"><TrendIcon trend={m.trend} /><span className="text-[10px] text-neutral-400 capitalize">{m.trend}</span></div>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
+                    {}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="text-xs font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-1"><CheckCircle size={12} /> Strengths</h4>
+                        <ul className="space-y-1">{club.strengths.map(s => <li key={s} className="text-sm text-neutral-600 flex items-start gap-2"><span className="text-green-500 mt-0.5">✓</span> {s}</li>)}</ul>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-yellow-700 uppercase tracking-wider mb-2 flex items-center gap-1"><AlertTriangle size={12} /> Areas of Concern</h4>
+                        <ul className="space-y-1">{club.concerns.map(c => <li key={c} className="text-sm text-neutral-600 flex items-start gap-2"><span className="text-yellow-500 mt-0.5">!</span> {c}</li>)}</ul>
+                      </div>
+                    </div>
+                    {}
+                    <div>
+                      <h4 className="text-xs font-bold text-primary-700 uppercase tracking-wider mb-2 flex items-center gap-1"><Zap size={12} /> Recommendations</h4>
+                      <ul className="space-y-1">{club.recommendations.map(r => <li key={r} className="text-sm text-neutral-600 flex items-start gap-2"><span className="text-primary-400 mt-0.5">→</span> {r}</li>)}</ul>
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
-            )}
-
-            <div className="mt-8 pt-6 border-t border-neutral-200">
-              <button 
-                onClick={() => setShowRecommendations(false)}
-                className="btn-primary w-full"
-              >
-                Got It!
-              </button>
-            </div>
-          </div>
+            </Reveal>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

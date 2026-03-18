@@ -53,7 +53,7 @@ export default function FullScreenCall({ room, displayName }: { room: string; di
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black flex flex-col">
-      {/* Branded top bar */}
+      {}
       <div className="flex items-center justify-between px-6 py-3 bg-white/95 shadow-md">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-primary-600 text-white flex items-center justify-center rounded">CC</div>
@@ -70,7 +70,7 @@ export default function FullScreenCall({ room, displayName }: { room: string; di
         </div>
       </div>
 
-      {/* Content */}
+      {}
       <div className="flex-1 relative">
         <div ref={ref} className="absolute inset-0 bg-black" />
       </div>

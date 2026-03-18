@@ -1,444 +1,208 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { mentors } from '@/lib/hubData';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import {
+  Award, BookOpen, Briefcase, Calendar, CheckCircle, ChevronDown, Clock, GraduationCap,
+  Heart, Loader2, Mail, MapPin, MessageCircle, Search, Star, User, Users
+} from "lucide-react";
+import { supabase, mentorsApi } from "@/lib/api";
 
-const expertiseAreas = [
-  'Public speaking',
-  'Entrepreneurship',
-  'College applications',
-  'Leadership development',
-  'Programming',
-  'Robotics',
-  'Tech careers',
-  'Community service',
-  'Grant writing',
-  'Fundraising',
-  'Event planning'
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
+
+interface Mentor {
+  id: string; name: string; title: string; expertise: string[]; bio: string;
+  availability: string; avatar: string; category: string;
+  yearsExperience: number; sessionsDone: number; rating: number;
+  offering: string[];
+}
+
+const SEED_MENTORS: Mentor[] = [
+  { id: "m1", name: "Dr. Sarah Chen", title: "Senior Software Engineer at Microsoft", expertise: ["Software Development", "AI/ML", "Career Planning"], bio: "15+ years in tech. Stanford CS grad. Passionate about mentoring the next generation of engineers. Has mentored 20+ students into FAANG internships.", availability: "Biweekly · Tuesdays", avatar: "SC", category: "STEM", yearsExperience: 15, sessionsDone: 48, rating: 4.9, offering: ["1-on-1 Sessions", "Resume Review", "Mock Interviews"] },
+  { id: "m2", name: "Prof. James Rodriguez", title: "Political Science Professor, UW", expertise: ["Model UN", "Public Policy", "Debate", "Research"], bio: "Former UN consultant. Coaches college Model UN teams. Advises on college applications and political science pathways.", availability: "Monthly · Thursdays", avatar: "JR", category: "Academic", yearsExperience: 12, sessionsDone: 35, rating: 4.8, offering: ["Group Workshops", "College App Review", "Research Mentorship"] },
+  { id: "m3", name: "Maria Gonzalez", title: "Community Organizer, United Way", expertise: ["Community Service", "Nonprofit Management", "Grant Writing", "Fundraising"], bio: "Managed $2M+ in community grants. Helps students turn service ideas into sustainable programs. 10 years in nonprofit sector.", availability: "Weekly · Mondays", avatar: "MG", category: "Service", yearsExperience: 10, sessionsDone: 62, rating: 4.9, offering: ["1-on-1 Sessions", "Grant Proposals", "Project Planning"] },
+  { id: "m4", name: "David Park", title: "Mechanical Engineer, Boeing", expertise: ["Robotics", "Engineering Design", "CAD", "Manufacturing"], bio: "Lead engineer on 787 Dreamliner systems. FIRST Robotics mentor since 2015. Loves helping students with hands-on engineering projects and engineering career pathways.", availability: "Biweekly · Saturdays", avatar: "DP", category: "STEM", yearsExperience: 18, sessionsDone: 40, rating: 4.7, offering: ["1-on-1 Sessions", "Project Mentoring", "Career Guidance"] },
+  { id: "m5", name: "Amanda Liu", title: "Graphic Designer & Illustrator", expertise: ["Visual Arts", "Digital Design", "Portfolio Building", "Branding"], bio: "Freelance designer with clients including Nike and REI. RISD graduate. Helps students build creative portfolios for college and career.", availability: "Biweekly · Wednesdays", avatar: "AL", category: "Arts", yearsExperience: 8, sessionsDone: 25, rating: 4.8, offering: ["Portfolio Review", "Design Workshops", "1-on-1 Sessions"] },
+  { id: "m6", name: "Robert Tanaka", title: "Investment Analyst, BlackRock", expertise: ["Finance", "Economics", "Data Analysis", "Business Strategy"], bio: "Harvard MBA. Manages portfolios and runs financial literacy workshops. Mentors students interested in business and economics.", availability: "Monthly · Fridays", avatar: "RT", category: "Academic", yearsExperience: 10, sessionsDone: 18, rating: 4.6, offering: ["Career Workshops", "Financial Modeling", "College Guidance"] },
 ];
 
-const typeColors = {
-  'Alumni': 'bg-purple-100 text-purple-700',
-  'Current Officer': 'bg-blue-100 text-blue-700',
-  'Advisor': 'bg-green-100 text-green-700',
-  'Community Partner': 'bg-amber-100 text-amber-700'
-};
+const MENTORS_LS_KEY = "clubconnect_mentors";
+const MENTOR_REQ_LS_KEY = "clubconnect_mentor_requested";
 
-const availabilityColors = {
-  'Available': 'bg-green-500',
-  'Limited': 'bg-yellow-500',
-  'Full': 'bg-red-500'
-};
+function loadMentors(): Mentor[] {
+  try { const s = localStorage.getItem(MENTORS_LS_KEY); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length) return p; } } catch {}
+  return SEED_MENTORS;
+}
+function loadRequestedIds(): Set<string> {
+  try { const s = localStorage.getItem(MENTOR_REQ_LS_KEY); if (s) return new Set(JSON.parse(s)); } catch {}
+  return new Set();
+}
 
 export default function MentorsPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState<string>('');
-  const [selectedExpertise, setSelectedExpertise] = useState<string>('');
-  const [availableOnly, setAvailableOnly] = useState(false);
-  const [showRequestModal, setShowRequestModal] = useState(false);
-  const [selectedMentor, setSelectedMentor] = useState<typeof mentors[0] | null>(null);
+  const [mentors, setMentors] = useState<Mentor[]>(() => loadMentors());
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [requestedIds, setRequestedIds] = useState<Set<string>>(() => loadRequestedIds());
+  const [requestingId, setRequestingId] = useState<string | null>(null);
 
-  const filteredMentors = useMemo(() => {
-    return mentors.filter((mentor) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          mentor.name.toLowerCase().includes(query) ||
-          mentor.bio.toLowerCase().includes(query) ||
-          mentor.expertise.some(e => e.toLowerCase().includes(query));
-        if (!matchesSearch) return false;
-      }
-      if (selectedType && mentor.type !== selectedType) return false;
-      if (selectedExpertise && !mentor.expertise.some(e => e.toLowerCase().includes(selectedExpertise.toLowerCase()))) return false;
-      if (availableOnly && mentor.availability === 'Full') return false;
-      return true;
-    });
-  }, [searchQuery, selectedType, selectedExpertise, availableOnly]);
+  useEffect(() => { try { localStorage.setItem(MENTORS_LS_KEY, JSON.stringify(mentors)); } catch {} }, [mentors]);
+  useEffect(() => { try { localStorage.setItem(MENTOR_REQ_LS_KEY, JSON.stringify([...requestedIds])); } catch {} }, [requestedIds]);
 
-  const topMentors = mentors.sort((a, b) => b.sessionsCompleted - a.sessionsCompleted).slice(0, 3);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+      try {
+        const { data } = await mentorsApi.getAll();
+        if (!cancelled && data && data.length > 0) {
+          const dbMentors: Mentor[] = data.map((d: any) => ({
+            id: d.id, name: d.name || "Mentor", title: d.title || "",
+            expertise: d.expertise || [], bio: d.bio || "",
+            availability: d.availability || "TBD",
+            avatar: (d.name || "M").split(" ").map((n: string) => n[0]).join("").slice(0, 2),
+            category: d.category || "General",
+            yearsExperience: d.years_experience || 0, sessionsDone: d.sessions_done || 0,
+            rating: d.rating || 5.0, offering: d.offering || [],
+          }));
+          setMentors(prev => {
+            const ids = new Set(prev.map(m => m.id));
+            const newFromDb = dbMentors.filter(m => !ids.has(m.id));
+            const seedIds = new Set(SEED_MENTORS.map(s => s.id));
+            const localOnly = prev.filter(m => !seedIds.has(m.id) && !dbMentors.some(d => d.id === m.id));
+            return [...newFromDb, ...localOnly, ...SEED_MENTORS];
+          });
+        }
+      } catch (e) { console.error("DB load failed, using local:", e); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const handleRequestMentor = (mentor: typeof mentors[0]) => {
-    setSelectedMentor(mentor);
-    setShowRequestModal(true);
-  };
+  async function handleRequestMentorship(mentorId: string) {
+    if (requestingId) return;
+    setRequestingId(mentorId);
+    try {
+      if (currentUserId) await mentorsApi.requestMentor({ mentor_id: mentorId, mentee_id: currentUserId, message: "I'd like to connect for mentorship." });
+    } catch (e) { console.error("DB request failed, keeping locally:", e); }
+    setRequestedIds(prev => new Set(prev).add(mentorId));
+    setRequestingId(null);
+  }
+
+  const categories = ["All", ...Array.from(new Set(mentors.map(m => m.category)))];
+
+  const filtered = mentors.filter(m => {
+    if (category !== "All" && m.category !== category) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      return m.name.toLowerCase().includes(q) || m.expertise.some(e => e.toLowerCase().includes(q)) || m.title.toLowerCase().includes(q);
+    }
+    return true;
+  });
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1920&q=80"
-            alt="Mentorship"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/95 to-blue-500/80"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
-            ← Back to Hub
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 text-white">
-            🤝 Mentor Network
-          </h1>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl">
-            Connect with experienced alumni, advisors, and community leaders who want to help you succeed. 
-            Get personalized guidance on leadership, competitions, college prep, and more.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a href="#mentors" className="btn-secondary">
-              Find a Mentor
-            </a>
-            <Link href="/hub/mentors/become" className="bg-white/20 backdrop-blur text-white px-6 py-2.5 font-semibold border-2 border-white/50 hover:bg-white hover:text-blue-600 transition-all rounded-lg">
-              Become a Mentor
-            </Link>
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+          <Link href="/hub" className="text-sm text-teal-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><GraduationCap size={36} /> Mentor Network</h1>
+          <p className="mt-3 max-w-2xl text-teal-50 text-lg">Connect with experienced professionals and alumni for guidance, skill development, and career mentorship.</p>
+          <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{mentors.length}</p><p className="text-xs text-teal-100">Mentors</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{mentors.reduce((s, m) => s + m.sessionsDone, 0)}</p><p className="text-xs text-teal-100">Sessions</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{(mentors.reduce((s, m) => s + m.rating, 0) / mentors.length).toFixed(1)}</p><p className="text-xs text-teal-100">Avg Rating</p></div>
+            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{categories.length - 1}</p><p className="text-xs text-teal-100">Fields</p></div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="bg-white py-6 border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">{mentors.length}</div>
-              <div className="text-sm text-neutral-600">Active Mentors</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">
-                {mentors.reduce((sum, m) => sum + m.sessionsCompleted, 0)}
-              </div>
-              <div className="text-sm text-neutral-600">Sessions Completed</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">
-                {(mentors.reduce((sum, m) => sum + m.rating, 0) / mentors.length).toFixed(1)}
-              </div>
-              <div className="text-sm text-neutral-600">Average Rating</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">
-                {mentors.filter(m => m.availability !== 'Full').length}
-              </div>
-              <div className="text-sm text-neutral-600">Currently Available</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Top Mentors */}
-      <section className="py-12 bg-neutral-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="section-title mb-8">⭐ Top Mentors</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {topMentors.map((mentor, index) => (
-              <div key={mentor.id} className="card-hover overflow-hidden">
-                <div className={`p-6 ${index === 0 ? 'bg-gradient-to-r from-amber-400 to-amber-500' : index === 1 ? 'bg-gradient-to-r from-neutral-400 to-neutral-500' : 'bg-gradient-to-r from-amber-700 to-amber-800'} text-white`}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
-                      {mentor.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg font-heading">{mentor.name}</h3>
-                      <p className="text-white/80 text-sm">{mentor.title}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="text-center">
-                      <div className="font-bold text-primary-500">{mentor.sessionsCompleted}</div>
-                      <div className="text-xs text-neutral-500">Sessions</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-bold text-secondary-500">{mentor.rating}/5</div>
-                      <div className="text-xs text-neutral-500">Rating</div>
-                    </div>
-                    <div className={`ml-auto w-3 h-3 rounded-full ${availabilityColors[mentor.availability]}`} title={mentor.availability}></div>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {mentor.expertise.slice(0, 3).map((exp, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-neutral-100 text-neutral-600 text-xs">
-                        {exp}
-                      </span>
-                    ))}
-                  </div>
-                  <button 
-                    onClick={() => handleRequestMentor(mentor)}
-                    className="w-full btn-primary text-sm"
-                  >
-                    Request Session
-                  </button>
-                </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {}
+        <Reveal>
+          <div className="grid sm:grid-cols-3 gap-4 mb-8">
+            {[
+              { icon: <Search size={20} />, title: "1. Browse Mentors", desc: "Find mentors in your area of interest" },
+              { icon: <Calendar size={20} />, title: "2. Request a Session", desc: "Send a mentorship request with your goals" },
+              { icon: <MessageCircle size={20} />, title: "3. Connect & Grow", desc: "Meet regularly and develop your skills" },
+            ].map(step => (
+              <div key={step.title} className="card p-4 text-center">
+                <div className="text-primary-500 mx-auto flex justify-center mb-2">{step.icon}</div>
+                <h3 className="font-bold text-primary-700 text-sm">{step.title}</h3>
+                <p className="text-xs text-neutral-500 mt-1">{step.desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </Reveal>
 
-      {/* Filters */}
-      <section id="mentors" className="py-8 bg-white border-y border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search mentors..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="input-field pl-12"
-              />
-              <svg
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="select-field"
-            >
-              <option value="">All Mentor Types</option>
-              <option value="Alumni">Alumni</option>
-              <option value="Current Officer">Current Officer</option>
-              <option value="Advisor">Advisor</option>
-              <option value="Community Partner">Community Partner</option>
-            </select>
-            <select
-              value={selectedExpertise}
-              onChange={(e) => setSelectedExpertise(e.target.value)}
-              className="select-field"
-            >
-              <option value="">All Expertise Areas</option>
-              {expertiseAreas.map((area) => (
-                <option key={area} value={area}>{area}</option>
-              ))}
-            </select>
-            <label className="flex items-center gap-3 px-4 py-2 border-2 border-neutral-300 bg-white cursor-pointer">
-              <input
-                type="checkbox"
-                checked={availableOnly}
-                onChange={(e) => setAvailableOnly(e.target.checked)}
-                className="w-5 h-5"
-              />
-              <span className="text-sm font-medium">Available Only</span>
-            </label>
+        {}
+        <div className="card p-4 mb-6 flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+            <input type="text" placeholder="Search mentors, expertise..." value={search} onChange={e => setSearch(e.target.value)} className="input-field pl-9 text-sm" />
           </div>
+          <select value={category} onChange={e => setCategory(e.target.value)} className="select-field text-sm w-auto">{categories.map(c => <option key={c}>{c}</option>)}</select>
         </div>
-      </section>
 
-      {/* Mentor List */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <p className="text-neutral-600 mb-6">{filteredMentors.length} mentors found</p>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {filteredMentors.map((mentor) => (
-              <div key={mentor.id} className="card p-6">
-                <div className="flex gap-4">
-                  {/* Avatar */}
-                  <div className="w-20 h-20 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
-                    {mentor.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-grow">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-bold text-lg text-primary-500 font-heading">{mentor.name}</h3>
-                        <p className="text-neutral-600 text-sm">{mentor.title}</p>
-                        {mentor.organization && (
-                          <p className="text-neutral-500 text-sm">{mentor.organization}</p>
-                        )}
+        {}
+        <div className="space-y-4">
+          {filtered.map(mentor => (
+            <Reveal key={mentor.id}>
+              <div className="card overflow-hidden ux-hover-lift-sm">
+                <div className="p-5">
+                  <div className="flex gap-4">
+                    <div className="w-16 h-16  bg-gradient-to-br from-primary-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg shrink-0">{mentor.avatar}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">{mentor.category}</span>
+                        <span className="text-xs text-yellow-600 flex items-center gap-0.5"><Star size={10} fill="currentColor" /> {mentor.rating}</span>
+                        <span className="text-xs text-neutral-400">{mentor.sessionsDone} sessions</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${availabilityColors[mentor.availability]}`}></div>
-                        <span className="text-xs text-neutral-500">{mentor.availability}</span>
+                      <h3 className="font-bold text-primary-800 text-lg">{mentor.name}</h3>
+                      <p className="text-sm text-neutral-500">{mentor.title}</p>
+                      <p className="text-sm text-neutral-600 mt-2">{mentor.bio}</p>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {mentor.expertise.map(e => <span key={e} className="text-xs px-2 py-0.5 rounded-full bg-teal-50 text-teal-700">{e}</span>)}
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-neutral-500">
+                        <span className="flex items-center gap-1"><Clock size={12} /> {mentor.availability}</span>
+                        <span className="flex items-center gap-1"><Briefcase size={12} /> {mentor.yearsExperience}+ years experience</span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {mentor.offering.map(o => <span key={o} className="text-xs px-2 py-0.5 rounded-full bg-secondary-50 text-secondary-700 border border-secondary-100">{o}</span>)}
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className={`px-2 py-0.5 text-xs font-semibold ${typeColors[mentor.type]}`}>
-                        {mentor.type}
-                      </span>
-                      <span className="text-sm text-neutral-500">⭐ {mentor.rating}</span>
-                      <span className="text-sm text-neutral-500">{mentor.sessionsCompleted} sessions</span>
-                    </div>
                   </div>
                 </div>
-
-                <p className="text-sm text-neutral-600 mt-4 line-clamp-2">{mentor.bio}</p>
-
-                <div className="flex flex-wrap gap-1 mt-4">
-                  {mentor.expertise.map((exp, idx) => (
-                    <span key={idx} className="px-2 py-0.5 bg-primary-50 text-primary-600 text-xs">
-                      {exp}
-                    </span>
-                  ))}
-                </div>
-
-                {mentor.chaptersAdvised.length > 0 && (
-                  <div className="mt-4 text-xs text-neutral-500">
-                    <span className="font-medium">Affiliated with:</span> {mentor.chaptersAdvised.join(', ')}
-                  </div>
-                )}
-
-                {mentor.testimonials.length > 0 && (
-                  <blockquote className="mt-4 pl-4 border-l-4 border-secondary-500 text-sm text-neutral-600 italic">
-                    &ldquo;{mentor.testimonials[0].quote.slice(0, 100)}...&rdquo;
-                    <footer className="text-xs text-neutral-500 mt-1 not-italic">
-                      — {mentor.testimonials[0].author}, {mentor.testimonials[0].role}
-                    </footer>
-                  </blockquote>
-                )}
-
-                <div className="mt-6 flex gap-3">
-                  <button
-                    onClick={() => handleRequestMentor(mentor)}
-                    className={`flex-1 py-2 font-semibold transition-all
-                      ${mentor.availability === 'Full'
-                        ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
-                        : 'btn-primary'
-                      }`}
-                    disabled={mentor.availability === 'Full'}
-                  >
-                    {mentor.availability === 'Full' ? 'Not Available' : 'Request Session'}
-                  </button>
-                  <button className="btn-outline px-4">
-                    View Profile
-                  </button>
+                <div className="px-5 py-3 border-t border-neutral-100 bg-neutral-50/50 flex justify-between items-center">
+                  <span className="text-xs text-neutral-400">{mentor.yearsExperience}+ years in field</span>
+                  {requestedIds.has(mentor.id) ? (
+                    <span className="text-sm text-green-600 flex items-center gap-1"><CheckCircle size={14} /> Requested</span>
+                  ) : (
+                    <button onClick={() => handleRequestMentorship(mentor.id)} disabled={!currentUserId || requestingId === mentor.id} className="btn-primary text-sm px-4 py-1.5 disabled:opacity-50 flex items-center gap-1">
+                      {requestingId === mentor.id ? <><Loader2 size={13} className="animate-spin" /> Sending…</> : "Request Mentorship"}
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-
-          {filteredMentors.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-neutral-500">No mentors match your criteria.</p>
-              <button
-                onClick={() => { setSearchQuery(''); setSelectedType(''); setSelectedExpertise(''); setAvailableOnly(false); }}
-                className="text-primary-500 hover:underline mt-2"
-              >
-                Clear filters
-              </button>
-            </div>
-          )}
+            </Reveal>
+          ))}
         </div>
-      </section>
 
-      {/* Become a Mentor CTA */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold font-heading mb-4">Want to Give Back?</h2>
-          <p className="text-lg text-white/90 mb-8">
-            Share your experience and help the next generation of student leaders. 
-            Whether you&apos;re an alum, current officer, or community member, your guidance matters.
-          </p>
-          <Link 
-            href="/hub/mentors/become"
-            className="btn-secondary"
-          >
-            Apply to Be a Mentor
-          </Link>
-        </div>
-      </section>
-
-      {/* Request Modal */}
-      {showRequestModal && selectedMentor && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white max-w-lg w-full max-h-[90vh] overflow-y-auto p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-primary-500 font-heading">Request Mentorship</h2>
-              <button 
-                onClick={() => setShowRequestModal(false)}
-                className="text-neutral-500 hover:text-neutral-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="flex items-center gap-4 mb-6 p-4 bg-neutral-50">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                {selectedMentor.name.split(' ').map(n => n[0]).join('')}
-              </div>
-              <div>
-                <h3 className="font-bold text-primary-500">{selectedMentor.name}</h3>
-                <p className="text-sm text-neutral-600">{selectedMentor.title}</p>
-              </div>
-            </div>
-
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Your Name *</label>
-                <input type="text" className="input-field" required />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Your Email *</label>
-                <input type="email" className="input-field" required />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Your Club/Role (Optional)</label>
-                <input type="text" className="input-field" placeholder="e.g., Robotics Team President" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Topics You&apos;d Like to Discuss *</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {selectedMentor.expertise.map((exp, idx) => (
-                    <label key={idx} className="flex items-center gap-2 p-2 border border-neutral-200 cursor-pointer hover:bg-neutral-50">
-                      <input type="checkbox" className="w-4 h-4" />
-                      <span className="text-sm">{exp}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Message to Mentor *</label>
-                <textarea 
-                  className="input-field min-h-[100px]" 
-                  placeholder="Introduce yourself and explain what you're hoping to get out of this mentorship..."
-                  required
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Preferred Schedule</label>
-                <select className="select-field">
-                  <option value="">Select a time preference...</option>
-                  <option value="weekday-afternoon">Weekday Afternoons</option>
-                  <option value="weekday-evening">Weekday Evenings</option>
-                  <option value="weekend">Weekends</option>
-                  <option value="flexible">Flexible</option>
-                </select>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button type="submit" className="btn-primary flex-1">
-                  Send Request
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setShowRequestModal(false)}
-                  className="btn-outline"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+        {filtered.length === 0 && (
+          <div className="card p-8 text-center"><GraduationCap size={40} className="mx-auto text-neutral-300" /><p className="mt-3 text-neutral-500">No mentors match your search.</p></div>
+        )}
+      </div>
     </div>
   );
 }

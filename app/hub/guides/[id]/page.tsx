@@ -34,8 +34,8 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
   const progress = (completedSteps.length / guide.steps.length) * 100;
 
   const toggleStep = (stepNumber: number) => {
-    setCompletedSteps(prev => 
-      prev.includes(stepNumber) 
+    setCompletedSteps(prev =>
+      prev.includes(stepNumber)
         ? prev.filter(s => s !== stepNumber)
         : [...prev, stepNumber]
     );
@@ -43,7 +43,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Header */}
+      {}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0">
           <Image
@@ -53,7 +53,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/95 to-primary-500/80"></div>
+          <div className="absolute inset-0 bg-primary-600/90"></div>
         </div>
         <div className="relative max-w-4xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
@@ -76,7 +76,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       </section>
 
-      {/* Progress Bar */}
+      {}
       <section className="bg-white border-b border-neutral-200 py-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-between mb-2">
@@ -84,7 +84,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
             <span className="text-sm font-bold text-primary-500">{completedSteps.length} / {guide.steps.length} steps</span>
           </div>
           <div className="w-full bg-neutral-200 h-3 overflow-hidden">
-            <div 
+            <div
               className="bg-gradient-to-r from-secondary-500 to-secondary-400 h-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             ></div>
@@ -92,13 +92,13 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       </section>
 
-      {/* Main Content */}
+      {}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Steps */}
+          {}
           <div className="lg:col-span-2 space-y-6">
             {guide.steps.map((step) => (
-              <div 
+              <div
                 key={step.stepNumber}
                 className={`card p-6 transition-all ${completedSteps.includes(step.stepNumber) ? 'bg-green-50 border-green-300' : ''}`}
               >
@@ -106,8 +106,8 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
                   <button
                     onClick={() => toggleStep(step.stepNumber)}
                     className={`w-10 h-10 flex-shrink-0 flex items-center justify-center font-bold transition-all
-                      ${completedSteps.includes(step.stepNumber) 
-                        ? 'bg-green-500 text-white' 
+                      ${completedSteps.includes(step.stepNumber)
+                        ? 'bg-green-500 text-white'
                         : 'bg-primary-100 text-primary-500 hover:bg-primary-200'
                       }`}
                   >
@@ -116,7 +116,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
                   <div className="flex-grow">
                     <h3 className="font-bold text-lg text-primary-500 mb-3 font-heading">{step.title}</h3>
                     <p className="text-neutral-700 leading-relaxed mb-4">{step.content}</p>
-                    
+
                     {step.tips && step.tips.length > 0 && (
                       <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
                         <h4 className="font-semibold text-blue-700 mb-2">💡 Tips</h4>
@@ -160,9 +160,9 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             ))}
 
-            {/* Completion Message */}
+            {}
             {completedSteps.length === guide.steps.length && (
-              <div className="card p-8 bg-gradient-to-r from-green-500 to-green-600 text-white text-center">
+              <div className="card p-8 bg-primary-600 text-white text-center">
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold font-heading mb-2">Congratulations!</h3>
                 <p className="text-white/90 mb-4">You&apos;ve completed this guide. You&apos;re ready to take action!</p>
@@ -173,9 +173,9 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
             )}
           </div>
 
-          {/* Sidebar */}
+          {}
           <div className="space-y-6">
-            {/* Actions */}
+            {}
             <div className="card p-6">
               <h3 className="font-bold text-primary-500 mb-4 font-heading">Actions</h3>
               <div className="space-y-3">
@@ -195,18 +195,18 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
-            {/* Helpful */}
+            {}
             <div className="card p-6">
               <h3 className="font-bold text-primary-500 mb-4 font-heading">Was this helpful?</h3>
               {!showHelpful ? (
                 <div className="flex gap-3">
-                  <button 
+                  <button
                     onClick={() => setShowHelpful(true)}
                     className="flex-1 py-2 border-2 border-green-500 text-green-600 hover:bg-green-50 transition-colors font-semibold"
                   >
                     👍 Yes
                   </button>
-                  <button 
+                  <button
                     onClick={() => setShowHelpful(true)}
                     className="flex-1 py-2 border-2 border-neutral-300 text-neutral-600 hover:bg-neutral-50 transition-colors font-semibold"
                   >
@@ -220,7 +220,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
               )}
             </div>
 
-            {/* Related Guides */}
+            {}
             {relatedGuides.length > 0 && (
               <div className="card p-6">
                 <h3 className="font-bold text-primary-500 mb-4 font-heading">Related Guides</h3>
@@ -239,7 +239,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             )}
 
-            {/* Need Help */}
+            {}
             <div className="card p-6 bg-gradient-to-br from-secondary-50 to-secondary-100 border-secondary-200">
               <h3 className="font-bold text-secondary-700 mb-3 font-heading">Need More Help?</h3>
               <p className="text-sm text-secondary-600 mb-4">

@@ -1,516 +1,231 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { calendarEvents } from '@/lib/hubData';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { events, chapters } from "@/lib/data";
+import {
+  Calendar as CalIcon, ChevronLeft, ChevronRight, Clock, Download, Filter, MapPin, Search, Tag, Users
+} from "lucide-react";
 
-const eventTypeColors = {
-  'Meeting': 'bg-blue-100 text-blue-700 border-blue-300',
-  'Competition': 'bg-red-100 text-red-700 border-red-300',
-  'Deadline': 'bg-amber-100 text-amber-700 border-amber-300',
-  'Workshop': 'bg-purple-100 text-purple-700 border-purple-300',
-  'Event': 'bg-green-100 text-green-700 border-green-300'
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+interface CalendarEvent {
+  id: string; title: string; date: string; time: string; club: string;
+  category: string; location: string; type: "meeting" | "competition" | "social" | "service" | "workshop" | "deadline";
+}
+
+const CALENDAR_EVENTS: CalendarEvent[] = [
+  ...events.map(e => ({
+    id: e.id, title: e.title, date: e.date || "2026-03-15", time: "3:30 PM",
+    club: chapters.find(c => c.id === e.chapterId)?.name || "School-Wide",
+    category: e.category || "General", location: e.location || "TBD",
+    type: "meeting" as const,
+  })),
+  { id: "ce1", title: "Robotics Build Session", date: "2026-03-05", time: "3:30 PM", club: "Robotics Club", category: "STEM", location: "Room 204", type: "workshop" },
+  { id: "ce2", title: "Model UN Practice", date: "2026-03-07", time: "3:30 PM", club: "Model United Nations", category: "Academic", location: "Room 115", type: "meeting" },
+  { id: "ce3", title: "Art Club Open Studio", date: "2026-03-10", time: "3:00 PM", club: "Art Club", category: "Arts", location: "Art Room", type: "social" },
+  { id: "ce4", title: "Beach Cleanup", date: "2026-03-12", time: "9:00 AM", club: "Environmental Club", category: "Service", location: "Juanita Beach", type: "service" },
+  { id: "ce5", title: "Spring Dance Committee", date: "2026-03-14", time: "12:00 PM", club: "Student Council", category: "Social", location: "Cafeteria", type: "meeting" },
+  { id: "ce6", title: "Science Olympiad Invitational", date: "2026-03-08", time: "8:00 AM", club: "Science Olympiad", category: "STEM", location: "Off-Site", type: "competition" },
+  { id: "ce7", title: "Debate Qualifier Deadline", date: "2026-03-10", time: "11:59 PM", club: "Debate Team", category: "Academic", location: "Online", type: "deadline" },
+  { id: "ce8", title: "Cultural Food Festival", date: "2026-03-20", time: "5:00 PM", club: "Cultural Exchange", category: "Cultural", location: "Commons", type: "social" },
+  { id: "ce9", title: "CS Club Hackathon Prep", date: "2026-03-18", time: "3:30 PM", club: "CS Club", category: "STEM", location: "Computer Lab", type: "workshop" },
+  { id: "ce10", title: "Drama Rehearsal", date: "2026-03-22", time: "4:00 PM", club: "Drama Club", category: "Arts", location: "Auditorium", type: "meeting" },
+  { id: "ce11", title: "Key Club Volunteering", date: "2026-03-25", time: "10:00 AM", club: "Key Club", category: "Service", location: "Community Center", type: "service" },
+  { id: "ce12", title: "TSA Regional Entry Deadline", date: "2026-03-20", time: "11:59 PM", club: "TSA", category: "STEM", location: "Online", type: "deadline" },
+];
+
+const TYPE_COLORS: Record<string, string> = {
+  meeting: "bg-blue-500", competition: "bg-red-500", social: "bg-purple-500",
+  service: "bg-green-500", workshop: "bg-yellow-500", deadline: "bg-orange-500",
 };
 
-type EventType = keyof typeof eventTypeColors;
+function getDaysInMonth(year: number, month: number) { return new Date(year, month + 1, 0).getDate(); }
+function getFirstDayOfWeek(year: number, month: number) { return new Date(year, month, 1).getDay(); }
 
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const CALENDAR_LS_KEY = "clubconnect_calendar_events";
+
+function loadCalendarEvents(): CalendarEvent[] {
+  try {
+    const s = localStorage.getItem(CALENDAR_LS_KEY);
+    if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length) return p; }
+  } catch {}
+  return CALENDAR_EVENTS;
+}
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedEvent, setSelectedEvent] = useState<typeof calendarEvents[0] | null>(null);
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
-  const [showExportModal, setShowExportModal] = useState(false);
-  const [subscribedClubs, setSubscribedClubs] = useState<string[]>(['TSA', 'DECA']);
+  const [calEvents, setCalEvents] = useState<CalendarEvent[]>(() => loadCalendarEvents());
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1));
+  const [view, setView] = useState<"month" | "list">("month");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
+  useEffect(() => { try { localStorage.setItem(CALENDAR_LS_KEY, JSON.stringify(calEvents)); } catch {} }, [calEvents]);
 
-  // Get days in month
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDay = getFirstDayOfWeek(year, month);
+  const types = ["All", "meeting", "competition", "social", "service", "workshop", "deadline"];
 
-  // Filter events for current month
-  const monthEvents = calendarEvents.filter(event => {
-    const eventDate = new Date(event.startDate);
-    return eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear;
-  });
+  function prevMonth() { setCurrentDate(new Date(year, month - 1, 1)); setSelectedDay(null); }
+  function nextMonth() { setCurrentDate(new Date(year, month + 1, 1)); setSelectedDay(null); }
 
-  // Get events for a specific day
-  const getEventsForDay = (day: number) => {
-    return monthEvents.filter(event => {
-      const eventDate = new Date(event.startDate);
-      return eventDate.getDate() === day;
-    });
-  };
+  function getEventsForDay(day: number): CalendarEvent[] {
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return calEvents.filter(e => e.date === dateStr);
+  }
 
-  const navigateMonth = (direction: number) => {
-    setCurrentDate(new Date(currentYear, currentMonth + direction, 1));
-  };
+  const monthEvents = calEvents.filter(e => {
+    const d = new Date(e.date);
+    return d.getMonth() === month && d.getFullYear() === year;
+  }).filter(e => typeFilter === "All" || e.type === typeFilter).sort((a, b) => a.date.localeCompare(b.date));
 
-  const upcomingEvents = calendarEvents
-    .filter(event => new Date(event.startDate) >= new Date())
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
-    .slice(0, 10);
-
-  const allClubs = [...new Set(calendarEvents.map(e => e.chapterName || 'Unknown'))];
-
-  const handleSubscribe = (club: string) => {
-    if (subscribedClubs.includes(club)) {
-      setSubscribedClubs(subscribedClubs.filter(c => c !== club));
-    } else {
-      setSubscribedClubs([...subscribedClubs, club]);
-    }
-  };
-
-  const generateICS = () => {
-    // In production, this would generate an actual .ics file
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//ClubConnect//Events//EN
-${calendarEvents.map(event => `BEGIN:VEVENT
-DTSTART:${new Date(event.startDate).toISOString().replace(/[-:]/g, '').split('.')[0]}Z
-DTEND:${new Date(event.endDate).toISOString().replace(/[-:]/g, '').split('.')[0]}Z
-SUMMARY:${event.title}
-DESCRIPTION:${event.description}
-LOCATION:${event.location}
-END:VEVENT`).join('\n')}
-END:VCALENDAR`;
-
-    const blob = new Blob([icsContent], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'clubconnect-events.ics';
-    a.click();
-  };
+  const selectedDayEvents = selectedDay ? getEventsForDay(selectedDay) : [];
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=1920&q=80"
-            alt="Calendar"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/95 to-blue-600/80"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
-            ← Back to Hub
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 text-white">
-            📅 Events Calendar
-          </h1>
-          <p className="text-xl text-white/90 mb-8 max-w-2xl">
-            Stay on top of club meetings, competitions, deadlines, and special events. 
-            Subscribe to calendars and sync with your favorite apps.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a href="#calendar" className="btn-secondary">
-              View Calendar
-            </a>
-            <button 
-              onClick={() => setShowExportModal(true)}
-              className="bg-white/20 backdrop-blur text-white px-6 py-2.5 font-semibold border-2 border-white/50 hover:bg-white hover:text-cyan-600 transition-all rounded-lg"
-            >
-              Export / Subscribe
-            </button>
-          </div>
+      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+          <Link href="/hub" className="text-sm text-sky-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><CalIcon size={36} /> Community Calendar</h1>
+          <p className="mt-3 max-w-2xl text-sky-50 text-lg">All club events, competitions, and deadlines in one place.</p>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="bg-white py-6 border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">{calendarEvents.length}</div>
-              <div className="text-sm text-neutral-600">Total Events</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-primary-500 font-heading">{monthEvents.length}</div>
-              <div className="text-sm text-neutral-600">This Month</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">{allClubs.length}</div>
-              <div className="text-sm text-neutral-600">Active Clubs</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-secondary-500 font-heading">{subscribedClubs.length}</div>
-              <div className="text-sm text-neutral-600">Subscribed</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {}
+        <div className="card p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button onClick={prevMonth} className="p-2 hover:bg-neutral-100 "><ChevronLeft size={18} /></button>
+            <h2 className="font-bold text-primary-700 text-lg">{MONTHS[month]} {year}</h2>
+            <button onClick={nextMonth} className="p-2 hover:bg-neutral-100 "><ChevronRight size={18} /></button>
+          </div>
+          <div className="flex items-center gap-2">
+            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="select-field text-sm w-auto">
+              {types.map(t => <option key={t} value={t}>{t === "All" ? "All Types" : t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+            </select>
+            <div className="flex  border border-neutral-200 overflow-hidden">
+              <button onClick={() => setView("month")} className={`px-3 py-1.5 text-sm ${view === "month" ? "bg-primary-600 text-white" : "bg-white text-neutral-600"}`}>Month</button>
+              <button onClick={() => setView("list")} className={`px-3 py-1.5 text-sm ${view === "list" ? "bg-primary-600 text-white" : "bg-white text-neutral-600"}`}>List</button>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* View Toggle & Navigation */}
-      <section id="calendar" className="py-6 bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            {/* Month Navigation */}
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => navigateMonth(-1)}
-                className="p-2 hover:bg-neutral-100 transition-colors"
-              >
-                ◀
-              </button>
-              <h2 className="text-xl font-bold text-primary-500 font-heading min-w-[180px] text-center">
-                {months[currentMonth]} {currentYear}
-              </h2>
-              <button 
-                onClick={() => navigateMonth(1)}
-                className="p-2 hover:bg-neutral-100 transition-colors"
-              >
-                ▶
-              </button>
-              <button 
-                onClick={() => setCurrentDate(new Date())}
-                className="text-sm text-primary-500 hover:underline"
-              >
-                Today
-              </button>
-            </div>
-
-            {/* View Toggle */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode('calendar')}
-                className={`px-4 py-2 font-semibold transition-all
-                  ${viewMode === 'calendar' ? 'bg-primary-500 text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'}`}
-              >
-                📅 Calendar
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-4 py-2 font-semibold transition-all
-                  ${viewMode === 'list' ? 'bg-primary-500 text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'}`}
-              >
-                📋 List
-              </button>
-            </div>
-          </div>
+        {}
+        <div className="flex flex-wrap gap-3 mb-4 text-xs">
+          {Object.entries(TYPE_COLORS).map(([type, color]) => (
+            <span key={type} className="flex items-center gap-1"><span className={`w-2.5 h-2.5 rounded-full ${color}`} /> {type.charAt(0).toUpperCase() + type.slice(1)}</span>
+          ))}
         </div>
-      </section>
 
-      {/* Calendar View */}
-      {viewMode === 'calendar' && (
-        <section className="py-8">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="card overflow-hidden">
-              {/* Day Headers */}
-              <div className="grid grid-cols-7 bg-primary-500 text-white">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="p-3 text-center font-semibold text-sm">
-                    {day}
+        {view === "month" ? (
+          <div className="lg:grid lg:grid-cols-4 lg:gap-6">
+            {}
+            <div className="lg:col-span-3">
+              <Reveal>
+                <div className="card overflow-hidden">
+                  <div className="grid grid-cols-7 bg-primary-50 border-b border-neutral-200">
+                    {DAYS.map(d => <div key={d} className="p-2 text-center text-xs font-bold text-primary-600">{d}</div>)}
                   </div>
-                ))}
-              </div>
+                  <div className="grid grid-cols-7 divide-x divide-y divide-neutral-100">
+                    {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} className="min-h-[80px] bg-neutral-50/50 p-1" />)}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const day = i + 1;
+                      const dayEvents = getEventsForDay(day);
+                      const isToday = false;
+                      const isSelected = selectedDay === day;
+                      return (
+                        <button key={day} onClick={() => setSelectedDay(day === selectedDay ? null : day)} className={`min-h-[80px] p-1 text-left hover:bg-primary-50/30 transition-colors ${isSelected ? "bg-primary-50 ring-2 ring-primary-300" : ""}`}>
+                          <span className={`text-xs font-semibold ${isSelected ? "text-primary-600" : "text-neutral-700"}`}>{day}</span>
+                          <div className="mt-0.5 space-y-0.5">
+                            {dayEvents.slice(0, 3).map(ev => (
+                              <div key={ev.id} className={`text-[9px] px-1 py-0.5 rounded text-white truncate ${TYPE_COLORS[ev.type]}`}>{ev.title}</div>
+                            ))}
+                            {dayEvents.length > 3 && <span className="text-[9px] text-neutral-400">+{dayEvents.length - 3} more</span>}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </Reveal>
+            </div>
 
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7">
-                {/* Empty cells for days before month starts */}
-                {Array.from({ length: firstDayOfMonth }).map((_, idx) => (
-                  <div key={`empty-${idx}`} className="min-h-[100px] p-2 bg-neutral-50 border border-neutral-100"></div>
-                ))}
-
-                {/* Days of the month */}
-                {Array.from({ length: daysInMonth }).map((_, idx) => {
-                  const day = idx + 1;
-                  const dayEvents = getEventsForDay(day);
-                  const isToday = new Date().getDate() === day && 
-                                  new Date().getMonth() === currentMonth && 
-                                  new Date().getFullYear() === currentYear;
-
-                  return (
-                    <div 
-                      key={day} 
-                      className={`min-h-[100px] p-2 border border-neutral-100 ${isToday ? 'bg-blue-50' : 'bg-white'}`}
-                    >
-                      <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-blue-600' : 'text-neutral-700'}`}>
-                        {day}
-                      </div>
-                      <div className="space-y-1">
-                        {dayEvents.slice(0, 3).map((event) => (
-                          <div
-                            key={event.id}
-                            onClick={() => setSelectedEvent(event)}
-                            className={`text-xs p-1 truncate cursor-pointer hover:opacity-80 border ${eventTypeColors[event.eventType as EventType] || 'bg-neutral-100 text-neutral-700 border-neutral-300'}`}
-                          >
-                            {event.title}
+            {}
+            <div className="mt-6 lg:mt-0">
+              <div className="card p-4 sticky top-4">
+                {selectedDay ? (
+                  <>
+                    <h3 className="font-bold text-primary-700 mb-3">{MONTHS[month]} {selectedDay}, {year}</h3>
+                    {selectedDayEvents.length > 0 ? (
+                      <div className="space-y-2">
+                        {selectedDayEvents.map(ev => (
+                          <div key={ev.id} className="p-3  bg-neutral-50 border border-neutral-100">
+                            <div className="flex items-center gap-1 mb-1">
+                              <span className={`w-2 h-2 rounded-full ${TYPE_COLORS[ev.type]}`} />
+                              <span className="text-[10px] text-neutral-400 capitalize">{ev.type}</span>
+                            </div>
+                            <h4 className="font-semibold text-primary-800 text-sm">{ev.title}</h4>
+                            <p className="text-xs text-neutral-500">{ev.club}</p>
+                            <div className="mt-1 text-xs text-neutral-400 space-y-0.5">
+                              <p className="flex items-center gap-1"><Clock size={10} /> {ev.time}</p>
+                              <p className="flex items-center gap-1"><MapPin size={10} /> {ev.location}</p>
+                            </div>
                           </div>
                         ))}
-                        {dayEvents.length > 3 && (
-                          <div className="text-xs text-neutral-500 cursor-pointer hover:text-primary-500">
-                            +{dayEvents.length - 3} more
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* List View */}
-      {viewMode === 'list' && (
-        <section className="py-8">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="space-y-4">
-              {monthEvents.length === 0 ? (
-                <div className="card p-12 text-center">
-                  <p className="text-neutral-500">No events scheduled for {months[currentMonth]} {currentYear}</p>
-                </div>
-              ) : (
-                monthEvents
-                  .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
-                  .map((event) => (
-                    <div 
-                      key={event.id} 
-                      className="card p-4 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => setSelectedEvent(event)}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Date */}
-                        <div className="flex-shrink-0 w-16 text-center">
-                          <div className="text-2xl font-bold text-primary-500 font-heading">
-                            {new Date(event.startDate).getDate()}
-                          </div>
-                          <div className="text-xs text-neutral-500">
-                            {months[new Date(event.startDate).getMonth()].slice(0, 3)}
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-grow">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`px-2 py-0.5 text-xs font-semibold border ${eventTypeColors[event.eventType as EventType] || 'bg-neutral-100 text-neutral-700 border-neutral-300'}`}>
-                              {event.eventType}
-                            </span>
-                            <span className="text-xs text-neutral-500">{event.chapterName || 'General'}</span>
-                          </div>
-                          <h3 className="font-bold text-neutral-700">{event.title}</h3>
-                          <p className="text-sm text-neutral-600 line-clamp-1">{event.description}</p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-neutral-500">
-                            <span>🕐 {new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            <span>📍 {event.location}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Upcoming Events Sidebar */}
-      <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Upcoming Events */}
-            <div className="md:col-span-2">
-              <h2 className="section-title mb-6">📆 Upcoming Events</h2>
-              <div className="space-y-3">
-                {upcomingEvents.map((event) => {
-                  const eventDate = new Date(event.startDate);
-                  const daysAway = Math.ceil((eventDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-
-                  return (
-                    <div 
-                      key={event.id} 
-                      className="card p-4 flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => setSelectedEvent(event)}
-                    >
-                      <div className="flex-shrink-0 w-14 h-14 bg-primary-100 flex flex-col items-center justify-center">
-                        <div className="text-lg font-bold text-primary-600">{eventDate.getDate()}</div>
-                        <div className="text-xs text-primary-500">{months[eventDate.getMonth()].slice(0, 3)}</div>
-                      </div>
-                      <div className="flex-grow">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 text-xs font-semibold border ${eventTypeColors[event.eventType as EventType] || 'bg-neutral-100'}`}>
-                            {event.eventType}
-                          </span>
-                          {daysAway <= 3 && (
-                            <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold">
-                              {daysAway === 0 ? 'Today!' : daysAway === 1 ? 'Tomorrow' : `${daysAway} days`}
-                            </span>
-                          )}
-                        </div>
-                        <h4 className="font-semibold text-neutral-700">{event.title}</h4>
-                        <div className="text-xs text-neutral-500">{event.chapterName || 'General'} • {event.location}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Club Subscriptions */}
-            <div>
-              <h2 className="section-title mb-6">🔔 Subscriptions</h2>
-              <div className="card p-4">
-                <p className="text-sm text-neutral-600 mb-4">
-                  Subscribe to clubs to see their events and get notifications.
-                </p>
-                <div className="space-y-2">
-                  {allClubs.map((club) => (
-                    <label key={club} className="flex items-center gap-3 p-2 hover:bg-neutral-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={subscribedClubs.includes(club)}
-                        onChange={() => handleSubscribe(club)}
-                        className="w-5 h-5"
-                      />
-                      <span className="text-sm font-medium text-neutral-700">{club}</span>
-                    </label>
-                  ))}
-                </div>
-                <button 
-                  onClick={() => setShowExportModal(true)}
-                  className="btn-outline w-full mt-4"
-                >
-                  Export Subscribed Events
-                </button>
-              </div>
-
-              {/* Event Type Legend */}
-              <div className="card p-4 mt-6">
-                <h3 className="font-semibold text-neutral-700 mb-3">Event Types</h3>
-                <div className="space-y-2">
-                  {Object.entries(eventTypeColors).map(([type, colors]) => (
-                    <div key={type} className="flex items-center gap-2">
-                      <div className={`w-4 h-4 border ${colors}`}></div>
-                      <span className="text-sm text-neutral-600">{type}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Event Detail Modal */}
-      {selectedEvent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white max-w-lg w-full p-8">
-            <div className="flex items-center justify-between mb-6">
-              <span className={`px-3 py-1 text-sm font-semibold border ${eventTypeColors[selectedEvent.eventType as EventType] || 'bg-neutral-100'}`}>
-                {selectedEvent.eventType}
-              </span>
-              <button 
-                onClick={() => setSelectedEvent(null)}
-                className="text-neutral-500 hover:text-neutral-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <h2 className="text-2xl font-bold text-primary-500 font-heading mb-2">{selectedEvent.title}</h2>
-            <p className="text-neutral-500 mb-4">{selectedEvent.chapterName || 'General'}</p>
-
-            <p className="text-neutral-600 mb-6">{selectedEvent.description}</p>
-
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3">
-                <span className="text-xl">📅</span>
-                <div>
-                  <div className="font-semibold text-neutral-700">
-                    {new Date(selectedEvent.startDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                    ) : (
+                      <p className="text-sm text-neutral-400">No events on this day.</p>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center text-sm text-neutral-400">
+                    <CalIcon size={24} className="mx-auto text-neutral-300 mb-2" />
+                    Click a day to see events
                   </div>
-                  <div className="text-sm text-neutral-500">
-                    {new Date(selectedEvent.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(selectedEvent.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Reveal>
+            <div className="space-y-3">
+              {monthEvents.length > 0 ? monthEvents.map(ev => (
+                <div key={ev.id} className="card p-4 flex items-center gap-4 ux-hover-lift-sm">
+                  <div className="text-center min-w-[50px]">
+                    <p className="text-xs text-neutral-400 uppercase">{MONTHS[month].slice(0, 3)}</p>
+                    <p className="text-2xl font-bold text-primary-700">{new Date(ev.date).getDate()}</p>
+                  </div>
+                  <span className={`w-1 h-10 rounded-full ${TYPE_COLORS[ev.type]}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 capitalize">{ev.type}</span>
+                    </div>
+                    <h3 className="font-bold text-primary-800">{ev.title}</h3>
+                    <p className="text-xs text-neutral-500">{ev.club} · {ev.time} · {ev.location}</p>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span className="text-xl">📍</span>
-                <div className="font-semibold text-neutral-700">{selectedEvent.location}</div>
-              </div>
-
-              {selectedEvent.isRecurring && (
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">🔄</span>
-                  <div className="text-neutral-600">Recurring: {selectedEvent.recurrencePattern}</div>
-                </div>
+              )) : (
+                <div className="card p-8 text-center"><CalIcon size={40} className="mx-auto text-neutral-300" /><p className="mt-3 text-neutral-500">No events this month.</p></div>
               )}
             </div>
-
-            <div className="flex gap-4">
-              <button className="btn-primary flex-1">
-                Add to My Calendar
-              </button>
-              <button 
-                onClick={() => setSelectedEvent(null)}
-                className="btn-outline"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Export Modal */}
-      {showExportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white max-w-md w-full p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-primary-500 font-heading">Export Calendar</h2>
-              <button 
-                onClick={() => setShowExportModal(false)}
-                className="text-neutral-500 hover:text-neutral-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <button 
-                onClick={generateICS}
-                className="w-full p-4 border-2 border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
-              >
-                <div className="font-bold text-neutral-700">📥 Download .ICS File</div>
-                <div className="text-sm text-neutral-500">Import into any calendar app</div>
-              </button>
-
-              <button className="w-full p-4 border-2 border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all text-left">
-                <div className="font-bold text-neutral-700">🔗 Subscribe via URL</div>
-                <div className="text-sm text-neutral-500">Auto-sync with Google Calendar, Apple Calendar, etc.</div>
-              </button>
-
-              <button className="w-full p-4 border-2 border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all text-left">
-                <div className="font-bold text-neutral-700">📧 Email Reminders</div>
-                <div className="text-sm text-neutral-500">Get email notifications for upcoming events</div>
-              </button>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-neutral-200">
-              <p className="text-xs text-neutral-500 mb-4">
-                Subscribed clubs: {subscribedClubs.join(', ') || 'None selected'}
-              </p>
-              <button 
-                onClick={() => setShowExportModal(false)}
-                className="btn-outline w-full"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </Reveal>
+        )}
+      </div>
     </div>
   );
 }

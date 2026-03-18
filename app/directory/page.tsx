@@ -1,264 +1,516 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { chapters } from '@/lib/data';
-import { ChapterCategory, MeetingFrequency, MembershipStatus, GradeLevel, MeetingTime } from '@/types';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { chapters as staticChapters, quizQuestions } from "@/lib/data";
+import { getCreatedChapters, removeCreatedChapter } from "@/lib/clientState";
+import { getLocationScopeKey } from "@/lib/location";
+import { inferDay, matchesSize } from "@/lib/directoryConstants";
+import DirectoryFilters, {
+  type DirectoryFilterState,
+} from "@/components/directory/DirectoryFilters";
+import ClubGrid from "@/components/directory/ClubGrid";
+import HeroSection from "@/components/HeroSection";
+import { HelpCircle, Sparkles, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 
-const categories: ChapterCategory[] = ['Academic', 'Arts', 'Service', 'Cultural', 'STEM', 'Sports', 'Leadership', 'Media', 'Other'];
-const frequencies: MeetingFrequency[] = ['Daily', 'Weekly', 'Bi-weekly', 'Monthly'];
-const membershipStatuses: MembershipStatus[] = ['Open Enrollment', 'Tryout Required', 'Application Required'];
-const gradeLevels: GradeLevel[] = ['9th Only', '10th-12th', 'All Grades'];
-const meetingTimes: MeetingTime[] = ['Before School', 'Lunch', 'After School', 'Weekends'];
+const DirectoryLeafletMap = dynamic(
+  () => import("@/components/DirectoryLeafletMap"),
+  { ssr: false },
+);
 
-export default function DirectoryPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedFrequency, setSelectedFrequency] = useState<string>('');
-  const [selectedMembership, setSelectedMembership] = useState<string>('');
-  const [selectedGradeLevel, setSelectedGradeLevel] = useState<string>('');
-  const [selectedMeetingTime, setSelectedMeetingTime] = useState<string>('');
-  const [showFilters, setShowFilters] = useState(false);
+/* ── URL ↔ state helpers ── */
 
-  const filteredChapters = useMemo(() => {
-    return chapters.filter((chapter) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch = 
-          chapter.name.toLowerCase().includes(query) ||
-          chapter.description.toLowerCase().includes(query) ||
-          chapter.category.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
+const FILTER_KEYS: (keyof DirectoryFilterState)[] = [
+  "search",
+  "meetingDay",
+  "meetingTime",
+  "category",
+  "scopeFilter",
+  "size",
+  "status",
+];
 
-      if (selectedCategory && chapter.category !== selectedCategory) return false;
-      if (selectedFrequency && chapter.meetingFrequency !== selectedFrequency) return false;
-      if (selectedMembership && chapter.membershipStatus !== selectedMembership) return false;
-      if (selectedGradeLevel && chapter.gradeLevel !== selectedGradeLevel) return false;
-      if (selectedMeetingTime && chapter.meetingTime !== selectedMeetingTime) return false;
+const DEFAULT_FILTERS: DirectoryFilterState = {
+  search: "",
+  meetingDay: "Any",
+  meetingTime: "Any",
+  category: "Any",
+  scopeFilter: "Any",
+  size: "Any",
+  status: "Any",
+};
 
-      return true;
-    });
-  }, [searchQuery, selectedCategory, selectedFrequency, selectedMembership, selectedGradeLevel, selectedMeetingTime]);
+function filtersFromParams(params: URLSearchParams): DirectoryFilterState {
+  return {
+    search: params.get("search") ?? DEFAULT_FILTERS.search,
+    meetingDay: params.get("meetingDay") ?? DEFAULT_FILTERS.meetingDay,
+    meetingTime: params.get("meetingTime") ?? DEFAULT_FILTERS.meetingTime,
+    category: params.get("category") ?? DEFAULT_FILTERS.category,
+    scopeFilter: params.get("scopeFilter") ?? DEFAULT_FILTERS.scopeFilter,
+    size: params.get("size") ?? DEFAULT_FILTERS.size,
+    status: params.get("status") ?? DEFAULT_FILTERS.status,
+  };
+}
 
-  const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory('');
-    setSelectedFrequency('');
-    setSelectedMembership('');
-    setSelectedGradeLevel('');
-    setSelectedMeetingTime('');
+function filtersToParams(filters: DirectoryFilterState): string {
+  const params = new URLSearchParams();
+  for (const key of FILTER_KEYS) {
+    const value = filters[key];
+    const def = DEFAULT_FILTERS[key];
+    if (value && value !== def) {
+      params.set(key, value);
+    }
+  }
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+function DirectoryPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [quizStep, setQuizStep] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
+  const [quizDone, setQuizDone] = useState(false);
+  const [quizOpen, setQuizOpen] = useState(true);
+  const highlightId = searchParams.get("highlight");
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  // Merge static chapters with user-created chapters
+  const [chapterVersion, setChapterVersion] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const chapters = useMemo(() => {
+    if (!mounted) return [...staticChapters];
+    const created = getCreatedChapters();
+    const staticIds = new Set(staticChapters.map(c => c.id));
+    const unique = created.filter(c => !staticIds.has(c.id));
+    return [...unique, ...staticChapters];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapterVersion, mounted]);
+
+  const handleDeleteClub = useCallback((id: string) => {
+    removeCreatedChapter(id);
+    setChapterVersion(v => v + 1);
+  }, []);
+
+  // Scroll to highlighted club after render
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 600);
+    }
+  }, [highlightId]);
+
+  const interestToCategory: Record<string, string> = {
+    "Academic competitions": "Academic",
+    "Creative arts": "Arts",
+    "Community service": "Service",
+    "Technology & Engineering": "STEM",
+    "Sports & Recreation": "Sports",
   };
 
-  const activeFilterCount = [
-    selectedCategory,
-    selectedFrequency,
-    selectedMembership,
-    selectedGradeLevel,
-    selectedMeetingTime,
-  ].filter(Boolean).length;
+  const quizRecommendations = useMemo(() => {
+    if (!quizDone || quizAnswers.length === 0) return [];
+    const preferredCategory = interestToCategory[quizAnswers[0]] || "";
+    const preferredFrequency = quizAnswers[1] || "";
+    const preferredTime = quizAnswers[2] || "";
+    return chapters
+      .map((c) => {
+        let score = 0;
+        if (c.category === preferredCategory) score += 3;
+        if (c.meetingFrequency === preferredFrequency) score += 2;
+        if (c.meetingTime.toLowerCase() === preferredTime.toLowerCase()) score += 1;
+        return { ...c, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+  }, [quizDone, quizAnswers, chapters]);
+
+  const handleQuizAnswer = (answer: string) => {
+    const newAnswers = [...quizAnswers, answer];
+    setQuizAnswers(newAnswers);
+    if (quizStep + 1 >= quizQuestions.length) {
+      setQuizDone(true);
+    } else {
+      setQuizStep(quizStep + 1);
+    }
+  };
+
+  const resetQuiz = () => {
+    setQuizStep(0);
+    setQuizAnswers([]);
+    setQuizDone(false);
+  };
+
+  const filters = useMemo(
+    () => filtersFromParams(searchParams),
+    [searchParams],
+  );
+
+  const setFilters = useCallback(
+    (
+      next:
+        | DirectoryFilterState
+        | ((prev: DirectoryFilterState) => DirectoryFilterState),
+    ) => {
+      const resolved = typeof next === "function" ? next(filters) : next;
+      router.replace(`/directory${filtersToParams(resolved)}`, {
+        scroll: false,
+      });
+    },
+    [filters, router],
+  );
+
+  const filtered = useMemo(() => {
+    return chapters.filter((chapter) => {
+      const query = filters.search.trim().toLowerCase();
+      if (query) {
+        const fields = [
+          chapter.name,
+          chapter.description,
+          chapter.category,
+          chapter.meetingLocation.parentOrg,
+          chapter.meetingLocation.room,
+          chapter.meetingLocation.internalLocation,
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!fields.includes(query)) return false;
+      }
+      if (
+        filters.meetingDay !== "Any" &&
+        inferDay(chapter.meetingSchedule) !== filters.meetingDay
+      )
+        return false;
+      if (
+        filters.meetingTime !== "Any" &&
+        chapter.meetingTime !== filters.meetingTime
+      )
+        return false;
+      if (filters.category !== "Any" && chapter.category !== filters.category)
+        return false;
+      if (
+        filters.scopeFilter !== "Any" &&
+        getLocationScopeKey(chapter.meetingLocation) !== filters.scopeFilter
+      )
+        return false;
+      if (!matchesSize(chapter.memberCount, filters.size)) return false;
+      if (
+        filters.status !== "Any" &&
+        chapter.membershipStatus !== filters.status
+      )
+        return false;
+      return true;
+    });
+  }, [filters, chapters]);
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1529390079861-591de354faf5?w=1920&q=80"
-            alt="Students in discussion"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/95 to-primary-500/80"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <h1 className="page-title text-white">Chapter Directory</h1>
-          <p className="text-xl text-white/90 max-w-2xl">
-            Browse and discover clubs and organizations that match your interests.
-          </p>
-        </div>
-      </section>
+    <div className="bg-neutral-50 min-h-screen">
+      <HeroSection
+        eyebrow="Discover · Filter · Connect"
+        title="Organization Directory"
+        description="Explore school clubs, compare meeting details, filter by interest, and find the right community to join."
+      />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="card p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-grow relative">
-              <input
-                type="text"
-                placeholder="Search chapters by name, description, or category..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="input-field pl-12"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* ── Map + Filters Island ── */}
+        <section className="animate-fade-up" style={{ animationDelay: "60ms" }}>
+          <div className="bg-white border border-neutral-200 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-heading font-bold text-primary-700">
+                Interactive Map
+              </h2>
+              <span className="text-sm font-medium text-neutral-500">
+                {filtered.length} clubs shown
+              </span>
+            </div>
+            <div className="relative">
+              <DirectoryLeafletMap
+                chapters={filtered}
+                activeRoom={filters.scopeFilter}
+                onSelectRoom={(room: string) =>
+                  setFilters((f) => ({ ...f, scopeFilter: room }))
+                }
               />
-              <svg
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="square" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <DirectoryFilters
+                filters={filters}
+                onFilterChange={setFilters}
+                resultCount={filtered.length}
+                totalCount={chapters.length}
+              />
             </div>
+          </div>
+        </section>
+
+        {/* ── Orgs Grid + AI Chat Row ── */}
+        <section
+          className="animate-fade-up"
+          style={{ animationDelay: "120ms" }}
+        >
+          <div className="flex items-center justify-center mb-3">
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-heading font-bold text-primary-700">
+                All Clubs
+              </h2>
+              <span className="text-sm text-neutral-500">
+                {filtered.length} of {chapters.length} clubs
+              </span>
+            </div>
+          </div>
+
+          <div className="relative">
+            {/* Floating sidebar toggle */}
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`btn-outline flex items-center gap-2 ${showFilters ? 'bg-primary-500 text-white' : ''}`}
+              type="button"
+              aria-expanded={sidebarOpen}
+              aria-controls="directory-sidebar"
+              onClick={() => setSidebarOpen((o) => !o)}
+              className={`hidden lg:flex absolute top-5 z-10 items-center justify-center w-7 h-14 text-white shadow-lg transition-all duration-300 group ${
+                sidebarOpen
+                  ? "-left-3.5 bg-primary-600 hover:bg-primary-700"
+                  : "left-0 bg-secondary-500 hover:bg-secondary-600"
+              }`}
+              title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="square" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-4 w-4 transition-transform duration-300 ${sidebarOpen ? "" : "rotate-180"}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
-              Filters
-              {activeFilterCount > 0 && (
-                <span className="bg-secondary-500 text-white px-2 py-0.5 text-sm">
-                  {activeFilterCount}
-                </span>
-              )}
             </button>
-          </div>
 
-          {showFilters && (
-            <div className="border-t border-neutral-200 pt-6">
-              <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-2">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="select-field"
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
+            <div
+              className={`grid gap-5 transition-all duration-300 ${
+                sidebarOpen
+                  ? "lg:grid-cols-[340px_1fr]"
+                  : "lg:grid-cols-1 lg:pl-9"
+              }`}
+            >
+              {sidebarOpen && (
+                <aside
+                  id="directory-sidebar"
+                  className="border border-primary-200 bg-gradient-to-b from-primary-50/60 to-white shadow-sm overflow-hidden"
+                >
+                  {/* Sidebar header */}
+                  <div className="bg-primary-700 px-4 py-3 flex items-center gap-2.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-primary-200"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h7"
+                      />
+                    </svg>
+                    <h3 className="text-sm font-heading font-bold text-white uppercase tracking-wider">
+                      Quick Tools
+                    </h3>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-2">Meeting Frequency</label>
-                  <select
-                    value={selectedFrequency}
-                    onChange={(e) => setSelectedFrequency(e.target.value)}
-                    className="select-field"
-                  >
-                    <option value="">Any Frequency</option>
-                    {frequencies.map((freq) => (
-                      <option key={freq} value={freq}>{freq}</option>
-                    ))}
-                  </select>
-                </div>
+                  <div className="p-3.5 space-y-3.5">
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: chapters.length, label: "Total Clubs" },
+                        { value: filtered.length, label: "Showing" },
+                        {
+                          value: new Set(chapters.map((c) => c.category)).size,
+                          label: "Categories",
+                        },
+                      ].map((stat) => (
+                        <div
+                          key={stat.label}
+                          className="bg-white border border-neutral-200 px-2 py-2.5 text-center"
+                        >
+                          <p className="text-lg font-bold text-primary-600 leading-none">
+                            {stat.value}
+                          </p>
+                          <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-wide font-medium">
+                            {stat.label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-2">Membership Status</label>
-                  <select
-                    value={selectedMembership}
-                    onChange={(e) => setSelectedMembership(e.target.value)}
-                    className="select-field"
-                  >
-                    <option value="">Any Status</option>
-                    {membershipStatuses.map((status) => (
-                      <option key={status} value={status}>{status}</option>
-                    ))}
-                  </select>
-                </div>
+                    {/* Club Finder Quiz */}
+                    <div className="bg-white border border-neutral-200 overflow-hidden">
+                      <button onClick={() => setQuizOpen(o => !o)}
+                        className="w-full bg-primary-600 text-white px-3.5 py-2.5 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <HelpCircle size={14} />
+                          <h3 className="text-xs font-heading font-bold uppercase tracking-wider">Club Finder Quiz</h3>
+                        </div>
+                        {quizOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </button>
+                      {quizOpen && (
+                        <div className="p-3.5">
+                          {!quizDone ? (
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-[10px] text-neutral-500">Q{quizStep + 1}/{quizQuestions.length}</p>
+                                <div className="flex gap-0.5">
+                                  {quizQuestions.map((_, i) => (
+                                    <div key={i} className={`h-1 w-5 ${i <= quizStep ? "bg-primary-500" : "bg-neutral-200"}`} />
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-sm font-bold text-primary-800 mb-3">{quizQuestions[quizStep].question}</p>
+                              <div className="space-y-1.5">
+                                {quizQuestions[quizStep].options.map((option) => (
+                                  <button key={option} onClick={() => handleQuizAnswer(option)}
+                                    className="w-full text-left px-3 py-2 border border-neutral-200 hover:border-primary-400 hover:bg-primary-50 transition-all text-xs font-medium">
+                                    {option}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <Sparkles size={14} className="text-secondary-500" />
+                                <p className="text-xs font-bold text-primary-800">Your Matches</p>
+                              </div>
+                              <div className="space-y-1.5">
+                                {quizRecommendations.map((club, i) => (
+                                  <Link key={club.id} href={`/directory/${club.id}`}
+                                    className="flex items-center gap-2.5 p-2 border border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40 transition-all">
+                                    <div className="w-6 h-6 bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-[10px] shrink-0">{i + 1}</div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-semibold text-xs text-primary-700 truncate">{club.name}</p>
+                                      <p className="text-[10px] text-neutral-500">{club.category} · {club.memberCount} members</p>
+                                    </div>
+                                    <ArrowRight size={12} className="text-neutral-400 shrink-0" />
+                                  </Link>
+                                ))}
+                              </div>
+                              <button onClick={resetQuiz} className="mt-2 w-full text-center text-[10px] text-primary-600 font-semibold hover:text-primary-700">
+                                Retake Quiz
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-2">Grade Level</label>
-                  <select
-                    value={selectedGradeLevel}
-                    onChange={(e) => setSelectedGradeLevel(e.target.value)}
-                    className="select-field"
-                  >
-                    <option value="">All Grades</option>
-                    {gradeLevels.map((level) => (
-                      <option key={level} value={level}>{level}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-2">Meeting Time</label>
-                  <select
-                    value={selectedMeetingTime}
-                    onChange={(e) => setSelectedMeetingTime(e.target.value)}
-                    className="select-field"
-                  >
-                    <option value="">Any Time</option>
-                    {meetingTimes.map((time) => (
-                      <option key={time} value={time}>{time}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {activeFilterCount > 0 && (
-                <div className="mt-4 flex justify-end">
-                  <button onClick={clearFilters} className="text-primary-500 hover:underline text-sm font-medium">
-                    Clear All Filters
-                  </button>
-                </div>
+                    {/* Student Resources Quick Links */}
+                    <div className="bg-white border border-neutral-200 p-3.5 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3.5 w-3.5 text-secondary-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                        <h3 className="text-xs font-heading font-bold text-primary-700 uppercase tracking-wider">
+                          Student Resources
+                        </h3>
+                      </div>
+                      <div className="space-y-1.5">
+                        {[
+                          {
+                            icon: "\uD83C\uDF93",
+                            label: "Alumni Network",
+                            desc: "Connect with past members",
+                            href: "/alumni",
+                          },
+                          {
+                            icon: "\uD83D\uDCC5",
+                            label: "Counselor Meetings",
+                            desc: "Schedule advisor time",
+                            href: "/meetings",
+                          },
+                          {
+                            icon: "\uD83D\uDCDA",
+                            label: "Resource Library",
+                            desc: "Templates, guides & forms",
+                            href: "/resources",
+                          },
+                          {
+                            icon: "\uD83D\uDE80",
+                            label: "Start a Club",
+                            desc: "Proposal guide & forms",
+                            href: "/start-a-club",
+                          },
+                        ].map((item) => (
+                          <Link
+                            key={item.label}
+                            href={item.href}
+                            className="group/link flex items-center gap-3 border border-neutral-100 bg-neutral-50/50 p-2.5 hover:border-primary-300 hover:bg-primary-50 transition-all duration-200"
+                          >
+                            <span className="text-lg leading-none group-hover/link:scale-110 transition-transform duration-200">
+                              {item.icon}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-primary-700 text-sm leading-tight group-hover/link:text-primary-600 transition-colors">
+                                {item.label}
+                              </p>
+                              <p className="text-[11px] text-neutral-500 leading-tight mt-0.5">
+                                {item.desc}
+                              </p>
+                            </div>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3.5 w-3.5 text-neutral-300 group-hover/link:text-primary-400 ml-auto shrink-0 transition-colors"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </aside>
               )}
+
+              <ClubGrid clubs={filtered} highlightId={highlightId} highlightRef={highlightRef} onDeleteClub={handleDeleteClub} />
             </div>
-          )}
-        </div>
-
-        <div className="mb-6 flex justify-between items-center">
-          <p className="text-neutral-600">
-            Showing <strong>{filteredChapters.length}</strong> of <strong>{chapters.length}</strong> chapters
-          </p>
-        </div>
-
-        {filteredChapters.length > 0 ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredChapters.map((chapter) => (
-              <Link key={chapter.id} href={`/directory/${chapter.id}`} className="card-hover block">
-                <div className="bg-primary-500 h-24 flex items-center justify-center relative">
-                  <span className="text-3xl font-bold text-white font-heading">
-                    {chapter.name.split(' ').map(w => w[0]).join('').slice(0, 3)}
-                  </span>
-                  <span className="absolute top-2 right-2 badge badge-secondary text-xs">
-                    {chapter.category}
-                  </span>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-lg text-primary-500 font-heading">{chapter.name}</h3>
-                  <p className="text-sm text-neutral-600 mt-2 line-clamp-2">{chapter.description}</p>
-                  
-                  <div className="mt-4 space-y-2 text-sm text-neutral-500">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="square" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {chapter.meetingSchedule}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="square" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      {chapter.memberCount} members
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="badge badge-outline text-xs">{chapter.membershipStatus}</span>
-                    <span className="badge badge-outline text-xs">{chapter.meetingTime}</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
           </div>
-        ) : (
-          <div className="card p-12 text-center">
-            <svg className="w-16 h-16 mx-auto text-neutral-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="square" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 className="text-xl font-bold text-neutral-500 mb-2">No chapters found</h3>
-            <p className="text-neutral-400 mb-4">Try adjusting your search or filters to find what you&apos;re looking for.</p>
-            <button onClick={clearFilters} className="btn-primary">
-              Clear Filters
-            </button>
-          </div>
-        )}
+        </section>
+
+
       </div>
     </div>
+  );
+}
+
+export default function DirectoryPage() {
+  return (
+    <Suspense>
+      <DirectoryPageContent />
+    </Suspense>
   );
 }

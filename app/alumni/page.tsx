@@ -1,460 +1,252 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { featuredAlumni, careerPanels } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
+import {
+  Award, BookOpen, Briefcase, Calendar, ChevronDown, GraduationCap,
+  Heart, Mail, MapPin, MessageSquare, Search, Star, TrendingUp, Users,
+} from "lucide-react";
 
-const featuredAlumni = [
-  {
-    id: 1,
-    name: 'Jessica Chen',
-    gradYear: 2022,
-    chapter: 'Model United Nations',
-    college: 'Georgetown University',
-    major: 'International Relations',
-    career: 'Policy Analyst',
-    photo: null,
-    available: true,
-  },
-  {
-    id: 2,
-    name: 'Marcus Williams',
-    gradYear: 2021,
-    chapter: 'Robotics Team',
-    college: 'MIT',
-    major: 'Mechanical Engineering',
-    career: 'Robotics Engineer at Boston Dynamics',
-    photo: null,
-    available: true,
-  },
-  {
-    id: 3,
-    name: 'Sarah Martinez',
-    gradYear: 2020,
-    chapter: 'Community Service Club',
-    college: 'UC Berkeley',
-    major: 'Social Work',
-    career: 'Non-profit Director',
-    photo: null,
-    available: false,
-  },
-];
-
-const careerPanels = [
-  {
-    id: 1,
-    title: 'Careers in Technology',
-    date: '2026-02-15',
-    time: '4:00 PM - 5:30 PM',
-    panelists: 4,
-    registrations: 45,
-  },
-  {
-    id: 2,
-    title: 'Paths to Law School',
-    date: '2026-02-22',
-    time: '4:00 PM - 5:30 PM',
-    panelists: 3,
-    registrations: 32,
-  },
-  {
-    id: 3,
-    title: 'Creative Arts Careers',
-    date: '2026-03-05',
-    time: '4:00 PM - 5:30 PM',
-    panelists: 5,
-    registrations: 28,
-  },
-];
-
-const internships = [
-  {
-    id: 1,
-    title: 'Summer Research Internship',
-    company: 'Tech Innovation Labs',
-    location: 'Hybrid',
-    type: 'Summer 2026',
-    postedBy: 'Marcus Williams (Class of 2021)',
-  },
-  {
-    id: 2,
-    title: 'Marketing Intern',
-    company: 'Creative Media Group',
-    location: 'Remote',
-    type: 'Part-time during school',
-    postedBy: 'Emily Thompson (Class of 2023)',
-  },
-  {
-    id: 3,
-    title: 'Engineering Shadow Program',
-    company: 'Aerospace Solutions Inc.',
-    location: 'On-site',
-    type: 'Spring Break 2026',
-    postedBy: 'David Park (Class of 2019)',
-  },
-];
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
 
 export default function AlumniPage() {
-  const [activeTab, setActiveTab] = useState<'network' | 'mentorship' | 'careers' | 'donate'>('network');
-  const [showRegistration, setShowRegistration] = useState(false);
+  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<"network" | "mentorship" | "careers" | "support">("network");
+
+  const filteredAlumni = featuredAlumni.filter(a => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return a.name.toLowerCase().includes(q) || a.chapter.toLowerCase().includes(q) ||
+      a.college.toLowerCase().includes(q) || a.career.toLowerCase().includes(q);
+  });
+
+  const tabs = [
+    { key: "network", label: "Alumni Network", icon: Users },
+    { key: "mentorship", label: "Mentorship", icon: Star },
+    { key: "careers", label: "Career Connections", icon: Briefcase },
+    { key: "support", label: "Support Chapters", icon: Heart },
+  ] as const;
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="relative py-16 overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1920&q=80"
-            alt="Alumni gathering"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-500/95 to-primary-500/85"></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4">
-          <h1 className="page-title text-white">Alumni & Mentorship Network</h1>
-          <p className="text-xl text-white/90 max-w-2xl">
-            Connect with former chapter members for mentorship, career advice, and networking opportunities.
-          </p>
-        </div>
-      </section>
+      <HeroSection
+        eyebrow="Community"
+        title="Alumni Network"
+        icon={<GraduationCap size={40} />}
+        description="Connect with graduates who paved the way. Mentorship, career advice, and ongoing support for current students."
+        stats={[
+          { label: "Alumni Connected", value: "240+" },
+          { label: "Mentorship Sessions", value: "85" },
+          { label: "Career Panels", value: careerPanels.length },
+          { label: "Chapters Supported", value: "15" },
+        ]}
+      />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="card mb-8">
-          <div className="flex flex-wrap border-b border-neutral-200">
-            {[
-              { key: 'network', label: 'Alumni Network' },
-              { key: 'mentorship', label: 'Mentorship' },
-              { key: 'careers', label: 'Career Connection' },
-              { key: 'donate', label: 'Support Chapters' },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                className={`px-6 py-4 font-medium transition-colors ${
-                  activeTab === tab.key
-                    ? 'text-primary-500 border-b-2 border-primary-500 bg-primary-500/5'
-                    : 'text-neutral-600 hover:text-primary-500 hover:bg-neutral-50'
-                }`}
-              >
-                {tab.label}
+      {}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex gap-1 overflow-x-auto border-b border-neutral-200 mt-6 -mb-px">
+          {tabs.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key as typeof activeTab)}
+                className={`flex items-center gap-1.5 px-4 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.key ? "border-primary-500 text-primary-700 bg-primary-50/50" : "border-transparent text-neutral-500 hover:text-primary-600"}`}>
+                <Icon size={16} /> {tab.label}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
+      </div>
 
-        {!showRegistration && (
-          <div className="card p-6 mb-8 bg-secondary-500 text-white">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold font-heading">Are you an alumnus/alumna?</h2>
-                <p className="text-secondary-100">Register to connect with current students and give back to your chapter.</p>
-              </div>
-              <button 
-                onClick={() => setShowRegistration(true)}
-                className="bg-white text-secondary-500 px-6 py-2 font-semibold hover:bg-neutral-100 transition-colors"
-              >
-                Register as Alumni
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showRegistration && (
-          <div className="card p-6 mb-8">
-            <h2 className="text-xl font-bold text-primary-500 font-heading mb-6">Alumni Registration</h2>
-            <form className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Full Name *</label>
-                <input type="text" className="input-field" placeholder="Your full name" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Graduation Year *</label>
-                <select className="select-field">
-                  <option value="">Select year</option>
-                  {Array.from({ length: 20 }, (_, i) => 2025 - i).map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Chapter(s) *</label>
-                <input type="text" className="input-field" placeholder="e.g., Model UN, Debate Team" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Email *</label>
-                <input type="email" className="input-field" placeholder="your.email@example.com" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">College/University</label>
-                <input type="text" className="input-field" placeholder="Current or attended" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">Current Career/Industry</label>
-                <input type="text" className="input-field" placeholder="Your current profession" />
-              </div>
-              <div className="md:col-span-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="w-5 h-5" />
-                  <span className="text-neutral-700">I am interested in being a mentor to current students</span>
-                </label>
-              </div>
-              <div className="md:col-span-2 flex gap-4">
-                <button type="submit" className="btn-primary">Submit Registration</button>
-                <button type="button" onClick={() => setShowRegistration(false)} className="btn-outline">Cancel</button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {activeTab === 'network' && (
-          <div className="space-y-8">
-            <div className="card p-6">
-              <div className="grid md:grid-cols-4 gap-4">
-                <input type="text" placeholder="Search alumni..." className="input-field" />
-                <select className="select-field">
-                  <option value="">All Chapters</option>
-                  <option value="model-un">Model United Nations</option>
-                  <option value="robotics">Robotics Team</option>
-                  <option value="service">Community Service Club</option>
-                </select>
-                <select className="select-field">
-                  <option value="">All Industries</option>
-                  <option value="tech">Technology</option>
-                  <option value="business">Business</option>
-                  <option value="education">Education</option>
-                  <option value="healthcare">Healthcare</option>
-                </select>
-                <select className="select-field">
-                  <option value="">All Graduation Years</option>
-                  {Array.from({ length: 10 }, (_, i) => 2025 - i).map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {activeTab === "network" && (
+          <>
+            <div className="card p-4 mb-6">
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input type="text" placeholder="Search alumni by name, college, club, or career..." value={search} onChange={e => setSearch(e.target.value)} className="input-field pl-10" />
               </div>
             </div>
 
-            <div>
-              <h2 className="section-title">Where Are They Now?</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {featuredAlumni.map((alum) => (
-                  <div key={alum.id} className="card overflow-hidden">
-                    <div className="bg-primary-500 p-6 text-white">
-                      <div className="w-20 h-20 bg-white mx-auto mb-4 flex items-center justify-center">
-                        <span className="text-2xl font-bold text-primary-500">
-                          {alum.name.split(' ').map(n => n[0]).join('')}
-                        </span>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredAlumni.map(alumni => (
+                <Reveal key={alumni.id}>
+                  <div className="card p-5 ux-hover-lift-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14  bg-primary-100 text-primary-700 flex items-center justify-center text-lg font-bold shrink-0">
+                        {alumni.name.split(" ").map(n => n[0]).join("")}
                       </div>
-                      <h3 className="text-lg font-bold text-center font-heading">{alum.name}</h3>
-                      <p className="text-center text-neutral-200">Class of {alum.gradYear}</p>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-primary-800 truncate">{alumni.name}</h3>
+                        <p className="text-xs text-secondary-600 font-semibold">Class of {alumni.gradYear}</p>
+                      </div>
                     </div>
-                    <div className="p-6">
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-neutral-500">Chapter</span>
-                          <span className="font-medium">{alum.chapter}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-neutral-500">College</span>
-                          <span className="font-medium">{alum.college}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-neutral-500">Major</span>
-                          <span className="font-medium">{alum.major}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-neutral-500">Career</span>
-                          <span className="font-medium">{alum.career}</span>
-                        </div>
+                    <div className="mt-4 space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-neutral-600">
+                        <Award size={14} className="text-primary-400 shrink-0" />
+                        <span>{alumni.chapter}</span>
                       </div>
-                      {alum.available && (
-                        <button className="btn-outline w-full mt-4 text-sm py-2">
-                          Connect
-                        </button>
+                      <div className="flex items-center gap-2 text-neutral-600">
+                        <GraduationCap size={14} className="text-primary-400 shrink-0" />
+                        <span>{alumni.college} · {alumni.major}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-neutral-600">
+                        <Briefcase size={14} className="text-primary-400 shrink-0" />
+                        <span>{alumni.career}</span>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      {alumni.available ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">Available for Mentorship</span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500">Unavailable</span>
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'mentorship' && (
-          <div className="space-y-8">
-            <div className="card p-8 text-center">
-              <h2 className="text-2xl font-bold text-primary-500 font-heading mb-4">Find a Mentor</h2>
-              <p className="text-neutral-600 mb-6 max-w-2xl mx-auto">
-                Connect with alumni who have been in your shoes. Get guidance on college applications, 
-                career paths, and making the most of your chapter experience.
-              </p>
-              <button className="btn-primary">Request a Mentor Match</button>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="card">
-                <div className="p-4 border-b border-neutral-200">
-                  <h3 className="text-lg font-bold text-primary-500 font-heading">For Current Students</h3>
-                </div>
-                <div className="p-6 space-y-4">
-                  <div className="p-4 bg-neutral-50 border border-neutral-200">
-                    <h4 className="font-semibold text-neutral-800 mb-2">College Application Advice</h4>
-                    <p className="text-sm text-neutral-600">Get tips on essays, interviews, and showcasing your chapter involvement.</p>
-                  </div>
-                  <div className="p-4 bg-neutral-50 border border-neutral-200">
-                    <h4 className="font-semibold text-neutral-800 mb-2">Career Exploration</h4>
-                    <p className="text-sm text-neutral-600">Learn about different career paths from alumni in various industries.</p>
-                  </div>
-                  <div className="p-4 bg-neutral-50 border border-neutral-200">
-                    <h4 className="font-semibold text-neutral-800 mb-2">Leadership Development</h4>
-                    <p className="text-sm text-neutral-600">Develop leadership skills with guidance from experienced mentors.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="card">
-                <div className="p-4 border-b border-neutral-200">
-                  <h3 className="text-lg font-bold text-primary-500 font-heading">For Alumni</h3>
-                </div>
-                <div className="p-6 space-y-4">
-                  <div className="p-4 bg-neutral-50 border border-neutral-200">
-                    <h4 className="font-semibold text-neutral-800 mb-2">Become a Mentor</h4>
-                    <p className="text-sm text-neutral-600">Give back by guiding the next generation of chapter leaders.</p>
-                  </div>
-                  <div className="p-4 bg-neutral-50 border border-neutral-200">
-                    <h4 className="font-semibold text-neutral-800 mb-2">Host a Workshop</h4>
-                    <p className="text-sm text-neutral-600">Share your expertise through virtual or in-person workshops.</p>
-                  </div>
-                  <div className="p-4 bg-neutral-50 border border-neutral-200">
-                    <h4 className="font-semibold text-neutral-800 mb-2">Flexible Commitment</h4>
-                    <p className="text-sm text-neutral-600">Choose your level of involvement - from occasional chats to ongoing mentorship.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'careers' && (
-          <div className="space-y-8">
-            <div>
-              <h2 className="section-title">Upcoming Virtual Career Panels</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {careerPanels.map((panel) => (
-                  <div key={panel.id} className="card p-6">
-                    <h3 className="text-lg font-bold text-primary-500 font-heading mb-2">{panel.title}</h3>
-                    <p className="text-neutral-600 mb-4">
-                      {new Date(panel.date).toLocaleDateString('en-US', { 
-                        weekday: 'long', month: 'long', day: 'numeric' 
-                      })}
-                    </p>
-                    <div className="space-y-2 text-sm mb-4">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Time</span>
-                        <span className="font-medium">{panel.time}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Panelists</span>
-                        <span className="font-medium">{panel.panelists} alumni</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Registered</span>
-                        <span className="font-medium">{panel.registrations} students</span>
-                      </div>
-                    </div>
-                    <button className="btn-primary w-full">Register</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="p-4 border-b border-neutral-200 flex justify-between items-center">
-                <h2 className="text-lg font-bold text-primary-500 font-heading">Internship & Job Shadow Postings</h2>
-                <span className="text-sm text-neutral-500">{internships.length} opportunities</span>
-              </div>
-              <div className="divide-y divide-neutral-200">
-                {internships.map((job) => (
-                  <div key={job.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <h3 className="font-semibold text-neutral-800">{job.title}</h3>
-                      <p className="text-neutral-600">{job.company}</p>
-                      <div className="flex gap-4 mt-2 text-sm text-neutral-500">
-                        <span>{job.location}</span>
-                        <span>•</span>
-                        <span>{job.type}</span>
-                      </div>
-                      <p className="text-sm text-secondary-500 mt-1">Posted by: {job.postedBy}</p>
-                    </div>
-                    <button className="btn-outline">Learn More</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'donate' && (
-          <div className="space-y-8">
-            <div className="card p-8 text-center bg-secondary-500 text-white">
-              <h2 className="text-2xl font-bold font-heading mb-4">Support Your Chapter</h2>
-              <p className="text-secondary-100 mb-6 max-w-2xl mx-auto">
-                Your donation helps current members attend conferences, purchase equipment, 
-                and create amazing experiences just like you had.
-              </p>
-              <button className="bg-white text-secondary-500 px-8 py-3 font-bold hover:bg-neutral-100 transition-colors">
-                Make a Donation
-              </button>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { chapter: 'Model United Nations', goal: 5000, raised: 3250, donors: 28 },
-                { chapter: 'Robotics Team', goal: 10000, raised: 7500, donors: 45 },
-                { chapter: 'Drama Club', goal: 3000, raised: 1800, donors: 19 },
-              ].map((fund) => (
-                <div key={fund.chapter} className="card p-6">
-                  <h3 className="font-bold text-primary-500 font-heading mb-4">{fund.chapter}</h3>
-                  <div className="mb-4">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-neutral-600">${fund.raised.toLocaleString()} raised</span>
-                      <span className="font-medium">{Math.round((fund.raised / fund.goal) * 100)}%</span>
-                    </div>
-                    <div className="bg-neutral-200 h-3">
-                      <div 
-                        className="bg-secondary-500 h-full" 
-                        style={{ width: `${(fund.raised / fund.goal) * 100}%` }}
-                      />
-                    </div>
-                    <p className="text-sm text-neutral-500 mt-1">Goal: ${fund.goal.toLocaleString()}</p>
-                  </div>
-                  <p className="text-sm text-neutral-600 mb-4">{fund.donors} donors</p>
-                  <button className="btn-outline w-full">Donate</button>
-                </div>
+                </Reveal>
               ))}
             </div>
+          </>
+        )}
 
-            <div className="card p-6">
-              <h2 className="text-xl font-bold text-primary-500 font-heading mb-6">Your Impact</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-secondary-500">$45,000</div>
-                  <div className="text-neutral-600">Raised This Year</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-secondary-500">156</div>
-                  <div className="text-neutral-600">Alumni Donors</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-secondary-500">23</div>
-                  <div className="text-neutral-600">Chapters Supported</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-secondary-500">450+</div>
-                  <div className="text-neutral-600">Students Benefited</div>
+        {activeTab === "mentorship" && (
+          <div className="space-y-6">
+            <Reveal>
+              <div className="card p-6 bg-gradient-to-r from-primary-50 to-secondary-50">
+                <h2 className="text-xl font-heading font-bold text-primary-600">How Mentorship Works</h2>
+                <div className="mt-4 grid sm:grid-cols-3 gap-4">
+                  {[
+                    { step: "1", title: "Browse Mentors", desc: "Find alumni with expertise in your interests or career goals." },
+                    { step: "2", title: "Request Connection", desc: "Send a mentorship request with your goals and preferred schedule." },
+                    { step: "3", title: "Meet & Grow", desc: "Have regular check-ins, get advice, and build your professional network." },
+                  ].map(s => (
+                    <div key={s.step} className="bg-white  p-4 border border-neutral-200 text-center">
+                      <div className="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center mx-auto text-sm font-bold">{s.step}</div>
+                      <h3 className="font-bold text-primary-700 mt-2">{s.title}</h3>
+                      <p className="text-sm text-neutral-600 mt-1">{s.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            </Reveal>
+
+            <Reveal>
+              <h2 className="text-lg font-heading font-bold text-primary-600 mb-3">Available Mentors</h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {featuredAlumni.filter(a => a.available).map(a => (
+                  <div key={a.id} className="card p-5 ux-hover-lift-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12  bg-secondary-50 text-secondary-700 flex items-center justify-center font-bold shrink-0">{a.name.split(" ").map(n => n[0]).join("")}</div>
+                      <div>
+                        <h3 className="font-bold text-primary-800">{a.name}</h3>
+                        <p className="text-xs text-neutral-500">{a.career}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {[a.major, a.chapter].map(tag => (
+                        <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-primary-50 text-primary-600">{tag}</span>
+                      ))}
+                    </div>
+                    <button className="btn-outline text-sm w-full mt-4">Request Mentorship</button>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+        )}
+
+        {activeTab === "careers" && (
+          <div className="space-y-6">
+            <Reveal>
+              <h2 className="text-lg font-heading font-bold text-primary-600 mb-3">Upcoming Career Panels</h2>
+              <div className="space-y-3">
+                {careerPanels.map(panel => (
+                  <div key={panel.id} className="card p-5 ux-hover-lift-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-start gap-4">
+                        <div className="text-center bg-primary-500 text-white p-2 min-w-[48px]  shrink-0">
+                          <div className="text-[10px]">{new Date(panel.date).toLocaleDateString("en-US", { month: "short" })}</div>
+                          <div className="text-lg font-bold">{new Date(panel.date).getDate()}</div>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-primary-700">{panel.title}</h3>
+                          <p className="text-sm text-neutral-600 mt-1">Panelists: {panel.panelists}</p>
+                          <div className="flex items-center gap-3 mt-2 text-xs text-neutral-500">
+                            <span className="flex items-center gap-1"><Calendar size={12} /> {new Date(panel.date).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-1"><MapPin size={12} /> {panel.time}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button className="btn-primary text-sm shrink-0">Register ({panel.registrations} registered)</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+
+            <Reveal>
+              <div className="card p-6">
+                <h2 className="text-lg font-heading font-bold text-primary-600 mb-3">Career Fields Represented</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {["Engineering", "Business", "Healthcare", "Education", "Technology", "Arts & Media", "Public Service", "Science"].map(field => (
+                    <div key={field} className="bg-primary-50 border border-primary-100  p-3 text-center text-sm font-semibold text-primary-700 ux-hover-lift-sm">{field}</div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        )}
+
+        {activeTab === "support" && (
+          <div className="space-y-6">
+            <Reveal>
+              <div className="card p-6 bg-gradient-to-r from-red-50/50 to-secondary-50/50">
+                <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2"><Heart size={18} /> Support Current Chapters</h2>
+                <p className="text-sm text-neutral-600 mt-2">Alumni can support current clubs through donations, guest speaking, mentorship, or sponsoring events.</p>
+                <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {[
+                    { title: "Donate", desc: "Fund supplies, trips, and competitions", link: "/donate" },
+                    { title: "Guest Speak", desc: "Share your career journey with students", link: "/about" },
+                    { title: "Mentor", desc: "Guide the next generation of leaders", link: "/alumni" },
+                    { title: "Sponsor Events", desc: "Support fundraisers and activities", link: "/events" },
+                  ].map(a => (
+                    <Link key={a.title} href={a.link} className="bg-white  p-4 border border-neutral-200 hover:border-primary-300 ux-hover-lift-sm text-center">
+                      <h3 className="font-bold text-primary-700">{a.title}</h3>
+                      <p className="text-xs text-neutral-500 mt-1">{a.desc}</p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal>
+              <div className="card p-6">
+                <h2 className="text-lg font-heading font-bold text-primary-600 mb-3">Alumni Giving Impact</h2>
+                <div className="grid sm:grid-cols-3 gap-4">
+                  {[
+                    { label: "Total Donated", value: "$28,750", color: "bg-green-50 text-green-700 border-green-100" },
+                    { label: "Scholarships Funded", value: "12", color: "bg-blue-50 text-blue-700 border-blue-100" },
+                    { label: "Events Sponsored", value: "34", color: "bg-purple-50 text-purple-700 border-purple-100" },
+                  ].map(s => (
+                    <div key={s.label} className={`${s.color}  p-5 text-center border ux-hover-lift-sm`}>
+                      <p className="text-3xl font-bold">{s.value}</p>
+                      <p className="text-xs mt-1 opacity-70">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
           </div>
         )}
       </div>

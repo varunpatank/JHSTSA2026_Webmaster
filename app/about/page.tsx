@@ -1,175 +1,222 @@
 "use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect } from 'react';
-import Head from 'next/head';
+import { useRef, useEffect } from "react";
+import Link from "next/link";
+import { chapters, sponsorsData, schoolWideStats } from "@/lib/data";
+import HeroSection from "@/components/HeroSection";
+import {
+  Award, BookOpen, Calendar, CheckCircle, Globe, Heart, MapPin,
+  MessageSquare, Shield, Star, Target, TrendingUp, Users, Zap,
+} from "lucide-react";
 
-const PARTNERS = [
-  { id: 'state-tsa', name: 'State TSA', src: '/partners/state-tsa.svg' },
-  { id: 'local-library', name: 'Local Library', src: '/partners/local-library.svg' },
-  { id: 'city-bank', name: 'City Bank', src: '/partners/city-bank.svg' },
-  { id: 'techco', name: 'TechCo', src: '/partners/techco.svg' },
-  { id: 'arts-guild', name: 'Arts Guild', src: '/partners/arts-guild.svg' },
-  { id: 'university', name: 'University Partner', src: '/partners/university-partner.svg' },
+function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add("revealed"); obs.unobserve(el); } }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
+
+const VALUES = [
+  { icon: Shield, title: "Privacy-First", desc: "Student data stays within the chapter unless explicitly shared. We follow COPPA and FERPA guidelines." },
+  { icon: Zap, title: "Fast & Accessible", desc: "Mobile-friendly, keyboard-navigable, WCAG 2.1 AA compliant. Works on any device, any connection." },
+  { icon: Users, title: "Student-Led", desc: "Built by students, for students. Officers control their clubs, advisors supervise, and members participate." },
+  { icon: Heart, title: "Inclusive by Design", desc: "Every student deserves a place. Our platform supports clubs of all sizes, interests, and backgrounds." },
+  { icon: Target, title: "Impact-Focused", desc: "Track service hours, competition results, and community impact with built-in analytics." },
+  { icon: Globe, title: "Community-Connected", desc: "Partner integrations with local organizations, libraries, universities, and businesses." },
+];
+
+const TIMELINE = [
+  { year: "2023", title: "Idea Born", desc: "Students identified the need for a centralized club management platform." },
+  { year: "2024", title: "Development Begins", desc: "A team of TSA members began building ClubConnect using modern web technologies." },
+  { year: "2025", title: "Beta Launch", desc: "ClubConnect launched in beta with 12 clubs and 200 students at Juanita High School." },
+  { year: "2026", title: "Full Release", desc: "Platform expanded to support 47+ clubs, 1,283+ members, events, analytics, and community resources." },
+];
+
+const TEAM = [
+  { name: "Alex Rivera", role: "Project Lead & Full-Stack Developer", grade: 12, contribution: "Architecture, database design, API development" },
+  { name: "Priya Sharma", role: "UI/UX Designer & Frontend Developer", grade: 11, contribution: "Design system, responsive layouts, accessibility" },
+  { name: "Jordan Chen", role: "Backend Developer & DevOps", grade: 12, contribution: "Supabase integration, authentication, deployment" },
+  { name: "Maya Williams", role: "Content & Community Manager", grade: 10, contribution: "Documentation, user testing, community engagement" },
 ];
 
 export default function AboutPage() {
-  useEffect(() => {
-    // Lightweight scroll animator (replaces AOS)
-    const animClass = (name: string) => {
-      switch (name) {
-        case 'slide-left':
-          return 'animate-slide-in-left';
-        case 'slide-right':
-          return 'animate-slide-in-right';
-        case 'zoom-in':
-          return 'animate-zoom-in';
-        case 'flip-left':
-          return 'animate-flip-left';
-        default:
-          return 'animate-fade-up';
-      }
-    };
-
-    const els = Array.from(document.querySelectorAll('[data-animate]')) as Element[];
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const name = entry.target.getAttribute('data-animate') || 'fade-up';
-          entry.target.classList.add(animClass(name));
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
   return (
-    <>
-      <Head>
-        <title>About — ClubConnect</title>
-      </Head>
-      <main className="max-w-7xl mx-auto px-6 py-16">
-        <section className="grid lg:grid-cols-2 gap-10 items-center mb-12" data-animate="fade-up">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">About ClubConnect</h1>
-            <p className="mt-4 text-lg text-neutral-700 max-w-prose">ClubConnect is a modern hub designed to help student chapters organize, collaborate, and shine. We combine simple tools for meetings, events, and resources with privacy-first defaults and partner integrations that amplify student leadership.</p>
+    <div className="bg-neutral-100 min-h-screen">
+      <HeroSection
+        eyebrow="Our Story"
+        title="About ClubConnect"
+        description="ClubConnect is a modern hub designed to help student chapters organize, collaborate, and shine. We combine tools for meetings, events, and resources with privacy-first defaults and partner integrations that amplify student leadership."
+        stats={[
+          { label: "Active Clubs", value: schoolWideStats.totalClubs },
+          { label: "Student Members", value: schoolWideStats.totalMembers.toLocaleString() },
+          { label: "Events This Year", value: schoolWideStats.totalEvents },
+          { label: "Service Hours", value: schoolWideStats.totalServiceHours.toLocaleString() },
+        ]}
+        actions={
+          <>
+            <Link href="/start-a-club" className="btn-secondary">Propose a Chapter</Link>
+            <Link href="/directory" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">Browse Directory</Link>
+          </>
+        }
+      />
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/propose" className="btn-primary" data-animate="slide-right">Propose a chapter</Link>
-              <Link href="/directory" className="btn-outline" data-animate="slide-right" data-delay="150">Browse directory</Link>
-              <Link href="/meetings" className="btn-outline" data-animate="slide-right" data-delay="300">Manage meetings</Link>
-            </div>
-
-            <div className="mt-8 grid grid-cols-3 gap-4">
-              <div className="p-4 bg-neutral-50 rounded-lg text-center card-hover" data-animate="zoom-in">
-                <div className="text-2xl font-semibold">72</div>
-                <div className="text-xs text-neutral-500">Active chapters</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-12">
+        {}
+        <Reveal>
+          <div className="card p-8">
+            <h2 className="text-2xl font-heading font-bold text-primary-600">Mission & Vision</h2>
+            <div className="mt-4 grid md:grid-cols-2 gap-6">
+              <div className="bg-primary-50/50 border border-primary-100  p-6">
+                <h3 className="font-bold text-primary-700 flex items-center gap-2"><Target size={18} /> Our Mission</h3>
+                <p className="text-sm text-neutral-700 mt-2 leading-relaxed">To empower student leaders with practical, accessible tools — scheduling, shared resources, analytics, and collaboration features — so chapters can focus on impact, not administration.</p>
               </div>
-              <div className="p-4 bg-neutral-50 rounded-lg text-center card-hover" data-animate="zoom-in">
-                <div className="text-2xl font-semibold">18</div>
-                <div className="text-xs text-neutral-500">Partners</div>
-              </div>
-              <div className="p-4 bg-neutral-50 rounded-lg text-center card-hover" data-animate="zoom-in">
-                <div className="text-2xl font-semibold">1.2k</div>
-                <div className="text-xs text-neutral-500">Active members</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl overflow-hidden shadow-lg" data-aos="fade-left">
-            <div className="relative w-full h-72 md:h-80">
-              <Image src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&q=80" alt="students collaborating" fill className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
-            </div>
-          </div>
-        </section>
-
-        <section className="grid lg:grid-cols-3 gap-6 mb-10">
-          <div className="lg:col-span-2" data-animate="fade-up">
-            <h2 className="text-2xl font-semibold mb-4">Mission & Values</h2>
-            <p className="text-neutral-600 mb-4">We empower student leaders with practical tools — scheduling, shared resources, and simple collaboration — so chapters can focus on impact. ClubConnect is built for reliability, clarity, and inclusivity.</p>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="p-4 border rounded-lg card-hover" data-animate="flip-left">
-                <h3 className="font-semibold">Accessible tools</h3>
-                <p className="text-sm text-neutral-500">Fast, mobile-friendly experiences for officers and members.</p>
-              </div>
-
-              <div className="p-4 border rounded-lg card-hover" data-animate="flip-left">
-                <h3 className="font-semibold">Partner network</h3>
-                <p className="text-sm text-neutral-500">Local and institutional partners support programming and funding.</p>
-              </div>
-
-              <div className="p-4 border rounded-lg card-hover" data-animate="flip-left">
-                <h3 className="font-semibold">Privacy-first</h3>
-                <p className="text-sm text-neutral-500">Student data stays within the chapter unless explicitly shared.</p>
-              </div>
-
-              <div className="p-4 border rounded-lg card-hover" data-animate="flip-left">
-                <h3 className="font-semibold">No database required</h3>
-                <p className="text-sm text-neutral-500">Demo flows and local saves work offline using browser storage.</p>
+              <div className="bg-secondary-50/50 border border-secondary-100  p-6">
+                <h3 className="font-bold text-secondary-700 flex items-center gap-2"><Star size={18} /> Our Vision</h3>
+                <p className="text-sm text-neutral-700 mt-2 leading-relaxed">A school where every student finds their community, every club operates efficiently, and every leader has the tools to create lasting positive change in their school and beyond.</p>
               </div>
             </div>
           </div>
+        </Reveal>
 
-          <aside className="space-y-4" data-animate="fade-up">
-            <div className="p-4 bg-white border rounded-lg shadow-sm">
-              <h4 className="font-semibold">Key Features</h4>
-              <ul className="mt-2 text-sm text-neutral-600 space-y-2">
-                <li>Chapter directory & officer contacts</li>
-                <li>Events, RSVP, and calendar sync</li>
-                <li>Meetings with full-screen branded calls</li>
-                <li>Resources library & templates</li>
-              </ul>
-            </div>
-
-            <div className="p-4 bg-neutral-50 rounded-lg text-center">
-              <div className="text-sm text-neutral-600">Want a quick demo?</div>
-              <Link href="/profile/demo" className="mt-3 inline-block btn-outline">Open demo profile</Link>
-            </div>
-          </aside>
-        </section>
-
-        <section id="partners" className="mb-12">
-          <h2 className="text-2xl font-semibold mb-3">Partners</h2>
-          <p className="text-neutral-600 mb-4">We work with schools, libraries, and local organizations to expand opportunities for student chapters.</p>
-
-          <div className="overflow-hidden">
-            <div className="marquee bg-neutral-50 p-4 rounded-lg" data-aos="fade-left">
-              <div className="marquee-track">
-                {PARTNERS.concat(PARTNERS).map((p, i) => (
-                  <div key={`${p.id}-${i}`} className="marquee-item" role="img" aria-label={p.name}>
-                    <div className="w-12 h-12 flex items-center justify-center">
-                      <Image src={p.src} alt={p.name} width={48} height={48} />
-                    </div>
-                    <div className="ml-2 text-sm text-neutral-700">{p.name}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {}
+        <Reveal>
+          <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Core Values</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {VALUES.map(v => {
+              const Icon = v.icon;
+              return (
+                <div key={v.title} className="card p-5 ux-hover-lift-sm">
+                  <div className="w-10 h-10  bg-primary-50 text-primary-600 flex items-center justify-center"><Icon size={20} /></div>
+                  <h3 className="font-bold text-primary-800 mt-3">{v.title}</h3>
+                  <p className="text-sm text-neutral-600 mt-1 leading-relaxed">{v.desc}</p>
+                </div>
+              );
+            })}
           </div>
+        </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-6 mt-6">
-            {PARTNERS.map((p) => (
-              <div key={p.id} className="p-4 bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow animate-fade-up">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 flex items-center justify-center">
-                    <Image src={p.src} alt={p.name} width={64} height={64} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{p.name}</h3>
-                    <p className="text-sm text-neutral-500">Supporting student leadership, events, and mentorship.</p>
+        {}
+        <Reveal>
+          <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Our Journey</h2>
+          <div className="relative">
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-primary-100" />
+            <div className="space-y-6">
+              {TIMELINE.map((item, i) => (
+                <div key={item.year} className="relative pl-16">
+                  <div className="absolute left-[11px] w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs font-bold z-10">{item.year}</div>
+                  <div className="card p-5 ux-hover-lift-sm">
+                    <h3 className="font-bold text-primary-700">{item.title}</h3>
+                    <p className="text-sm text-neutral-600 mt-1">{item.desc}</p>
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+
+        {}
+        <Reveal>
+          <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Platform Features</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { icon: BookOpen, title: "Club Directory", desc: "Browse, search, and filter 47+ clubs with interactive map" },
+              { icon: Calendar, title: "Events & Calendar", desc: "RSVP, calendar sync, and countdown timers for all events" },
+              { icon: MessageSquare, title: "Discussions", desc: "Club forums, community discussions, and officer announcements" },
+              { icon: TrendingUp, title: "Analytics", desc: "Track growth, engagement, service hours, and club health scores" },
+              { icon: Award, title: "Achievements", desc: "Earn badges for participation, leadership, and community impact" },
+              { icon: Users, title: "Mentorship", desc: "Connect with alumni, officers, and community mentors" },
+              { icon: MapPin, title: "Meeting Rooms", desc: "Find meeting locations on campus with room-level precision" },
+              { icon: CheckCircle, title: "Goal Tracking", desc: "Set personal and club goals with milestone tracking" },
+            ].map(f => {
+              const Icon = f.icon;
+              return (
+                <div key={f.title} className="card p-4 text-center ux-hover-lift-sm">
+                  <div className="w-10 h-10  bg-primary-50 text-primary-600 flex items-center justify-center mx-auto"><Icon size={18} /></div>
+                  <h3 className="font-bold text-primary-800 mt-2 text-sm">{f.title}</h3>
+                  <p className="text-xs text-neutral-600 mt-1">{f.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </Reveal>
+
+        {}
+        <Reveal>
+          <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Development Team</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {TEAM.map(m => (
+              <div key={m.name} className="card p-5 ux-hover-lift-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12  bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-bold">{m.name.split(" ").map(n => n[0]).join("")}</div>
+                  <div>
+                    <h3 className="font-bold text-primary-800">{m.name}</h3>
+                    <p className="text-xs text-secondary-600 font-semibold">{m.role}</p>
+                    <p className="text-xs text-neutral-500">Grade {m.grade}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-neutral-600 mt-3">{m.contribution}</p>
               </div>
             ))}
           </div>
-        </section>
-      </main>
-    </>
+        </Reveal>
+
+        {}
+        <Reveal>
+          <div className="card p-6">
+            <h2 className="text-2xl font-heading font-bold text-primary-600">Tech Stack</h2>
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { name: "Next.js", desc: "React framework" }, { name: "TypeScript", desc: "Type safety" },
+                { name: "Tailwind CSS", desc: "Utility-first styling" }, { name: "Supabase", desc: "Auth & database" },
+                { name: "Stripe", desc: "Payment processing" }, { name: "Gemini AI", desc: "AI assistant" },
+                { name: "Leaflet", desc: "Interactive maps" }, { name: "Lucide", desc: "Icon library" },
+              ].map(t => (
+                <div key={t.name} className="bg-neutral-50 border border-neutral-200  p-3 text-center ux-hover-lift-sm">
+                  <p className="font-bold text-sm text-primary-700">{t.name}</p>
+                  <p className="text-xs text-neutral-500">{t.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+
+        {}
+        <Reveal>
+          <h2 className="text-2xl font-heading font-bold text-primary-600 mb-4">Partners & Sponsors</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sponsorsData.map(s => (
+              <div key={s.id} className="card p-5 ux-hover-lift-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12  bg-secondary-50 text-secondary-700 flex items-center justify-center text-sm font-bold shrink-0">{s.name.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
+                  <div>
+                    <h3 className="font-bold text-primary-800">{s.name}</h3>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${s.tier === "platinum" ? "bg-purple-100 text-purple-700" : s.tier === "gold" ? "bg-yellow-100 text-yellow-700" : s.tier === "silver" ? "bg-gray-100 text-gray-700" : "bg-orange-100 text-orange-700"}`}>{s.tier}</span>
+                  </div>
+                </div>
+                <p className="text-sm text-neutral-600 mt-2">{s.description}</p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+
+        {}
+        <Reveal>
+          <div className="card p-8 bg-primary-600 text-white text-center">
+            <h2 className="text-2xl font-heading font-bold">Ready to Get Involved?</h2>
+            <p className="mt-2 text-primary-100 max-w-lg mx-auto">Whether you want to join a club, start one, or volunteer — ClubConnect has everything you need to make an impact.</p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link href="/directory" className="btn-secondary">Browse Clubs</Link>
+              <Link href="/start-a-club" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">Start a Club</Link>
+              <Link href="/events" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">View Events</Link>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -18,30 +18,30 @@ interface ExternalResource {
 }
 
 const externalResources: ExternalResource[] = [
-  // LEADERSHIP & MANAGEMENT
+
   { id: '1', title: 'Harvard Leadership Principles', description: 'Free leadership courses from Harvard Business School Online', url: 'https://online.hbs.edu/subjects/leadership-management/', category: 'Leadership', subcategory: 'Courses', tags: ['leadership', 'management', 'free course'], type: 'Course', free: true, featured: true },
   { id: '2', title: 'TED Talks - Leadership Playlist', description: 'Curated playlist of the best TED talks on leadership', url: 'https://www.ted.com/topics/leadership', category: 'Leadership', subcategory: 'Videos', tags: ['leadership', 'inspiration', 'video'], type: 'Video', free: true },
   { id: '3', title: 'MindTools Leadership Skills', description: 'Comprehensive leadership skills toolkit and assessments', url: 'https://www.mindtools.com/pages/main/newMN_LDR.htm', category: 'Leadership', subcategory: 'Skills', tags: ['leadership', 'skills', 'assessment'], type: 'Website', free: true },
   { id: '4', title: 'Coursera - Organizational Leadership', description: 'Northwestern University leadership specialization', url: 'https://www.coursera.org/specializations/organizational-leadership', category: 'Leadership', subcategory: 'Courses', tags: ['leadership', 'organization', 'certificate'], type: 'Course', free: false },
   { id: '5', title: 'Simon Sinek - Start With Why', description: 'Official resources from bestselling author Simon Sinek', url: 'https://simonsinek.com/inspire/', category: 'Leadership', subcategory: 'Inspiration', tags: ['leadership', 'purpose', 'motivation'], type: 'Website', free: true },
-  
-  // EVENT PLANNING
+
+
   { id: '6', title: 'Eventbrite - Free Event Planning', description: 'Create and manage events for free with ticketing', url: 'https://www.eventbrite.com/', category: 'Event Planning', subcategory: 'Tools', tags: ['events', 'ticketing', 'registration'], type: 'Tool', free: true, featured: true },
   { id: '7', title: 'Canva Event Templates', description: 'Thousands of free event flyer and poster templates', url: 'https://www.canva.com/templates/?query=event', category: 'Event Planning', subcategory: 'Design', tags: ['design', 'flyers', 'posters'], type: 'Template', free: true },
   { id: '8', title: 'Google Forms', description: 'Create registration forms and surveys for free', url: 'https://docs.google.com/forms/', category: 'Event Planning', subcategory: 'Tools', tags: ['forms', 'registration', 'surveys'], type: 'Tool', free: true },
   { id: '9', title: 'Doodle Scheduling', description: 'Find the best time for group meetings', url: 'https://doodle.com/', category: 'Event Planning', subcategory: 'Scheduling', tags: ['scheduling', 'meetings', 'polls'], type: 'Tool', free: true },
   { id: '10', title: 'When2meet', description: 'Simple group availability scheduling', url: 'https://www.when2meet.com/', category: 'Event Planning', subcategory: 'Scheduling', tags: ['scheduling', 'free', 'simple'], type: 'Tool', free: true },
   { id: '11', title: 'Splash Event Marketing', description: 'Event marketing and management platform', url: 'https://splashthat.com/', category: 'Event Planning', subcategory: 'Marketing', tags: ['events', 'marketing', 'professional'], type: 'Tool', free: false },
-  
-  // FUNDRAISING
+
+
   { id: '12', title: 'GoFundMe Charity', description: 'Crowdfunding platform for charitable causes', url: 'https://www.gofundme.com/start/charity-fundraising', category: 'Fundraising', subcategory: 'Crowdfunding', tags: ['crowdfunding', 'donations', 'charity'], type: 'Tool', free: true, featured: true },
   { id: '13', title: 'DoSomething.org Grants', description: 'Grants specifically for youth-led initiatives', url: 'https://www.dosomething.org/', category: 'Fundraising', subcategory: 'Grants', tags: ['grants', 'youth', 'social impact'], type: 'Website', free: true },
   { id: '14', title: 'Youth Service America Grants', description: 'Database of grants for youth service projects', url: 'https://ysa.org/grants/', category: 'Fundraising', subcategory: 'Grants', tags: ['grants', 'service', 'youth'], type: 'Website', free: true },
   { id: '15', title: 'Donors Choose', description: 'Funding platform for educational projects', url: 'https://www.donorschoose.org/', category: 'Fundraising', subcategory: 'Education', tags: ['education', 'classroom', 'projects'], type: 'Tool', free: true },
   { id: '16', title: 'Classy Fundraising', description: 'Professional nonprofit fundraising platform', url: 'https://www.classy.org/', category: 'Fundraising', subcategory: 'Platform', tags: ['nonprofit', 'fundraising', 'professional'], type: 'Tool', free: false },
   { id: '17', title: 'Fundraising Ideas - SignUpGenius', description: '100+ fundraising ideas for clubs and groups', url: 'https://www.signupgenius.com/fundraising/fundraising-ideas.cfm', category: 'Fundraising', subcategory: 'Ideas', tags: ['ideas', 'fundraising', 'list'], type: 'Article', free: true },
-  
-  // MARKETING & SOCIAL MEDIA
+
+
   { id: '18', title: 'Canva - Free Design Tool', description: 'Create stunning graphics, presentations, and more', url: 'https://www.canva.com/', category: 'Marketing', subcategory: 'Design', tags: ['design', 'graphics', 'social media'], type: 'Tool', free: true, featured: true },
   { id: '19', title: 'Buffer - Social Media Scheduler', description: 'Schedule and manage social media posts', url: 'https://buffer.com/', category: 'Marketing', subcategory: 'Social Media', tags: ['social media', 'scheduling', 'analytics'], type: 'Tool', free: true },
   { id: '20', title: 'Mailchimp - Email Marketing', description: 'Free email marketing for up to 500 contacts', url: 'https://mailchimp.com/', category: 'Marketing', subcategory: 'Email', tags: ['email', 'newsletter', 'marketing'], type: 'Tool', free: true },
@@ -49,16 +49,16 @@ const externalResources: ExternalResource[] = [
   { id: '22', title: 'Unsplash - Free Photos', description: 'Beautiful, free images for any project', url: 'https://unsplash.com/', category: 'Marketing', subcategory: 'Images', tags: ['photos', 'free', 'stock images'], type: 'Website', free: true },
   { id: '23', title: 'Pexels - Free Videos & Photos', description: 'Free stock videos and photos', url: 'https://www.pexels.com/', category: 'Marketing', subcategory: 'Media', tags: ['video', 'photos', 'free'], type: 'Website', free: true },
   { id: '24', title: 'Hootsuite Academy', description: 'Free social media marketing courses', url: 'https://education.hootsuite.com/', category: 'Marketing', subcategory: 'Courses', tags: ['social media', 'courses', 'certification'], type: 'Course', free: true },
-  
-  // COMMUNICATION & COLLABORATION
+
+
   { id: '25', title: 'Slack - Team Communication', description: 'Free team messaging and collaboration', url: 'https://slack.com/', category: 'Communication', subcategory: 'Messaging', tags: ['communication', 'team', 'messaging'], type: 'Tool', free: true, featured: true },
   { id: '26', title: 'Discord - Community Server', description: 'Free voice, video, and text communication', url: 'https://discord.com/', category: 'Communication', subcategory: 'Community', tags: ['voice', 'community', 'gaming'], type: 'Tool', free: true },
   { id: '27', title: 'Microsoft Teams', description: 'Free for education - meetings, chat, and files', url: 'https://www.microsoft.com/en-us/microsoft-teams/group-chat-software', category: 'Communication', subcategory: 'Meetings', tags: ['video', 'meetings', 'microsoft'], type: 'Tool', free: true },
   { id: '28', title: 'Google Workspace for Education', description: 'Free productivity tools for schools', url: 'https://edu.google.com/workspace-for-education/', category: 'Communication', subcategory: 'Productivity', tags: ['google', 'education', 'collaboration'], type: 'Tool', free: true },
   { id: '29', title: 'Notion - All-in-One Workspace', description: 'Notes, docs, and project management', url: 'https://www.notion.so/', category: 'Communication', subcategory: 'Productivity', tags: ['notes', 'wiki', 'project management'], type: 'Tool', free: true },
   { id: '30', title: 'Trello - Project Boards', description: 'Visual project management with boards', url: 'https://trello.com/', category: 'Communication', subcategory: 'Project Management', tags: ['kanban', 'projects', 'tasks'], type: 'Tool', free: true },
-  
-  // COMPETITIONS & ACADEMIC
+
+
   { id: '31', title: 'TSA Official Website', description: 'Technology Student Association resources and competitions', url: 'https://tsaweb.org/', category: 'Competitions', subcategory: 'TSA', tags: ['tsa', 'technology', 'stem'], type: 'Website', free: true, featured: true },
   { id: '32', title: 'DECA Official', description: 'Business and marketing competition resources', url: 'https://www.deca.org/', category: 'Competitions', subcategory: 'Business', tags: ['deca', 'business', 'marketing'], type: 'Website', free: true },
   { id: '33', title: 'FBLA Official', description: 'Future Business Leaders of America', url: 'https://www.fbla.org/', category: 'Competitions', subcategory: 'Business', tags: ['fbla', 'business', 'leadership'], type: 'Website', free: true },
@@ -67,22 +67,22 @@ const externalResources: ExternalResource[] = [
   { id: '36', title: 'Debate Resources - NSDA', description: 'National Speech & Debate Association', url: 'https://www.speechanddebate.org/', category: 'Competitions', subcategory: 'Debate', tags: ['debate', 'speech', 'forensics'], type: 'Website', free: true },
   { id: '37', title: 'FIRST Robotics', description: 'Robotics competition programs', url: 'https://www.firstinspires.org/', category: 'Competitions', subcategory: 'Robotics', tags: ['robotics', 'stem', 'engineering'], type: 'Website', free: true },
   { id: '38', title: 'Math Olympiad', description: 'Mathematical Association of America competitions', url: 'https://www.maa.org/math-competitions', category: 'Competitions', subcategory: 'Math', tags: ['math', 'olympiad', 'competition'], type: 'Website', free: true },
-  
-  // TEMPLATES & DOCUMENTS
+
+
   { id: '39', title: 'Club Constitution Template', description: 'Free editable constitution templates', url: 'https://templates.office.com/', category: 'Templates', subcategory: 'Documents', tags: ['constitution', 'bylaws', 'template'], type: 'Template', free: true },
   { id: '40', title: 'Google Docs Templates', description: 'Free document templates for any purpose', url: 'https://docs.google.com/document/u/0/?tgif=d&ftv=1', category: 'Templates', subcategory: 'Documents', tags: ['documents', 'google', 'templates'], type: 'Template', free: true },
   { id: '41', title: 'Meeting Agenda Templates', description: 'Professional meeting agenda templates', url: 'https://www.smartsheet.com/free-meeting-agenda-templates', category: 'Templates', subcategory: 'Meetings', tags: ['meeting', 'agenda', 'template'], type: 'Template', free: true },
   { id: '42', title: 'Budget Spreadsheet Templates', description: 'Free Excel budget templates', url: 'https://templates.office.com/en-us/budgets', category: 'Templates', subcategory: 'Finance', tags: ['budget', 'finance', 'excel'], type: 'Template', free: true },
   { id: '43', title: 'Presentation Templates', description: 'Google Slides and PowerPoint templates', url: 'https://slidesgo.com/', category: 'Templates', subcategory: 'Presentations', tags: ['slides', 'presentation', 'powerpoint'], type: 'Template', free: true },
-  
-  // VOLUNTEER & SERVICE
+
+
   { id: '44', title: 'VolunteerMatch', description: 'Find local volunteer opportunities', url: 'https://www.volunteermatch.org/', category: 'Service', subcategory: 'Opportunities', tags: ['volunteer', 'service', 'local'], type: 'Website', free: true, featured: true },
   { id: '45', title: 'Idealist.org', description: 'Nonprofit jobs and volunteer opportunities', url: 'https://www.idealist.org/', category: 'Service', subcategory: 'Opportunities', tags: ['nonprofit', 'jobs', 'volunteer'], type: 'Website', free: true },
   { id: '46', title: 'Points of Light', description: 'Volunteer and civic engagement resources', url: 'https://www.pointsoflight.org/', category: 'Service', subcategory: 'Resources', tags: ['civic', 'engagement', 'service'], type: 'Website', free: true },
   { id: '47', title: 'UN Volunteers', description: 'Online volunteering opportunities globally', url: 'https://www.onlinevolunteering.org/', category: 'Service', subcategory: 'Global', tags: ['un', 'global', 'online'], type: 'Website', free: true },
   { id: '48', title: 'Create the Good (AARP)', description: 'Service project ideas and resources', url: 'https://createthegood.aarp.org/', category: 'Service', subcategory: 'Ideas', tags: ['projects', 'ideas', 'community'], type: 'Website', free: true },
-  
-  // SKILLS & LEARNING
+
+
   { id: '49', title: 'Khan Academy', description: 'Free courses on any subject', url: 'https://www.khanacademy.org/', category: 'Learning', subcategory: 'General', tags: ['learning', 'free', 'courses'], type: 'Course', free: true, featured: true },
   { id: '50', title: 'Coursera - Free Courses', description: 'University courses from top institutions', url: 'https://www.coursera.org/', category: 'Learning', subcategory: 'University', tags: ['courses', 'university', 'certificate'], type: 'Course', free: true },
   { id: '51', title: 'edX - Free Online Courses', description: 'Courses from Harvard, MIT, and more', url: 'https://www.edx.org/', category: 'Learning', subcategory: 'University', tags: ['harvard', 'mit', 'courses'], type: 'Course', free: true },
@@ -90,38 +90,38 @@ const externalResources: ExternalResource[] = [
   { id: '53', title: 'Skillshare', description: 'Creative and business courses', url: 'https://www.skillshare.com/', category: 'Learning', subcategory: 'Creative', tags: ['creative', 'design', 'business'], type: 'Course', free: false },
   { id: '54', title: 'Codecademy', description: 'Learn to code for free', url: 'https://www.codecademy.com/', category: 'Learning', subcategory: 'Coding', tags: ['coding', 'programming', 'free'], type: 'Course', free: true },
   { id: '55', title: 'freeCodeCamp', description: 'Free coding bootcamp and certifications', url: 'https://www.freecodecamp.org/', category: 'Learning', subcategory: 'Coding', tags: ['coding', 'bootcamp', 'free'], type: 'Course', free: true },
-  
-  // WEBSITES & TECHNOLOGY
+
+
   { id: '56', title: 'Wix - Free Website Builder', description: 'Create a free club website', url: 'https://www.wix.com/', category: 'Technology', subcategory: 'Websites', tags: ['website', 'builder', 'free'], type: 'Tool', free: true },
   { id: '57', title: 'Weebly - Simple Websites', description: 'Drag-and-drop website builder', url: 'https://www.weebly.com/', category: 'Technology', subcategory: 'Websites', tags: ['website', 'simple', 'free'], type: 'Tool', free: true },
   { id: '58', title: 'Google Sites', description: 'Free website creation with Google', url: 'https://sites.google.com/', category: 'Technology', subcategory: 'Websites', tags: ['google', 'free', 'simple'], type: 'Tool', free: true },
   { id: '59', title: 'GitHub Pages', description: 'Free hosting for web projects', url: 'https://pages.github.com/', category: 'Technology', subcategory: 'Hosting', tags: ['github', 'hosting', 'free'], type: 'Tool', free: true },
   { id: '60', title: 'Linktree', description: 'One link for all your social media', url: 'https://linktr.ee/', category: 'Technology', subcategory: 'Social', tags: ['link', 'social', 'bio'], type: 'Tool', free: true },
-  
-  // COMMUNITY BUILDING
+
+
   { id: '61', title: 'Circle - Community Platform', description: 'Build online communities for your club', url: 'https://circle.so/', category: 'Community', subcategory: 'Platform', tags: ['community', 'members', 'forum'], type: 'Tool', free: false },
   { id: '62', title: 'Mighty Networks', description: 'All-in-one community platform', url: 'https://www.mightynetworks.com/', category: 'Community', subcategory: 'Platform', tags: ['community', 'courses', 'membership'], type: 'Tool', free: false },
   { id: '63', title: 'Facebook Groups Guide', description: 'How to create and manage Facebook groups', url: 'https://www.facebook.com/help/1629740080681586', category: 'Community', subcategory: 'Social', tags: ['facebook', 'groups', 'community'], type: 'Article', free: true },
   { id: '64', title: 'Reddit Community Guide', description: 'Create and moderate subreddits', url: 'https://mods.reddithelp.com/', category: 'Community', subcategory: 'Social', tags: ['reddit', 'moderation', 'community'], type: 'Article', free: true },
-  
-  // FINANCE & BUDGETING
+
+
   { id: '65', title: 'Wave Accounting', description: 'Free accounting software for small orgs', url: 'https://www.waveapps.com/', category: 'Finance', subcategory: 'Accounting', tags: ['accounting', 'free', 'invoicing'], type: 'Tool', free: true },
   { id: '66', title: 'Mint Budget Tracker', description: 'Personal and organizational budgeting', url: 'https://mint.intuit.com/', category: 'Finance', subcategory: 'Budgeting', tags: ['budget', 'tracking', 'free'], type: 'Tool', free: true },
   { id: '67', title: 'PayPal for Nonprofits', description: 'Payment processing for organizations', url: 'https://www.paypal.com/us/webapps/mpp/nonprofit', category: 'Finance', subcategory: 'Payments', tags: ['payments', 'donations', 'nonprofit'], type: 'Tool', free: true },
   { id: '68', title: 'Venmo for Business', description: 'Accept payments for club dues/events', url: 'https://venmo.com/business/', category: 'Finance', subcategory: 'Payments', tags: ['payments', 'venmo', 'mobile'], type: 'Tool', free: true },
-  
-  // AWARDS & RECOGNITION
+
+
   { id: '69', title: 'Congressional Award', description: 'Congress\'s award for young Americans', url: 'https://www.congressionalaward.org/', category: 'Awards', subcategory: 'National', tags: ['congress', 'service', 'recognition'], type: 'Website', free: true },
   { id: '70', title: "President's Volunteer Service Award", description: 'National recognition for volunteers', url: 'https://www.presidentialserviceawards.gov/', category: 'Awards', subcategory: 'National', tags: ['president', 'volunteer', 'award'], type: 'Website', free: true },
   { id: '71', title: 'Prudential Spirit of Community', description: 'Youth volunteer recognition program', url: 'https://spirit.prudential.com/', category: 'Awards', subcategory: 'Youth', tags: ['prudential', 'youth', 'volunteer'], type: 'Website', free: true },
   { id: '72', title: 'Gloria Barron Prize', description: 'Award for young heroes', url: 'https://barronprize.org/', category: 'Awards', subcategory: 'Youth', tags: ['heroes', 'youth', 'award'], type: 'Website', free: true },
-  
-  // MENTAL HEALTH & WELLNESS
+
+
   { id: '73', title: 'Active Minds', description: 'Mental health resources for students', url: 'https://www.activeminds.org/', category: 'Wellness', subcategory: 'Mental Health', tags: ['mental health', 'students', 'support'], type: 'Website', free: true },
   { id: '74', title: 'Crisis Text Line', description: 'Text HOME to 741741 for crisis support', url: 'https://www.crisistextline.org/', category: 'Wellness', subcategory: 'Crisis', tags: ['crisis', 'text', 'support'], type: 'Website', free: true },
   { id: '75', title: 'Headspace for Students', description: 'Free meditation app for students', url: 'https://www.headspace.com/students', category: 'Wellness', subcategory: 'Meditation', tags: ['meditation', 'students', 'free'], type: 'Tool', free: true },
-  
-  // ADDITIONAL RESOURCES (continuing to 100+)
+
+
   { id: '76', title: 'Adobe Express', description: 'Free design and video creation tool', url: 'https://www.adobe.com/express/', category: 'Marketing', subcategory: 'Design', tags: ['design', 'video', 'adobe'], type: 'Tool', free: true },
   { id: '77', title: 'Figma', description: 'Collaborative design tool', url: 'https://www.figma.com/', category: 'Technology', subcategory: 'Design', tags: ['design', 'collaborative', 'ui'], type: 'Tool', free: true },
   { id: '78', title: 'Loom - Video Messaging', description: 'Record and share video messages', url: 'https://www.loom.com/', category: 'Communication', subcategory: 'Video', tags: ['video', 'messaging', 'screen recording'], type: 'Tool', free: true },
@@ -152,13 +152,22 @@ const externalResources: ExternalResource[] = [
 const categories = [...new Set(externalResources.map(r => r.category))];
 const types = ['All', 'Website', 'Tool', 'Template', 'Video', 'Course', 'Article', 'Community'];
 
+const SAVED_LS_KEY = "clubconnect_external_saved";
+
+function loadSaved(): string[] {
+  try { const s = localStorage.getItem(SAVED_LS_KEY); if (s) return JSON.parse(s); } catch {}
+  return [];
+}
+
 export default function ExternalResourcesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [showFreeOnly, setShowFreeOnly] = useState(false);
-  const [savedResources, setSavedResources] = useState<string[]>([]);
+  const [savedResources, setSavedResources] = useState<string[]>(() => loadSaved());
   const [showSavedOnly, setShowSavedOnly] = useState(false);
+
+  useEffect(() => { try { localStorage.setItem(SAVED_LS_KEY, JSON.stringify(savedResources)); } catch {} }, [savedResources]);
 
   const filteredResources = useMemo(() => {
     return externalResources.filter(resource => {
@@ -199,7 +208,7 @@ export default function ExternalResourcesPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      {/* Hero */}
+      {}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0">
           <Image
@@ -209,7 +218,7 @@ export default function ExternalResourcesPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/95 to-teal-600/80"></div>
+          <div className="absolute inset-0 bg-primary-600/90"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
@@ -219,7 +228,7 @@ export default function ExternalResourcesPage() {
             🌐 External Resources Library
           </h1>
           <p className="text-xl text-white/90 mb-8 max-w-2xl">
-            {externalResources.length}+ curated links to the best tools, websites, courses, and resources 
+            {externalResources.length}+ curated links to the best tools, websites, courses, and resources
             for running successful student organizations.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -229,8 +238,8 @@ export default function ExternalResourcesPage() {
             <button
               onClick={() => setShowSavedOnly(!showSavedOnly)}
               className={`px-6 py-2.5 font-semibold border-2 transition-all ${
-                showSavedOnly 
-                  ? 'bg-white text-emerald-600 border-white' 
+                showSavedOnly
+                  ? 'bg-white text-emerald-600 border-white'
                   : 'bg-white/20 text-white border-white/50 hover:bg-white hover:text-emerald-600'
               }`}
             >
@@ -240,7 +249,7 @@ export default function ExternalResourcesPage() {
         </div>
       </section>
 
-      {/* Featured */}
+      {}
       <section className="py-8 bg-white border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="font-bold text-neutral-700 mb-4">⭐ Featured Resources</h2>
@@ -269,7 +278,7 @@ export default function ExternalResourcesPage() {
         </div>
       </section>
 
-      {/* Filters */}
+      {}
       <section id="resources" className="py-6 bg-neutral-50 border-b border-neutral-200 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-wrap gap-4 items-center">
@@ -315,7 +324,7 @@ export default function ExternalResourcesPage() {
         </div>
       </section>
 
-      {/* Resources Grid */}
+      {}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -388,8 +397,8 @@ export default function ExternalResourcesPage() {
         </div>
       </section>
 
-      {/* Suggest Resource */}
-      <section className="py-12 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+      {}
+      <section className="py-12 bg-primary-600 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold font-heading mb-4">Know a Great Resource?</h2>
           <p className="text-white/90 mb-6">
