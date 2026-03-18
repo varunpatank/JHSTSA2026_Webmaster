@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { authApi } from "@/lib/api";
 import { loginUser } from "@/lib/clientState";
 import HeroSection from "@/components/HeroSection";
@@ -49,18 +49,6 @@ export default function LoginFormClient({
         if (res.error) {
           setError(res.error.message || "Sign in failed");
           setSubmitting(false);
-          return;
-        }
-
-        const nextAuthRes = await signIn("credentials", {
-          email,
-          password,
-          redirect: false,
-        });
-
-        if (nextAuthRes?.error) {
-          await authApi.signOut();
-          setError("App session setup failed. Please try again.");
           return;
         }
 

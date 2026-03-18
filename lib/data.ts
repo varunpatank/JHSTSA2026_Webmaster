@@ -1,6 +1,5 @@
 import { Chapter, Event, Resource, Spotlight, Stats } from "@/types";
 
-
 const pendingProposals = [
   {
     id: "prop-1",
@@ -62,7 +61,6 @@ const chapterHealth = [
     color: "bg-yellow-500",
   },
 ];
-
 
 export const featuredAlumni = [
   {
@@ -154,7 +152,6 @@ const internships = [
   },
 ];
 
-
 const budgetAllocations = [
   {
     chapter: "Model United Nations",
@@ -233,8 +230,6 @@ const grants = [
     eligibility: "Arts and Media chapters",
   },
 ];
-
-
 
 const memberRoster = [
   {
@@ -320,8 +315,6 @@ const pendingJoinRequests = [
   },
 ];
 
-
-
 const upcomingDeadlines = [
   {
     id: 1,
@@ -366,7 +359,6 @@ export const quizQuestions = [
     options: ["Before school", "During lunch", "After school", "Weekends"],
   },
 ];
-
 
 export const stats: Stats = {
   activeChapters: 47,
@@ -420,8 +412,8 @@ export const chapters: Chapter[] = [
     ],
     meetingSchedule: "Every Tuesday, 3:30 PM - 5:00 PM",
     meetingLocation: {
-      lat: 47.67782,
-      lng: -122.11945,
+      lat: 47.7148986,
+      lng: -122.1997857,
       parentOrg: "Juanita High School",
       room: "Juanita High School",
       internalLocation: "Social Studies Wing",
@@ -487,8 +479,8 @@ export const chapters: Chapter[] = [
     ],
     meetingSchedule: "Monday, Wednesday, Friday 3:30 PM - 6:00 PM",
     meetingLocation: {
-      lat: 47.6740,
-      lng: -122.1215,
+      lat: 47.6485536,
+      lng: -122.0383183,
       parentOrg: "Tesla STEM High School",
       room: "Tesla STEM High School",
       internalLocation: "Engineering Lab",
@@ -554,8 +546,8 @@ export const chapters: Chapter[] = [
     ],
     meetingSchedule: "Every other Thursday during lunch",
     meetingLocation: {
-      lat: 47.6696,
-      lng: -122.1098,
+      lat: 47.6943909,
+      lng: -122.1080762,
       parentOrg: "Redmond High School",
       room: "Redmond High School",
       internalLocation: "Main Building",
@@ -613,8 +605,8 @@ export const chapters: Chapter[] = [
     ],
     meetingSchedule: "Every Wednesday, 3:30 PM - 5:30 PM",
     meetingLocation: {
-      lat: 47.6601,
-      lng: -122.2043,
+      lat: 47.6728118,
+      lng: -122.1802551,
       parentOrg: "Lake Washington High School",
       room: "Lake Washington High School",
       internalLocation: "Performing Arts Center",
@@ -666,8 +658,8 @@ export const chapters: Chapter[] = [
     ],
     meetingSchedule: "Tuesday and Thursday, 3:30 PM - 5:00 PM",
     meetingLocation: {
-      lat: 47.6835,
-      lng: -122.0362,
+      lat: 47.6145585,
+      lng: -122.0308307,
       parentOrg: "Eastlake High School",
       room: "Eastlake High School",
       internalLocation: "English Wing",
@@ -725,8 +717,8 @@ export const chapters: Chapter[] = [
     ],
     meetingSchedule: "Every Friday during lunch",
     meetingLocation: {
-      lat: 47.6553,
-      lng: -122.1530,
+      lat: 47.664105,
+      lng: -122.1912096,
       parentOrg: "International Community School",
       room: "International Community School",
       internalLocation: "Language Wing",
@@ -778,8 +770,8 @@ export const chapters: Chapter[] = [
     ],
     meetingSchedule: "Every Monday, 3:30 PM - 4:30 PM",
     meetingLocation: {
-      lat: 47.7530,
-      lng: -122.2015,
+      lat: 47.7414843,
+      lng: -122.222623,
       parentOrg: "Inglemoor High School",
       room: "Inglemoor High School",
       internalLocation: "Science Building",
@@ -836,8 +828,8 @@ export const chapters: Chapter[] = [
     ],
     meetingSchedule: "Tuesday and Thursday, 3:30 PM - 5:00 PM",
     meetingLocation: {
-      lat: 47.7610,
-      lng: -122.2185,
+      lat: 47.760475,
+      lng: -122.2205602,
       parentOrg: "Bothell High School",
       room: "Bothell High School",
       internalLocation: "Media Center",
@@ -862,371 +854,810 @@ export const chapters: Chapter[] = [
   {
     id: "math-olympiad",
     name: "Math Olympiad Team",
-    description: "Compete in mathematics competitions at local, state, and national levels while sharpening problem-solving skills.",
+    description:
+      "Compete in mathematics competitions at local, state, and national levels while sharpening problem-solving skills.",
     category: "Academic",
     meetingFrequency: "Weekly",
     membershipStatus: "Tryout Required",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Mr. Kevin Park", email: "k.park@school.edu", department: "Mathematics" },
+    advisor: {
+      name: "Mr. Kevin Park",
+      email: "k.park@school.edu",
+      department: "Mathematics",
+    },
     officers: [
-      { name: "Ethan Liu", position: "Captain", email: "e.liu@student.edu", grade: 12 },
-      { name: "Priya Sharma", position: "Vice Captain", email: "p.sharma@student.edu", grade: 11 },
+      {
+        name: "Ethan Liu",
+        position: "Captain",
+        email: "e.liu@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Priya Sharma",
+        position: "Vice Captain",
+        email: "p.sharma@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Wednesday, 3:30 PM - 5:00 PM",
-    meetingLocation: { lat: 47.67750, lng: -122.11990, parentOrg: "Juanita High School", room: "Juanita High School", internalLocation: "Math Wing Room 112" },
+    meetingLocation: {
+      lat: 47.71455,
+      lng: -122.20035,
+      parentOrg: "Juanita High School",
+      room: "Juanita High School",
+      internalLocation: "Math Wing Room 112",
+    },
     membershipRequirements: "Strong interest in mathematics, tryout required",
     dues: "$15 per semester",
     socialLinks: { instagram: "@jhs_mathteam" },
-    achievements: ["State Math Olympiad 3rd Place 2025", "12 AIME qualifiers this year"],
-    photoGallery: [], memberCount: 30, foundedYear: 2010, isActive: true,
+    achievements: [
+      "State Math Olympiad 3rd Place 2025",
+      "12 AIME qualifiers this year",
+    ],
+    photoGallery: [],
+    memberCount: 30,
+    foundedYear: 2010,
+    isActive: true,
   },
   {
     id: "jhs-art-club",
     name: "Art & Design Studio",
-    description: "Explore visual arts including painting, sculpture, digital art, and graphic design through workshops and exhibitions.",
+    description:
+      "Explore visual arts including painting, sculpture, digital art, and graphic design through workshops and exhibitions.",
     category: "Arts",
     meetingFrequency: "Weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Ms. Lisa Nakamura", email: "l.nakamura@school.edu", department: "Fine Arts" },
+    advisor: {
+      name: "Ms. Lisa Nakamura",
+      email: "l.nakamura@school.edu",
+      department: "Fine Arts",
+    },
     officers: [
-      { name: "Chloe Kim", position: "President", email: "c.kim@student.edu", grade: 12 },
-      { name: "Daniel Orozco", position: "Vice President", email: "d.orozco@student.edu", grade: 11 },
+      {
+        name: "Chloe Kim",
+        position: "President",
+        email: "c.kim@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Daniel Orozco",
+        position: "Vice President",
+        email: "d.orozco@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Thursday, 3:30 PM - 5:00 PM",
-    meetingLocation: { lat: 47.67800, lng: -122.11880, parentOrg: "Juanita High School", room: "Juanita High School", internalLocation: "Art Studio B" },
+    meetingLocation: {
+      lat: 47.7152,
+      lng: -122.1991,
+      parentOrg: "Juanita High School",
+      room: "Juanita High School",
+      internalLocation: "Art Studio B",
+    },
     membershipRequirements: "Open to all students with interest in visual arts",
     dues: "$10 per semester (materials fee)",
     socialLinks: { instagram: "@jhs_artstudio" },
-    achievements: ["Annual Art Show - 200+ attendees", "5 students selected for regional exhibitions"],
-    photoGallery: [], memberCount: 35, foundedYear: 2014, isActive: true,
+    achievements: [
+      "Annual Art Show - 200+ attendees",
+      "5 students selected for regional exhibitions",
+    ],
+    photoGallery: [],
+    memberCount: 35,
+    foundedYear: 2014,
+    isActive: true,
   },
   {
     id: "jhs-spanish-club",
     name: "Spanish Language & Culture Club",
-    description: "Practice conversational Spanish, explore Latin American cultures, and participate in cultural events and exchanges.",
+    description:
+      "Practice conversational Spanish, explore Latin American cultures, and participate in cultural events and exchanges.",
     category: "Cultural",
     meetingFrequency: "Weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "Lunch",
-    advisor: { name: "Sra. Maria Fernandez", email: "m.fernandez@school.edu", department: "World Languages" },
+    advisor: {
+      name: "Sra. Maria Fernandez",
+      email: "m.fernandez@school.edu",
+      department: "World Languages",
+    },
     officers: [
-      { name: "Sofia Reyes", position: "President", email: "s.reyes@student.edu", grade: 12 },
+      {
+        name: "Sofia Reyes",
+        position: "President",
+        email: "s.reyes@student.edu",
+        grade: 12,
+      },
     ],
     meetingSchedule: "Every Friday during lunch",
-    meetingLocation: { lat: 47.67760, lng: -122.12010, parentOrg: "Juanita High School", room: "Juanita High School", internalLocation: "Language Lab" },
+    meetingLocation: {
+      lat: 47.7142,
+      lng: -122.19955,
+      parentOrg: "Juanita High School",
+      room: "Juanita High School",
+      internalLocation: "Language Lab",
+    },
     membershipRequirements: "Open to all, no Spanish experience required",
     dues: "None",
     socialLinks: { instagram: "@jhs_spanish" },
-    achievements: ["Dia de los Muertos festival annual tradition", "Cultural exchange program with sister school in Mexico"],
-    photoGallery: [], memberCount: 28, foundedYear: 2016, isActive: true,
+    achievements: [
+      "Dia de los Muertos festival annual tradition",
+      "Cultural exchange program with sister school in Mexico",
+    ],
+    photoGallery: [],
+    memberCount: 28,
+    foundedYear: 2016,
+    isActive: true,
   },
   {
     id: "tesla-science-bowl",
     name: "Science Bowl Team",
-    description: "Compete in fast-paced science trivia competitions covering biology, chemistry, physics, earth science, and math.",
+    description:
+      "Compete in fast-paced science trivia competitions covering biology, chemistry, physics, earth science, and math.",
     category: "Academic",
     meetingFrequency: "Weekly",
     membershipStatus: "Tryout Required",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Dr. James Wong", email: "j.wong@school.edu", department: "Science" },
+    advisor: {
+      name: "Dr. James Wong",
+      email: "j.wong@school.edu",
+      department: "Science",
+    },
     officers: [
-      { name: "Nathan Lee", position: "Captain", email: "n.lee@student.edu", grade: 12 },
-      { name: "Anika Patel", position: "Vice Captain", email: "a.patel@student.edu", grade: 11 },
+      {
+        name: "Nathan Lee",
+        position: "Captain",
+        email: "n.lee@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Anika Patel",
+        position: "Vice Captain",
+        email: "a.patel@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Tuesday, 3:30 PM - 5:00 PM",
-    meetingLocation: { lat: 47.6745, lng: -122.1220, parentOrg: "Tesla STEM High School", room: "Tesla STEM High School", internalLocation: "Science Lab 3" },
+    meetingLocation: {
+      lat: 47.64825,
+      lng: -122.03795,
+      parentOrg: "Tesla STEM High School",
+      room: "Tesla STEM High School",
+      internalLocation: "Science Lab 3",
+    },
     membershipRequirements: "Tryout required, strong science knowledge",
     dues: "$20 per year",
     socialLinks: { website: "https://teslasciencebowl.org" },
-    achievements: ["Regional Science Bowl Champions 2025", "National qualifier 2 consecutive years"],
-    photoGallery: [], memberCount: 24, foundedYear: 2013, isActive: true,
+    achievements: [
+      "Regional Science Bowl Champions 2025",
+      "National qualifier 2 consecutive years",
+    ],
+    photoGallery: [],
+    memberCount: 24,
+    foundedYear: 2013,
+    isActive: true,
   },
   {
     id: "tesla-cyber-security",
     name: "Cybersecurity Club",
-    description: "Learn ethical hacking, network security, and compete in CTF (Capture the Flag) competitions.",
+    description:
+      "Learn ethical hacking, network security, and compete in CTF (Capture the Flag) competitions.",
     category: "STEM",
     meetingFrequency: "Weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Mr. Chris Yang", email: "c.yang@school.edu", department: "Computer Science" },
+    advisor: {
+      name: "Mr. Chris Yang",
+      email: "c.yang@school.edu",
+      department: "Computer Science",
+    },
     officers: [
-      { name: "Jake Morrison", position: "President", email: "j.morrison@student.edu", grade: 12 },
-      { name: "Mei Lin", position: "Vice President", email: "m.lin@student.edu", grade: 11 },
+      {
+        name: "Jake Morrison",
+        position: "President",
+        email: "j.morrison@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Mei Lin",
+        position: "Vice President",
+        email: "m.lin@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Thursday, 3:30 PM - 5:30 PM",
-    meetingLocation: { lat: 47.6738, lng: -122.1210, parentOrg: "Tesla STEM High School", room: "Tesla STEM High School", internalLocation: "Computer Lab A" },
-    membershipRequirements: "Interest in cybersecurity, no prior experience needed",
+    meetingLocation: {
+      lat: 47.64895,
+      lng: -122.03755,
+      parentOrg: "Tesla STEM High School",
+      room: "Tesla STEM High School",
+      internalLocation: "Computer Lab A",
+    },
+    membershipRequirements:
+      "Interest in cybersecurity, no prior experience needed",
     dues: "None",
     socialLinks: { discord: "tesla-cybersec" },
-    achievements: ["CyberPatriot State Finalist 2025", "Top 20 nationally in picoCTF"],
-    photoGallery: [], memberCount: 20, foundedYear: 2018, isActive: true,
+    achievements: [
+      "CyberPatriot State Finalist 2025",
+      "Top 20 nationally in picoCTF",
+    ],
+    photoGallery: [],
+    memberCount: 20,
+    foundedYear: 2018,
+    isActive: true,
   },
   {
     id: "redmond-key-club",
     name: "Key Club International",
-    description: "Service leadership program dedicated to serving the community through charitable activities and building leadership skills.",
+    description:
+      "Service leadership program dedicated to serving the community through charitable activities and building leadership skills.",
     category: "Service",
     meetingFrequency: "Weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "Lunch",
-    advisor: { name: "Ms. Rachel Kim", email: "r.kim@school.edu", department: "Counseling" },
+    advisor: {
+      name: "Ms. Rachel Kim",
+      email: "r.kim@school.edu",
+      department: "Counseling",
+    },
     officers: [
-      { name: "Olivia Chen", position: "President", email: "o.chen@student.edu", grade: 12 },
-      { name: "Liam Nguyen", position: "Vice President", email: "l.nguyen@student.edu", grade: 11 },
+      {
+        name: "Olivia Chen",
+        position: "President",
+        email: "o.chen@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Liam Nguyen",
+        position: "Vice President",
+        email: "l.nguyen@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Monday during lunch",
-    meetingLocation: { lat: 47.6700, lng: -122.1093, parentOrg: "Redmond High School", room: "Redmond High School", internalLocation: "Room 206" },
+    meetingLocation: {
+      lat: 47.6947,
+      lng: -122.1078,
+      parentOrg: "Redmond High School",
+      room: "Redmond High School",
+      internalLocation: "Room 206",
+    },
     membershipRequirements: "Minimum 15 service hours per semester",
     dues: "$20 per year (international dues)",
     socialLinks: { instagram: "@redmond_keyclub" },
-    achievements: ["Distinguished Club Award 2025", "Over 3,000 service hours this year"],
-    photoGallery: [], memberCount: 55, foundedYear: 2006, isActive: true,
+    achievements: [
+      "Distinguished Club Award 2025",
+      "Over 3,000 service hours this year",
+    ],
+    photoGallery: [],
+    memberCount: 55,
+    foundedYear: 2006,
+    isActive: true,
   },
   {
     id: "redmond-coding-club",
     name: "Coding & App Development Club",
-    description: "Build software projects, learn new programming languages, and participate in hackathons together.",
+    description:
+      "Build software projects, learn new programming languages, and participate in hackathons together.",
     category: "STEM",
     meetingFrequency: "Weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Mr. Brian Taylor", email: "b.taylor@school.edu", department: "Technology" },
+    advisor: {
+      name: "Mr. Brian Taylor",
+      email: "b.taylor@school.edu",
+      department: "Technology",
+    },
     officers: [
-      { name: "Ryan Zhao", position: "President", email: "r.zhao@student.edu", grade: 12 },
+      {
+        name: "Ryan Zhao",
+        position: "President",
+        email: "r.zhao@student.edu",
+        grade: 12,
+      },
     ],
     meetingSchedule: "Every Wednesday, 3:30 PM - 5:00 PM",
-    meetingLocation: { lat: 47.6692, lng: -122.1102, parentOrg: "Redmond High School", room: "Redmond High School", internalLocation: "Tech Lab" },
+    meetingLocation: {
+      lat: 47.69435,
+      lng: -122.10895,
+      parentOrg: "Redmond High School",
+      room: "Redmond High School",
+      internalLocation: "Tech Lab",
+    },
     membershipRequirements: "Open to all skill levels",
     dues: "None",
     socialLinks: { discord: "redmond-coders", instagram: "@rhs_coding" },
-    achievements: ["Won Best High School Hack at HackWA 2025", "Published 3 apps on app stores"],
-    photoGallery: [], memberCount: 32, foundedYear: 2017, isActive: true,
+    achievements: [
+      "Won Best High School Hack at HackWA 2025",
+      "Published 3 apps on app stores",
+    ],
+    photoGallery: [],
+    memberCount: 32,
+    foundedYear: 2017,
+    isActive: true,
   },
   {
     id: "lwhs-band",
     name: "Marching & Concert Band",
-    description: "Perform at football games, concerts, parades, and regional competitions. All instrument players welcome.",
+    description:
+      "Perform at football games, concerts, parades, and regional competitions. All instrument players welcome.",
     category: "Arts",
     meetingFrequency: "Daily",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "Before School",
-    advisor: { name: "Mr. George Simmons", email: "g.simmons@school.edu", department: "Music" },
+    advisor: {
+      name: "Mr. George Simmons",
+      email: "g.simmons@school.edu",
+      department: "Music",
+    },
     officers: [
-      { name: "Emma Wright", position: "Drum Major", email: "e.wright@student.edu", grade: 12 },
-      { name: "Carlos Mendez", position: "Section Leader", email: "c.mendez@student.edu", grade: 11 },
+      {
+        name: "Emma Wright",
+        position: "Drum Major",
+        email: "e.wright@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Carlos Mendez",
+        position: "Section Leader",
+        email: "c.mendez@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Daily 7:00 AM - 8:00 AM, plus after-school rehearsals",
-    meetingLocation: { lat: 47.6605, lng: -122.2038, parentOrg: "Lake Washington High School", room: "Lake Washington High School", internalLocation: "Band Room" },
-    membershipRequirements: "Ability to play an instrument, commitment to daily rehearsals",
+    meetingLocation: {
+      lat: 47.6731,
+      lng: -122.18095,
+      parentOrg: "Lake Washington High School",
+      room: "Lake Washington High School",
+      internalLocation: "Band Room",
+    },
+    membershipRequirements:
+      "Ability to play an instrument, commitment to daily rehearsals",
     dues: "$30 per year (uniform fee)",
     socialLinks: { instagram: "@lwhs_band" },
-    achievements: ["State Marching Band Competition - Gold 2025", "150+ member ensemble"],
-    photoGallery: [], memberCount: 68, foundedYear: 1985, isActive: true,
+    achievements: [
+      "State Marching Band Competition - Gold 2025",
+      "150+ member ensemble",
+    ],
+    photoGallery: [],
+    memberCount: 68,
+    foundedYear: 1985,
+    isActive: true,
   },
   {
     id: "lwhs-student-gov",
     name: "Student Government Association",
-    description: "Represent the student body, plan school-wide events, and develop leadership skills through governance.",
+    description:
+      "Represent the student body, plan school-wide events, and develop leadership skills through governance.",
     category: "Leadership",
     meetingFrequency: "Weekly",
     membershipStatus: "Application Required",
     gradeLevel: "All Grades",
     meetingTime: "Lunch",
-    advisor: { name: "Mrs. Sandra Wells", email: "s.wells@school.edu", department: "Administration" },
+    advisor: {
+      name: "Mrs. Sandra Wells",
+      email: "s.wells@school.edu",
+      department: "Administration",
+    },
     officers: [
-      { name: "Harper Johnson", position: "President", email: "h.johnson@student.edu", grade: 12 },
-      { name: "Mason Clark", position: "Vice President", email: "m.clark@student.edu", grade: 11 },
+      {
+        name: "Harper Johnson",
+        position: "President",
+        email: "h.johnson@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Mason Clark",
+        position: "Vice President",
+        email: "m.clark@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Wednesday during lunch",
-    meetingLocation: { lat: 47.6598, lng: -122.2048, parentOrg: "Lake Washington High School", room: "Lake Washington High School", internalLocation: "Student Commons" },
-    membershipRequirements: "Elected or appointed position, application process",
+    meetingLocation: {
+      lat: 47.67295,
+      lng: -122.1796,
+      parentOrg: "Lake Washington High School",
+      room: "Lake Washington High School",
+      internalLocation: "Student Commons",
+    },
+    membershipRequirements:
+      "Elected or appointed position, application process",
     dues: "None",
     socialLinks: { instagram: "@lwhs_sga" },
-    achievements: ["Organized Homecoming and Prom", "Raised $15,000 for school improvements"],
-    photoGallery: [], memberCount: 25, foundedYear: 1990, isActive: true,
+    achievements: [
+      "Organized Homecoming and Prom",
+      "Raised $15,000 for school improvements",
+    ],
+    photoGallery: [],
+    memberCount: 25,
+    foundedYear: 1990,
+    isActive: true,
   },
   {
     id: "eastlake-film-club",
     name: "Film & Media Production Club",
-    description: "Create short films, documentaries, and multimedia projects while learning cinematography and editing.",
+    description:
+      "Create short films, documentaries, and multimedia projects while learning cinematography and editing.",
     category: "Media",
     meetingFrequency: "Weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Mr. Paul Anderson", email: "p.anderson@school.edu", department: "Media Arts" },
+    advisor: {
+      name: "Mr. Paul Anderson",
+      email: "p.anderson@school.edu",
+      department: "Media Arts",
+    },
     officers: [
-      { name: "Zoe Mitchell", position: "Director", email: "z.mitchell@student.edu", grade: 12 },
-      { name: "Kai Ramirez", position: "Editor-in-Chief", email: "k.ramirez@student.edu", grade: 11 },
+      {
+        name: "Zoe Mitchell",
+        position: "Director",
+        email: "z.mitchell@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Kai Ramirez",
+        position: "Editor-in-Chief",
+        email: "k.ramirez@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Friday, 3:30 PM - 5:30 PM",
-    meetingLocation: { lat: 47.6830, lng: -122.0368, parentOrg: "Eastlake High School", room: "Eastlake High School", internalLocation: "Media Lab" },
-    membershipRequirements: "Passion for filmmaking, open to all experience levels",
+    meetingLocation: {
+      lat: 47.6143,
+      lng: -122.0311,
+      parentOrg: "Eastlake High School",
+      room: "Eastlake High School",
+      internalLocation: "Media Lab",
+    },
+    membershipRequirements:
+      "Passion for filmmaking, open to all experience levels",
     dues: "None",
     socialLinks: { instagram: "@eastlake_films" },
-    achievements: ["Best Short Film - WA Student Film Festival 2025", "Produced school documentary series"],
-    photoGallery: [], memberCount: 18, foundedYear: 2019, isActive: true,
+    achievements: [
+      "Best Short Film - WA Student Film Festival 2025",
+      "Produced school documentary series",
+    ],
+    photoGallery: [],
+    memberCount: 18,
+    foundedYear: 2019,
+    isActive: true,
   },
   {
     id: "eastlake-track",
     name: "Track & Field Club",
-    description: "Train and compete in track and field events including sprints, distance, jumps, and throws.",
+    description:
+      "Train and compete in track and field events including sprints, distance, jumps, and throws.",
     category: "Sports",
     meetingFrequency: "Daily",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Coach Mike Torres", email: "m.torres@school.edu", department: "Athletics" },
+    advisor: {
+      name: "Coach Mike Torres",
+      email: "m.torres@school.edu",
+      department: "Athletics",
+    },
     officers: [
-      { name: "Jordan Williams", position: "Team Captain", email: "j.williams@student.edu", grade: 12 },
+      {
+        name: "Jordan Williams",
+        position: "Team Captain",
+        email: "j.williams@student.edu",
+        grade: 12,
+      },
     ],
     meetingSchedule: "Monday - Friday, 3:30 PM - 5:30 PM (spring season)",
-    meetingLocation: { lat: 47.6840, lng: -122.0355, parentOrg: "Eastlake High School", room: "Eastlake High School", internalLocation: "Athletic Complex" },
-    membershipRequirements: "Physical clearance form, commitment to daily practice",
+    meetingLocation: {
+      lat: 47.6151,
+      lng: -122.0301,
+      parentOrg: "Eastlake High School",
+      room: "Eastlake High School",
+      internalLocation: "Athletic Complex",
+    },
+    membershipRequirements:
+      "Physical clearance form, commitment to daily practice",
     dues: "$25 per season",
     socialLinks: { instagram: "@eastlake_track" },
     achievements: ["KingCo Conference Champions 2025", "3 state qualifiers"],
-    photoGallery: [], memberCount: 45, foundedYear: 2000, isActive: true,
+    photoGallery: [],
+    memberCount: 45,
+    foundedYear: 2000,
+    isActive: true,
   },
   {
     id: "ics-global-issues",
     name: "Global Issues Forum",
-    description: "Discuss and research pressing global challenges including climate change, human rights, and international development.",
+    description:
+      "Discuss and research pressing global challenges including climate change, human rights, and international development.",
     category: "Academic",
     meetingFrequency: "Bi-weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Dr. Amara Osei", email: "a.osei@school.edu", department: "Social Studies" },
+    advisor: {
+      name: "Dr. Amara Osei",
+      email: "a.osei@school.edu",
+      department: "Social Studies",
+    },
     officers: [
-      { name: "Layla Ahmed", position: "President", email: "l.ahmed@student.edu", grade: 12 },
+      {
+        name: "Layla Ahmed",
+        position: "President",
+        email: "l.ahmed@student.edu",
+        grade: 12,
+      },
     ],
     meetingSchedule: "Every other Tuesday, 3:30 PM - 4:30 PM",
-    meetingLocation: { lat: 47.6557, lng: -122.1525, parentOrg: "International Community School", room: "International Community School", internalLocation: "Conference Room" },
+    meetingLocation: {
+      lat: 47.66455,
+      lng: -122.1911,
+      parentOrg: "International Community School",
+      room: "International Community School",
+      internalLocation: "Conference Room",
+    },
     membershipRequirements: "Open to all students",
     dues: "None",
     socialLinks: { instagram: "@ics_globalforum" },
-    achievements: ["Hosted district-wide Global Awareness Week", "Student-led UN simulation event"],
-    photoGallery: [], memberCount: 22, foundedYear: 2020, isActive: true,
+    achievements: [
+      "Hosted district-wide Global Awareness Week",
+      "Student-led UN simulation event",
+    ],
+    photoGallery: [],
+    memberCount: 22,
+    foundedYear: 2020,
+    isActive: true,
   },
   {
     id: "ics-dance",
     name: "International Dance Ensemble",
-    description: "Learn and perform traditional and contemporary dances from cultures around the world.",
+    description:
+      "Learn and perform traditional and contemporary dances from cultures around the world.",
     category: "Arts",
     meetingFrequency: "Weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Ms. Chen Wei", email: "c.wei@school.edu", department: "Fine Arts" },
+    advisor: {
+      name: "Ms. Chen Wei",
+      email: "c.wei@school.edu",
+      department: "Fine Arts",
+    },
     officers: [
-      { name: "Rani Kapoor", position: "Lead Choreographer", email: "r.kapoor@student.edu", grade: 12 },
-      { name: "Luis Herrera", position: "Performance Manager", email: "l.herrera@student.edu", grade: 11 },
+      {
+        name: "Rani Kapoor",
+        position: "Lead Choreographer",
+        email: "r.kapoor@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Luis Herrera",
+        position: "Performance Manager",
+        email: "l.herrera@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Wednesday, 3:30 PM - 5:00 PM",
-    meetingLocation: { lat: 47.6550, lng: -122.1535, parentOrg: "International Community School", room: "International Community School", internalLocation: "Dance Studio" },
+    meetingLocation: {
+      lat: 47.66375,
+      lng: -122.19085,
+      parentOrg: "International Community School",
+      room: "International Community School",
+      internalLocation: "Dance Studio",
+    },
     membershipRequirements: "No dance experience required, all are welcome",
     dues: "$10 per semester (costume fund)",
     socialLinks: { instagram: "@ics_dance" },
-    achievements: ["Annual Multicultural Dance Showcase", "Featured at district cultural festival"],
-    photoGallery: [], memberCount: 30, foundedYear: 2018, isActive: true,
+    achievements: [
+      "Annual Multicultural Dance Showcase",
+      "Featured at district cultural festival",
+    ],
+    photoGallery: [],
+    memberCount: 30,
+    foundedYear: 2018,
+    isActive: true,
   },
   {
     id: "inglemoor-chess",
     name: "Chess Club",
-    description: "Play casual and competitive chess, learn strategies, and compete in local and state tournaments.",
+    description:
+      "Play casual and competitive chess, learn strategies, and compete in local and state tournaments.",
     category: "Academic",
     meetingFrequency: "Weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "Lunch",
-    advisor: { name: "Mr. Tom Richards", email: "t.richards@school.edu", department: "Mathematics" },
+    advisor: {
+      name: "Mr. Tom Richards",
+      email: "t.richards@school.edu",
+      department: "Mathematics",
+    },
     officers: [
-      { name: "Victor Petrov", position: "President", email: "v.petrov@student.edu", grade: 12 },
+      {
+        name: "Victor Petrov",
+        position: "President",
+        email: "v.petrov@student.edu",
+        grade: 12,
+      },
     ],
     meetingSchedule: "Every Tuesday and Thursday during lunch",
-    meetingLocation: { lat: 47.7535, lng: -122.2010, parentOrg: "Inglemoor High School", room: "Inglemoor High School", internalLocation: "Library" },
+    meetingLocation: {
+      lat: 47.74135,
+      lng: -122.22305,
+      parentOrg: "Inglemoor High School",
+      room: "Inglemoor High School",
+      internalLocation: "Library",
+    },
     membershipRequirements: "Open to all skill levels",
     dues: "None",
     socialLinks: {},
-    achievements: ["State Chess Tournament Top 10", "Lunchtime chess league with 40+ participants"],
-    photoGallery: [], memberCount: 26, foundedYear: 2012, isActive: true,
+    achievements: [
+      "State Chess Tournament Top 10",
+      "Lunchtime chess league with 40+ participants",
+    ],
+    photoGallery: [],
+    memberCount: 26,
+    foundedYear: 2012,
+    isActive: true,
   },
   {
     id: "inglemoor-hiking",
     name: "Hiking & Outdoor Adventures Club",
-    description: "Explore Pacific Northwest trails, learn outdoor skills, and build community through weekend hikes and camping trips.",
+    description:
+      "Explore Pacific Northwest trails, learn outdoor skills, and build community through weekend hikes and camping trips.",
     category: "Sports",
     meetingFrequency: "Bi-weekly",
     membershipStatus: "Open Enrollment",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Ms. Amy Brooks", email: "a.brooks@school.edu", department: "PE" },
+    advisor: {
+      name: "Ms. Amy Brooks",
+      email: "a.brooks@school.edu",
+      department: "PE",
+    },
     officers: [
-      { name: "Sam Everett", position: "Trail Leader", email: "s.everett@student.edu", grade: 12 },
-      { name: "Nina Park", position: "Safety Officer", email: "n.park@student.edu", grade: 11 },
+      {
+        name: "Sam Everett",
+        position: "Trail Leader",
+        email: "s.everett@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Nina Park",
+        position: "Safety Officer",
+        email: "n.park@student.edu",
+        grade: 11,
+      },
     ],
-    meetingSchedule: "Every other Friday, 3:30 PM - 4:30 PM (planning) + weekend outings",
-    meetingLocation: { lat: 47.7525, lng: -122.2020, parentOrg: "Inglemoor High School", room: "Inglemoor High School", internalLocation: "Room 104" },
-    membershipRequirements: "Signed parent waiver, appropriate gear for outings",
+    meetingSchedule:
+      "Every other Friday, 3:30 PM - 4:30 PM (planning) + weekend outings",
+    meetingLocation: {
+      lat: 47.7411,
+      lng: -122.22245,
+      parentOrg: "Inglemoor High School",
+      room: "Inglemoor High School",
+      internalLocation: "Room 104",
+    },
+    membershipRequirements:
+      "Signed parent waiver, appropriate gear for outings",
     dues: "$25 per semester (transportation costs)",
     socialLinks: { instagram: "@inglemoor_hike" },
-    achievements: ["Completed all 10 WTA trail challenge hikes", "Annual Mt. Si summit tradition"],
-    photoGallery: [], memberCount: 33, foundedYear: 2016, isActive: true,
+    achievements: [
+      "Completed all 10 WTA trail challenge hikes",
+      "Annual Mt. Si summit tradition",
+    ],
+    photoGallery: [],
+    memberCount: 33,
+    foundedYear: 2016,
+    isActive: true,
   },
   {
     id: "bothell-yearbook",
     name: "Yearbook Committee",
-    description: "Design, photograph, write, and produce the annual school yearbook. Learn journalism, design, and photography.",
+    description:
+      "Design, photograph, write, and produce the annual school yearbook. Learn journalism, design, and photography.",
     category: "Media",
     meetingFrequency: "Weekly",
     membershipStatus: "Application Required",
     gradeLevel: "All Grades",
     meetingTime: "After School",
-    advisor: { name: "Mrs. Julie Hansen", email: "j.hansen@school.edu", department: "English" },
+    advisor: {
+      name: "Mrs. Julie Hansen",
+      email: "j.hansen@school.edu",
+      department: "English",
+    },
     officers: [
-      { name: "Ava Thompson", position: "Editor-in-Chief", email: "a.thompson@student.edu", grade: 12 },
-      { name: "Chris Lopez", position: "Photo Editor", email: "c.lopez@student.edu", grade: 11 },
+      {
+        name: "Ava Thompson",
+        position: "Editor-in-Chief",
+        email: "a.thompson@student.edu",
+        grade: 12,
+      },
+      {
+        name: "Chris Lopez",
+        position: "Photo Editor",
+        email: "c.lopez@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "Every Monday and Wednesday, 3:30 PM - 5:00 PM",
-    meetingLocation: { lat: 47.7615, lng: -122.2180, parentOrg: "Bothell High School", room: "Bothell High School", internalLocation: "Publications Room" },
+    meetingLocation: {
+      lat: 47.76025,
+      lng: -122.22095,
+      parentOrg: "Bothell High School",
+      room: "Bothell High School",
+      internalLocation: "Publications Room",
+    },
     membershipRequirements: "Application with portfolio, interview process",
     dues: "None",
     socialLinks: { instagram: "@bothell_yearbook" },
-    achievements: ["Best Yearbook - Jostens National Award 2025", "Sold 800+ copies"],
-    photoGallery: [], memberCount: 20, foundedYear: 1970, isActive: true,
+    achievements: [
+      "Best Yearbook - Jostens National Award 2025",
+      "Sold 800+ copies",
+    ],
+    photoGallery: [],
+    memberCount: 20,
+    foundedYear: 1970,
+    isActive: true,
   },
   {
     id: "bothell-nhs",
     name: "National Honor Society - Bothell Chapter",
-    description: "Recognize outstanding students who demonstrate excellence in scholarship, leadership, service, and character.",
+    description:
+      "Recognize outstanding students who demonstrate excellence in scholarship, leadership, service, and character.",
     category: "Leadership",
     meetingFrequency: "Monthly",
     membershipStatus: "Application Required",
     gradeLevel: "10th-12th",
     meetingTime: "After School",
-    advisor: { name: "Dr. Lisa Morgan", email: "l.morgan@school.edu", department: "Counseling" },
+    advisor: {
+      name: "Dr. Lisa Morgan",
+      email: "l.morgan@school.edu",
+      department: "Counseling",
+    },
     officers: [
-      { name: "Emily Zhang", position: "President", email: "e.zhang@student.edu", grade: 12 },
-      { name: "David Park", position: "Vice President", email: "d.park@student.edu", grade: 11 },
+      {
+        name: "Emily Zhang",
+        position: "President",
+        email: "e.zhang@student.edu",
+        grade: 12,
+      },
+      {
+        name: "David Park",
+        position: "Vice President",
+        email: "d.park@student.edu",
+        grade: 11,
+      },
     ],
     meetingSchedule: "First Thursday of each month, 3:30 PM - 4:30 PM",
-    meetingLocation: { lat: 47.7608, lng: -122.2190, parentOrg: "Bothell High School", room: "Bothell High School", internalLocation: "Library Conference Room" },
-    membershipRequirements: "3.5+ GPA, 20+ service hours, faculty recommendation",
+    meetingLocation: {
+      lat: 47.76095,
+      lng: -122.22085,
+      parentOrg: "Bothell High School",
+      room: "Bothell High School",
+      internalLocation: "Library Conference Room",
+    },
+    membershipRequirements:
+      "3.5+ GPA, 20+ service hours, faculty recommendation",
     dues: "$15 per year",
     socialLinks: { instagram: "@bothell_nhs" },
-    achievements: ["80+ active members", "Annual scholarship fundraiser raises $5,000+"],
-    photoGallery: [], memberCount: 82, foundedYear: 1995, isActive: true,
+    achievements: [
+      "80+ active members",
+      "Annual scholarship fundraiser raises $5,000+",
+    ],
+    photoGallery: [],
+    memberCount: 82,
+    foundedYear: 1995,
+    isActive: true,
   },
 ];
 
@@ -1339,7 +1770,7 @@ export const resources: Resource[] = [
       "Official template for creating a new chapter constitution, including required sections and sample bylaws.",
     category: "Templates",
     fileType: "DOCX",
-    downloadUrl: "#",
+    downloadUrl: "/Webmaster%20Work%20Log.pdf",
     dateAdded: "2025-08-15",
   },
   {
@@ -1349,7 +1780,7 @@ export const resources: Resource[] = [
       "Standard form for requesting funds from the school activities budget. Required for all chapter expenses.",
     category: "Forms",
     fileType: "PDF",
-    downloadUrl: "#",
+    downloadUrl: "/Webmaster%20Work%20Log.pdf",
     dateAdded: "2025-08-10",
   },
   {
@@ -1359,7 +1790,7 @@ export const resources: Resource[] = [
       "Comprehensive checklist for planning chapter events, including timeline, permissions, and logistics.",
     category: "Templates",
     fileType: "PDF",
-    downloadUrl: "#",
+    downloadUrl: "/Webmaster%20Work%20Log.pdf",
     dateAdded: "2025-09-01",
   },
   {
@@ -1369,7 +1800,7 @@ export const resources: Resource[] = [
       "Best practices for conducting productive chapter meetings, including agenda templates and facilitation tips.",
     category: "Guides",
     fileType: "PDF",
-    downloadUrl: "#",
+    downloadUrl: "/Webmaster%20Work%20Log.pdf",
     dateAdded: "2025-08-20",
   },
   {
@@ -1379,7 +1810,7 @@ export const resources: Resource[] = [
       "Template for submitting fundraising event proposals to administration for approval.",
     category: "Forms",
     fileType: "DOCX",
-    downloadUrl: "#",
+    downloadUrl: "/WhatsApp%20Image%202026-01-21%20at%202.41.55%20PM.pdf",
     dateAdded: "2025-09-05",
   },
   {
@@ -1389,7 +1820,7 @@ export const resources: Resource[] = [
       "Guide for outgoing and incoming officers on smooth leadership transitions, including knowledge transfer.",
     category: "Handbooks",
     fileType: "PDF",
-    downloadUrl: "#",
+    downloadUrl: "/WhatsApp%20Image%202026-01-21%20at%202.41.55%20PM.pdf",
     dateAdded: "2025-04-15",
   },
   {
@@ -1399,7 +1830,7 @@ export const resources: Resource[] = [
       "Standard template for recording chapter meeting minutes with action items tracking.",
     category: "Templates",
     fileType: "DOCX",
-    downloadUrl: "#",
+    downloadUrl: "/Webmaster%20Work%20Log.pdf",
     dateAdded: "2025-08-25",
   },
   {
@@ -1409,7 +1840,7 @@ export const resources: Resource[] = [
       "Comprehensive training materials for faculty advisors covering policies, responsibilities, and best practices.",
     category: "Training Materials",
     fileType: "PDF",
-    downloadUrl: "#",
+    downloadUrl: "/WhatsApp%20Image%202026-01-21%20at%202.41.55%20PM.pdf",
     dateAdded: "2025-07-01",
   },
 ];
@@ -1582,163 +2013,635 @@ export const announcements: Announcement[] = [
   },
 ];
 
-
-
-
-export const clubHistoryData: Record<string, { id: string; eventType: string; title: string; description: string; eventDate: string }[]> = {
+export const clubHistoryData: Record<
+  string,
+  {
+    id: string;
+    eventType: string;
+    title: string;
+    description: string;
+    eventDate: string;
+  }[]
+> = {
   "model-un": [
-    { id: "h1", eventType: "founded", title: "Club Founded", description: "Model UN was established by a group of 12 passionate students interested in international affairs.", eventDate: "2008-09-15" },
-    { id: "h2", eventType: "milestone", title: "First Conference Attendance", description: "Attended Northwest MUN Conference in Seattle with 8 delegates.", eventDate: "2009-02-20" },
-    { id: "h3", eventType: "achievement", title: "First Award Win", description: "Won Outstanding Delegate at Pacific Northwest MUN.", eventDate: "2011-03-15" },
-    { id: "h4", eventType: "membership_milestone", title: "25 Members Reached", description: "Club grew to 25 active members, doubling in size from the previous year.", eventDate: "2015-10-01" },
-    { id: "h5", eventType: "competition_result", title: "State Champions", description: "Won Best Delegation at the Washington State MUN Conference.", eventDate: "2023-04-12" },
-    { id: "h6", eventType: "event_highlight", title: "Hosted First Invitational", description: "Organized the inaugural Juanita MUN Invitational with 200+ delegates from 15 schools.", eventDate: "2024-11-05" },
-    { id: "h7", eventType: "achievement", title: "National Recognition", description: "Ranked in the top 25 high school MUN programs nationally.", eventDate: "2025-06-01" },
+    {
+      id: "h1",
+      eventType: "founded",
+      title: "Club Founded",
+      description:
+        "Model UN was established by a group of 12 passionate students interested in international affairs.",
+      eventDate: "2008-09-15",
+    },
+    {
+      id: "h2",
+      eventType: "milestone",
+      title: "First Conference Attendance",
+      description:
+        "Attended Northwest MUN Conference in Seattle with 8 delegates.",
+      eventDate: "2009-02-20",
+    },
+    {
+      id: "h3",
+      eventType: "achievement",
+      title: "First Award Win",
+      description: "Won Outstanding Delegate at Pacific Northwest MUN.",
+      eventDate: "2011-03-15",
+    },
+    {
+      id: "h4",
+      eventType: "membership_milestone",
+      title: "25 Members Reached",
+      description:
+        "Club grew to 25 active members, doubling in size from the previous year.",
+      eventDate: "2015-10-01",
+    },
+    {
+      id: "h5",
+      eventType: "competition_result",
+      title: "State Champions",
+      description:
+        "Won Best Delegation at the Washington State MUN Conference.",
+      eventDate: "2023-04-12",
+    },
+    {
+      id: "h6",
+      eventType: "event_highlight",
+      title: "Hosted First Invitational",
+      description:
+        "Organized the inaugural Juanita MUN Invitational with 200+ delegates from 15 schools.",
+      eventDate: "2024-11-05",
+    },
+    {
+      id: "h7",
+      eventType: "achievement",
+      title: "National Recognition",
+      description: "Ranked in the top 25 high school MUN programs nationally.",
+      eventDate: "2025-06-01",
+    },
   ],
-  "robotics": [
-    { id: "h8", eventType: "founded", title: "Team Established", description: "Robotics team formed as FIRST Robotics Competition Team #8492.", eventDate: "2012-01-10" },
-    { id: "h9", eventType: "milestone", title: "First Robot Built", description: "Completed first competition robot 'Phoenix' for the Rebound Rumble challenge.", eventDate: "2012-03-01" },
-    { id: "h10", eventType: "competition_result", title: "Regional Champions", description: "Won the Pacific Northwest Regional for the first time.", eventDate: "2020-03-15" },
-    { id: "h11", eventType: "achievement", title: "Innovation Award", description: "Received the Innovation in Control Award at the State Championship.", eventDate: "2024-04-20" },
-    { id: "h12", eventType: "milestone", title: "World Championship Qualified", description: "Qualified for FIRST World Championship for the 3rd consecutive year.", eventDate: "2025-04-01" },
+  robotics: [
+    {
+      id: "h8",
+      eventType: "founded",
+      title: "Team Established",
+      description:
+        "Robotics team formed as FIRST Robotics Competition Team #8492.",
+      eventDate: "2012-01-10",
+    },
+    {
+      id: "h9",
+      eventType: "milestone",
+      title: "First Robot Built",
+      description:
+        "Completed first competition robot 'Phoenix' for the Rebound Rumble challenge.",
+      eventDate: "2012-03-01",
+    },
+    {
+      id: "h10",
+      eventType: "competition_result",
+      title: "Regional Champions",
+      description: "Won the Pacific Northwest Regional for the first time.",
+      eventDate: "2020-03-15",
+    },
+    {
+      id: "h11",
+      eventType: "achievement",
+      title: "Innovation Award",
+      description:
+        "Received the Innovation in Control Award at the State Championship.",
+      eventDate: "2024-04-20",
+    },
+    {
+      id: "h12",
+      eventType: "milestone",
+      title: "World Championship Qualified",
+      description:
+        "Qualified for FIRST World Championship for the 3rd consecutive year.",
+      eventDate: "2025-04-01",
+    },
   ],
   "community-service": [
-    { id: "h13", eventType: "founded", title: "Club Founded", description: "Started as a small volunteer group of 8 students.", eventDate: "2005-09-01" },
-    { id: "h14", eventType: "milestone", title: "1,000 Hours Milestone", description: "Collectively logged 1,000 volunteer hours in a single year.", eventDate: "2010-06-15" },
-    { id: "h15", eventType: "achievement", title: "Youth Volunteer Award", description: "Named Youth Volunteer Organization of the Year by the city.", eventDate: "2024-05-20" },
-    { id: "h16", eventType: "membership_milestone", title: "Largest Club", description: "Became the largest club at JHS with 72 members.", eventDate: "2025-09-15" },
+    {
+      id: "h13",
+      eventType: "founded",
+      title: "Club Founded",
+      description: "Started as a small volunteer group of 8 students.",
+      eventDate: "2005-09-01",
+    },
+    {
+      id: "h14",
+      eventType: "milestone",
+      title: "1,000 Hours Milestone",
+      description:
+        "Collectively logged 1,000 volunteer hours in a single year.",
+      eventDate: "2010-06-15",
+    },
+    {
+      id: "h15",
+      eventType: "achievement",
+      title: "Youth Volunteer Award",
+      description:
+        "Named Youth Volunteer Organization of the Year by the city.",
+      eventDate: "2024-05-20",
+    },
+    {
+      id: "h16",
+      eventType: "membership_milestone",
+      title: "Largest Club",
+      description: "Became the largest club at JHS with 72 members.",
+      eventDate: "2025-09-15",
+    },
   ],
 };
 
-
-export const projectsData: Record<string, { id: string; title: string; description: string; status: string; startDate: string; endDate?: string }[]> = {
-  "robotics": [
-    { id: "p1", title: "Phoenix V - Competition Robot", description: "2026 competition robot featuring advanced swerve drive and autonomous scoring capabilities.", status: "in_progress", startDate: "2025-09-01" },
-    { id: "p2", title: "Community STEM Workshop", description: "Monthly workshops teaching robotics basics to middle school students.", status: "completed", startDate: "2025-01-15", endDate: "2025-06-15" },
-    { id: "p3", title: "3D Printing Lab Expansion", description: "Adding 3 new 3D printers and a laser cutter to the engineering lab.", status: "planning", startDate: "2026-02-01" },
+export const projectsData: Record<
+  string,
+  {
+    id: string;
+    title: string;
+    description: string;
+    status: string;
+    startDate: string;
+    endDate?: string;
+  }[]
+> = {
+  robotics: [
+    {
+      id: "p1",
+      title: "Phoenix V - Competition Robot",
+      description:
+        "2026 competition robot featuring advanced swerve drive and autonomous scoring capabilities.",
+      status: "in_progress",
+      startDate: "2025-09-01",
+    },
+    {
+      id: "p2",
+      title: "Community STEM Workshop",
+      description:
+        "Monthly workshops teaching robotics basics to middle school students.",
+      status: "completed",
+      startDate: "2025-01-15",
+      endDate: "2025-06-15",
+    },
+    {
+      id: "p3",
+      title: "3D Printing Lab Expansion",
+      description:
+        "Adding 3 new 3D printers and a laser cutter to the engineering lab.",
+      status: "planning",
+      startDate: "2026-02-01",
+    },
   ],
   "model-un": [
-    { id: "p4", title: "Juanita MUN Invitational 2026", description: "Planning our 3rd annual invitational conference for high schools across Washington.", status: "in_progress", startDate: "2025-11-01" },
-    { id: "p5", title: "MUN Prep Guide", description: "Comprehensive guide for new delegates with resolution writing examples and debate tips.", status: "completed", startDate: "2025-08-01", endDate: "2025-10-15" },
+    {
+      id: "p4",
+      title: "Juanita MUN Invitational 2026",
+      description:
+        "Planning our 3rd annual invitational conference for high schools across Washington.",
+      status: "in_progress",
+      startDate: "2025-11-01",
+    },
+    {
+      id: "p5",
+      title: "MUN Prep Guide",
+      description:
+        "Comprehensive guide for new delegates with resolution writing examples and debate tips.",
+      status: "completed",
+      startDate: "2025-08-01",
+      endDate: "2025-10-15",
+    },
   ],
   "community-service": [
-    { id: "p6", title: "Community Garden Project", description: "Building a community garden at the local community center.", status: "in_progress", startDate: "2025-10-01" },
-    { id: "p7", title: "Tutoring Network", description: "Free after-school tutoring for underserved middle school students.", status: "completed", startDate: "2025-01-10", endDate: "2025-06-10" },
+    {
+      id: "p6",
+      title: "Community Garden Project",
+      description: "Building a community garden at the local community center.",
+      status: "in_progress",
+      startDate: "2025-10-01",
+    },
+    {
+      id: "p7",
+      title: "Tutoring Network",
+      description:
+        "Free after-school tutoring for underserved middle school students.",
+      status: "completed",
+      startDate: "2025-01-10",
+      endDate: "2025-06-10",
+    },
   ],
   "environmental-club": [
-    { id: "p8", title: "Campus Solar Initiative", description: "Proposal to install solar panels on the school gymnasium. Working with administration and local energy companies.", status: "planning", startDate: "2026-01-15" },
-    { id: "p9", title: "Zero Waste Campaign", description: "Campus-wide initiative to reduce waste by 50% through composting and recycling programs.", status: "in_progress", startDate: "2025-09-01" },
+    {
+      id: "p8",
+      title: "Campus Solar Initiative",
+      description:
+        "Proposal to install solar panels on the school gymnasium. Working with administration and local energy companies.",
+      status: "planning",
+      startDate: "2026-01-15",
+    },
+    {
+      id: "p9",
+      title: "Zero Waste Campaign",
+      description:
+        "Campus-wide initiative to reduce waste by 50% through composting and recycling programs.",
+      status: "in_progress",
+      startDate: "2025-09-01",
+    },
   ],
 };
 
-
-export const meetingNotesData: Record<string, { id: string; title: string; meetingDate: string; attendeeCount: number; content: string; actionItems: { task: string; assignee: string; completed: boolean }[] }[]> = {
+export const meetingNotesData: Record<
+  string,
+  {
+    id: string;
+    title: string;
+    meetingDate: string;
+    attendeeCount: number;
+    content: string;
+    actionItems: { task: string; assignee: string; completed: boolean }[];
+  }[]
+> = {
   "model-un": [
     {
-      id: "mn1", title: "Weekly Meeting - Conference Prep", meetingDate: "2026-01-07", attendeeCount: 38,
-      content: "Discussed upcoming PACMUN conference logistics. Assigned country positions. Reviewed Robert's Rules of Order procedures.",
+      id: "mn1",
+      title: "Weekly Meeting - Conference Prep",
+      meetingDate: "2026-01-07",
+      attendeeCount: 38,
+      content:
+        "Discussed upcoming PACMUN conference logistics. Assigned country positions. Reviewed Robert's Rules of Order procedures.",
       actionItems: [
-        { task: "Submit country preference forms", assignee: "All delegates", completed: true },
-        { task: "Book hotel rooms for conference", assignee: "Emma Wilson", completed: false },
-        { task: "Complete position papers draft", assignee: "All delegates", completed: false },
+        {
+          task: "Submit country preference forms",
+          assignee: "All delegates",
+          completed: true,
+        },
+        {
+          task: "Book hotel rooms for conference",
+          assignee: "Emma Wilson",
+          completed: false,
+        },
+        {
+          task: "Complete position papers draft",
+          assignee: "All delegates",
+          completed: false,
+        },
       ],
     },
     {
-      id: "mn2", title: "Practice Debate Session", meetingDate: "2026-01-14", attendeeCount: 35,
-      content: "Practiced formal debate procedures. Simulated Security Council session on cybersecurity. Feedback provided on speaking skills.",
+      id: "mn2",
+      title: "Practice Debate Session",
+      meetingDate: "2026-01-14",
+      attendeeCount: 35,
+      content:
+        "Practiced formal debate procedures. Simulated Security Council session on cybersecurity. Feedback provided on speaking skills.",
       actionItems: [
-        { task: "Review speaking feedback notes", assignee: "New delegates", completed: false },
-        { task: "Prepare opening speeches", assignee: "Committee chairs", completed: false },
+        {
+          task: "Review speaking feedback notes",
+          assignee: "New delegates",
+          completed: false,
+        },
+        {
+          task: "Prepare opening speeches",
+          assignee: "Committee chairs",
+          completed: false,
+        },
       ],
     },
   ],
-  "robotics": [
+  robotics: [
     {
-      id: "mn3", title: "Build Season Kickoff", meetingDate: "2026-01-06", attendeeCount: 34,
-      content: "Reviewed 2026 game rules. Brainstormed robot design concepts. Split into sub-teams: mechanical, electrical, programming, business.",
+      id: "mn3",
+      title: "Build Season Kickoff",
+      meetingDate: "2026-01-06",
+      attendeeCount: 34,
+      content:
+        "Reviewed 2026 game rules. Brainstormed robot design concepts. Split into sub-teams: mechanical, electrical, programming, business.",
       actionItems: [
-        { task: "Create CAD prototypes by Friday", assignee: "Mechanical team", completed: true },
-        { task: "Order sensor components", assignee: "Olivia Garcia", completed: true },
-        { task: "Set up GitHub repository for new season", assignee: "Marcus Brown", completed: true },
+        {
+          task: "Create CAD prototypes by Friday",
+          assignee: "Mechanical team",
+          completed: true,
+        },
+        {
+          task: "Order sensor components",
+          assignee: "Olivia Garcia",
+          completed: true,
+        },
+        {
+          task: "Set up GitHub repository for new season",
+          assignee: "Marcus Brown",
+          completed: true,
+        },
       ],
     },
   ],
 };
 
-
 export const sponsorsData = [
-  { id: "s1", name: "TechForward Inc.", description: "Local technology company supporting STEM education initiatives.", website: "https://techforward.example.com", tier: "gold", logoUrl: null },
-  { id: "s2", name: "Community First Bank", description: "Supporting student organizations through annual grants.", website: "https://communityfirst.example.com", tier: "silver", logoUrl: null },
-  { id: "s3", name: "Northwest Engineering Solutions", description: "Providing mentorship and equipment to the Robotics Team.", website: "https://nwes.example.com", tier: "gold", logoUrl: null },
-  { id: "s4", name: "Green Earth Foundation", description: "Environmental grants and sustainability resources.", website: "https://greenearth.example.com", tier: "bronze", logoUrl: null },
-  { id: "s5", name: "Juanita HS PTSA", description: "Parent-Teacher-Student Association funding enrichment programs.", website: null, tier: "platinum", logoUrl: null },
-  { id: "s6", name: "Local Arts Council", description: "Grant funding for Drama Club productions and art programs.", website: "https://artscouncil.example.com", tier: "silver", logoUrl: null },
+  {
+    id: "s1",
+    name: "TechForward Inc.",
+    description:
+      "Local technology company supporting STEM education initiatives.",
+    website: "https://techforward.example.com",
+    tier: "gold",
+    logoUrl: null,
+  },
+  {
+    id: "s2",
+    name: "Community First Bank",
+    description: "Supporting student organizations through annual grants.",
+    website: "https://communityfirst.example.com",
+    tier: "silver",
+    logoUrl: null,
+  },
+  {
+    id: "s3",
+    name: "Northwest Engineering Solutions",
+    description: "Providing mentorship and equipment to the Robotics Team.",
+    website: "https://nwes.example.com",
+    tier: "gold",
+    logoUrl: null,
+  },
+  {
+    id: "s4",
+    name: "Green Earth Foundation",
+    description: "Environmental grants and sustainability resources.",
+    website: "https://greenearth.example.com",
+    tier: "bronze",
+    logoUrl: null,
+  },
+  {
+    id: "s5",
+    name: "Juanita HS PTSA",
+    description:
+      "Parent-Teacher-Student Association funding enrichment programs.",
+    website: null,
+    tier: "platinum",
+    logoUrl: null,
+  },
+  {
+    id: "s6",
+    name: "Local Arts Council",
+    description: "Grant funding for Drama Club productions and art programs.",
+    website: "https://artscouncil.example.com",
+    tier: "silver",
+    logoUrl: null,
+  },
 ];
-
 
 export const faqData = [
-  { id: "faq-1", category: "Getting Started", question: "How do I join a club?", answer: "Browse our directory, find a club that interests you, and click 'Join Club' on its detail page. Some clubs have open enrollment (instant join), while others require an application or tryout. You'll be notified about next steps after applying." },
-  { id: "faq-2", category: "Getting Started", question: "Can I join multiple clubs?", answer: "Absolutely! Many students participate in 2-4 clubs. Just make sure you can commit to each club's meeting schedule and requirements. Check for time conflicts before joining." },
-  { id: "faq-3", category: "Getting Started", question: "What if I want to start a new club?", answer: "Visit our Start a Club page for a step-by-step guide. You'll need a faculty advisor, at least 5 interested students, a mission statement, and a proposed meeting schedule. Submit your proposal through our online form." },
-  { id: "faq-4", category: "Membership", question: "Are there any fees to join clubs?", answer: "It varies by club. Some clubs are free, while others charge dues ranging from $15-$50 per semester to cover materials, competition fees, or event costs. Fee waivers are available for students with financial need — speak to your advisor." },
-  { id: "faq-5", category: "Membership", question: "Can freshmen join any club?", answer: "Most clubs welcome all grade levels! A few competitive clubs (like Debate Team) may have grade restrictions or require tryouts. Check each club's requirements on their detail page." },
-  { id: "faq-6", category: "Membership", question: "How do I leave a club?", answer: "Go to your Profile page, find the club under 'My Clubs', and click 'Leave'. If you've paid dues, check with the club treasurer about refund policies." },
-  { id: "faq-7", category: "Events", question: "How do I RSVP for events?", answer: "Visit the Events page, find the event you're interested in, and click 'RSVP'. Some events have limited capacity, so register early. You'll receive a confirmation and reminders." },
-  { id: "faq-8", category: "Events", question: "Can non-members attend club events?", answer: "Public events are open to all students. Check the event listing — it will indicate whether the event is public or members-only." },
-  { id: "faq-9", category: "Leadership", question: "How do I become a club officer?", answer: "Most clubs hold officer elections annually, typically in spring for the following year. Build your involvement first — attend meetings regularly, volunteer for projects, and demonstrate leadership. Talk to current officers about the election process." },
-  { id: "faq-10", category: "Leadership", question: "What are the responsibilities of a club officer?", answer: "Officers help plan meetings, organize events, manage communications, and represent the club to administration. Specific roles (President, VP, Secretary, Treasurer) have distinct duties outlined in each club's constitution." },
-  { id: "faq-11", category: "Resources", question: "Where can I find club documents and templates?", answer: "Visit our Resources page for templates (constitutions, budgets, meeting minutes), guides, handbooks, and training materials." },
-  { id: "faq-12", category: "Resources", question: "How do I request funding for my club?", answer: "Submit a Budget Request Form (available on the Resources page) to the Activities Office. Include itemized expenses, justification, and timeline. The approval process typically takes 1-2 weeks." },
-  { id: "faq-13", category: "Safety", question: "What should I do if I experience issues in a club?", answer: "Report concerns to your club advisor, school counselor, or the Activities Office. ClubConnect takes safety seriously — all clubs must follow school conduct policies. Anonymous reporting is also available through the school's reporting system." },
-  { id: "faq-14", category: "Technical", question: "How do I update my profile?", answer: "Go to your Profile page and click 'Edit Profile'. You can update your name, bio, grade, interests, and profile photo. Changes are saved to your account automatically." },
-  { id: "faq-15", category: "Technical", question: "I forgot my password. What do I do?", answer: "Click 'Forgot Password' on the login page. Enter your school email, and you'll receive a reset link. If you continue having issues, contact the Activities Office." },
+  {
+    id: "faq-1",
+    category: "Getting Started",
+    question: "How do I join a club?",
+    answer:
+      "Browse our directory, find a club that interests you, and click 'Join Club' on its detail page. Some clubs have open enrollment (instant join), while others require an application or tryout. You'll be notified about next steps after applying.",
+  },
+  {
+    id: "faq-2",
+    category: "Getting Started",
+    question: "Can I join multiple clubs?",
+    answer:
+      "Absolutely! Many students participate in 2-4 clubs. Just make sure you can commit to each club's meeting schedule and requirements. Check for time conflicts before joining.",
+  },
+  {
+    id: "faq-3",
+    category: "Getting Started",
+    question: "What if I want to start a new club?",
+    answer:
+      "Visit our Start a Club page for a step-by-step guide. You'll need a faculty advisor, at least 5 interested students, a mission statement, and a proposed meeting schedule. Submit your proposal through our online form.",
+  },
+  {
+    id: "faq-4",
+    category: "Membership",
+    question: "Are there any fees to join clubs?",
+    answer:
+      "It varies by club. Some clubs are free, while others charge dues ranging from $15-$50 per semester to cover materials, competition fees, or event costs. Fee waivers are available for students with financial need — speak to your advisor.",
+  },
+  {
+    id: "faq-5",
+    category: "Membership",
+    question: "Can freshmen join any club?",
+    answer:
+      "Most clubs welcome all grade levels! A few competitive clubs (like Debate Team) may have grade restrictions or require tryouts. Check each club's requirements on their detail page.",
+  },
+  {
+    id: "faq-6",
+    category: "Membership",
+    question: "How do I leave a club?",
+    answer:
+      "Go to your Profile page, find the club under 'My Clubs', and click 'Leave'. If you've paid dues, check with the club treasurer about refund policies.",
+  },
+  {
+    id: "faq-7",
+    category: "Events",
+    question: "How do I RSVP for events?",
+    answer:
+      "Visit the Events page, find the event you're interested in, and click 'RSVP'. Some events have limited capacity, so register early. You'll receive a confirmation and reminders.",
+  },
+  {
+    id: "faq-8",
+    category: "Events",
+    question: "Can non-members attend club events?",
+    answer:
+      "Public events are open to all students. Check the event listing — it will indicate whether the event is public or members-only.",
+  },
+  {
+    id: "faq-9",
+    category: "Leadership",
+    question: "How do I become a club officer?",
+    answer:
+      "Most clubs hold officer elections annually, typically in spring for the following year. Build your involvement first — attend meetings regularly, volunteer for projects, and demonstrate leadership. Talk to current officers about the election process.",
+  },
+  {
+    id: "faq-10",
+    category: "Leadership",
+    question: "What are the responsibilities of a club officer?",
+    answer:
+      "Officers help plan meetings, organize events, manage communications, and represent the club to administration. Specific roles (President, VP, Secretary, Treasurer) have distinct duties outlined in each club's constitution.",
+  },
+  {
+    id: "faq-11",
+    category: "Resources",
+    question: "Where can I find club documents and templates?",
+    answer:
+      "Visit our Resources page for templates (constitutions, budgets, meeting minutes), guides, handbooks, and training materials.",
+  },
+  {
+    id: "faq-12",
+    category: "Resources",
+    question: "How do I request funding for my club?",
+    answer:
+      "Submit a Budget Request Form (available on the Resources page) to the Activities Office. Include itemized expenses, justification, and timeline. The approval process typically takes 1-2 weeks.",
+  },
+  {
+    id: "faq-13",
+    category: "Safety",
+    question: "What should I do if I experience issues in a club?",
+    answer:
+      "Report concerns to your club advisor, school counselor, or the Activities Office. ClubConnect takes safety seriously — all clubs must follow school conduct policies. Anonymous reporting is also available through the school's reporting system.",
+  },
+  {
+    id: "faq-14",
+    category: "Technical",
+    question: "How do I update my profile?",
+    answer:
+      "Go to your Profile page and click 'Edit Profile'. You can update your name, bio, grade, interests, and profile photo. Changes are saved to your account automatically.",
+  },
+  {
+    id: "faq-15",
+    category: "Technical",
+    question: "I forgot my password. What do I do?",
+    answer:
+      "Click 'Forgot Password' on the login page. Enter your school email, and you'll receive a reset link. If you continue having issues, contact the Activities Office.",
+  },
 ];
-
 
 export const guidesData = [
   {
-    id: "guide-joining", slug: "joining", title: "How to Join a Club", description: "Complete guide to finding and joining the right club for you.", category: "Getting Started",
+    id: "guide-joining",
+    slug: "joining",
+    title: "How to Join a Club",
+    description:
+      "Complete guide to finding and joining the right club for you.",
+    category: "Getting Started",
     sections: [
-      { heading: "Step 1: Explore Your Options", content: "Browse the Club Directory to see all active organizations. Use filters to narrow by category, meeting time, and grade level. Read descriptions and check requirements carefully." },
-      { heading: "Step 2: Attend a Meeting", content: "Most clubs welcome visitors! Attend a meeting or two before committing. This lets you experience the club culture and meet current members." },
-      { heading: "Step 3: Apply or Enroll", content: "For Open Enrollment clubs, click 'Join' on the club page. For Application Required or Tryout Required clubs, follow the specific instructions on the club's detail page." },
-      { heading: "Step 4: Get Involved", content: "Once you're a member, attend meetings regularly, participate in events, and connect with other members. The more you put in, the more you'll get out!" },
-      { heading: "Tips for Success", content: "Start with 1-2 clubs and expand later. Ask questions during meetings. Volunteer for small tasks to build connections. Don't be afraid to try something new!" },
+      {
+        heading: "Step 1: Explore Your Options",
+        content:
+          "Browse the Club Directory to see all active organizations. Use filters to narrow by category, meeting time, and grade level. Read descriptions and check requirements carefully.",
+      },
+      {
+        heading: "Step 2: Attend a Meeting",
+        content:
+          "Most clubs welcome visitors! Attend a meeting or two before committing. This lets you experience the club culture and meet current members.",
+      },
+      {
+        heading: "Step 3: Apply or Enroll",
+        content:
+          "For Open Enrollment clubs, click 'Join' on the club page. For Application Required or Tryout Required clubs, follow the specific instructions on the club's detail page.",
+      },
+      {
+        heading: "Step 4: Get Involved",
+        content:
+          "Once you're a member, attend meetings regularly, participate in events, and connect with other members. The more you put in, the more you'll get out!",
+      },
+      {
+        heading: "Tips for Success",
+        content:
+          "Start with 1-2 clubs and expand later. Ask questions during meetings. Volunteer for small tasks to build connections. Don't be afraid to try something new!",
+      },
     ],
   },
   {
-    id: "guide-starting", slug: "starting", title: "Starting a New Club", description: "Everything you need to know about launching a student organization.", category: "Getting Started",
+    id: "guide-starting",
+    slug: "starting",
+    title: "Starting a New Club",
+    description:
+      "Everything you need to know about launching a student organization.",
+    category: "Getting Started",
     sections: [
-      { heading: "Is There Interest?", content: "Before starting a club, gauge interest. Talk to classmates, post on social media, or create a sign-up sheet. You'll need at least 5 committed students to start." },
-      { heading: "Find a Faculty Advisor", content: "Every club needs a faculty advisor who will attend meetings, approve activities, and serve as the responsible adult. Approach teachers in related departments." },
-      { heading: "Write Your Constitution", content: "Draft a constitution outlining your club's mission, officer positions, meeting schedule, membership requirements, and bylaws. Use our template from the Resources page." },
-      { heading: "Submit Your Proposal", content: "Fill out the Club Proposal Form on our Start a Club page. Include your constitution, advisor confirmation, member list, and first-year plan. The Activities Office reviews proposals within 2-3 weeks." },
-      { heading: "Launch and Grow", content: "Once approved, schedule your first meeting, promote at the Club Fair, create social media accounts, and plan your first event. Start small and build momentum!" },
+      {
+        heading: "Is There Interest?",
+        content:
+          "Before starting a club, gauge interest. Talk to classmates, post on social media, or create a sign-up sheet. You'll need at least 5 committed students to start.",
+      },
+      {
+        heading: "Find a Faculty Advisor",
+        content:
+          "Every club needs a faculty advisor who will attend meetings, approve activities, and serve as the responsible adult. Approach teachers in related departments.",
+      },
+      {
+        heading: "Write Your Constitution",
+        content:
+          "Draft a constitution outlining your club's mission, officer positions, meeting schedule, membership requirements, and bylaws. Use our template from the Resources page.",
+      },
+      {
+        heading: "Submit Your Proposal",
+        content:
+          "Fill out the Club Proposal Form on our Start a Club page. Include your constitution, advisor confirmation, member list, and first-year plan. The Activities Office reviews proposals within 2-3 weeks.",
+      },
+      {
+        heading: "Launch and Grow",
+        content:
+          "Once approved, schedule your first meeting, promote at the Club Fair, create social media accounts, and plan your first event. Start small and build momentum!",
+      },
     ],
   },
   {
-    id: "guide-leadership", slug: "leadership", title: "Leadership Guide for Officers", description: "Best practices for running an effective club as an officer.", category: "Leadership",
+    id: "guide-leadership",
+    slug: "leadership",
+    title: "Leadership Guide for Officers",
+    description: "Best practices for running an effective club as an officer.",
+    category: "Leadership",
     sections: [
-      { heading: "Setting the Tone", content: "As an officer, you set the culture. Be organized, punctual, and enthusiastic. Create a welcoming environment where every member feels valued." },
-      { heading: "Running Effective Meetings", content: "Always have an agenda. Start and end on time. Mix business items with fun activities. Encourage participation from quieter members. Take minutes and share them." },
-      { heading: "Communication Best Practices", content: "Use consistent channels (email, Discord, Instagram). Send weekly reminders. Keep your club's ClubConnect page updated with current information." },
-      { heading: "Event Planning", content: "Plan events at least 3-4 weeks in advance. Create checklists, delegate tasks, and always have a backup plan. File necessary paperwork with administration early." },
-      { heading: "Handling Conflicts", content: "Address issues early and privately. Listen to all sides. Involve your advisor when needed. Focus on solutions, not blame." },
-      { heading: "Transitioning Leadership", content: "Start training successors in spring. Document procedures, passwords, and key contacts. Create a transition binder or guide for incoming officers." },
+      {
+        heading: "Setting the Tone",
+        content:
+          "As an officer, you set the culture. Be organized, punctual, and enthusiastic. Create a welcoming environment where every member feels valued.",
+      },
+      {
+        heading: "Running Effective Meetings",
+        content:
+          "Always have an agenda. Start and end on time. Mix business items with fun activities. Encourage participation from quieter members. Take minutes and share them.",
+      },
+      {
+        heading: "Communication Best Practices",
+        content:
+          "Use consistent channels (email, Discord, Instagram). Send weekly reminders. Keep your club's ClubConnect page updated with current information.",
+      },
+      {
+        heading: "Event Planning",
+        content:
+          "Plan events at least 3-4 weeks in advance. Create checklists, delegate tasks, and always have a backup plan. File necessary paperwork with administration early.",
+      },
+      {
+        heading: "Handling Conflicts",
+        content:
+          "Address issues early and privately. Listen to all sides. Involve your advisor when needed. Focus on solutions, not blame.",
+      },
+      {
+        heading: "Transitioning Leadership",
+        content:
+          "Start training successors in spring. Document procedures, passwords, and key contacts. Create a transition binder or guide for incoming officers.",
+      },
     ],
   },
   {
-    id: "guide-fundraising", slug: "fundraising", title: "Fundraising Guide", description: "Strategies and rules for raising money for your club.", category: "Resources",
+    id: "guide-fundraising",
+    slug: "fundraising",
+    title: "Fundraising Guide",
+    description: "Strategies and rules for raising money for your club.",
+    category: "Resources",
     sections: [
-      { heading: "School Fundraising Policies", content: "All fundraising must be approved by the Activities Office at least 2 weeks before the event. Complete the Fundraising Proposal Form and submit it for review." },
-      { heading: "Popular Fundraising Ideas", content: "Bake sales, car washes, spirit wear sales, dine-out nights, online crowdfunding (with approval), talent shows, and skill-based workshops." },
-      { heading: "Online Donations", content: "ClubConnect supports online donations through our donation page. Clubs receive funds through the school's accounting system." },
-      { heading: "Grant Opportunities", content: "Apply for school grants (Innovation Grant, Community Impact Award, Arts Enrichment Fund) through the Resources page. External grants are also available for qualifying programs." },
-      { heading: "Financial Best Practices", content: "Keep detailed records of all income and expenses. Have the treasurer report finances monthly. Follow school policies on handling cash." },
+      {
+        heading: "School Fundraising Policies",
+        content:
+          "All fundraising must be approved by the Activities Office at least 2 weeks before the event. Complete the Fundraising Proposal Form and submit it for review.",
+      },
+      {
+        heading: "Popular Fundraising Ideas",
+        content:
+          "Bake sales, car washes, spirit wear sales, dine-out nights, online crowdfunding (with approval), talent shows, and skill-based workshops.",
+      },
+      {
+        heading: "Online Donations",
+        content:
+          "ClubConnect supports online donations through our donation page. Clubs receive funds through the school's accounting system.",
+      },
+      {
+        heading: "Grant Opportunities",
+        content:
+          "Apply for school grants (Innovation Grant, Community Impact Award, Arts Enrichment Fund) through the Resources page. External grants are also available for qualifying programs.",
+      },
+      {
+        heading: "Financial Best Practices",
+        content:
+          "Keep detailed records of all income and expenses. Have the treasurer report finances monthly. Follow school policies on handling cash.",
+      },
     ],
   },
 ];
-
 
 export const schoolWideStats = {
   totalClubs: 47,
@@ -1775,14 +2678,14 @@ export const schoolWideStats = {
   ],
 };
 
-
 export const studentStories = [
   {
     id: "story-1",
     name: "Aiden Cooper",
     grade: 12,
     club: "Model United Nations",
-    quote: "MUN transformed me from a shy freshman into a confident public speaker. I've attended 12 conferences, won 5 awards, and made lifelong friends. It directly helped me get into my dream college.",
+    quote:
+      "MUN transformed me from a shy freshman into a confident public speaker. I've attended 12 conferences, won 5 awards, and made lifelong friends. It directly helped me get into my dream college.",
     impact: "4 years, 12 conferences, 5 awards",
     category: "Leadership Journey",
   },
@@ -1791,7 +2694,8 @@ export const studentStories = [
     name: "Maya Patel",
     grade: 11,
     club: "Robotics Team",
-    quote: "I had zero engineering experience when I joined. Now I can design in CAD, program autonomous systems, and lead a build team. The mentorship from upperclassmen and industry sponsors is incredible.",
+    quote:
+      "I had zero engineering experience when I joined. Now I can design in CAD, program autonomous systems, and lead a build team. The mentorship from upperclassmen and industry sponsors is incredible.",
     impact: "Learned CAD, Python, Java",
     category: "Personal Growth",
   },
@@ -1800,7 +2704,8 @@ export const studentStories = [
     name: "Carlos Mendez",
     grade: 10,
     club: "Community Service Club",
-    quote: "Volunteering 200+ hours showed me the impact one person can make. We built a community garden, tutored 50 students, and raised $3,000 for the local food bank.",
+    quote:
+      "Volunteering 200+ hours showed me the impact one person can make. We built a community garden, tutored 50 students, and raised $3,000 for the local food bank.",
     impact: "200+ service hours, $3,000 raised",
     category: "Community Impact",
   },
@@ -1809,7 +2714,8 @@ export const studentStories = [
     name: "Sophia Kim",
     grade: 12,
     club: "Drama Club",
-    quote: "From backstage crew to lead actress — Drama Club gave me a family. The skills I learned in performance, teamwork, and creative problem-solving apply to everything in life.",
+    quote:
+      "From backstage crew to lead actress — Drama Club gave me a family. The skills I learned in performance, teamwork, and creative problem-solving apply to everything in life.",
     impact: "8 productions, lead in 3 musicals",
     category: "Personal Growth",
   },
@@ -1818,7 +2724,8 @@ export const studentStories = [
     name: "Jordan Williams",
     grade: 11,
     club: "Environmental Action Club",
-    quote: "We increased campus recycling by 40%, planted 200 trees, and got the school Green Certification. It feels amazing to make a tangible environmental difference.",
+    quote:
+      "We increased campus recycling by 40%, planted 200 trees, and got the school Green Certification. It feels amazing to make a tangible environmental difference.",
     impact: "40% recycling increase, 200 trees planted",
     category: "Community Impact",
   },
@@ -1827,32 +2734,119 @@ export const studentStories = [
     name: "Emma Zhang",
     grade: 12,
     club: "The School Chronicle",
-    quote: "Running the school newspaper taught me journalism, design, and leadership. We publish bi-weekly and have won 10 national awards. It's the best resume builder you can imagine.",
+    quote:
+      "Running the school newspaper taught me journalism, design, and leadership. We publish bi-weekly and have won 10 national awards. It's the best resume builder you can imagine.",
     impact: "24 issues/year, 10 national awards",
     category: "Leadership Journey",
   },
 ];
 
-
 export const weeklyOpportunities = [
-  { id: "opp-1", type: "event", title: "Model UN Practice Session", date: "2026-01-14", club: "Model United Nations", urgent: false },
-  { id: "opp-2", type: "deadline", title: "Robotics Competition Registration Due", date: "2026-01-18", club: "Robotics Team", urgent: true },
-  { id: "opp-3", type: "volunteer", title: "Community Food Drive", date: "2026-01-18", club: "Community Service Club", urgent: false },
-  { id: "opp-4", type: "event", title: "Drama Club Auditions", date: "2026-01-16", club: "Drama Club", urgent: false },
-  { id: "opp-5", type: "meeting", title: "Environmental Club Planning Meeting", date: "2026-01-13", club: "Environmental Club", urgent: false },
-  { id: "opp-6", type: "competition", title: "Debate State Qualifier Prep", date: "2026-01-14", club: "Debate Team", urgent: true },
-  { id: "opp-7", type: "social", title: "Cultural Heritage Celebration", date: "2026-01-20", club: "Multicultural Alliance", urgent: false },
-  { id: "opp-8", type: "deadline", title: "Spring Budget Requests Due", date: "2026-01-31", club: "All Clubs", urgent: true },
+  {
+    id: "opp-1",
+    type: "event",
+    title: "Model UN Practice Session",
+    date: "2026-01-14",
+    club: "Model United Nations",
+    urgent: false,
+  },
+  {
+    id: "opp-2",
+    type: "deadline",
+    title: "Robotics Competition Registration Due",
+    date: "2026-01-18",
+    club: "Robotics Team",
+    urgent: true,
+  },
+  {
+    id: "opp-3",
+    type: "volunteer",
+    title: "Community Food Drive",
+    date: "2026-01-18",
+    club: "Community Service Club",
+    urgent: false,
+  },
+  {
+    id: "opp-4",
+    type: "event",
+    title: "Drama Club Auditions",
+    date: "2026-01-16",
+    club: "Drama Club",
+    urgent: false,
+  },
+  {
+    id: "opp-5",
+    type: "meeting",
+    title: "Environmental Club Planning Meeting",
+    date: "2026-01-13",
+    club: "Environmental Club",
+    urgent: false,
+  },
+  {
+    id: "opp-6",
+    type: "competition",
+    title: "Debate State Qualifier Prep",
+    date: "2026-01-14",
+    club: "Debate Team",
+    urgent: true,
+  },
+  {
+    id: "opp-7",
+    type: "social",
+    title: "Cultural Heritage Celebration",
+    date: "2026-01-20",
+    club: "Multicultural Alliance",
+    urgent: false,
+  },
+  {
+    id: "opp-8",
+    type: "deadline",
+    title: "Spring Budget Requests Due",
+    date: "2026-01-31",
+    club: "All Clubs",
+    urgent: true,
+  },
 ];
 
-
 export const safetyGuidelines = [
-  { title: "Conduct Standards", content: "All club members must follow the school's Student Code of Conduct. Bullying, harassment, and discrimination are not tolerated." },
-  { title: "Supervision Requirements", content: "A faculty advisor must be present at all official club meetings and events. Off-campus events require additional approval and parent permission slips." },
-  { title: "Reporting Concerns", content: "Students should report safety concerns to their club advisor, school counselor, or Activities Office. Anonymous reporting is available through the school's online system." },
-  { title: "Online Safety", content: "Club social media accounts must follow school social media policies. No personal information, bullying, or inappropriate content. All accounts must be supervised by the advisor." },
-  { title: "Financial Safety", content: "All club funds must be managed through the school's accounting system. Officers should never handle cash alone — always have two people present when counting money." },
-  { title: "Event Safety", content: "All events must have a safety plan, including emergency contacts, first aid kit location, and evacuation procedures. File events with administration at least 2 weeks in advance." },
-  { title: "Inclusion Policy", content: "Every club must welcome all interested students regardless of race, gender, religion, orientation, disability, or socioeconomic status. Accommodations will be provided as needed." },
-  { title: "Transportation", content: "Students under 18 must have signed parent permission for off-campus activities. School-arranged transportation is preferred. Student drivers require additional forms." },
+  {
+    title: "Conduct Standards",
+    content:
+      "All club members must follow the school's Student Code of Conduct. Bullying, harassment, and discrimination are not tolerated.",
+  },
+  {
+    title: "Supervision Requirements",
+    content:
+      "A faculty advisor must be present at all official club meetings and events. Off-campus events require additional approval and parent permission slips.",
+  },
+  {
+    title: "Reporting Concerns",
+    content:
+      "Students should report safety concerns to their club advisor, school counselor, or Activities Office. Anonymous reporting is available through the school's online system.",
+  },
+  {
+    title: "Online Safety",
+    content:
+      "Club social media accounts must follow school social media policies. No personal information, bullying, or inappropriate content. All accounts must be supervised by the advisor.",
+  },
+  {
+    title: "Financial Safety",
+    content:
+      "All club funds must be managed through the school's accounting system. Officers should never handle cash alone — always have two people present when counting money.",
+  },
+  {
+    title: "Event Safety",
+    content:
+      "All events must have a safety plan, including emergency contacts, first aid kit location, and evacuation procedures. File events with administration at least 2 weeks in advance.",
+  },
+  {
+    title: "Inclusion Policy",
+    content:
+      "Every club must welcome all interested students regardless of race, gender, religion, orientation, disability, or socioeconomic status. Accommodations will be provided as needed.",
+  },
+  {
+    title: "Transportation",
+    content:
+      "Students under 18 must have signed parent permission for off-campus activities. School-arranged transportation is preferred. Student drivers require additional forms.",
+  },
 ];

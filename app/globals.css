@@ -1272,3 +1272,10 @@ textarea:focus-visible {
   animation: smokeRise 1.5s ease-out infinite;
   opacity: 0.7;
 }
+
+.club-map-popup .maplibregl-popup-close-button {
+  top: 6px;
+  right: 6px;
+  padding: 4px 6px;
+  line-height: 1;
+}

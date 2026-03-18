@@ -1,6 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -13,7 +20,13 @@ import DirectoryFilters, {
 } from "@/components/directory/DirectoryFilters";
 import ClubGrid from "@/components/directory/ClubGrid";
 import HeroSection from "@/components/HeroSection";
-import { HelpCircle, Sparkles, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import {
+  HelpCircle,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  ArrowRight,
+} from "lucide-react";
 
 const DirectoryLeafletMap = dynamic(
   () => import("@/components/DirectoryLeafletMap"),
@@ -81,26 +94,31 @@ function DirectoryPageContent() {
   // Merge static chapters with user-created chapters
   const [chapterVersion, setChapterVersion] = useState(0);
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const chapters = useMemo(() => {
     if (!mounted) return [...staticChapters];
     const created = getCreatedChapters();
-    const staticIds = new Set(staticChapters.map(c => c.id));
-    const unique = created.filter(c => !staticIds.has(c.id));
+    const staticIds = new Set(staticChapters.map((c) => c.id));
+    const unique = created.filter((c) => !staticIds.has(c.id));
     return [...unique, ...staticChapters];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterVersion, mounted]);
 
   const handleDeleteClub = useCallback((id: string) => {
     removeCreatedChapter(id);
-    setChapterVersion(v => v + 1);
+    setChapterVersion((v) => v + 1);
   }, []);
 
   // Scroll to highlighted club after render
   useEffect(() => {
     if (highlightId && highlightRef.current) {
       setTimeout(() => {
-        highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        highlightRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
       }, 600);
     }
   }, [highlightId]);
@@ -123,7 +141,8 @@ function DirectoryPageContent() {
         let score = 0;
         if (c.category === preferredCategory) score += 3;
         if (c.meetingFrequency === preferredFrequency) score += 2;
-        if (c.meetingTime.toLowerCase() === preferredTime.toLowerCase()) score += 1;
+        if (c.meetingTime.toLowerCase() === preferredTime.toLowerCase())
+          score += 1;
         return { ...c, score };
       })
       .sort((a, b) => b.score - a.score)
@@ -211,7 +230,7 @@ function DirectoryPageContent() {
   return (
     <div className="bg-neutral-50 min-h-screen">
       <HeroSection
-        eyebrow="Discover · Filter · Connect"
+        eyebrow="Discover · Filter · Engage"
         title="Organization Directory"
         description="Explore school clubs, compare meeting details, filter by interest, and find the right community to join."
       />
@@ -352,56 +371,97 @@ function DirectoryPageContent() {
 
                     {/* Club Finder Quiz */}
                     <div className="bg-white border border-neutral-200 overflow-hidden">
-                      <button onClick={() => setQuizOpen(o => !o)}
-                        className="w-full bg-primary-600 text-white px-3.5 py-2.5 flex items-center justify-between">
+                      <button
+                        onClick={() => setQuizOpen((o) => !o)}
+                        className="w-full bg-primary-600 text-white px-3.5 py-2.5 flex items-center justify-between"
+                      >
                         <div className="flex items-center gap-2">
                           <HelpCircle size={14} />
-                          <h3 className="text-xs font-heading font-bold uppercase tracking-wider">Club Finder Quiz</h3>
+                          <h3 className="text-xs font-heading font-bold uppercase tracking-wider">
+                            Club Finder Quiz
+                          </h3>
                         </div>
-                        {quizOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        {quizOpen ? (
+                          <ChevronUp size={14} />
+                        ) : (
+                          <ChevronDown size={14} />
+                        )}
                       </button>
                       {quizOpen && (
                         <div className="p-3.5">
                           {!quizDone ? (
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <p className="text-[10px] text-neutral-500">Q{quizStep + 1}/{quizQuestions.length}</p>
+                                <p className="text-[10px] text-neutral-500">
+                                  Q{quizStep + 1}/{quizQuestions.length}
+                                </p>
                                 <div className="flex gap-0.5">
                                   {quizQuestions.map((_, i) => (
-                                    <div key={i} className={`h-1 w-5 ${i <= quizStep ? "bg-primary-500" : "bg-neutral-200"}`} />
+                                    <div
+                                      key={i}
+                                      className={`h-1 w-5 ${i <= quizStep ? "bg-primary-500" : "bg-neutral-200"}`}
+                                    />
                                   ))}
                                 </div>
                               </div>
-                              <p className="text-sm font-bold text-primary-800 mb-3">{quizQuestions[quizStep].question}</p>
+                              <p className="text-sm font-bold text-primary-800 mb-3">
+                                {quizQuestions[quizStep].question}
+                              </p>
                               <div className="space-y-1.5">
-                                {quizQuestions[quizStep].options.map((option) => (
-                                  <button key={option} onClick={() => handleQuizAnswer(option)}
-                                    className="w-full text-left px-3 py-2 border border-neutral-200 hover:border-primary-400 hover:bg-primary-50 transition-all text-xs font-medium">
-                                    {option}
-                                  </button>
-                                ))}
+                                {quizQuestions[quizStep].options.map(
+                                  (option) => (
+                                    <button
+                                      key={option}
+                                      onClick={() => handleQuizAnswer(option)}
+                                      className="w-full text-left px-3 py-2 border border-neutral-200 hover:border-primary-400 hover:bg-primary-50 transition-all text-xs font-medium"
+                                    >
+                                      {option}
+                                    </button>
+                                  ),
+                                )}
                               </div>
                             </div>
                           ) : (
                             <div>
                               <div className="flex items-center gap-1.5 mb-2">
-                                <Sparkles size={14} className="text-secondary-500" />
-                                <p className="text-xs font-bold text-primary-800">Your Matches</p>
+                                <Sparkles
+                                  size={14}
+                                  className="text-secondary-500"
+                                />
+                                <p className="text-xs font-bold text-primary-800">
+                                  Your Matches
+                                </p>
                               </div>
                               <div className="space-y-1.5">
                                 {quizRecommendations.map((club, i) => (
-                                  <Link key={club.id} href={`/directory/${club.id}`}
-                                    className="flex items-center gap-2.5 p-2 border border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40 transition-all">
-                                    <div className="w-6 h-6 bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-[10px] shrink-0">{i + 1}</div>
-                                    <div className="min-w-0 flex-1">
-                                      <p className="font-semibold text-xs text-primary-700 truncate">{club.name}</p>
-                                      <p className="text-[10px] text-neutral-500">{club.category} · {club.memberCount} members</p>
+                                  <Link
+                                    key={club.id}
+                                    href={`/directory/${club.id}`}
+                                    className="flex items-center gap-2.5 p-2 border border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40 transition-all"
+                                  >
+                                    <div className="w-6 h-6 bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                      {i + 1}
                                     </div>
-                                    <ArrowRight size={12} className="text-neutral-400 shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-semibold text-xs text-primary-700 truncate">
+                                        {club.name}
+                                      </p>
+                                      <p className="text-[10px] text-neutral-500">
+                                        {club.category} · {club.memberCount}{" "}
+                                        members
+                                      </p>
+                                    </div>
+                                    <ArrowRight
+                                      size={12}
+                                      className="text-neutral-400 shrink-0"
+                                    />
                                   </Link>
                                 ))}
                               </div>
-                              <button onClick={resetQuiz} className="mt-2 w-full text-center text-[10px] text-primary-600 font-semibold hover:text-primary-700">
+                              <button
+                                onClick={resetQuiz}
+                                className="mt-2 w-full text-center text-[10px] text-primary-600 font-semibold hover:text-primary-700"
+                              >
                                 Retake Quiz
                               </button>
                             </div>
@@ -496,12 +556,15 @@ function DirectoryPageContent() {
                 </aside>
               )}
 
-              <ClubGrid clubs={filtered} highlightId={highlightId} highlightRef={highlightRef} onDeleteClub={handleDeleteClub} />
+              <ClubGrid
+                clubs={filtered}
+                highlightId={highlightId}
+                highlightRef={highlightRef}
+                onDeleteClub={handleDeleteClub}
+              />
             </div>
           </div>
         </section>
-
-
       </div>
     </div>
   );

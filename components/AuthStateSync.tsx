@@ -19,6 +19,23 @@ export default function AuthStateSync() {
 
       const sessionUser = data.session?.user;
       const nextAuthUser = nextAuthSession?.user;
+      const nextAuthAccessToken = nextAuthSession?.supabase?.accessToken;
+      const nextAuthRefreshToken = nextAuthSession?.supabase?.refreshToken;
+
+      if (!sessionUser && nextAuthAccessToken && nextAuthRefreshToken) {
+        const restoreRes = await supabase.auth.setSession({
+          access_token: nextAuthAccessToken,
+          refresh_token: nextAuthRefreshToken,
+        });
+
+        if (restoreRes.error) {
+          logoutUser();
+          return;
+        }
+      }
+
+      const { data: refreshed } = await supabase.auth.getSession();
+      const restoredUser = refreshed.session?.user;
 
       if (nextAuthUser) {
         setLoggedInState(true, {
@@ -28,18 +45,18 @@ export default function AuthStateSync() {
         return;
       }
 
-      if (!sessionUser) {
+      if (!restoredUser) {
         logoutUser();
         return;
       }
 
       setLoggedInState(true, {
         name:
-          sessionUser.user_metadata?.name ||
-          sessionUser.user_metadata?.full_name ||
-          sessionUser.email?.split("@")[0] ||
+          restoredUser.user_metadata?.name ||
+          restoredUser.user_metadata?.full_name ||
+          restoredUser.email?.split("@")[0] ||
           "Student User",
-        email: sessionUser.email,
+        email: restoredUser.email,
       });
     };
 
