@@ -709,7 +709,8 @@ export default function ClubDetailPage() {
   const growthRate = Math.floor(Math.random() * 15) + 5;
 
   const safeMemberCount =
-    typeof chapter.memberCount === "number" && Number.isFinite(chapter.memberCount)
+    typeof chapter.memberCount === "number" &&
+    Number.isFinite(chapter.memberCount)
       ? Math.max(0, chapter.memberCount)
       : 0;
   const monthlyMembers = [
