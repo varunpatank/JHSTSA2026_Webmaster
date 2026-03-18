@@ -130,7 +130,7 @@ export default function ProfilePage() {
               const dbAdmin = (adminRes.data as any[]).map((c: any) => ({
                 id: c.id,
                 name: c.name,
-                status: c.is_published ? 'Published' : 'Draft',
+                status: (c.is_published ? 'Published' : 'Draft') as 'Draft' | 'Pending approval' | 'Published',
               }));
               if (dbAdmin.length > 0) setAdminClubs(dbAdmin);
             }

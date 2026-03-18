@@ -55,9 +55,19 @@ function TrendIcon({ trend }: { trend: "up" | "down" | "stable" }) {
   return <span className="text-neutral-300">—</span>;
 }
 
+const HEALTH_LS_KEY = "clubconnect_health_prefs";
+
+function loadHealthPrefs(): { sortBy: "score" | "name" } {
+  try { const s = localStorage.getItem(HEALTH_LS_KEY); if (s) return JSON.parse(s); } catch {}
+  return { sortBy: "score" };
+}
+
 export default function HealthPage() {
-  const [sortBy, setSortBy] = useState<"score" | "name">("score");
+  const prefs = loadHealthPrefs();
+  const [sortBy, setSortBy] = useState<"score" | "name">(prefs.sortBy);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  useEffect(() => { try { localStorage.setItem(HEALTH_LS_KEY, JSON.stringify({ sortBy })); } catch {} }, [sortBy]);
 
   const sorted = [...CLUB_HEALTH].sort((a, b) => sortBy === "score" ? b.overallScore - a.overallScore : a.name.localeCompare(b.name));
 

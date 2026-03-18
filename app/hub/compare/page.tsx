@@ -48,8 +48,17 @@ const METRICS = [
   { key: "socialMediaFollowers", label: "Social Followers", suffix: "", higherBetter: true },
 ] as const;
 
+const COMPARE_LS_KEY = "clubconnect_compare_selected";
+
+function loadSelected(): string[] {
+  try { const s = localStorage.getItem(COMPARE_LS_KEY); if (s) return JSON.parse(s); } catch {}
+  return [];
+}
+
 export default function ComparePage() {
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(() => loadSelected());
+
+  useEffect(() => { try { localStorage.setItem(COMPARE_LS_KEY, JSON.stringify(selected)); } catch {} }, [selected]);
 
   function toggleClub(id: string) {
     setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 4 ? [...prev, id] : prev);

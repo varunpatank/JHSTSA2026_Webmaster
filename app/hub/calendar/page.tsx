@@ -56,11 +56,24 @@ const TYPE_COLORS: Record<string, string> = {
 function getDaysInMonth(year: number, month: number) { return new Date(year, month + 1, 0).getDate(); }
 function getFirstDayOfWeek(year: number, month: number) { return new Date(year, month, 1).getDay(); }
 
+const CALENDAR_LS_KEY = "clubconnect_calendar_events";
+
+function loadCalendarEvents(): CalendarEvent[] {
+  try {
+    const s = localStorage.getItem(CALENDAR_LS_KEY);
+    if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length) return p; }
+  } catch {}
+  return CALENDAR_EVENTS;
+}
+
 export default function CalendarPage() {
+  const [calEvents, setCalEvents] = useState<CalendarEvent[]>(() => loadCalendarEvents());
   const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1));
   const [view, setView] = useState<"month" | "list">("month");
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+
+  useEffect(() => { try { localStorage.setItem(CALENDAR_LS_KEY, JSON.stringify(calEvents)); } catch {} }, [calEvents]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -73,10 +86,10 @@ export default function CalendarPage() {
 
   function getEventsForDay(day: number): CalendarEvent[] {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return CALENDAR_EVENTS.filter(e => e.date === dateStr);
+    return calEvents.filter(e => e.date === dateStr);
   }
 
-  const monthEvents = CALENDAR_EVENTS.filter(e => {
+  const monthEvents = calEvents.filter(e => {
     const d = new Date(e.date);
     return d.getMonth() === month && d.getFullYear() === year;
   }).filter(e => typeFilter === "All" || e.type === typeFilter).sort((a, b) => a.date.localeCompare(b.date));
