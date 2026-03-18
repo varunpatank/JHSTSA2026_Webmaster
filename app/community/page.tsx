@@ -11,7 +11,7 @@ import {
   Upload, X, Bookmark, Share2, TrendingUp, Users,
   Calendar, Phone, MoreHorizontal, GraduationCap,
   Video, BookOpen, Award, Star, ArrowRight, Globe,
-  Clock, Trophy,
+  Clock, Trophy, Trash2,
 } from 'lucide-react';
 
 /*  Types  */
@@ -252,7 +252,7 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-neutral-100">
       <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.png,.jpg,.jpeg,.gif,.svg,.txt,.md,.csv" onChange={handleFileSelect} />
 
-      <HeroSection align="left">
+      <HeroSection align="left" contentClassName="!max-w-full">
         <div className="flex items-center gap-6">
           <div className="shrink-0">
             <h1 className="hero-title mt-0"><span>Community</span></h1>
@@ -464,6 +464,9 @@ export default function CommunityPage() {
                     <p className="text-xs text-neutral-400">{post.time}</p>
                   </div>
                   <button className="text-neutral-300 hover:text-neutral-500"><MoreHorizontal size={16} /></button>
+                  {(post.author === userName || post.author === 'You') && (
+                    <button onClick={() => { if (confirm('Delete this post?')) setFeed(prev => prev.filter(p => p.id !== post.id)); }} className="text-red-300 hover:text-red-600 transition-colors" title="Delete post"><Trash2 size={15} /></button>
+                  )}
                 </div>
 
                 {/* Body */}
@@ -542,6 +545,9 @@ export default function CommunityPage() {
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm font-bold text-primary-700">{r.author}</span>
                               <span className="text-xs text-neutral-400">{r.time}</span>
+                              {(r.author === userName || r.author === 'You') && (
+                                <button onClick={() => setFeed(prev => prev.map(p => p.id === post.id ? { ...p, replies: p.replies.filter(rr => rr.id !== r.id) } : p))} className="ml-auto text-red-300 hover:text-red-600 transition-colors" title="Delete reply"><Trash2 size={12} /></button>
+                              )}
                             </div>
                             <p className="text-sm text-neutral-600 leading-relaxed">{r.text}</p>
                           </div>

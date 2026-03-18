@@ -154,6 +154,9 @@ export const organizationsApi = {
     getAll: () =>
         supabase.from('organizations').select('*').limit(50),
 
+    getBySlug: (slug: string) =>
+        supabase.from('organizations').select('*').eq('slug', slug).maybeSingle(),
+
     getById: (id: string) =>
         supabase.from('organizations').select('*').eq('id', id).maybeSingle(),
 

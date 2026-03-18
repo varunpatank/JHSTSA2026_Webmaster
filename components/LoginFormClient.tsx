@@ -25,20 +25,16 @@ export default function LoginFormClient({
   const { status } = useSession();
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const loggedIn = status === "authenticated" || await authApi.isLoggedIn();
-        if (mounted && loggedIn) router.replace('/profile');
-      } catch (e) {
-      } finally {
-        if (mounted) setCheckingAuth(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [router, status]);
+    if (status === "loading") return;
+    // Only redirect when NextAuth definitively says authenticated.
+    // Don't check Supabase here — its session recovery timing can conflict
+    // with the profile page's own check, causing a redirect loop.
+    if (status === "authenticated") {
+      router.replace(redirect);
+      return;
+    }
+    setCheckingAuth(false);
+  }, [router, status, redirect]);
 
 
   const onSubmit = (event: FormEvent) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BookMarked, Database, Layout, ArrowRight, X } from "lucide-react";
+import { BookMarked, ArrowRight, X } from "lucide-react";
 import Link from "next/link";
 
 export default function JudgeGuide() {
@@ -43,47 +43,32 @@ export default function JudgeGuide() {
         <button onClick={() => setExpanded(false)} className="p-1.5 hover:bg-white/20 transition-colors"><X size={18} /></button>
        </div>
        <p className="text-[11px] text-primary-200 mt-1 leading-relaxed">
-        Welcome to <strong className="text-white">ClubConnect</strong>! Our full references, citations, work log, and technical documentation are on the References page.
+        Welcome to <strong className="text-white">ClubConnect</strong> &mdash; a full-stack school club hub built with <strong className="text-white">Next.js 16</strong>, <strong className="text-white">Supabase</strong> (PostgreSQL + Auth), and <strong className="text-white">Stripe</strong> payments. See our References page for the complete documentation.
        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
        {/* Data note */}
        <div className="border border-primary-200 bg-primary-50/60 p-4">
-        <h4 className="font-bold text-sm text-primary-800 mb-2">How This App Works</h4>
-        <div className="space-y-2.5">
-         <div className="flex items-start gap-2.5">
-          <Database size={14} className="text-emerald-600 mt-0.5 shrink-0" />
-          <div>
-           <p className="text-xs font-semibold text-emerald-700">Database-Backed (Supabase)</p>
-           <p className="text-[11px] text-neutral-600 leading-relaxed">Login/signup, user profiles, club creation (appears on Discover), club management (edit/delete), chat messages, events, resource uploads, donations, discussions, proposals, notifications, and all community content are stored in a PostgreSQL database with Row-Level Security.</p>
-          </div>
-         </div>
-         <div className="flex items-start gap-2.5">
-          <Layout size={14} className="text-blue-600 mt-0.5 shrink-0" />
-          <div>
-           <p className="text-xs font-semibold text-blue-700">localStorage Persistence</p>
-           <p className="text-[11px] text-neutral-600 leading-relaxed">Community feed posts/likes, chat sidebar, dashboard saved items/events/notifications, quiz results, tutorial progress, collection management, resource request votes, goals, and club management drafts persist via localStorage across refreshes.</p>
-          </div>
-         </div>
-         <div className="flex items-start gap-2.5">
-          <Layout size={14} className="text-violet-600 mt-0.5 shrink-0" />
-          <div>
-           <p className="text-xs font-semibold text-violet-700">Hardcoded UI Demonstration</p>
-           <p className="text-[11px] text-neutral-600 leading-relaxed">The preset club directory, homepage stats, calendar events, achievements list, competitions, rubrics, and guides use hardcoded data to showcase the full interface.</p>
-          </div>
-         </div>
-        </div>
+        <h4 className="font-bold text-sm text-primary-800 mb-2">Main Features</h4>
+        <ul className="space-y-1.5 text-[11px] text-neutral-700 leading-relaxed">
+         <li className="flex items-start gap-1.5"><span className="text-emerald-600 mt-0.5 shrink-0">&bull;</span><span><strong>Supabase Auth &amp; Database</strong> &mdash; Login/signup, user profiles, organizations, memberships, events, and community content stored in PostgreSQL with Row-Level Security</span></li>
+         <li className="flex items-start gap-1.5"><span className="text-purple-600 mt-0.5 shrink-0">&bull;</span><span><strong>Stripe Payments</strong> &mdash; Secure donation checkout sessions for club fundraising with progress tracking</span></li>
+         <li className="flex items-start gap-1.5"><span className="text-blue-600 mt-0.5 shrink-0">&bull;</span><span><strong>Club Creation &amp; Management</strong> &mdash; 5-step wizard, new clubs appear on the directory instantly, founders can inline-edit info and add events (saved to DB)</span></li>
+         <li className="flex items-start gap-1.5"><span className="text-orange-600 mt-0.5 shrink-0">&bull;</span><span><strong>56+ Pages</strong> &mdash; Directory, Resources, Events Calendar, Community Hub, Mentors, Analytics, Start a Club, Video Calls, and more</span></li>
+         <li className="flex items-start gap-1.5"><span className="text-cyan-600 mt-0.5 shrink-0">&bull;</span><span><strong>Interactive Maps</strong> &mdash; MapLibre GL 3D map with multi-school markers in the Club Directory</span></li>
+         <li className="flex items-start gap-1.5"><span className="text-secondary-600 mt-0.5 shrink-0">&bull;</span><span><strong>AI Chat Agents</strong> &mdash; Gemini 2.0 Flash-powered assistants for resource discovery and navigation</span></li>
+        </ul>
        </div>
 
        {/* What you'll find */}
        <div>
-        <h4 className="font-bold text-sm text-primary-800 mb-2">On the References Page</h4>
-        <ul className="space-y-1.5 text-xs text-neutral-700">
-         {["Work Log (PDF)", "Copyright Checklist (PDF)", "Framework & Code Stack", "Data Architecture", "Feature Walkthrough", "TSA Webmaster Rubric", "Image Sources & Attributions", "Student Work Declaration"].map(item => (
-          <li key={item} className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-secondary-500 shrink-0" />{item}</li>
+        <h4 className="font-bold text-sm text-primary-800 mb-2">Tech Stack</h4>
+        <div className="grid grid-cols-2 gap-2">
+         {[{ name: 'Next.js 16', color: 'bg-black' }, { name: 'Supabase', color: 'bg-emerald-600' }, { name: 'Stripe', color: 'bg-purple-600' }, { name: 'Tailwind CSS', color: 'bg-cyan-600' }, { name: 'TypeScript', color: 'bg-blue-600' }, { name: 'MapLibre GL', color: 'bg-orange-600' }].map(t => (
+          <div key={t.name} className="flex items-center gap-2 text-[11px] text-neutral-700"><span className={`w-2 h-2 shrink-0 ${t.color}`} />{t.name}</div>
          ))}
-        </ul>
+        </div>
        </div>
 
        {/* CTA */}

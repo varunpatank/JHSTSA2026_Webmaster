@@ -47,10 +47,11 @@ export default function AuthStateSync() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") return; // syncFromSession already handles init
       const user = session?.user;
       if (!user) {
-        logoutUser();
+        if (event === "SIGNED_OUT") logoutUser();
         return;
       }
 

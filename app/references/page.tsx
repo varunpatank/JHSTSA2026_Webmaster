@@ -99,14 +99,14 @@ export default function ReferencesPage() {
         <Accordion icon={<Layers size={16} />} title="Framework & Code Stack" defaultOpen>
           <div className="mt-3 space-y-4">
             <p className="text-sm text-neutral-700 leading-relaxed">
-              This website utilizes <span className="font-semibold text-primary-600">Next.js 16</span> (App Router), a modern React-based framework optimized for efficiency and fast render times with Turbopack. Styling is handled by <span className="font-semibold text-primary-600">Tailwind CSS</span>, a utility-first CSS framework allowing rapid, maintainable UI development. All non-standard components and theming are custom work by our team. The site follows WCAG accessibility guidelines for color contrast, with small text at a AAA contrast ratio rating and large text with at least a AA contrast ratio rating.
+              ClubConnect is built on <span className="font-semibold text-primary-600">Next.js 16</span> (App Router) with Turbopack for lightning-fast development builds and 56+ routes. <span className="font-semibold text-primary-600">Supabase</span> powers the full backend — authentication (email/password login &amp; signup), a PostgreSQL database with Row-Level Security for organizations, memberships, events, profiles, and community content, plus file storage for avatars and uploads. <span className="font-semibold text-primary-600">Stripe</span> handles secure donation checkout sessions for club fundraising. Styling uses <span className="font-semibold text-primary-600">Tailwind CSS</span> with a custom school-themed design system. The site follows WCAG accessibility guidelines for color contrast, with small text at a AAA contrast ratio rating and large text with at least a AA contrast ratio rating.
             </p>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { icon: <span className="w-6 h-6 bg-black text-white flex items-center justify-center text-[9px] font-bold">N</span>, name: 'Next.js 16 + TypeScript', desc: 'App Router with server & client components, Turbopack for fast dev builds, 56+ routes across the application' },
-                { icon: <span className="w-6 h-6 bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">S</span>, name: 'Supabase', desc: 'Full auth system (login, signup, sessions), PostgreSQL database, row-level security, real-time subscriptions, file storage for avatars & uploads' },
-                { icon: <span className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center text-[9px] font-bold">$</span>, name: 'Stripe Payments', desc: 'Secure checkout sessions for club donations and fundraising, with progress tracking and test mode' },
+                { icon: <span className="w-6 h-6 bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">S</span>, name: 'Supabase (Backend)', desc: 'Full auth (login/signup/sessions), PostgreSQL database with RLS, organizations, memberships, events, profiles, file storage for avatars & uploads' },
+                { icon: <span className="w-6 h-6 bg-purple-600 text-white flex items-center justify-center text-[9px] font-bold">$</span>, name: 'Stripe Payments', desc: 'Secure checkout sessions for club donations and fundraising, with progress tracking and test mode integration' },
                 { icon: <span className="w-6 h-6 bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold">G</span>, name: 'Gemini 2.0 Flash (AI)', desc: 'Embedded AI chat agents on multiple pages for resource discovery, Q&A, and navigational help' },
                 { icon: <span className="w-6 h-6 bg-cyan-600 text-white flex items-center justify-center text-[9px] font-bold">T</span>, name: 'Tailwind CSS', desc: 'Custom school-themed design system with primary (navy), secondary (gold), and accent (maroon) palette' },
                 { icon: <span className="w-6 h-6 bg-orange-600 text-white flex items-center justify-center text-[9px] font-bold">L</span>, name: 'MapLibre GL + Leaflet', desc: 'Interactive 3D map integration in the Club Directory for multi-school location-based discovery' },
@@ -165,27 +165,32 @@ export default function ReferencesPage() {
               <div className="p-3 border border-emerald-200 bg-emerald-50/50">
                 <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-2">🟢 Database (Supabase PostgreSQL)</p>
                 <ul className="space-y-1 text-[11px] text-neutral-700">
-                  <li>• Authentication & user sessions</li>
+                  <li>• Authentication & user sessions (login/signup)</li>
                   <li>• User profiles (avatar, bio, grade)</li>
-                  <li>• Community uploads & likes</li>
-                  <li>• Hub Discussions, Ideas, Mentors, Stories</li>
+                  <li>• Organizations, memberships & joining</li>
+                  <li>• Events (created from club pages, persisted)</li>
+                  <li>• Club creation & editing (saved to DB)</li>
+                  <li>• Community uploads, discussions, ideas</li>
                   <li>• Stripe donation checkout sessions</li>
                 </ul>
               </div>
               <div className="p-3 border border-blue-200 bg-blue-50/50">
                 <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-2">🔵 Local Storage (Browser)</p>
                 <ul className="space-y-1 text-[11px] text-neutral-700">
-                  <li>• Goal Tracker, Club Management</li>
+                  <li>• User-created clubs (merged into directory)</li>
+                  <li>• Community feed posts & replies</li>
                   <li>• Club Finder Quiz results</li>
-                  <li>• Student Lounge chat</li>
+                  <li>• Goal Tracker, Ideas, Collections</li>
+                  <li>• Dashboard saved items & notifications</li>
                 </ul>
               </div>
               <div className="p-3 border border-purple-200 bg-purple-50/50">
                 <p className="text-[10px] font-bold text-purple-700 uppercase tracking-wider mb-2">🟣 UI-Only (Functional Display)</p>
                 <ul className="space-y-1 text-[11px] text-neutral-700">
-                  <li>• Competitions, Achievements, Rubrics</li>
-                  <li>• Homepage, Directory, Calendar</li>
-                  <li>• Resource downloads, AI chat agents</li>
+                  <li>• Preset club directory (25 clubs)</li>
+                  <li>• Homepage stats, calendar, achievements</li>
+                  <li>• Competitions, rubrics, resource downloads</li>
+                  <li>• AI chat agents (Gemini-powered)</li>
                 </ul>
               </div>
             </div>
@@ -197,15 +202,15 @@ export default function ReferencesPage() {
           <div className="mt-3 space-y-3">
             {[
               { title: 'Homepage & Landing', items: ['Hero banner with stats grid and CTA buttons', 'Live counters for Active Clubs, Students Served, Upcoming Events, Service Hours', 'Featured Clubs Carousel with ratings and member counts', 'Quick Access grid linking to Directory, Resources, Start a Club, Mentors, Events', 'Announcements feed and upcoming events'] },
-              { title: 'Club Discovery & Directory', items: ['Searchable directory of 25+ clubs with real-time filtering', 'Filter by day, time, category, grade level, meeting schedule', 'Interactive 3D MapLibre map with multi-school markers and fly-to', 'Individual club profile pages with Overview, Statistics, Events, Projects, History, Notes, Discussion tabs', 'Club Finder Quiz for personalized recommendations'] },
+              { title: 'Club Discovery & Directory', items: ['Searchable directory of 25+ clubs with real-time filtering', 'Filter by day, time, category, size, and meeting schedule', 'Interactive 3D MapLibre map with multi-school markers and fly-to', 'Individual club pages with Overview, Statistics, Events, Projects, History, and Notes tabs', 'Club Finder Quiz for personalized recommendations', 'User-created clubs appear in the live directory with confetti highlight'] },
               { title: 'Resource Library & Guides', items: ['20+ downloadable resources organized in a 5-stage rocket launch system', 'PDF preview with embedded viewer before download', 'Search and filter by type, format, and stage', 'Guides index with categorized how-to articles'] },
-              { title: 'Events & Calendar', items: ['Full events calendar with monthly view and type filtering', 'Event detail pages with comments, resources, and sharing', 'RSVP system with attendee tracking', 'Event creation form for club officers'] },
-              { title: 'Student Community & Social', items: ['LinkedIn-inspired 3-column community feed with threaded replies', 'File uploads for sharing guides, templates, and resources', 'Real-time chat and discussion threads', 'Collaboration platform for clubs to find project partners'] },
-              { title: 'Club Creation & Management', items: ['5-step Club Creation Wizard with guided form and constitution editor', 'Logo uploader, poster designer, and advisor requirement info', 'Club Management Dashboard for editing drafts and configuring social links', 'Club Health Dashboard with membership trends and recommendations'] },
+              { title: 'Events & Calendar', items: ['Full events calendar with monthly view and type filtering', 'Event detail pages with comments, resources, and sharing', 'RSVP system with attendee tracking', 'Inline event creation from club pages (saved to Supabase)'] },
+              { title: 'Student Community & Social', items: ['LinkedIn-inspired 3-column community feed with threaded replies', 'Delete your own posts and replies', 'Community Hub with searchable discussions and resources', 'Collaboration platform for clubs to find project partners'] },
+              { title: 'Club Creation & Management', items: ['5-step Club Creation Wizard with guided stages, poster screenshot, and constitution editor', 'New clubs appear instantly in the directory and on their own detail page', 'Founders can inline-edit club info (description, schedule, dues) — saved to Supabase', 'Founders can add events and delete their club from the directory'] },
               { title: 'Mentorship & Alumni', items: ['Mentor profiles with expertise, availability, ratings', '1-on-1 mentoring, resume review, mock interviews, career guidance', 'Alumni network with career paths, testimonials, and messaging'] },
-              { title: 'Funding & Donations', items: ['Stripe-powered donation system with secure checkout', 'Club-specific fundraising pages with progress bars', 'School-wide analytics dashboard with animated counters'] },
+              { title: 'Funding & Donations (Stripe)', items: ['Stripe-powered donation system with secure checkout sessions', 'Club-specific fundraising pages with progress bars', 'School-wide analytics dashboard with animated counters'] },
               { title: 'Communication & Video Calls', items: ['Video conference rooms with mic/camera controls', 'Built-in whiteboard for collaborative drawing', 'Notification center with event, mention, and achievement alerts'] },
-              { title: 'Authentication & Profiles', items: ['Supabase-powered login/signup with email/password', 'User profiles with avatar upload, bio, grade, and school info', 'Personal dashboard with joined clubs, activity feed, and notifications'] },
+              { title: 'Authentication & Profiles (Supabase)', items: ['Supabase-powered login/signup with email/password', 'User profiles with avatar upload, bio, grade, and school info', 'Personal dashboard with joined clubs, activity feed, and notifications', 'Joining a club creates a membership record in Supabase'] },
             ].map(section => (
               <div key={section.title} className="border border-neutral-100 p-3">
                 <p className="text-xs font-bold text-primary-700 mb-1.5">{section.title}</p>

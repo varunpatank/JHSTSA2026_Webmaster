@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowUp, ArrowDown, ChevronDown, Filter, Lightbulb, Loader2, MessageCircle, Plus,
-  Search, Star, ThumbsUp, Users, Zap
+  Search, Star, ThumbsUp, Trash2, Users, Zap
 } from "lucide-react";
 import { supabase, clubIdeasApi } from "@/lib/api";
 
@@ -237,6 +237,9 @@ export default function IdeasPage() {
                       <span>{new Date(idea.date).toLocaleDateString()}</span>
                       <span className="flex items-center gap-1"><MessageCircle size={12} /> {idea.comments} comments</span>
                       <span className="flex items-center gap-1"><Users size={12} /> {idea.interestCount} interested</span>
+                      {idea.proposedBy === "You" && (
+                        <button onClick={() => { if (confirm(`Delete "${idea.title}"?`)) setIdeas(prev => prev.filter(i => i.id !== idea.id)); }} className="ml-auto text-red-400 hover:text-red-600 transition-colors flex items-center gap-1"><Trash2 size={12} /> Delete</button>
+                      )}
                     </div>
                   </div>
                 </div>

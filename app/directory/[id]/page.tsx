@@ -6,14 +6,14 @@ import { useParams, useRouter } from "next/navigation";
 import {
   chapters, events, clubHistoryData, projectsData, meetingNotesData, sponsorsData,
 } from "@/lib/data";
-import { addJoinedClub } from "@/lib/clientState";
-import { supabase, membershipsApi, organizationsApi, profilesApi } from "@/lib/api";
+import { addJoinedClub, getCreatedChapters, updateCreatedChapter } from "@/lib/clientState";
+import { supabase, membershipsApi, organizationsApi, profilesApi, eventsApi } from "@/lib/api";
 import { formatChapterLocation } from "@/lib/location";
 import {
   ArrowRight, Award, BarChart3, BookOpen, Calendar, CheckCircle, ChevronDown,
   ChevronRight, Clock, Compass, Edit, ExternalLink, FileText, Globe, Heart, History,
   Instagram, LinkIcon, Mail, MapPin, Megaphone, MessageSquare, Milestone,
-  PenTool, Phone, Rocket, Send, Settings, Shield, Star, Target,
+  PenTool, Phone, Plus, Rocket, Send, Settings, Shield, Star, Target,
   Trophy, Twitter, TrendingUp, UserPlus, Users, Video, Zap,
 } from "lucide-react";
 
@@ -174,7 +174,6 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
             background: `linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.15) 100%)`,
           }} />
           <span className="text-8xl drop-shadow-lg relative z-10" style={{ imageRendering: "pixelated", filter: "contrast(1.1)" }}>{info.emoji}</span>
-          <span className="text-[11px] font-bold text-white/90 mt-2 tracking-widest uppercase relative z-10">{info.label}</span>
         </div>
       </div>
       {/* Swivel stand */}
@@ -182,8 +181,7 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
         <div className="w-3 h-6 bg-white/20" style={{ imageRendering: "pixelated" }} />
         <div className="w-20 h-3 bg-white/15 border-t border-white/20" style={{ imageRendering: "pixelated" }} />
       </div>
-      {/* Instruction */}
-      <span className="text-[10px] text-white/60 mt-2 tracking-wide">🖱️ Drag to swivel &middot; Click for effect</span>
+
       <style>{`
         @keyframes sparkOut {
           0% { transform: rotate(var(--r, 0deg)) translateX(0) scale(1); opacity: 1; }
@@ -258,12 +256,42 @@ function ActivityHeatmap({ clubId }: { clubId: string }) {
   );
 }
 
+// Deterministic seed from string
+function hashStr(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0; return Math.abs(h); }
+
+function generateClubTabData(id: string, name: string) {
+  const h = hashStr(id);
+  const cat = name.split(/\s+/)[0] || "Club";
+  const genEvents: import("@/types").Event[] = [
+    { id: `${id}-e1`, title: `${name} Welcome Meeting`, description: `Introductory meeting for all interested students.`, date: "2026-01-20", startTime: "3:30 PM", endTime: "4:30 PM", location: `Room ${100 + (h % 200)}`, chapterId: id, chapterName: name, category: "Academic" as any, isPublic: true, requiresRSVP: false, currentAttendees: 12 + (h % 20) },
+    { id: `${id}-e2`, title: `${cat} Workshop`, description: `Hands-on workshop covering key skills and fundamentals.`, date: "2026-02-10", startTime: "3:30 PM", endTime: "5:00 PM", location: `Room ${100 + (h % 200)}`, chapterId: id, chapterName: name, category: "Academic" as any, isPublic: true, requiresRSVP: true, maxAttendees: 30, currentAttendees: 18 + (h % 10) },
+    { id: `${id}-e3`, title: `${name} Social Event`, description: `End-of-month social and team building activity.`, date: "2026-03-05", startTime: "4:00 PM", endTime: "5:30 PM", location: "Student Commons", chapterId: id, chapterName: name, category: "Academic" as any, isPublic: true, requiresRSVP: false, currentAttendees: 22 + (h % 15) },
+  ];
+  const genHistory = [
+    { id: "h1", eventType: "founded", title: "Club Founded", description: `${name} was established by a group of passionate students.`, eventDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-01` },
+    { id: "h2", eventType: "milestone", title: "First Meeting Held", description: `The inaugural meeting drew ${10 + (h % 15)} enthusiastic members.`, eventDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-08` },
+    { id: "h3", eventType: "achievement", title: "Interest Growing", description: `Membership quickly grew as word spread across campus.`, eventDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-15` },
+  ];
+  const genProjects = [
+    { id: "p1", title: `${cat} Community Outreach`, description: `Planning outreach events to invite more students and build community partnerships.`, status: "in_progress", startDate: "2026-01-15" },
+    { id: "p2", title: `${name} Website`, description: `Building a club website and social media presence.`, status: "planning", startDate: "2026-02-01" },
+  ];
+  const genNotes = [
+    { id: "mn1", title: "Founding Meeting", meetingDate: new Date().toISOString().slice(0, 10), attendeeCount: 8 + (h % 12), content: `Discussed club goals, meeting schedule, and officer roles. Set up communication channels and planned first activities.`, actionItems: [{ task: "Create group chat", assignee: "President", completed: true }, { task: "Draft first event plan", assignee: "VP", completed: false }, { task: "Design club logo", assignee: "Secretary", completed: false }] },
+    { id: "mn2", title: "Planning Session", meetingDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10), attendeeCount: 10 + (h % 10), content: `Reviewed progress on action items. Discussed upcoming workshop and assigned roles for the event.`, actionItems: [{ task: "Book room for workshop", assignee: "Treasurer", completed: true }, { task: "Create sign-up form", assignee: "Secretary", completed: false }] },
+  ];
+  return { genEvents, genHistory, genProjects, genNotes };
+}
+
 export default function ClubDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const chapter = chapters.find((c) => c.id === params.id);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const allChapters = mounted ? [...chapters, ...getCreatedChapters()] : chapters;
+  const chapter = allChapters.find((c) => c.id === params.id);
 
-  const [activeTab, setActiveTab] = useState<"overview" | "events" | "stats" | "projects" | "history" | "notes" | "discussion">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "events" | "stats" | "projects" | "history" | "notes">("overview");
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<LocalComment[]>([
     { id: 1, author: "Student", text: "Great club! Learned a lot this semester.", time: "3 days ago" },
@@ -276,11 +304,48 @@ export default function ClubDetailPage() {
     { id: 1, text: "Welcome to the new semester! First meeting is next Tuesday.", date: "Mar 10, 2026" },
     { id: 2, text: "Club t-shirt orders due by Friday. See sign-up sheet.", date: "Mar 5, 2026" },
   ]);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [draftValue, setDraftValue] = useState("");
   const [editingDescription, setEditingDescription] = useState(false);
   const [draftDescription, setDraftDescription] = useState("");
+  const [draftSchedule, setDraftSchedule] = useState("");
+  const [draftTime, setDraftTime] = useState("");
+  const [draftDues, setDraftDues] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [addingEvent, setAddingEvent] = useState(false);
+  const [newEventTitle, setNewEventTitle] = useState("");
+  const [newEventDate, setNewEventDate] = useState("");
+  const [localEvents, setLocalEvents] = useState<{ id: string; title: string; date: string }[]>([]);
+  const [dbEvents, setDbEvents] = useState<{ id: string; title: string; date: string }[]>([]);
+  const isFounder = mounted && getCreatedChapters().some(c => c.id === params.id);
+
+  // Fetch events saved to Supabase for this club
+  useEffect(() => {
+    if (!mounted || !params.id) return;
+    (async () => {
+      try {
+        const { data: matchedOrg } = await organizationsApi.getBySlug(params.id as string);
+        if (matchedOrg) {
+          const { data: evts } = await eventsApi.getByOrg(matchedOrg.id);
+          if (evts && evts.length > 0) {
+            setDbEvents(evts.map((e: any) => ({ id: e.id, title: e.name, date: e.time ? e.time.slice(0, 10) : '' })));
+          }
+        }
+      } catch (e) {
+        console.error('Fetch events error:', e);
+      }
+    })();
+  }, [mounted, params.id]);
 
   if (!chapter) {
+    if (!mounted) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+          <p className="text-neutral-400 text-sm">Loading...</p>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-100 px-4">
         <div className="card p-8 max-w-xl w-full text-center">
@@ -292,10 +357,13 @@ export default function ClubDetailPage() {
     );
   }
 
-  const chapterEvents = events.filter((e) => e.chapterId === chapter.id);
-  const history = clubHistoryData[chapter.id] || [];
-  const projects = projectsData[chapter.id] || [];
-  const notes = meetingNotesData[chapter.id] || [];
+  const _generated = generateClubTabData(chapter.id, chapter.name);
+  const chapterEvents = events.filter((e) => e.chapterId === chapter.id).length > 0
+    ? events.filter((e) => e.chapterId === chapter.id)
+    : _generated.genEvents;
+  const history = clubHistoryData[chapter.id] || _generated.genHistory;
+  const projects = projectsData[chapter.id] || _generated.genProjects;
+  const notes = meetingNotesData[chapter.id] || _generated.genNotes;
   const chapterSponsors = sponsorsData.filter((_s, i) => i % 2 === (chapter.id === "robotics" ? 0 : 1)).slice(0, 3);
   const visibleHistory = showAllHistory ? history : history.slice(0, 4);
   const yearsSinceFounded = new Date().getFullYear() - chapter.foundedYear;
@@ -337,8 +405,7 @@ export default function ClubDetailPage() {
             email: authData.user.email || '',
           });
         }
-        const { data: orgs } = await organizationsApi.getAll();
-        const matchedOrg = orgs?.find((o: any) => o.slug === chapter.id || o.name === chapter.name);
+        const { data: matchedOrg } = await organizationsApi.getBySlug(chapter.id);
         if (matchedOrg) {
           await membershipsApi.create({
             org_id: matchedOrg.id,
@@ -356,11 +423,10 @@ export default function ClubDetailPage() {
   const tabs = [
     { key: "overview", label: "Overview", icon: BookOpen },
     { key: "stats", label: "Statistics", icon: BarChart3 },
-    { key: "events", label: "Events", icon: Calendar, count: chapterEvents.length },
+    { key: "events", label: "Events", icon: Calendar, count: chapterEvents.length + localEvents.length + dbEvents.length },
     { key: "projects", label: "Projects", icon: Rocket, count: projects.length },
     { key: "history", label: "History", icon: History, count: history.length },
     { key: "notes", label: "Notes", icon: FileText, count: notes.length },
-    { key: "discussion", label: "Discussion", icon: MessageSquare, count: comments.length },
   ] as const;
 
   const categoryImages: Record<string, string> = {
@@ -412,7 +478,7 @@ export default function ClubDetailPage() {
                 {[
                   { label: "Members", value: chapter.memberCount, icon: Users },
                   { label: "Founded", value: chapter.foundedYear, icon: Clock },
-                  { label: "Events", value: chapterEvents.length, icon: Calendar },
+                  { label: "Events", value: chapterEvents.length + localEvents.length + dbEvents.length, icon: Calendar },
                   { label: "Growth", value: `+${growthRate}%`, icon: TrendingUp },
                 ].map(stat => {
                   const Icon = stat.icon;
@@ -466,7 +532,63 @@ export default function ClubDetailPage() {
             <>
               <Reveal>
                 <div className="card p-5">
-                  <h2 className="text-lg font-heading font-bold text-primary-600">Club Information</h2>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-heading font-bold text-primary-600">Club Information</h2>
+                    {isFounder && !editingField && (
+                      <button onClick={() => { setEditingField("info"); setDraftDescription(chapter.description); setDraftSchedule(chapter.meetingSchedule); setDraftTime(chapter.meetingTime); setDraftDues(chapter.dues || ""); }} className="text-xs text-primary-500 hover:text-primary-700 flex items-center gap-1"><Edit size={12} /> Edit</button>
+                    )}
+                  </div>
+                  {editingField === "info" ? (
+                    <div className="mt-3 space-y-3">
+                      <div>
+                        <label className="text-xs font-semibold text-neutral-600">Description</label>
+                        <textarea className="input-field min-h-[60px] resize-none w-full text-sm mt-1" value={draftDescription} onChange={e => setDraftDescription(e.target.value)} />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-semibold text-neutral-600">Meeting Schedule</label>
+                          <input className="input-field text-sm w-full mt-1" value={draftSchedule} onChange={e => setDraftSchedule(e.target.value)} placeholder="e.g. Every Tuesday" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-neutral-600">Meeting Time</label>
+                          <input className="input-field text-sm w-full mt-1" value={draftTime} onChange={e => setDraftTime(e.target.value)} placeholder="e.g. 3:00 PM – 4:00 PM" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-neutral-600">Dues</label>
+                          <input className="input-field text-sm w-full mt-1" value={draftDues} onChange={e => setDraftDues(e.target.value)} placeholder="e.g. $10/year or None" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => setEditingField(null)} className="btn-outline text-xs px-3 py-1">Cancel</button>
+                        <button disabled={savingEdit} onClick={async () => {
+                          setSavingEdit(true);
+                          const updates: Partial<typeof chapter> = {
+                            description: draftDescription,
+                            meetingSchedule: draftSchedule,
+                            meetingTime: draftTime as typeof chapter.meetingTime,
+                            dues: draftDues || "None",
+                          };
+                          // Update localStorage chapter
+                          updateCreatedChapter(chapter.id, updates);
+                          // Also try to persist to Supabase
+                          try {
+                            const { data: matchedOrg } = await organizationsApi.getBySlug(chapter.id);
+                            if (matchedOrg) {
+                              await organizationsApi.update(matchedOrg.id, {
+                                description: draftDescription,
+                              });
+                            }
+                          } catch (e) {
+                            console.error("Save error:", e);
+                          }
+                          // Reflect changes locally by reloading chapter data
+                          Object.assign(chapter, updates);
+                          setSavingEdit(false);
+                          setEditingField(null);
+                        }} className="btn-primary text-xs px-3 py-1">{savingEdit ? "Saving..." : "Save"}</button>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="mt-3 grid sm:grid-cols-2 gap-3 text-sm text-neutral-700">
                     {[
                       { label: "Schedule", value: chapter.meetingSchedule },
@@ -484,6 +606,7 @@ export default function ClubDetailPage() {
                       </div>
                     ))}
                   </div>
+                  )}
                 </div>
               </Reveal>
 
@@ -600,7 +723,7 @@ export default function ClubDetailPage() {
                 <RadarChart data={[
                   { label: "Engage", value: engagement },
                   { label: "Growth", value: Math.min(95, 50 + growthRate * 3) },
-                  { label: "Events", value: Math.min(100, chapterEvents.length * 25) },
+                  { label: "Events", value: Math.min(100, (chapterEvents.length + localEvents.length + dbEvents.length) * 25) },
                   { label: "Retain", value: retention },
                   { label: "Impact", value: Math.min(90, 50 + chapter.memberCount / 2) },
                   { label: "Lead", value: Math.min(95, 60 + chapter.officers.length * 8) },
@@ -668,12 +791,84 @@ export default function ClubDetailPage() {
               <div className="card p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2"><Calendar size={16} /> Club Events</h2>
-                  <Link href={`/events/new?club=${chapter.id}`} className="btn-outline text-xs flex items-center gap-1"><PenTool size={12} /> Submit Event</Link>
+                  {isFounder && !addingEvent && (
+                    <button onClick={() => setAddingEvent(true)} className="btn-outline text-xs flex items-center gap-1"><Plus size={12} /> Add Event</button>
+                  )}
                 </div>
-                {chapterEvents.length === 0 ? (
+                {isFounder && addingEvent && (
+                  <div className="mb-4 border border-primary-200 bg-primary-50/40 p-3 space-y-2">
+                    <input type="text" placeholder="Event title" value={newEventTitle} onChange={e => setNewEventTitle(e.target.value)} className="input-field text-sm w-full" />
+                    <input type="date" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} className="input-field text-sm w-full" />
+                    <div className="flex gap-2 justify-end">
+                      <button onClick={() => { setAddingEvent(false); setNewEventTitle(""); setNewEventDate(""); }} className="btn-outline text-xs px-3 py-1">Cancel</button>
+                      <button onClick={async () => {
+                        if (!newEventTitle.trim() || !newEventDate) return;
+                        const title = newEventTitle.trim();
+                        const date = newEventDate;
+                        // Save to local state immediately as optimistic update
+                        const tempId = `local-${Date.now()}`;
+                        setLocalEvents(prev => [...prev, { id: tempId, title, date }]);
+                        setNewEventTitle(""); setNewEventDate(""); setAddingEvent(false);
+                        // Persist to Supabase
+                        try {
+                          const { data: matchedOrg } = await organizationsApi.getBySlug(chapter.id);
+                          if (matchedOrg) {
+                            const { data: session } = await supabase.auth.getSession();
+                            const userId = session?.session?.user?.id;
+                            const { data: saved } = await eventsApi.create({
+                              name: title,
+                              org_id: matchedOrg.id,
+                              time: new Date(date).toISOString(),
+                              is_public: true,
+                              ...(userId ? { created_by: userId } : {}),
+                            });
+                            if (saved) {
+                              // Move from local to db events so it persists on refresh
+                              setLocalEvents(prev => prev.filter(e => e.id !== tempId));
+                              setDbEvents(prev => [...prev, { id: saved.id, title: saved.name, date: saved.time?.slice(0, 10) || date }]);
+                            }
+                          }
+                        } catch (e) {
+                          console.error('Event save error:', e);
+                        }
+                      }} className="btn-primary text-xs px-3 py-1">Add</button>
+                    </div>
+                  </div>
+                )}
+                {chapterEvents.length === 0 && localEvents.length === 0 && dbEvents.length === 0 ? (
                   <p className="text-neutral-500 text-sm py-8 text-center">No upcoming events scheduled.</p>
                 ) : (
                   <div className="space-y-3">
+                    {localEvents.map(ev => (
+                      <div key={ev.id} className="block border border-secondary-200 bg-secondary-50/30 p-4 transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="text-center bg-gradient-to-b from-secondary-500 to-secondary-600 text-white p-2 min-w-[48px] shadow-sm">
+                            <div className="text-[9px]">{new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}</div>
+                            <div className="text-lg font-bold">{new Date(ev.date).getDate()}</div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-primary-700 text-sm">{ev.title}</p>
+                            <p className="text-xs text-neutral-500 mt-0.5">{new Date(ev.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 bg-secondary-100 text-secondary-700 font-semibold">New</span>
+                        </div>
+                      </div>
+                    ))}
+                    {dbEvents.map(ev => (
+                      <div key={ev.id} className="block border border-emerald-200 bg-emerald-50/30 p-4 transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="text-center bg-gradient-to-b from-emerald-500 to-emerald-600 text-white p-2 min-w-[48px] shadow-sm">
+                            <div className="text-[9px]">{new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}</div>
+                            <div className="text-lg font-bold">{new Date(ev.date).getDate()}</div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-primary-700 text-sm">{ev.title}</p>
+                            <p className="text-xs text-neutral-500 mt-0.5">{new Date(ev.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 font-semibold">Saved</span>
+                        </div>
+                      </div>
+                    ))}
                     {chapterEvents.map(event => (
                       <Link href={`/events/${event.id}`} key={event.id} className="block  border border-neutral-200 p-4 hover:border-primary-300 hover:bg-primary-50/40 ux-hover-lift-sm group transition-all">
                         <div className="flex items-center gap-3">
@@ -817,83 +1012,8 @@ export default function ClubDetailPage() {
             </Reveal>
           )}
 
-          {activeTab === "discussion" && (
-            <Reveal>
-              <div className="card p-5">
-                <h2 className="text-lg font-heading font-bold text-primary-600 flex items-center gap-2 mb-3"><MessageSquare size={16} /> Discussion ({comments.length})</h2>
-                <div className="space-y-2">
-                  {comments.map(c => (
-                    <div key={c.id} className="border border-neutral-200  p-3 hover:bg-primary-50/20 transition-colors">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-6 h-6 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-[10px] font-bold">{c.author[0]}</div>
-                        <span className="text-sm font-semibold text-primary-700">{c.author}</span>
-                        <span className="text-[10px] text-neutral-400 ml-auto">{c.time}</span>
-                      </div>
-                      <p className="text-sm text-neutral-700 ml-8">{c.text}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <input type="text" placeholder="Add a comment..." value={commentText}
-                    onChange={e => setCommentText(e.target.value)}
-                    onKeyDown={e => { if (e.key === "Enter" && commentText.trim()) { setComments(prev => [...prev, { id: Date.now(), author: "You", text: commentText.trim(), time: "Just now" }]); setCommentText(""); } }}
-                    className="flex-1 input-field text-sm" />
-                  <button onClick={() => { if (commentText.trim()) { setComments(prev => [...prev, { id: Date.now(), author: "You", text: commentText.trim(), time: "Just now" }]); setCommentText(""); } }} className="btn-primary px-3"><Send size={14} /></button>
-                </div>
-              </div>
-            </Reveal>
-          )}
 
-          <Reveal>
-            <div className="card p-5 border-2 border-secondary-200 bg-gradient-to-br from-secondary-50/40 to-white">
-              <button onClick={() => setShowOfficerPanel(!showOfficerPanel)} className="w-full flex items-center justify-between">
-                <h2 className="text-lg font-heading font-bold text-secondary-700 flex items-center gap-2"><Shield size={16} /> Officer Portal</h2>
-                <span className="text-xs badge bg-secondary-100 text-secondary-700">{showOfficerPanel ? "Hide" : "Show"}</span>
-              </button>
-              {showOfficerPanel && (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <h3 className="text-xs font-bold text-primary-700 flex items-center gap-1 mb-2"><Megaphone size={12} /> Post Announcement</h3>
-                    <div className="flex gap-2">
-                      <input type="text" placeholder="Write an announcement..." value={announcementText} onChange={e => setAnnouncementText(e.target.value)} className="input-field flex-1 text-sm" />
-                      <button onClick={() => { if (announcementText.trim()) { setAnnouncements(prev => [{ id: Date.now(), text: announcementText.trim(), date: "Just now" }, ...prev]); setAnnouncementText(""); } }} className="btn-secondary px-3"><Send size={12} /></button>
-                    </div>
-                    {announcements.length > 0 && (
-                      <div className="mt-2 space-y-1.5">
-                        {announcements.map(a => (
-                          <div key={a.id} className="text-sm bg-white border border-neutral-200  p-2.5 flex justify-between items-start">
-                            <p className="text-neutral-700 text-xs">{a.text}</p>
-                            <span className="text-[10px] text-neutral-400 ml-2 whitespace-nowrap">{a.date}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-primary-700 flex items-center gap-1 mb-2"><Settings size={12} /> Quick Actions</h3>
-                    <div className="grid grid-cols-3 gap-2">
-                      <button onClick={() => { setEditingDescription(true); setDraftDescription(chapter.description); }} className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Edit size={10} /> Edit</button>
-                      <Link href={`/events/new?club=${chapter.id}`} className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Calendar size={10} /> Event</Link>
-                      <button className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><UserPlus size={10} /> Invite</button>
-                      <Link href="/students" className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Shield size={10} /> Social</Link>
-                      <Link href="/resources" className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><Settings size={10} /> Resources</Link>
-                      <Link href="/dashboard" className="btn-outline text-xs py-2 flex items-center justify-center gap-1"><BarChart3 size={10} /> Analytics</Link>
-                    </div>
-                  </div>
-                  {editingDescription && (
-                    <div className="bg-white border border-primary-200  p-3">
-                      <h3 className="text-xs font-bold text-primary-700 mb-2">Edit Description</h3>
-                      <textarea value={draftDescription} onChange={e => setDraftDescription(e.target.value)} className="input-field min-h-[60px] resize-none w-full text-sm" />
-                      <div className="flex gap-2 mt-2 justify-end">
-                        <button onClick={() => setEditingDescription(false)} className="btn-outline text-xs px-3 py-1">Cancel</button>
-                        <button onClick={() => setEditingDescription(false)} className="btn-primary text-xs px-3 py-1">Save</button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </Reveal>
+
         </div>
 
         <aside className="space-y-5">

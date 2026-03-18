@@ -1,10 +1,11 @@
 "use client";
 
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { chapters, quizQuestions } from "@/lib/data";
+import { chapters as staticChapters, quizQuestions } from "@/lib/data";
+import { getCreatedChapters, removeCreatedChapter } from "@/lib/clientState";
 import { getLocationScopeKey } from "@/lib/location";
 import { inferDay, matchesSize } from "@/lib/directoryConstants";
 import DirectoryFilters, {
@@ -74,6 +75,35 @@ function DirectoryPageContent() {
   const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
   const [quizDone, setQuizDone] = useState(false);
   const [quizOpen, setQuizOpen] = useState(true);
+  const highlightId = searchParams.get("highlight");
+  const highlightRef = useRef<HTMLDivElement>(null);
+
+  // Merge static chapters with user-created chapters
+  const [chapterVersion, setChapterVersion] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const chapters = useMemo(() => {
+    if (!mounted) return [...staticChapters];
+    const created = getCreatedChapters();
+    const staticIds = new Set(staticChapters.map(c => c.id));
+    const unique = created.filter(c => !staticIds.has(c.id));
+    return [...unique, ...staticChapters];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapterVersion, mounted]);
+
+  const handleDeleteClub = useCallback((id: string) => {
+    removeCreatedChapter(id);
+    setChapterVersion(v => v + 1);
+  }, []);
+
+  // Scroll to highlighted club after render
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 600);
+    }
+  }, [highlightId]);
 
   const interestToCategory: Record<string, string> = {
     "Academic competitions": "Academic",
@@ -98,7 +128,7 @@ function DirectoryPageContent() {
       })
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
-  }, [quizDone, quizAnswers]);
+  }, [quizDone, quizAnswers, chapters]);
 
   const handleQuizAnswer = (answer: string) => {
     const newAnswers = [...quizAnswers, answer];
@@ -176,7 +206,7 @@ function DirectoryPageContent() {
         return false;
       return true;
     });
-  }, [filters]);
+  }, [filters, chapters]);
 
   return (
     <div className="bg-neutral-50 min-h-screen">
@@ -466,7 +496,7 @@ function DirectoryPageContent() {
                 </aside>
               )}
 
-              <ClubGrid clubs={filtered} />
+              <ClubGrid clubs={filtered} highlightId={highlightId} highlightRef={highlightRef} onDeleteClub={handleDeleteClub} />
             </div>
           </div>
         </section>

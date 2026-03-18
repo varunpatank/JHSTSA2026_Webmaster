@@ -4,7 +4,7 @@ import { FormEvent, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import { useRouter } from "next/navigation";
-import { addAdminClub } from "@/lib/clientState";
+import { addAdminClub, addCreatedChapter } from "@/lib/clientState";
 import { supabase, clubProposalsApi, storageApi, myClubsApi } from "@/lib/api";
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock,
@@ -471,7 +471,10 @@ export default function StartAClubPage() {
 
   const markComplete = () => {
     if (!completedStages.includes(activeStage)) setCompletedStages(prev => [...prev, activeStage]);
-    if (activeStage < stages.length) setActiveStage(activeStage + 1);
+    if (activeStage < stages.length) {
+      setActiveStage(activeStage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -541,7 +544,55 @@ export default function StartAClubPage() {
 
       const orgId = orgRes.data?.id || slug;
       addAdminClub({ id: orgId, name: formData.name, status: "Published" });
-      setSubmitted(true);
+
+      // Build a Chapter object so it shows up on the directory page immediately
+      const newChapter: import("@/types").Chapter = {
+        id: slug,
+        name: formData.name,
+        description: formData.purpose,
+        category: (formData.category || "Other") as import("@/types").ChapterCategory,
+        meetingFrequency: "Weekly",
+        membershipStatus: "Open Enrollment",
+        gradeLevel: "All Grades",
+        meetingTime: "After School",
+        advisor: {
+          name: formData.advisor || "TBD",
+          email: formData.advisorEmail || "",
+          department: "General",
+        },
+        officers: formData.officers
+          ? formData.officers.split(",").map((o, i) => ({
+              name: o.trim(),
+              position: i === 0 ? "President" : i === 1 ? "Vice President" : i === 2 ? "Secretary" : "Treasurer",
+              email: "",
+              grade: 11,
+            }))
+          : [{ name: "You", position: "President", email: "", grade: 11 }],
+        meetingSchedule: formData.meetingSchedule || "TBD",
+        meetingLocation: {
+          lat: 47.67782 + (Math.random() - 0.5) * 0.01,
+          lng: -122.11945 + (Math.random() - 0.5) * 0.01,
+          parentOrg: formData.location || "Juanita High School",
+          room: formData.location || "TBD",
+          internalLocation: formData.location || "",
+        },
+        membershipRequirements: "Open to all students",
+        dues: "None",
+        socialLinks: Object.keys(socialObj).length ? socialObj as any : {},
+        achievements: [
+          `Founded ${new Date().toLocaleDateString()}`,
+          `${Math.floor(Math.random() * 10) + 5} interest signups`,
+        ],
+        photoGallery: [],
+        memberCount: formData.expectedMembers ? parseInt(formData.expectedMembers) : Math.floor(Math.random() * 20) + 8,
+        foundedYear: new Date().getFullYear(),
+        isActive: true,
+      };
+      addCreatedChapter(newChapter);
+
+      // Redirect to the discover page highlighting the new club
+      router.push(`/directory?highlight=${slug}`);
+      return;
     } catch (err) {
       console.error("Proposal submission failed:", err);
       alert("Failed to submit proposal. Please try again.");
@@ -553,36 +604,12 @@ export default function StartAClubPage() {
   if (submitted) {
     return (
       <div className="bg-neutral-50 min-h-screen flex items-center justify-center px-4 overflow-hidden relative">
-        {}
-        {Array.from({ length: 60 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute pointer-events-none"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `-${Math.random() * 20 + 5}%`,
-              width: `${Math.random() * 10 + 6}px`,
-              height: `${Math.random() * 14 + 6}px`,
-              background: ['#1e3a5f', '#b8860b', '#8b0000', '#22c55e', '#a855f7', '#f97316', '#06b6d4', '#ec4899'][i % 8],
-              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-              animation: `confetti-fall ${Math.random() * 2 + 2.5}s ease-in ${Math.random() * 1.5}s forwards`,
-              transform: `rotate(${Math.random() * 360}deg)`,
-              opacity: 0,
-            }}
-          />
-        ))}
-        <style>{`
-          @keyframes confetti-fall {
-            0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
-            100% { opacity: 0; transform: translateY(100vh) rotate(${720}deg) scale(0.5); }
-          }
-        `}</style>
-        <div className="max-w-lg mx-auto text-center animate-scale-bounce relative z-10">
+        <div className="max-w-lg mx-auto text-center relative z-10">
           <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
             <CheckCircle2 size={40} className="text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold text-primary-800 mb-3">Proposal Submitted!</h1>
-          <p className="text-neutral-600 mb-6">Your club &ldquo;{formData.name}&rdquo; has been submitted for review. You&rsquo;ll be notified when approved.</p>
+          <h1 className="text-3xl font-bold text-primary-800 mb-3">Club Created!</h1>
+          <p className="text-neutral-600 mb-6">Your club &ldquo;{formData.name}&rdquo; is now live on the directory. Redirecting...</p>
           <div className="flex gap-3 justify-center">
             <Link href="/dashboard" className="btn-primary btn-magnetic">Go to Dashboard</Link>
             <Link href="/directory" className="btn-outline btn-magnetic">Browse Clubs</Link>
@@ -783,10 +810,10 @@ export default function StartAClubPage() {
             )}
 
             {}
-            {activeStage >= 4 && formData.name && formData.purpose && formData.category && formData.advisor && (
+            {activeStage >= 4 && completedStages.length === stages.length && formData.name && formData.purpose && formData.category && formData.advisor && (
               <form onSubmit={handleSubmit} className="card p-5 border-2 border-green-200 bg-green-50/50">
                 <h3 className="font-bold text-green-700 flex items-center gap-2 mb-3"><CheckCircle2 size={16} /> Ready to Submit?</h3>
-                <p className="text-sm text-neutral-600 mb-3">All required details are filled in. You can submit your proposal now!</p>
+                <p className="text-sm text-neutral-600 mb-3">All stages complete and required details are filled in. You can submit your proposal now!</p>
                 <div className="text-sm space-y-1 mb-4 text-neutral-700">
                   <p><strong>Club:</strong> {formData.name}</p>
                   <p><strong>Category:</strong> {formData.category}</p>
@@ -795,27 +822,6 @@ export default function StartAClubPage() {
                   {formData.expectedMembers && <p><strong>Expected Members:</strong> {formData.expectedMembers}</p>}
                 </div>
 
-                {/* Resource Upload */}
-                <div className="mb-4 border border-green-200 bg-white p-3">
-                  <h4 className="text-sm font-semibold text-green-700 mb-2 flex items-center gap-1"><Upload size={14} /> Attach Resources (optional)</h4>
-                  <p className="text-xs text-neutral-500 mb-2">Upload supporting documents: flyers, plans, budgets, etc.</p>
-                  <input type="file" multiple onChange={e => {
-                    if (e.target.files) {
-                      const newFiles = Array.from(e.target.files).map(f => ({ name: f.name, file: f }));
-                      setResourceFiles(prev => [...prev, ...newFiles]);
-                    }
-                  }} className="text-xs" />
-                  {resourceFiles.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {resourceFiles.map((rf, i) => (
-                        <div key={i} className="flex items-center gap-2 text-xs bg-green-50 px-2 py-1">
-                          <span>📎 {rf.name}</span>
-                          <button type="button" onClick={() => setResourceFiles(prev => prev.filter((_, j) => j !== i))} className="text-red-500 hover:underline">Remove</button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
 
                 <button type="submit" disabled={submitting}
                   className="btn-primary btn-magnetic btn-ripple w-full flex items-center justify-center gap-2 disabled:opacity-50">
@@ -829,6 +835,9 @@ export default function StartAClubPage() {
             <div className="card p-5 border-2 border-primary-200 bg-primary-50/30">
               <h3 className="font-bold text-primary-700 flex items-center gap-2 mb-3"><Palette size={16} /> Poster / Flyer Designer</h3>
               <p className="text-sm text-neutral-600 mb-3">Create a promotional poster for your club. Choose a template and customize:</p>
+              <div className="mb-3 p-3 bg-amber-50 border border-amber-200">
+                <p className="text-xs text-amber-800 flex items-center gap-1.5"><span className="text-base">📸</span> <strong>Tip:</strong> Take a screenshot of your finished poster to save it — the design will not be stored after you leave this page.</p>
+              </div>
               <PosterDesigner clubName={formData.name} />
             </div>
           )}
@@ -866,7 +875,7 @@ export default function StartAClubPage() {
               </button>
             )}
             {activeStage < stages.length && (
-              <button onClick={() => setActiveStage(s => s + 1)} className="btn-primary btn-magnetic flex items-center gap-2">
+              <button onClick={() => { setActiveStage(s => s + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="btn-primary btn-magnetic flex items-center gap-2">
                 Next Phase <ArrowRight size={16} />
               </button>
             )}

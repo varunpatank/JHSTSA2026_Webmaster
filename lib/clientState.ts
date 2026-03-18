@@ -116,3 +116,25 @@ export function addSubmittedEvent(event: SubmittedEvent) {
   const events = getSubmittedEvents();
   writeArray(EVENTS_KEY, [event, ...events]);
 }
+
+/* ── User-created chapters (for directory) ── */
+const CREATED_CHAPTERS_KEY = "clubconnect_created_chapters";
+
+export function getCreatedChapters(): import("@/types").Chapter[] {
+  return readArray<import("@/types").Chapter>(CREATED_CHAPTERS_KEY);
+}
+
+export function addCreatedChapter(chapter: import("@/types").Chapter) {
+  const existing = getCreatedChapters();
+  if (existing.some(c => c.id === chapter.id)) return;
+  writeArray(CREATED_CHAPTERS_KEY, [chapter, ...existing]);
+}
+
+export function removeCreatedChapter(id: string) {
+  writeArray(CREATED_CHAPTERS_KEY, getCreatedChapters().filter(c => c.id !== id));
+}
+
+export function updateCreatedChapter(id: string, updates: Partial<import("@/types").Chapter>) {
+  const all = getCreatedChapters();
+  writeArray(CREATED_CHAPTERS_KEY, all.map(c => c.id === id ? { ...c, ...updates } : c));
+}

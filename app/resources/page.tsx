@@ -413,31 +413,31 @@ export default function ResourcesPage() {
   return (
     <div className="bg-neutral-50">
       {}
-      <HeroSection align="left">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
+      <HeroSection align="left" contentClassName="!max-w-full">
+        <div className="flex items-center gap-6">
+          <div className="shrink-0">
             <div className="inline-flex items-center gap-2 bg-secondary-500/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold text-secondary-300">
               <BookOpen size={12} /> Resource Hub &amp; Knowledge Base
             </div>
             <h1 className="hero-title"><span>Resource Center</span></h1>
             <p className="hero-description max-w-lg text-sm">Your launch pad for club success &mdash; guides, templates, tools, and smart recommendations organized by growth stage.</p>
-          </div>
-          <div className="flex flex-col gap-3 items-end">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: "Resources", value: allResources.length },
-                { label: "Downloads", value: totalDownloads.toLocaleString() },
-                { label: "Clubs", value: schoolWideStats.totalClubs },
-              ].map(s => (
-                <div key={s.label} className="hero-stat p-2 text-center">
-                  <p className="text-lg font-bold">{s.value}</p>
-                  <p className="text-[10px] text-neutral-300">{s.label}</p>
-                </div>
-              ))}
-            </div>
-            <div className="relative w-full md:w-72">
+            <div className="relative w-72 mt-3">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
               <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search resources..." className="w-full bg-white/10 border border-white/20 text-white placeholder:text-neutral-400 pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-secondary-400" />
+            </div>
+          </div>
+          <div className="hidden sm:grid grid-cols-3 gap-3 ml-auto">
+            <div className="bg-primary-500/40 border border-primary-400/30 px-6 py-4 text-center min-w-[110px]">
+              <p className="text-3xl font-heading font-bold text-white">{allResources.length}</p>
+              <p className="text-[10px] text-primary-200 uppercase tracking-wider mt-0.5">Resources</p>
+            </div>
+            <div className="bg-secondary-500/30 border border-secondary-400/30 px-6 py-4 text-center min-w-[110px]">
+              <p className="text-3xl font-heading font-bold text-secondary-300">{totalDownloads.toLocaleString()}</p>
+              <p className="text-[10px] text-secondary-200/70 uppercase tracking-wider mt-0.5">Downloads</p>
+            </div>
+            <div className="bg-accent-500/30 border border-accent-400/30 px-6 py-4 text-center min-w-[110px]">
+              <p className="text-3xl font-heading font-bold text-accent-300">{schoolWideStats.totalClubs}</p>
+              <p className="text-[10px] text-accent-200/70 uppercase tracking-wider mt-0.5">Clubs</p>
             </div>
           </div>
         </div>

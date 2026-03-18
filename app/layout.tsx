@@ -23,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body suppressHydrationWarning className={`${inter.className} min-h-screen flex flex-col`}>
         <AuthProviders>
           <ScrollToTop />
           <Header />
