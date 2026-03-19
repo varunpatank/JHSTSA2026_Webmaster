@@ -5,10 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import {
-  BookOpen,
   CheckCircle,
   ChevronDown,
-  Code2,
   FileText,
   Globe,
   ImageIcon,
@@ -377,155 +375,109 @@ export default function ReferencesPage() {
           </div>
         </Accordion>
 
-        {/* Data Architecture */}
+        {/* Data Architecture & Backend vs UI */}
         <Accordion
           icon={<Server size={16} />}
-          title="Data Architecture & Persistence"
+          title="Data Architecture — Supabase, Stripe & Hard-Coded UI"
+          defaultOpen
         >
-          <div className="mt-3 space-y-3">
-            <p className="text-xs text-neutral-600 leading-relaxed">
-              ClubConnect uses a <strong>three-tier data strategy</strong> to
-              balance functionality with demonstration.
+          <div className="mt-3 space-y-4">
+            <p className="text-sm text-neutral-700 leading-relaxed">
+              ClubConnect connects to a live{" "}
+              <span className="font-semibold text-emerald-700">Supabase</span>{" "}
+              backend for core functionality and{" "}
+              <span className="font-semibold text-indigo-700">Stripe</span>{" "}
+              for payments, while other pages use hard-coded data to showcase
+              the breadth of the resource hub theme.
             </p>
+
             <div className="grid sm:grid-cols-3 gap-3">
-              <div className="p-3 border border-emerald-200 bg-emerald-50/50">
-                <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-2">
-                  🟢 Database (Supabase PostgreSQL)
-                </p>
+              <div className="p-3 border-2 border-emerald-300 bg-emerald-50/60">
+                <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Server size={12} className="text-emerald-600" />
+                  Supabase-Connected (Live)
+                </h4>
                 <ul className="space-y-1 text-[11px] text-neutral-700">
-                  <li>• Authentication & user sessions (login/signup)</li>
-                  <li>• User profiles (avatar, bio, grade)</li>
-                  <li>• Organizations, memberships & joining</li>
-                  <li>• Events (created from club pages, persisted)</li>
-                  <li>• Club creation & editing (saved to DB)</li>
+                  <li>• Auth — login, signup, sessions via Supabase Auth</li>
+                  <li>• User profiles — avatar upload to Supabase Storage, bio, grade</li>
+                  <li>• Club creation & editing — saved to organizations table</li>
+                  <li>• Club events — persisted to events table</li>
+                  <li>• Memberships — join records linking profiles to orgs</li>
                   <li>• Community uploads, discussions, ideas</li>
-                  <li>• Stripe donation checkout sessions</li>
                 </ul>
               </div>
-              <div className="p-3 border border-blue-200 bg-blue-50/50">
-                <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-2">
-                  🔵 Local Storage (Browser)
-                </p>
+              <div className="p-3 border-2 border-indigo-300 bg-indigo-50/60">
+                <h4 className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Globe size={12} className="text-indigo-600" />
+                  Stripe Payments
+                </h4>
                 <ul className="space-y-1 text-[11px] text-neutral-700">
-                  <li>• User-created clubs (merged into directory)</li>
-                  <li>• Community feed posts & replies</li>
-                  <li>• Club Finder Quiz results</li>
-                  <li>• Goal Tracker, Ideas, Collections</li>
-                  <li>• Dashboard saved items & notifications</li>
+                  <li>• Donations create a Stripe Checkout Session via <code className="bg-indigo-100 px-1 text-[10px]">/api/checkout</code></li>
+                  <li>• User is redirected to Stripe&apos;s secure payment page</li>
+                  <li>• Success/cancel handling with redirect back to site</li>
+                  <li>• Test mode — full flow, no real charges</li>
+                  <li>• Per-club fundraising progress bars</li>
                 </ul>
               </div>
-              <div className="p-3 border border-purple-200 bg-purple-50/50">
-                <p className="text-[10px] font-bold text-purple-700 uppercase tracking-wider mb-2">
-                  🟣 UI-Only (Functional Display)
-                </p>
+              <div className="p-3 border-2 border-purple-300 bg-purple-50/60">
+                <h4 className="text-[10px] font-bold text-purple-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Layers size={12} className="text-purple-600" />
+                  Hard-Coded UI (Theme Demo)
+                </h4>
                 <ul className="space-y-1 text-[11px] text-neutral-700">
-                  <li>• Preset club directory (25 clubs)</li>
-                  <li>• Homepage stats, calendar, achievements</li>
-                  <li>• Competitions, rubrics, resource downloads</li>
-                  <li>• AI chat agents (Gemini-powered)</li>
-                  <li>
-                    • Some Profile page sections are hard-coded for UI/demo
-                    presentation (e.g., sample badges, sample activity feed
-                    rows, sample saved resource cards)
-                  </li>
+                  <li>• Preset 25+ club directory with officers & schedules</li>
+                  <li>• Homepage stats, featured clubs carousel</li>
+                  <li>• Events calendar, resource library, guides</li>
+                  <li>• Mentorship profiles, alumni, competitions</li>
+                  <li>• Analytics dashboards & demographic charts</li>
+                  <li>• Some profile sections (badges, activity feed)</li>
                 </ul>
               </div>
             </div>
+
+            <p className="text-[11px] text-neutral-500">
+              Core workflows (auth, data, payments) use real integrations.
+              Broader resource hub pages use hard-coded data so judges can
+              experience a richly populated site without creating content.
+            </p>
           </div>
         </Accordion>
 
-        {/* Feature Walkthrough (from Judge's Guide) */}
+        {/* Feature Walkthrough */}
         <Accordion icon={<Wrench size={16} />} title="Feature Walkthrough">
           <div className="mt-3 space-y-3">
             {[
               {
-                title: "Homepage & Landing",
+                title: "Homepage & Directory",
                 items: [
-                  "Hero banner with stats grid and CTA buttons",
-                  "Live counters for Active Clubs, Students Served, Upcoming Events, Service Hours",
-                  "Featured Clubs Carousel with ratings and member counts",
-                  "Quick Access grid linking to Directory, Resources, Start a Club, Mentors, Events",
-                  "Announcements feed and upcoming events",
-                ],
-              },
-              {
-                title: "Club Discovery & Directory",
-                items: [
-                  "Searchable directory of 25+ clubs with real-time filtering",
-                  "Filter by day, time, category, size, and meeting schedule",
-                  "Interactive 3D MapLibre map with multi-school markers and fly-to",
+                  "Hero with live counters, featured clubs carousel, quick-access grid, announcements",
+                  "25+ club directory with search, filters (day/time/category/size), and 3D MapLibre map",
                   "Individual club pages with Overview, Statistics, Events, Projects, History, and Notes tabs",
-                  "Club Finder Quiz for personalized recommendations",
-                  "User-created clubs appear in the live directory with confetti highlight",
+                  "Club Finder Quiz and user-created clubs appearing in the live directory",
                 ],
               },
               {
-                title: "Resource Library & Guides",
+                title: "Resources, Events & Calendar",
                 items: [
-                  "20+ downloadable resources organized in a 5-stage rocket launch system",
-                  "PDF preview with embedded viewer before download",
-                  "Search and filter by type, format, and stage",
+                  "20+ downloadable resources in a 5-stage system with PDF preview and filtering",
+                  "Monthly events calendar with RSVP, detail pages, comments, and inline event creation (Supabase)",
                   "Guides index with categorized how-to articles",
                 ],
               },
               {
-                title: "Events & Calendar",
+                title: "Club Creation, Community & Social",
                 items: [
-                  "Full events calendar with monthly view and type filtering",
-                  "Event detail pages with comments, resources, and sharing",
-                  "RSVP system with attendee tracking",
-                  "Inline event creation from club pages (saved to Supabase)",
+                  "5-step Club Creation Wizard — new clubs appear instantly in the directory (saved to Supabase)",
+                  "Founders can inline-edit club info, add events, and delete clubs",
+                  "Community feed with threaded replies, collaboration platform, and community hub",
                 ],
               },
               {
-                title: "Student Community & Social",
+                title: "Auth, Profiles & Donations",
                 items: [
-                  "LinkedIn-inspired 3-column community feed with threaded replies",
-                  "Delete your own posts and replies",
-                  "Community Hub with searchable discussions and resources",
-                  "Collaboration platform for clubs to find project partners",
-                ],
-              },
-              {
-                title: "Club Creation & Management",
-                items: [
-                  "5-step Club Creation Wizard with guided stages, poster screenshot, and constitution editor",
-                  "New clubs appear instantly in the directory and on their own detail page",
-                  "Founders can inline-edit club info (description, schedule, dues) — saved to Supabase",
-                  "Founders can add events and delete their club from the directory",
-                ],
-              },
-              {
-                title: "Mentorship & Alumni",
-                items: [
-                  "Mentor profiles with expertise, availability, ratings",
-                  "1-on-1 mentoring, resume review, mock interviews, career guidance",
-                  "Alumni network with career paths, testimonials, and messaging",
-                ],
-              },
-              {
-                title: "Funding & Donations (Stripe)",
-                items: [
-                  "Stripe-powered donation system with secure checkout sessions",
-                  "Club-specific fundraising pages with progress bars",
-                  "School-wide analytics dashboard with animated counters",
-                ],
-              },
-              {
-                title: "Communication & Video Calls",
-                items: [
-                  "Video conference rooms with mic/camera controls",
-                  "Built-in whiteboard for collaborative drawing",
-                  "Notification center with event, mention, and achievement alerts",
-                ],
-              },
-              {
-                title: "Authentication & Profiles (Supabase)",
-                items: [
-                  "Supabase-powered login/signup with email/password",
-                  "User profiles with avatar upload, bio, grade, and school info",
-                  "Personal dashboard with joined clubs, activity feed, and notifications",
-                  "Joining a club creates a membership record in Supabase",
+                  "Supabase-powered login/signup with profiles (avatar, bio, grade), personal dashboard",
+                  "Stripe donation checkout with per-club fundraising progress bars",
+                  "Mentorship profiles, alumni network, video calls with whiteboard, notification center",
                 ],
               },
             ].map((section) => (
@@ -580,52 +532,6 @@ export default function ReferencesPage() {
               </li>
             ))}
           </ul>
-        </Accordion>
-
-        {/* Webmaster Rubric */}
-        <Accordion
-          icon={<Code2 size={16} />}
-          title="TSA Webmaster Rubric — Exemplary Scoring"
-        >
-          <div className="mt-3 space-y-3">
-            <p className="text-xs text-neutral-600">
-              This shows the maximum (exemplary) score for each rubric category
-              so teams can aim for the highest possible rating.
-            </p>
-            <div className="space-y-2">
-              {[
-                { name: "Theme (X2)", max: 10 },
-                { name: "Challenge (X3)", max: 10 },
-                { name: "Content (X2)", max: 10 },
-                { name: "Layout & Navigation (X2)", max: 10 },
-                { name: "Graphics & Color Scheme (X2)", max: 10 },
-                { name: "Function & Compatibility (X1)", max: 10 },
-                { name: "Spelling & Grammar (X1)", max: 10 },
-              ].map((c) => (
-                <div
-                  key={c.name}
-                  className="flex justify-between items-center p-2 bg-neutral-50 border border-neutral-100"
-                >
-                  <div>
-                    <p className="text-xs font-semibold text-primary-700">
-                      {c.name}
-                    </p>
-                    <p className="text-[10px] text-neutral-500">
-                      Exemplary performance — aim for clear, polished, and
-                      complete work.
-                    </p>
-                  </div>
-                  <p className="text-sm font-bold text-green-700 shrink-0">
-                    {c.max} / 10
-                  </p>
-                </div>
-              ))}
-            </div>
-            <div className="border-t border-neutral-200 pt-2 text-xs text-neutral-600">
-              <strong>Preliminary Website (subtotal):</strong> 70 / 70 (130
-              weighted)
-            </div>
-          </div>
         </Accordion>
 
         {/* Image Links */}

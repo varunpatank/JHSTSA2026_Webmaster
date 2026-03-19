@@ -357,9 +357,9 @@ function SpinningClubIcon({ clubId, name }: { clubId: string; name: string }) {
 }
 
 function RadarChart({ data }: { data: { label: string; value: number }[] }) {
-  const cx = 100,
-    cy = 100,
-    r = 80;
+  const cx = 120,
+    cy = 120,
+    r = 90;
   const n = data.length;
   const points = data.map((d, i) => {
     const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
@@ -367,15 +367,21 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
     return {
       x: cx + Math.cos(angle) * dist,
       y: cy + Math.sin(angle) * dist,
-      lx: cx + Math.cos(angle) * (r + 14),
-      ly: cy + Math.sin(angle) * (r + 14),
+      lx: cx + Math.cos(angle) * (r + 18),
+      ly: cy + Math.sin(angle) * (r + 18),
       label: d.label,
       value: d.value,
     };
   });
   const polygon = points.map((p) => `${p.x},${p.y}`).join(" ");
   return (
-    <svg viewBox="0 0 200 200" className="w-full max-w-[240px] mx-auto">
+    <svg viewBox="0 0 240 240" className="w-full max-w-[320px] mx-auto">
+      <defs>
+        <radialGradient id="radarFill">
+          <stop offset="0%" stopColor="#1e3a5f" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#1e3a5f" stopOpacity="0.08" />
+        </radialGradient>
+      </defs>
       {[20, 40, 60, 80, 100].map((pct) => {
         const ring = data
           .map((_, i) => {
@@ -388,8 +394,8 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
           <polygon
             key={pct}
             points={ring}
-            fill="none"
-            stroke="#e5e7eb"
+            fill={pct === 100 ? "rgba(0,0,0,0.01)" : "none"}
+            stroke="#d1d5db"
             strokeWidth="0.5"
           />
         );
@@ -403,31 +409,148 @@ function RadarChart({ data }: { data: { label: string; value: number }[] }) {
             y1={cy}
             x2={cx + Math.cos(angle) * r}
             y2={cy + Math.sin(angle) * r}
-            stroke="#e5e7eb"
+            stroke="#d1d5db"
             strokeWidth="0.5"
           />
         );
       })}
       <polygon
         points={polygon}
-        fill="rgba(30,58,95,0.2)"
+        fill="url(#radarFill)"
         stroke="#1e3a5f"
-        strokeWidth="1.5"
+        strokeWidth="2"
       />
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r="3" fill="#1e3a5f" />
+          <circle cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#1e3a5f" strokeWidth="2" />
           <text
             x={p.lx}
-            y={p.ly}
+            y={p.ly - 6}
             textAnchor="middle"
             dominantBaseline="middle"
-            className="fill-neutral-500 text-[7px]"
+            className="fill-neutral-600"
+            fontSize="8"
+            fontWeight="600"
           >
             {p.label}
           </text>
+          <text
+            x={p.lx}
+            y={p.ly + 5}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="fill-primary-700"
+            fontSize="8"
+            fontWeight="700"
+          >
+            {p.value}%
+          </text>
         </g>
       ))}
+    </svg>
+  );
+}
+
+function GrowthLineChart({ data }: { data: { month: string; value: number }[] }) {
+  const W = 440, H = 200, padL = 38, padR = 16, padT = 16, padB = 32;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const maxVal = Math.max(1, ...data.map(d => d.value));
+  const yTicks = 5;
+  const stepY = Math.ceil(maxVal / yTicks);
+  const yMax = stepY * yTicks;
+
+  const pts = data.map((d, i) => ({
+    x: padL + (i / (data.length - 1)) * chartW,
+    y: padT + chartH - (d.value / yMax) * chartH,
+    ...d,
+  }));
+
+  // Build smooth curve path
+  const linePath = pts.map((p, i) => {
+    if (i === 0) return `M${p.x},${p.y}`;
+    const prev = pts[i - 1];
+    const cpx = (prev.x + p.x) / 2;
+    return `C${cpx},${prev.y} ${cpx},${p.y} ${p.x},${p.y}`;
+  }).join(" ");
+
+  const areaPath = `${linePath} L${pts[pts.length - 1].x},${padT + chartH} L${pts[0].x},${padT + chartH} Z`;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1e3a5f" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#1e3a5f" stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      {/* Y-axis grid lines and labels */}
+      {Array.from({ length: yTicks + 1 }, (_, i) => {
+        const val = (i * yMax) / yTicks;
+        const y = padT + chartH - (val / yMax) * chartH;
+        return (
+          <g key={i}>
+            <line x1={padL} y1={y} x2={W - padR} y2={y} stroke="#e5e7eb" strokeWidth="1" strokeDasharray={i === 0 ? "0" : "4 3"} />
+            <text x={padL - 6} y={y + 3} textAnchor="end" fontSize="9" fill="#9ca3af">{Math.round(val)}</text>
+          </g>
+        );
+      })}
+      {/* Area fill */}
+      <path d={areaPath} fill="url(#growthGrad)" />
+      {/* Line */}
+      <path d={linePath} fill="none" stroke="#1e3a5f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Data points and labels */}
+      {pts.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r="5" fill="#fff" stroke="#1e3a5f" strokeWidth="2.5" />
+          <text x={p.x} y={p.y - 10} textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e3a5f">{p.value}</text>
+          <text x={p.x} y={H - 8} textAnchor="middle" fontSize="9" fill="#6b7280" fontWeight="500">{p.month}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function AttendanceChart({ data }: { data: { month: string; value: number }[] }) {
+  const W = 440, H = 200, padL = 38, padR = 16, padT = 16, padB = 32;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const barGap = 6;
+  const barW = Math.min(32, (chartW - barGap * (data.length - 1)) / data.length);
+  const totalBarsW = data.length * barW + (data.length - 1) * barGap;
+  const offsetX = padL + (chartW - totalBarsW) / 2;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="attendGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#b8860b" />
+          <stop offset="100%" stopColor="#d4a843" />
+        </linearGradient>
+      </defs>
+      {/* Y-axis grid lines */}
+      {[0, 25, 50, 75, 100].map((val) => {
+        const y = padT + chartH - (val / 100) * chartH;
+        return (
+          <g key={val}>
+            <line x1={padL} y1={y} x2={W - padR} y2={y} stroke="#e5e7eb" strokeWidth="1" strokeDasharray={val === 0 ? "0" : "4 3"} />
+            <text x={padL - 6} y={y + 3} textAnchor="end" fontSize="9" fill="#9ca3af">{val}%</text>
+          </g>
+        );
+      })}
+      {/* Bars */}
+      {data.map((d, i) => {
+        const x = offsetX + i * (barW + barGap);
+        const barH = (d.value / 100) * chartH;
+        const y = padT + chartH - barH;
+        return (
+          <g key={i}>
+            <rect x={x} y={y} width={barW} height={barH} fill="url(#attendGrad)" rx="2" />
+            <text x={x + barW / 2} y={y - 5} textAnchor="middle" fontSize="8" fontWeight="700" fill="#92400e">{d.value}%</text>
+            <text x={x + barW / 2} y={H - 8} textAnchor="middle" fontSize="8" fill="#6b7280" fontWeight="500">{d.month}</text>
+          </g>
+        );
+      })}
     </svg>
   );
 }
@@ -1198,154 +1321,167 @@ export default function ClubDetailPage() {
           )}
 
           {activeTab === "stats" && (
-            <div className="grid grid-cols-2 gap-3">
-              {}
-              {[
-                {
-                  label: "Meetings",
-                  value: "18",
-                  icon: Calendar,
-                  color: "text-primary-600",
-                },
-                {
-                  label: "Service Hrs",
-                  value: chapter.id === "community-service" ? "2,450" : "120",
-                  icon: Heart,
-                  color: "text-accent-600",
-                },
-                {
-                  label: "Competitions",
-                  value: chapter.id === "robotics" ? "6" : "3",
-                  icon: Award,
-                  color: "text-secondary-600",
-                },
-                {
-                  label: "Growth",
-                  value: `+${growthRate}%`,
-                  icon: TrendingUp,
-                  color: "text-green-600",
-                },
-              ].map((stat) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={stat.label} className="card p-2.5 text-center">
-                    <Icon size={14} className={`mx-auto ${stat.color}`} />
-                    <p className="text-lg font-bold text-primary-800 leading-tight">
-                      {stat.value}
-                    </p>
-                    <p className="text-[9px] text-neutral-500">{stat.label}</p>
-                  </div>
-                );
-              })}
-
-              {}
-              <div className="card p-3 col-span-2">
-                <h3 className="text-xs font-bold text-primary-600 mb-2 flex items-center gap-1">
-                  <BarChart3 size={12} /> Performance
-                </h3>
-                <p className="text-[10px] text-neutral-500 mb-2">
-                  Engagement reflects active participation in meetings, events,
-                  and ongoing club involvement.
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  <DonutChart
-                    value={engagement}
-                    label="Engagement"
-                    color="#1e3a5f"
-                  />
-                  <DonutChart
-                    value={retention}
-                    label="Retention"
-                    color="#b8860b"
-                  />
-                  <DonutChart
-                    value={satisfaction}
-                    label="Satisfaction"
-                    color="#16a34a"
-                  />
-                </div>
+            <div className="space-y-4">
+              {/* Quick stat cards */}
+              <div className="grid grid-cols-4 gap-3">
+                {[
+                  {
+                    label: "Meetings",
+                    value: "18",
+                    icon: Calendar,
+                    color: "text-primary-600",
+                    bg: "bg-primary-50",
+                  },
+                  {
+                    label: "Service Hrs",
+                    value: chapter.id === "community-service" ? "2,450" : "120",
+                    icon: Heart,
+                    color: "text-accent-600",
+                    bg: "bg-accent-50",
+                  },
+                  {
+                    label: "Competitions",
+                    value: chapter.id === "robotics" ? "6" : "3",
+                    icon: Award,
+                    color: "text-secondary-600",
+                    bg: "bg-secondary-50",
+                  },
+                  {
+                    label: "Growth",
+                    value: `+${growthRate}%`,
+                    icon: TrendingUp,
+                    color: "text-green-600",
+                    bg: "bg-green-50",
+                  },
+                ].map((stat) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={stat.label} className="card p-3 text-center">
+                      <div className={`w-8 h-8 ${stat.bg} flex items-center justify-center mx-auto mb-1.5`}>
+                        <Icon size={16} className={stat.color} />
+                      </div>
+                      <p className="text-xl font-bold text-primary-800 leading-tight">
+                        {stat.value}
+                      </p>
+                      <p className="text-xs text-neutral-500 mt-0.5">{stat.label}</p>
+                    </div>
+                  );
+                })}
               </div>
 
-              {}
-              <div className="card p-3">
-                <h3 className="text-xs font-bold text-primary-600 mb-1 flex items-center gap-1">
-                  <TrendingUp size={12} /> Growth
+              {/* Member Growth Line Chart */}
+              <div className="card p-5">
+                <h3 className="text-sm font-bold text-primary-700 mb-1 flex items-center gap-2">
+                  <TrendingUp size={16} className="text-primary-500" /> Member Growth Over Time
                 </h3>
+                <p className="text-xs text-neutral-500 mb-3">
+                  Tracking total membership from September to March this academic year.
+                </p>
                 {hasGrowthData ? (
-                  <div className="flex items-end gap-1 h-24">
-                    {monthlyMembers.map((m) => {
-                      const rawHeight = (m.value / maxMembers) * 100;
-                      const heightPct =
-                        m.value > 0 ? Math.max(8, Math.min(100, rawHeight)) : 0;
-                      return (
-                        <div
-                          key={m.month}
-                          className="flex-1 flex flex-col items-center"
-                        >
-                          <span className="text-[7px] font-bold text-primary-700">
-                            {m.value}
-                          </span>
-                          <div
-                            className="w-full bg-gradient-to-t from-primary-500 to-primary-400 rounded-t animate-progress-fill"
-                            style={{ height: `${heightPct}%` }}
-                          />
-                          <span className="text-[7px] text-neutral-400">
-                            {m.month}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <GrowthLineChart data={monthlyMembers} />
                 ) : (
-                  <div className="h-24 border border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center">
-                    <p className="text-[10px] text-neutral-500">
+                  <div className="h-48 border border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center">
+                    <p className="text-sm text-neutral-500">
                       No member growth data yet.
                     </p>
                   </div>
                 )}
               </div>
 
-              {}
-              <div className="card p-3">
-                <h3 className="text-xs font-bold text-primary-600 mb-1 flex items-center gap-1">
-                  <Compass size={12} /> Radar
+              {/* Monthly Attendance Bar Chart */}
+              <div className="card p-5">
+                <h3 className="text-sm font-bold text-primary-700 mb-1 flex items-center gap-2">
+                  <Calendar size={16} className="text-secondary-500" /> Monthly Attendance Rate
                 </h3>
-                <RadarChart
+                <p className="text-xs text-neutral-500 mb-3">
+                  Average meeting attendance percentage by month.
+                </p>
+                <AttendanceChart
                   data={[
-                    { label: "Engagement", value: engagement },
-                    {
-                      label: "Growth",
-                      value: Math.min(95, 50 + growthRate * 3),
-                    },
-                    {
-                      label: "Events",
-                      value: Math.min(
-                        100,
-                        (chapterEvents.length +
-                          localEvents.length +
-                          dbEvents.length) *
-                          25,
-                      ),
-                    },
-                    { label: "Retain", value: retention },
-                    {
-                      label: "Impact",
-                      value: Math.min(90, 50 + chapter.memberCount / 2),
-                    },
-                    {
-                      label: "Lead",
-                      value: Math.min(95, 60 + chapter.officers.length * 8),
-                    },
+                    { month: "Sep", value: 78 },
+                    { month: "Oct", value: 82 },
+                    { month: "Nov", value: 75 },
+                    { month: "Dec", value: 88 },
+                    { month: "Jan", value: 92 },
+                    { month: "Feb", value: 85 },
+                    { month: "Mar", value: 90 },
                   ]}
                 />
               </div>
 
-              {}
-              <div className="card p-3 col-span-2">
-                <h3 className="text-xs font-bold text-primary-600 mb-2 flex items-center gap-1">
-                  <Award size={12} /> Key Metrics
+              {/* Performance Donuts + Radar side by side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="card p-5">
+                  <h3 className="text-sm font-bold text-primary-700 mb-1 flex items-center gap-2">
+                    <BarChart3 size={16} className="text-primary-500" /> Performance Scores
+                  </h3>
+                  <p className="text-xs text-neutral-500 mb-4">
+                    Engagement reflects active participation in meetings, events,
+                    and ongoing club involvement.
+                  </p>
+                  <div className="grid grid-cols-3 gap-4">
+                    <DonutChart
+                      value={engagement}
+                      label="Engagement"
+                      color="#1e3a5f"
+                    />
+                    <DonutChart
+                      value={retention}
+                      label="Retention"
+                      color="#b8860b"
+                    />
+                    <DonutChart
+                      value={satisfaction}
+                      label="Satisfaction"
+                      color="#16a34a"
+                    />
+                  </div>
+                </div>
+
+                <div className="card p-5">
+                  <h3 className="text-sm font-bold text-primary-700 mb-1 flex items-center gap-2">
+                    <Compass size={16} className="text-primary-500" /> Club Health Radar
+                  </h3>
+                  <p className="text-xs text-neutral-500 mb-2">
+                    Multi-dimensional overview of club performance.
+                  </p>
+                  <RadarChart
+                    data={[
+                      { label: "Engagement", value: engagement },
+                      {
+                        label: "Growth",
+                        value: Math.min(95, 50 + growthRate * 3),
+                      },
+                      {
+                        label: "Events",
+                        value: Math.min(
+                          100,
+                          (chapterEvents.length +
+                            localEvents.length +
+                            dbEvents.length) *
+                            25,
+                        ),
+                      },
+                      { label: "Retain", value: retention },
+                      {
+                        label: "Impact",
+                        value: Math.min(90, 50 + chapter.memberCount / 2),
+                      },
+                      {
+                        label: "Lead",
+                        value: Math.min(95, 60 + chapter.officers.length * 8),
+                      },
+                    ]}
+                  />
+                </div>
+              </div>
+
+              {/* Key Metrics bars */}
+              <div className="card p-5">
+                <h3 className="text-sm font-bold text-primary-700 mb-3 flex items-center gap-2">
+                  <Award size={16} className="text-secondary-500" /> Key Metrics
                 </h3>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   <BarSegment
                     label="Engagement"
                     value={engagement}
@@ -1379,56 +1515,36 @@ export default function ClubDetailPage() {
                 </div>
               </div>
 
-              {}
-              <div className="card p-3">
-                <h3 className="text-xs font-bold text-primary-600 mb-1.5 flex items-center gap-1">
-                  <Users size={12} /> Demographics
+              {/* Demographics */}
+              <div className="card p-5">
+                <h3 className="text-sm font-bold text-primary-700 mb-3 flex items-center gap-2">
+                  <Users size={16} className="text-primary-500" /> Member Demographics
                 </h3>
-                {[
-                  { grade: "9th", pct: 15 },
-                  { grade: "10th", pct: 28 },
-                  { grade: "11th", pct: 35 },
-                  { grade: "12th", pct: 22 },
-                ].map((g) => (
-                  <div key={g.grade} className="mb-1">
-                    <div className="flex justify-between text-[9px] mb-0.5">
-                      <span className="text-neutral-500">{g.grade}</span>
-                      <span className="font-bold text-primary-700">
-                        {g.pct}%
-                      </span>
-                    </div>
-                    <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full animate-progress-fill"
-                        style={{ width: `${g.pct}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {}
-              <div className="card p-3">
-                <h3 className="text-xs font-bold text-primary-600 mb-1.5 flex items-center gap-1">
-                  <Calendar size={12} /> Attendance
-                </h3>
-                <div className="flex items-end gap-0.5 h-20">
-                  {[78, 82, 75, 88, 92, 85, 90, 94, 87, 91, 95, 89].map(
-                    (v, i) => (
-                      <div key={i} className="flex-1">
-                        <div
-                          className="w-full bg-gradient-to-t from-secondary-500 to-secondary-400 rounded-t animate-progress-fill"
-                          style={{ height: `${v}%` }}
-                        />
+                <div className="grid grid-cols-4 gap-4">
+                  {[
+                    { grade: "9th Grade", pct: 15, color: "from-blue-400 to-blue-600" },
+                    { grade: "10th Grade", pct: 28, color: "from-primary-400 to-primary-600" },
+                    { grade: "11th Grade", pct: 35, color: "from-secondary-400 to-secondary-600" },
+                    { grade: "12th Grade", pct: 22, color: "from-green-400 to-green-600" },
+                  ].map((g) => (
+                    <div key={g.grade} className="text-center">
+                      <div className="relative w-16 h-16 mx-auto mb-2">
+                        <svg viewBox="0 0 36 36" className="w-full h-full">
+                          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f0f0f0" strokeWidth="3" />
+                          <circle
+                            cx="18" cy="18" r="15.9" fill="none"
+                            strokeWidth="3"
+                            stroke={g.grade === "9th Grade" ? "#60a5fa" : g.grade === "10th Grade" ? "#1e3a5f" : g.grade === "11th Grade" ? "#b8860b" : "#16a34a"}
+                            strokeDasharray={`${g.pct} ${100 - g.pct}`}
+                            strokeDashoffset="25"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-primary-700">{g.pct}%</span>
                       </div>
-                    ),
-                  )}
-                </div>
-                <div className="flex justify-between text-[7px] text-neutral-400 mt-0.5">
-                  <span>Sep</span>
-                  <span>Nov</span>
-                  <span>Jan</span>
-                  <span>Mar</span>
+                      <p className="text-xs font-medium text-neutral-600">{g.grade}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
