@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { chapters } from "@/lib/data";
 import HeroSection from "@/components/HeroSection";
+import { supabase } from "@/lib/api";
 import {
   Calendar, CheckCircle, ChevronDown, Clock, MapPin, PhoneCall, Plus, Search, Users, Video
 } from "lucide-react";
@@ -70,6 +71,16 @@ export default function MeetingsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [meetings, setMeetings] = useState<Meeting[]>(() => loadMeetings());
   const [rsvps, setRsvps] = useState<Record<string, boolean>>(() => loadRsvps());
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled && user) setCurrentUserId(user.id);
+    })();
+    return () => { cancelled = true; };
+  }, []);
   const [showForm, setShowForm] = useState(false);
   const [formTitle, setFormTitle] = useState("");
   const [formClub, setFormClub] = useState("");
@@ -86,11 +97,13 @@ export default function MeetingsPage() {
   useEffect(() => { try { localStorage.setItem(RSVPS_LS_KEY, JSON.stringify(rsvps)); } catch {} }, [rsvps]);
 
   function toggleRsvp(id: string) {
+    if (!currentUserId) { alert("Please sign in to RSVP."); return; }
     setRsvps(prev => ({ ...prev, [id]: !prev[id] }));
   }
 
   function handleCreateMeeting(e: React.FormEvent) {
     e.preventDefault();
+    if (!currentUserId) { alert("Please sign in to create a meeting."); return; }
     if (!formTitle.trim() || !formClub.trim() || !formDate || !formStartTime) return;
     const newMeeting: Meeting = {
       id: `local-${Date.now()}`,

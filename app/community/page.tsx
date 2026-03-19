@@ -254,32 +254,34 @@ export default function CommunityPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [userName, setUserName] = useState("");
+  const [userName, setUserName] = useState("Guest123");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isGuest, setIsGuest] = useState(true);
 
   useEffect(() => {
     async function loadUser() {
       const { data } = await supabase.auth.getUser();
       if (!data.user) return;
+      setIsGuest(false);
       const res = await profilesApi.getById(data.user.id);
       if (!res.error && res.data) {
-        setUserName(res.data.name || data.user.email || "");
+        setUserName(res.data.name || data.user.email || "Guest123");
         setAvatarUrl(res.data.avatar_url || null);
       } else {
-        setUserName(data.user.email || "");
+        setUserName(data.user.email || "Guest123");
       }
     }
     loadUser();
   }, []);
 
-  const userInitials = userName
-    ? userName
+  const userInitials = isGuest
+    ? "G"
+    : userName
         .split(" ")
         .map((n) => n[0])
         .join("")
         .slice(0, 2)
-        .toUpperCase()
-    : "YO";
+        .toUpperCase() || "G";
 
   const [feed, setFeed] = useState<FeedPost[]>(() => {
     if (typeof window !== "undefined") {
@@ -576,17 +578,24 @@ export default function CommunityPage() {
                   </div>
                 )}
                 <h3 className="font-bold text-sm text-primary-700 mt-2">
-                  {userName || "Your Name"}
+                  {userName}
                 </h3>
-                <p className="text-[11px] text-neutral-500">Club Member</p>
-                <div className="mt-2 flex gap-3 text-[10px] text-neutral-500">
-                  <span>
-                    <strong className="text-primary-700">3</strong> Clubs
-                  </span>
-                  <span>
-                    <strong className="text-primary-700">12</strong> Posts
-                  </span>
-                </div>
+                <p className="text-[11px] text-neutral-500">{isGuest ? "Guest" : "Club Member"}</p>
+                {isGuest && (
+                  <Link href="/login" className="mt-2 block text-xs text-primary-600 font-semibold hover:underline">
+                    Sign in to get official profile
+                  </Link>
+                )}
+                {!isGuest && (
+                  <div className="mt-2 flex gap-3 text-[10px] text-neutral-500">
+                    <span>
+                      <strong className="text-primary-700">3</strong> Clubs
+                    </span>
+                    <span>
+                      <strong className="text-primary-700">12</strong> Posts
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

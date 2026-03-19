@@ -92,6 +92,7 @@ export default function StoriesPage() {
   }, []);
 
   async function handleSubmitStory() {
+    if (!currentUserId) { alert("Please sign in to submit stories."); return; }
     if (!storyTitle.trim() || !storyContent.trim() || submitting) return;
     setSubmitting(true);
     const newStory: SuccessStory = {

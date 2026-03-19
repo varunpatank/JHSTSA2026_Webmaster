@@ -122,7 +122,7 @@ export default function IdeasPage() {
   });
 
   async function handleVote(id: string) {
-    if (!currentUserId) return;
+    if (!currentUserId) { alert("Please sign in to vote."); return; }
     const wasVoted = myVotes.has(id);
     setMyVotes(prev => { const n = new Set(prev); wasVoted ? n.delete(id) : n.add(id); return n; });
     setIdeas(prev => prev.map(i => i.id === id ? { ...i, upvotes: wasVoted ? i.upvotes - 1 : i.upvotes + 1 } : i));
@@ -131,6 +131,7 @@ export default function IdeasPage() {
   }
 
   async function handleSubmitIdea() {
+    if (!currentUserId) { alert("Please sign in to submit ideas."); return; }
     if (!formTitle.trim() || !formDescription.trim() || submitting) return;
     setSubmitting(true);
     const newIdea: ClubIdea = {

@@ -125,6 +125,7 @@ export default function DiscussionsPage() {
   const totalReplies = discussions.reduce((s, d) => s + d.replies, 0);
 
   async function handlePostDiscussion() {
+    if (!currentUserId) { alert("Please sign in to post discussions."); return; }
     if (!newTitle.trim() || !newContent.trim() || submitting) return;
     setSubmitting(true);
     const tags = newTags.split(",").map(t => t.trim()).filter(Boolean);
