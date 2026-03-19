@@ -31,7 +31,6 @@ const interestToCategory: Record<string, string> = {
   "Technology & Engineering": "STEM",
   "Sports & Recreation": "Sports",
 };
-type TabKey = "chatbot" | "alumni" | "discussions" | "resources" | "proposals";
 type TabKey = "chatbot" | "discussions" | "resources" | "proposals";
 
 const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
