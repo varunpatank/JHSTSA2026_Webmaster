@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import JudgeGuide from "@/components/JudgeGuide";
 import AuthProviders from "@/components/AuthProviders";
-
-const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "ClubConnect — Launch Club",
@@ -23,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body suppressHydrationWarning className={`${inter.className} min-h-screen flex flex-col`}>
+      <body suppressHydrationWarning className="min-h-screen flex flex-col antialiased">
         <AuthProviders>
           <ScrollToTop />
           <Header />

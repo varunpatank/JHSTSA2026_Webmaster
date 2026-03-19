@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -187,7 +187,7 @@ function loadRequestedIds(): Set<string> {
   return new Set();
 }
 
-export default function MentorsPage() {
+function MentorsPageContent() {
   const searchParams = useSearchParams();
   const [mentors, setMentors] = useState<Mentor[]>(() => loadMentors());
   const [search, setSearch] = useState("");
@@ -518,5 +518,19 @@ export default function MentorsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MentorsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+          <p className="text-neutral-500">Loading mentors...</p>
+        </div>
+      }
+    >
+      <MentorsPageContent />
+    </Suspense>
   );
 }
