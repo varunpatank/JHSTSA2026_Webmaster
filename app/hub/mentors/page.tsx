@@ -290,6 +290,17 @@ function MentorsPageContent() {
     }
     setRequestedIds((prev) => new Set(prev).add(mentorId));
     setRequestingId(null);
+
+    const mentor = mentors.find((m) => m.id === mentorId);
+    if (mentor) {
+      const emailAddr = mentor.name.toLowerCase().replace(/\s+/g, ".").replace(/[^a-z.]/g, "") + "@clubconnect.edu";
+      const confirmed = window.confirm(
+        `Your mentorship request has been sent to ${mentor.name}!\n\nWould you like to open your email to send them a message at ${emailAddr}?`
+      );
+      if (confirmed) {
+        window.location.href = `mailto:${emailAddr}?subject=Mentorship%20Request%20-%20ClubConnect&body=Hi%20${encodeURIComponent(mentor.name)}%2C%0A%0AI%20submitted%20a%20mentorship%20request%20through%20ClubConnect%20and%20would%20love%20to%20connect!%0A%0AThank%20you!`;
+      }
+    }
   }
 
   const categories = [
@@ -489,7 +500,7 @@ function MentorsPageContent() {
                   ) : (
                     <button
                       onClick={() => handleRequestMentorship(mentor.id)}
-                      disabled={!currentUserId || requestingId === mentor.id}
+                      disabled={requestingId === mentor.id}
                       className="btn-primary text-sm px-4 py-1.5 disabled:opacity-50 flex items-center gap-1"
                     >
                       {requestingId === mentor.id ? (

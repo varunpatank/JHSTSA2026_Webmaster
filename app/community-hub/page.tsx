@@ -737,8 +737,8 @@ export default function CommunityHubPage() {
                 ))}
               </div>
               <div className="text-center mt-4">
-                <Link href="/alumni" className="text-sm text-primary-600 font-medium hover:text-primary-700">
-                  View Full Alumni Directory →
+                <Link href="/hub/mentors" className="text-sm text-primary-600 font-medium hover:text-primary-700">
+                  View Mentor Network →
                 </Link>
               </div>
             </div>

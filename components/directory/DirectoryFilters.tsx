@@ -27,11 +27,12 @@ const CATEGORIES = [
   "Other",
 ];
 const SIZES = ["Any", "Small", "Medium", "Large"];
-const STATUSES = [
+const FREQUENCIES = [
   "Any",
-  "Open Enrollment",
-  "Tryout Required",
-  "Application Required",
+  "Weekly",
+  "Bi-weekly",
+  "Daily",
+  "Monthly",
 ];
 
 interface Props {
@@ -124,7 +125,7 @@ export default function DirectoryFilters({
               options: CATEGORIES,
             },
             { label: "Size", key: "size" as const, options: SIZES },
-            { label: "Status", key: "status" as const, options: STATUSES },
+            { label: "Frequency", key: "status" as const, options: FREQUENCIES },
           ].map((f) => (
             <div key={f.key}>
               <label className="block text-[10px] font-semibold text-neutral-500 mb-1 uppercase tracking-wider">

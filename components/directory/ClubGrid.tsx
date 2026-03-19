@@ -510,15 +510,9 @@ export default function ClubGrid({
                   {ch.category}
                 </span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                    ch.membershipStatus === "Open Enrollment"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
+                  className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700"
                 >
-                  {ch.membershipStatus === "Open Enrollment"
-                    ? "Join Now"
-                    : "Apply First"}
+                  {ch.meetingFrequency}
                 </span>
               </div>
               <h3 className="font-heading font-bold text-primary-600 group-hover:text-primary-500 transition-colors">

@@ -1068,7 +1068,7 @@ export default function CommunityPage() {
                   <GraduationCap size={15} /> Mentor Hub
                 </h3>
                 <Link
-                  href="/alumni"
+                  href="/hub/mentors"
                   className="text-[10px] font-semibold text-secondary-600 hover:text-secondary-700"
                 >
                   See All

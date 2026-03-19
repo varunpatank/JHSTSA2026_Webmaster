@@ -144,6 +144,7 @@ export default function MeetingsPage() {
           { label: "Virtual", value: meetings.filter(m => m.isVirtual).length },
           { label: "Types", value: types.length - 1 },
         ]}
+        statsClassName="sm:grid-cols-3 max-w-lg mx-auto"
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">

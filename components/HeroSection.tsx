@@ -11,6 +11,7 @@ type HeroSectionProps = {
   description?: ReactNode;
   icon?: ReactNode;
   stats?: HeroStat[];
+  statsClassName?: string;
   actions?: ReactNode;
   children?: ReactNode;
   className?: string;
@@ -25,6 +26,7 @@ export default function HeroSection({
   description,
   icon,
   stats,
+  statsClassName,
   actions,
   children,
   className = "",
@@ -48,7 +50,7 @@ export default function HeroSection({
           {description ? <p className="hero-description">{description}</p> : null}
           {actions ? <div className="hero-actions">{actions}</div> : null}
           {stats?.length ? (
-            <div className="hero-stats">
+            <div className={["hero-stats", statsClassName].filter(Boolean).join(" ")}>
               {stats.map((stat) => (
                 <div key={stat.label} className="hero-stat">
                   <p className="hero-stat-value">{stat.value}</p>

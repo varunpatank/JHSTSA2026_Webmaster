@@ -220,7 +220,7 @@ function DirectoryPageContent() {
       if (!matchesSize(chapter.memberCount, filters.size)) return false;
       if (
         filters.status !== "Any" &&
-        chapter.membershipStatus !== filters.status
+        chapter.meetingFrequency !== filters.status
       )
         return false;
       return true;
@@ -493,12 +493,6 @@ function DirectoryPageContent() {
                       </div>
                       <div className="space-y-1.5">
                         {[
-                          {
-                            icon: "\uD83C\uDF93",
-                            label: "Alumni Network",
-                            desc: "Connect with past members",
-                            href: "/alumni",
-                          },
                           {
                             icon: "\uD83D\uDCC5",
                             label: "Counselor Meetings",

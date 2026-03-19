@@ -146,19 +146,6 @@ export default function ReferencesPage() {
           stack, work log, copyright checklist, libraries, image attributions,
           and a full feature walkthrough for judges.
         </p>
-        <div className="hero-stats max-w-xl">
-          {[
-            { label: "Pages", value: "56+" },
-            { label: "Clubs", value: "25+" },
-            { label: "Resources", value: "20+" },
-            { label: "APIs", value: "5" },
-          ].map((s) => (
-            <div key={s.label} className="hero-stat p-2">
-              <p className="text-lg font-bold">{s.value}</p>
-              <p className="text-[10px] text-neutral-300">{s.label}</p>
-            </div>
-          ))}
-        </div>
       </HeroSection>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-4">

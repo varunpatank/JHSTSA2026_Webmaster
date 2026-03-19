@@ -26,15 +26,15 @@ function HomeAnnouncementStrip() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <span className="bg-secondary-500 text-white text-[10px] font-bold px-2.5 py-0.5 shrink-0 uppercase tracking-wider">
-            Live
+            New
           </span>
-          <p className="text-sm font-medium truncate">{chapters.length}+ active clubs &middot; {events.length} upcoming events &middot; Join the community</p>
+          <p className="text-sm font-medium truncate">Find your next club &middot; Browse events &middot; Connect with mentors</p>
         </div>
         <Link
           href="/directory"
           className="text-xs font-semibold text-secondary-300 hover:text-white whitespace-nowrap flex items-center gap-1"
         >
-          Explore <ArrowRight size={12} />
+          Browse Clubs <ArrowRight size={12} />
         </Link>
       </div>
     </div>

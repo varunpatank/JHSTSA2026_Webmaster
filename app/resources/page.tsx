@@ -332,7 +332,7 @@ const ROCKET_STAGES = [
       },
     ],
     hubLinks: [
-      { href: "/alumni", label: "Alumni Network", icon: Globe },
+      { href: "/hub/mentors", label: "Mentor Network", icon: Globe },
       { href: "/hub/achievements", label: "Achievements", icon: Award },
       { href: "/safety", label: "Safety Guidelines", icon: Shield },
       { href: "/guidance", label: "Guidance Center", icon: Eye },
