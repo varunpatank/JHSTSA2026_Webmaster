@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { getSession } from "next-auth/react";
 import { supabase } from "@/lib/api";
-import { logoutUser, setLoggedInState } from "@/lib/clientState";
+import { logoutUser, setLoggedInState, isLoggedIn } from "@/lib/clientState";
 
 export default function AuthStateSync() {
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function AuthStateSync() {
       }
 
       if (!restoredUser) {
-        logoutUser();
+        if (!isLoggedIn()) logoutUser();
         return;
       }
 

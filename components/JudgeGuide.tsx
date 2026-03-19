@@ -71,6 +71,14 @@ export default function JudgeGuide() {
         </div>
        </div>
 
+       {/* Auth note for judges */}
+       <div className="border border-amber-200 bg-amber-50/60 p-4">
+        <h4 className="font-bold text-sm text-amber-800 mb-2">Login Info for Judges</h4>
+        <p className="text-[11px] text-neutral-700 leading-relaxed">
+         Regular users can sign up and log in using the normal <strong>Log in</strong> button. For judges, we&apos;ve added a quick <strong>Judge</strong> button in the top-right corner of the header &mdash; just click it to instantly log in as &ldquo;Judge&rdquo; with no signup required.
+        </p>
+       </div>
+
        {/* CTA */}
        <Link href="/references" onClick={() => setExpanded(false)}
         className="flex items-center justify-center gap-2 w-full px-5 py-3 bg-secondary-600 hover:bg-secondary-700 text-white font-bold text-sm transition-colors">

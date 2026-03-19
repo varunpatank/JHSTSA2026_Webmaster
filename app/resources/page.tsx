@@ -130,7 +130,7 @@ const ROCKET_STAGES = [
         type: "checklist",
         downloads: 312,
         fileSize: "3.2 MB",
-        format: "ZIP",
+        format: "PDF",
       },
       {
         id: "lo-3",
@@ -149,7 +149,7 @@ const ROCKET_STAGES = [
         type: "template",
         downloads: 489,
         fileSize: "5.4 MB",
-        format: "ZIP",
+        format: "PDF",
       },
     ],
     hubLinks: [
@@ -259,7 +259,7 @@ const ROCKET_STAGES = [
         type: "template",
         downloads: 267,
         fileSize: "180 KB",
-        format: "XLSX",
+        format: "DOCX",
       },
       {
         id: "ex-4",
@@ -268,7 +268,7 @@ const ROCKET_STAGES = [
         type: "template",
         downloads: 312,
         fileSize: "900 KB",
-        format: "ZIP",
+        format: "DOCX",
       },
     ],
     hubLinks: [
@@ -1449,9 +1449,9 @@ export default function ResourcesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-up">
           <div
             ref={popupRef}
-            className="bg-white  shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white shadow-2xl max-w-2xl w-full max-h-[60vh] flex flex-col"
           >
-            <div className="p-5">
+            <div className="p-5 overflow-y-auto flex-1 min-h-0">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
                   <span

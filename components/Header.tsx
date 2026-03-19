@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { BookMarked, Menu, X, User } from "lucide-react";
-import { supabase, profilesApi, storageApi } from "../lib/api";
+import { BookMarked, Menu, X, User, Gavel } from "lucide-react";
+import { supabase, profilesApi, storageApi, authApi } from "../lib/api";
+import { loginUser, isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
 
 function ClubConnectLogo({ className = "" }: { className?: string }) {
   return (
@@ -200,7 +201,11 @@ export default function Header() {
         if (!mounted) return;
 
         if (!effectiveUserId) {
-          setIsLoggedIn(false);
+          if (isLocalLoggedIn()) {
+            setIsLoggedIn(true);
+          } else {
+            setIsLoggedIn(false);
+          }
           setAvatarUrl(null);
           return;
         }
@@ -233,7 +238,7 @@ export default function Header() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        if (!session?.user && status !== "authenticated") {
+        if (!session?.user && status !== "authenticated" && !isLocalLoggedIn()) {
           setIsLoggedIn(false);
           setAvatarUrl(null);
           return;
@@ -326,12 +331,35 @@ export default function Header() {
                 </div>
               </Link>
             ) : (
-              <Link
-                href="/login"
-                className="ml-2 inline-flex h-10 items-center px-4 text-sm font-bold text-secondary-300 border border-secondary-500/60 hover:bg-secondary-500/20 hover:text-secondary-200 transition-colors"
-              >
-                Log in
-              </Link>
+              <>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await authApi.signInWithEmail("Judge@TSA.org", "Judge@123");
+                      loginUser("Judge", "Judge@TSA.org");
+                      setIsLoggedIn(true);
+                      setAvatarUrl(null);
+                      window.location.reload();
+                    } catch {
+                      loginUser("Judge", "Judge@TSA.org");
+                      setIsLoggedIn(true);
+                      setAvatarUrl(null);
+                    }
+                  }}
+                  className="ml-1 inline-flex h-10 items-center gap-1.5 px-3 text-sm font-bold text-red-300 border border-red-500/60 bg-red-500/10 hover:bg-red-500/25 hover:text-red-200 transition-colors"
+                  aria-label="Quick judge login"
+                >
+                  <Gavel size={14} />
+                  Judge Sign In
+                </button>
+                <Link
+                  href="/login"
+                  className="ml-1 inline-flex h-10 items-center px-4 text-sm font-bold text-secondary-300 border border-secondary-500/60 hover:bg-secondary-500/20 hover:text-secondary-200 transition-colors"
+                >
+                  Log in
+                </Link>
+              </>
             )}
           </div>
         </div>

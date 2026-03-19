@@ -97,7 +97,7 @@ const tutorialSteps: TutorialStep[] = [
       'Request new resources if you can\'t find what you need'
     ],
     image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&q=80',
-    action: { label: 'Explore Resources', href: '/hub/external' }
+    action: { label: 'Explore Resources', href: '/resources' }
   },
   {
     id: 6,
@@ -121,24 +121,23 @@ const tutorialSteps: TutorialStep[] = [
     title: 'For Club Officers',
     description: 'Managing your club with powerful tools',
     content: [
-      'As an officer, you have access to the Club Manager dashboard.',
+      'As an officer, you have access to tools for managing your club profile, officers, events, and announcements.',
       'Create and customize your club\'s profile page with branding, descriptions, and social links.',
-      'Manage officers, schedule events, and post announcements to keep members informed.'
+      'Schedule events and post announcements to keep members informed.'
     ],
     tips: [
       'Keep your club profile updated regularly',
       'Use announcements for important updates',
       'Preview your public page before publishing changes'
     ],
-    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80',
-    action: { label: 'Open Club Manager', href: '/hub/manage-club' }
+    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80'
   },
   {
     id: 8,
     title: 'Starting a New Club',
     description: 'Turn your idea into reality',
     content: [
-      'Have an idea for a new club? Use the Propose a Chapter feature to submit your proposal.',
+      'Have an idea for a new club? Use the Start a Club feature to submit your proposal.',
       'Browse the Club Ideas page for inspiration and see what other students have suggested.',
       'Connect with mentors who can guide you through the process.'
     ],
@@ -148,7 +147,7 @@ const tutorialSteps: TutorialStep[] = [
       'Recruit founding members to show interest'
     ],
     image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&q=80',
-    action: { label: 'Propose a Club', href: '/propose' }
+    action: { label: 'Start a Club', href: '/start-a-club' }
   },
   {
     id: 9,

@@ -41,7 +41,7 @@ import {
   membershipsApi,
   authApi,
 } from "@/lib/api";
-import { getJoinedClubs } from "@/lib/clientState";
+import { getJoinedClubs, getUserIdentity, isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
 
 interface SavedItem {
   id: string;
@@ -478,6 +478,12 @@ function DashboardContent() {
         const { data: sessionData } = await supabase.auth.getSession();
         const user = sessionData.session?.user;
         if (!mounted || !user) {
+          // Fallback to localStorage identity (Judge login)
+          if (isLocalLoggedIn()) {
+            const identity = getUserIdentity();
+            setUserName(identity.name);
+            setUserEmail(identity.email);
+          }
           setLoading(false);
           return;
         }

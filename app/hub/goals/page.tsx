@@ -6,6 +6,8 @@ import {
   Award, Calendar, CheckCircle, ChevronDown, Edit3, Flag, Plus,
   Target, TrendingUp, Trophy, Trash2, Zap
 } from "lucide-react";
+import { useAuthGate } from "@/lib/useAuthGate";
+import AuthRequiredNotice from "@/components/AuthRequiredNotice";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -63,6 +65,7 @@ function saveGoals(goals: Goal[]) {
 }
 
 export default function GoalsPage() {
+  const { ready, loggedIn } = useAuthGate();
   const [goals, setGoals] = useState<Goal[]>(SEED_GOALS);
   const [tab, setTab] = useState<"active" | "completed" | "insights">("active");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -109,6 +112,17 @@ export default function GoalsPage() {
   const completed = goals.filter(g => g.status === "completed");
   const avgProgress = Math.round(active.reduce((s, g) => s + g.progress, 0) / (active.length || 1));
   const atRisk = active.filter(g => g.status === "at-risk" || g.status === "behind").length;
+
+  if (ready && !loggedIn) {
+    return (
+      <AuthRequiredNotice
+        title="Login Required for Goal Tracker"
+        message="It's better to login to track your club goals, milestones, and achievements. Please sign in to access your personalized goal tracker."
+        redirectTo="/hub/goals"
+        loginLabel="Sign In to Continue"
+      />
+    );
+  }
 
   return (
     <div className="bg-neutral-100 min-h-screen">

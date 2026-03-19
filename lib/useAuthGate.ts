@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { authApi } from "@/lib/api";
+import { isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
 
 export function useAuthGate() {
   const { status } = useSession();
@@ -18,11 +19,11 @@ export function useAuthGate() {
       try {
         const hasSupabaseSession = await authApi.isLoggedIn();
         if (active) {
-          setLoggedIn(status === "authenticated" || hasSupabaseSession);
+          setLoggedIn(status === "authenticated" || hasSupabaseSession || isLocalLoggedIn());
         }
       } catch {
         if (active) {
-          setLoggedIn(status === "authenticated");
+          setLoggedIn(status === "authenticated" || isLocalLoggedIn());
         }
       } finally {
         if (active) {

@@ -261,7 +261,16 @@ export default function CommunityPage() {
   useEffect(() => {
     async function loadUser() {
       const { data } = await supabase.auth.getUser();
-      if (!data.user) return;
+      if (!data.user) {
+        // Fallback to localStorage identity (Judge login)
+        const { isLoggedIn, getUserIdentity } = await import("@/lib/clientState");
+        if (isLoggedIn()) {
+          const identity = getUserIdentity();
+          setUserName(identity.name);
+          setIsGuest(false);
+        }
+        return;
+      }
       setIsGuest(false);
       const res = await profilesApi.getById(data.user.id);
       if (!res.error && res.data) {
