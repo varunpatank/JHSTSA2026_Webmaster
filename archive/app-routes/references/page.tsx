@@ -131,7 +131,7 @@ export default function ReferencesPage() {
               <p className="text-sm text-neutral-600 mb-4">copyright.pdf</p>
               <div className="border border-neutral-300 bg-neutral-50 h-96 overflow-hidden">
                 <iframe
-                  src="/copyright.png"
+                  src="/Copyright.pdf"
                   className="w-full h-full"
                   title="Copyright Checklist PDF"
                 />
