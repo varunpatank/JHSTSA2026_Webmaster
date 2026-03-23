@@ -22,14 +22,12 @@ function Accordion({
   icon,
   title,
   children,
-  defaultOpen = false,
 }: {
   icon: React.ReactNode;
   title: string;
   children: React.ReactNode;
-  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(false);
   return (
     <div className="border border-neutral-200 bg-white">
       <button
@@ -150,12 +148,12 @@ export default function ReferencesPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-4">
         {/* Work Log & Copyright */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <Accordion icon={<FileText size={16} />} title="Work Log" defaultOpen>
+        <div className="w-full">
+          <Accordion icon={<FileText size={16} />} title="Work Log">
             <p className="text-xs text-neutral-500 mt-3 mb-2">
               Webmaster Work Log.pdf
             </p>
-            <div className="border border-neutral-300 bg-neutral-50 h-96 overflow-hidden">
+            <div className="border border-neutral-300 bg-neutral-50 w-full h-screen overflow-hidden">
               <iframe
                 src="/Webmaster%20Work%20Log.pdf"
                 className="w-full h-full"
@@ -164,28 +162,20 @@ export default function ReferencesPage() {
             </div>
           </Accordion>
 
-          <Accordion
-            icon={<Scale size={16} />}
-            title="Copyright Checklist"
-            defaultOpen
-          >
-            <p className="text-xs text-neutral-500 mt-3 mb-2">copyright.pdf</p>
-            <div className="border border-neutral-300 bg-neutral-50 h-96 overflow-hidden">
-              <iframe
-                src="/WhatsApp%20Image%202026-01-21%20at%202.41.55%20PM.pdf"
-                className="w-full h-full"
-                title="Copyright Checklist PDF"
+          <Accordion icon={<Scale size={16} />} title="Copyright Checklist">
+            <p className="text-xs text-neutral-500 mt-3 mb-2">copyright</p>
+            <div className="border border-neutral-300 bg-neutral-50 overflow-auto">
+              <img
+                src="/copyright.png"
+                alt="Copyright Checklist"
+                className="w-full h-auto"
               />
             </div>
           </Accordion>
         </div>
 
         {/* Framework & Code Stack */}
-        <Accordion
-          icon={<Layers size={16} />}
-          title="Framework & Code Stack"
-          defaultOpen
-        >
+        <Accordion icon={<Layers size={16} />} title="Framework & Code Stack">
           <div className="mt-3 space-y-4">
             <p className="text-sm text-neutral-700 leading-relaxed">
               ClubConnect is built on{" "}
@@ -357,16 +347,15 @@ export default function ReferencesPage() {
         <Accordion
           icon={<Server size={16} />}
           title="Data Architecture — Supabase, Stripe & Hard-Coded UI"
-          defaultOpen
         >
           <div className="mt-3 space-y-4">
             <p className="text-sm text-neutral-700 leading-relaxed">
               ClubConnect connects to a live{" "}
               <span className="font-semibold text-emerald-700">Supabase</span>{" "}
               backend for core functionality and{" "}
-              <span className="font-semibold text-indigo-700">Stripe</span>{" "}
-              for payments, while other pages use hard-coded data to showcase
-              the breadth of the resource hub theme.
+              <span className="font-semibold text-indigo-700">Stripe</span> for
+              payments, while other pages use hard-coded data to showcase the
+              breadth of the resource hub theme.
             </p>
 
             <div className="grid sm:grid-cols-3 gap-3">
@@ -377,8 +366,13 @@ export default function ReferencesPage() {
                 </h4>
                 <ul className="space-y-1 text-[11px] text-neutral-700">
                   <li>• Auth — login, signup, sessions via Supabase Auth</li>
-                  <li>• User profiles — avatar upload to Supabase Storage, bio, grade</li>
-                  <li>• Club creation & editing — saved to organizations table</li>
+                  <li>
+                    • User profiles — avatar upload to Supabase Storage, bio,
+                    grade
+                  </li>
+                  <li>
+                    • Club creation & editing — saved to organizations table
+                  </li>
                   <li>• Club events — persisted to events table</li>
                   <li>• Memberships — join records linking profiles to orgs</li>
                   <li>• Community uploads, discussions, ideas</li>
@@ -390,8 +384,15 @@ export default function ReferencesPage() {
                   Stripe Payments
                 </h4>
                 <ul className="space-y-1 text-[11px] text-neutral-700">
-                  <li>• Donations create a Stripe Checkout Session via <code className="bg-indigo-100 px-1 text-[10px]">/api/checkout</code></li>
-                  <li>• User is redirected to Stripe&apos;s secure payment page</li>
+                  <li>
+                    • Donations create a Stripe Checkout Session via{" "}
+                    <code className="bg-indigo-100 px-1 text-[10px]">
+                      /api/checkout
+                    </code>
+                  </li>
+                  <li>
+                    • User is redirected to Stripe&apos;s secure payment page
+                  </li>
                   <li>• Success/cancel handling with redirect back to site</li>
                   <li>• Test mode — full flow, no real charges</li>
                   <li>• Per-club fundraising progress bars</li>
