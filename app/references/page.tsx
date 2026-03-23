@@ -166,7 +166,7 @@ export default function ReferencesPage() {
             <p className="text-xs text-neutral-500 mt-3 mb-2">copyright</p>
             <div className="border border-neutral-300 bg-neutral-50 overflow-auto">
               <img
-                src="/copyright.png"
+                src="/Copyright.png"
                 alt="Copyright Checklist"
                 className="w-full h-auto"
               />
