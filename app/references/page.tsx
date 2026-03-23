@@ -240,15 +240,6 @@ export default function ReferencesPage() {
                 },
                 {
                   icon: (
-                    <span className="w-6 h-6 bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold">
-                      G
-                    </span>
-                  ),
-                  name: "Gemini 2.0 Flash (AI)",
-                  desc: "Embedded AI chat agents on multiple pages for resource discovery, Q&A, and navigational help",
-                },
-                {
-                  icon: (
                     <span className="w-6 h-6 bg-cyan-600 text-white flex items-center justify-center text-[9px] font-bold">
                       T
                     </span>
