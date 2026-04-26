@@ -37,7 +37,12 @@ const POLICIES = [
 
 export default function SafetyPage() {
   return (
-    <div className="bg-neutral-100 min-h-screen">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
       <HeroSection
         eyebrow="Student Wellbeing"
         title="Safety & Guidelines"
@@ -141,6 +146,7 @@ export default function SafetyPage() {
             </div>
           </div>
         </aside>
+      </div>
       </div>
     </div>
   );

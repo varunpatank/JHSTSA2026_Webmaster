@@ -68,7 +68,12 @@ export default function FundingPage() {
   const totalRaised = FUNDRAISERS.reduce((s, f) => s + f.raised, 0);
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
       <HeroSection
         title="Funding & Budgets"
         icon={<DollarSign size={36} />}
@@ -192,6 +197,7 @@ export default function FundingPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

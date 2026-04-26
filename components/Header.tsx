@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { BookMarked, Menu, X, User, Gavel } from "lucide-react";
+import { BookMarked, BookOpen, Compass, Gavel, Menu, Plus, X } from "lucide-react";
 import { supabase, profilesApi, storageApi, authApi } from "../lib/api";
 import { loginUser, isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
 
@@ -15,174 +15,26 @@ function ClubConnectLogo({ className = "" }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {}
-      <rect width="40" height="40" rx="8" fill="url(#logo-bg)" />
-      <rect
-        x="1"
-        y="1"
-        width="38"
-        height="38"
-        rx="7"
-        fill="none"
-        stroke="white"
-        strokeOpacity="0.15"
-        strokeWidth="0.5"
-      />
-      {}
-      <line
-        x1="0"
-        y1="20"
-        x2="40"
-        y2="20"
-        stroke="white"
-        strokeOpacity="0.04"
-        strokeWidth="0.5"
-      />
-      <line
-        x1="20"
-        y1="0"
-        x2="20"
-        y2="40"
-        stroke="white"
-        strokeOpacity="0.04"
-        strokeWidth="0.5"
-      />
-      {}
-      <path d="M20 5.5L17 18.5h6L20 5.5z" fill="white" />
-      <path d="M20 5.5L18.5 18.5h-1.5L20 5.5z" fill="white" fillOpacity="0.7" />
-      {}
-      <ellipse cx="20" cy="7" rx="1.8" ry="2.2" fill="white" />
-      <ellipse
-        cx="19.5"
-        cy="6.5"
-        rx="0.8"
-        ry="1.2"
-        fill="white"
-        fillOpacity="0.5"
-      />
-      {}
-      <circle
-        cx="20"
-        cy="12"
-        r="2.2"
-        fill="#152d4a"
-        stroke="white"
-        strokeWidth="0.6"
-      />
-      <circle cx="20" cy="12" r="1.4" fill="#5b9bd5" />
-      <ellipse
-        cx="19.3"
-        cy="11.3"
-        rx="0.5"
-        ry="0.6"
-        fill="white"
-        fillOpacity="0.5"
-      />
-      {}
-      <rect
-        x="17.2"
-        y="15"
-        width="5.6"
-        height="0.8"
-        rx="0.4"
-        fill="#b8860b"
-        fillOpacity="0.7"
-      />
-      {}
-      <path d="M17 17l-4.5 7.5L17 22z" fill="white" fillOpacity="0.9" />
-      <path d="M17 17l-3 5.5L17 20.5z" fill="white" fillOpacity="0.6" />
-      {}
-      <path d="M23 17l4.5 7.5L23 22z" fill="white" fillOpacity="0.9" />
-      {}
-      <rect
-        x="17"
-        y="18.5"
-        width="6"
-        height="3.5"
-        rx="0.8"
-        fill="white"
-        fillOpacity="0.95"
-      />
-      <rect
-        x="18"
-        y="21.5"
-        width="4"
-        height="1.5"
-        rx="0.5"
-        fill="#d4d4d8"
-        fillOpacity="0.6"
-      />
-      {}
-      <path
-        d="M18.2 23c-.8 3-1 5.5 1.8 8 2.8-2.5 2.6-5 1.8-8h-3.6z"
-        fill="#FF6B35"
-        fillOpacity="0.9"
-      />
-      {}
-      <path
-        d="M18.8 23c-.5 2.5-.5 4.5 1.2 6.5 1.7-2 1.7-4 1.2-6.5h-2.4z"
-        fill="#FFD700"
-      />
-      {}
-      <path
-        d="M19.3 23c-.3 1.8-.2 3.5 0.7 5 0.9-1.5 1-3.2 0.7-5h-1.4z"
-        fill="white"
-        fillOpacity="0.8"
-      />
-      {}
-      <circle cx="7" cy="9" r="1" fill="white" fillOpacity="0.7" />
-      <circle cx="7" cy="9" r="0.4" fill="white" />
-      <circle cx="34" cy="7" r="0.8" fill="white" fillOpacity="0.6" />
-      <circle cx="34" cy="7" r="0.3" fill="white" />
-      <circle cx="5" cy="30" r="0.6" fill="white" fillOpacity="0.4" />
-      <circle cx="35" cy="25" r="0.7" fill="white" fillOpacity="0.5" />
-      <circle cx="9" cy="20" r="0.4" fill="white" fillOpacity="0.3" />
-      <circle cx="32" cy="15" r="0.5" fill="white" fillOpacity="0.35" />
-      {}
-      <text
-        x="31"
-        y="37"
-        fill="white"
-        fillOpacity="0.2"
-        fontSize="5"
-        fontWeight="bold"
-        fontFamily="sans-serif"
-      >
-        CC
-      </text>
-      <defs>
-        <linearGradient
-          id="logo-bg"
-          x1="0"
-          y1="0"
-          x2="40"
-          y2="40"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#1e3a5f" />
-          <stop offset="0.4" stopColor="#264d78" />
-          <stop offset="1" stopColor="#1a3050" />
-        </linearGradient>
-      </defs>
+      {/* Mortarboard flat board (diamond) */}
+      <polygon points="20,7 35,15 20,23 5,15" fill="#174070" />
+      {/* Cap body visible below board */}
+      <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#174070" fillOpacity="0.55" />
+      {/* Tassel cord from right vertex */}
+      <line x1="35" y1="15" x2="35" y2="27" stroke="#D6A21E" strokeWidth="1.7" strokeLinecap="round" />
+      {/* Tassel ball */}
+      <circle cx="35" cy="29" r="2.2" fill="#D6A21E" />
     </svg>
   );
 }
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const openReferencesPanel = () => {
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("open-judge-guide"));
-    }
-  };
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/directory", label: "Discover" },
-    { href: "/start-a-club", label: "Create" },
-    { href: "/resources", label: "Resources" },
-    { href: "/community", label: "Social" },
-    { href: "/dashboard", label: "Dashboard" },
+    { href: "/", label: "Home", icon: null },
+    { href: "/resources", label: "Resources", icon: BookOpen },
+    { href: "/directory", label: "Clubs", icon: Compass },
+    { href: "/community", label: "Community", icon: null },
   ];
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -261,138 +113,140 @@ export default function Header() {
   }, [session?.user?.id, status]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-primary-600 bg-primary-700 text-white">
-      <div className="h-1 w-full bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex min-h-[76px] items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 bg-gradient-to-r from-[#fffdf8] via-[#f7f1e8] to-[#fffdf8] border-b border-[#e5d5bc] shadow-[0_3px_14px_rgba(23,54,93,0.09)]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex min-h-[60px] items-center justify-between gap-4">
+          {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-2.5 group shrink-0"
             aria-label="ClubConnect home"
           >
-            <ClubConnectLogo className="w-10 h-10 shrink-0 group-hover:scale-105 transition-transform" />
+            <ClubConnectLogo className="w-8 h-8 shrink-0 group-hover:opacity-85 transition-opacity" />
             <div>
-              <p className="text-base font-bold text-white leading-tight">
+              <span className="text-[14px] font-bold text-primary-900 tracking-wide leading-none block font-heading">
                 ClubConnect
-              </p>
-              <p className="text-xs text-primary-200">Launch Club</p>
+              </span>
+              <span className="text-[9px] text-amber-700/70 uppercase tracking-[0.15em] leading-none font-semibold">
+                School Chapter Hub
+              </span>
             </div>
           </Link>
 
-          <div className="flex items-center gap-4">
-            <nav
-              className="hidden md:flex items-center gap-1"
-              aria-label="Primary navigation"
-            >
-              {navLinks.map((link) => (
+          {/* Center nav */}
+          <nav
+            className="hidden md:flex items-center gap-0"
+            aria-label="Primary navigation"
+          >
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="inline-flex h-10 items-center px-3 text-sm font-medium text-primary-100 hover:text-white hover:bg-primary-600 transition-colors"
+                  className="inline-flex h-[60px] items-center gap-1.5 px-3 text-[12.5px] font-medium text-primary-800 hover:text-primary-900 transition-colors relative after:absolute after:bottom-0 after:left-2.5 after:right-2.5 after:h-[2px] after:bg-secondary-500 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
                 >
+                  {Icon && <Icon size={14} />}
                   {link.label}
                 </Link>
-              ))}
-            </nav>
-
-            <button
-              type="button"
-              onClick={openReferencesPanel}
-              className="hidden md:inline-flex h-10 items-center gap-1.5 px-3 text-[11px] font-bold text-secondary-300 border border-secondary-500/60 hover:bg-secondary-500/20 hover:text-secondary-200 transition-colors"
-              aria-label="Open references panel"
+              );
+            })}
+            <Link
+              href="/references"
+              className="inline-flex h-[60px] items-center px-3 text-[12.5px] font-medium text-primary-800 hover:text-primary-900 transition-colors relative after:absolute after:bottom-0 after:left-2.5 after:right-2.5 after:h-[2px] after:bg-secondary-500 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
             >
-              <BookMarked size={12} />
               References
-            </button>
+            </Link>
+          </nav>
 
+          {/* Right actions */}
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
-              className="md:hidden inline-flex h-10 w-10 items-center justify-center border border-primary-500 text-white hover:bg-primary-600"
+              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-200 text-primary-600 hover:bg-cream-200"
               onClick={() => setMobileMenuOpen((open) => !open)}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav"
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              {mobileMenuOpen ? <X size={17} /> : <Menu size={17} />}
             </button>
 
-            {isLoggedIn ? (
-              <Link href="/dashboard?tab=profile" className="ml-2">
-                <div className="w-9 h-9 rounded-full bg-primary-600 text-white flex items-center justify-center overflow-hidden border border-primary-500">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt="Profile avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User size={18} />
-                  )}
-                </div>
+            {/* Portal action buttons - desktop only */}
+            <div className="hidden md:flex items-center gap-1">
+              <Link
+                href="/portal?tab=resource"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border border-cream-400 text-primary-600 hover:bg-cream-100 transition-colors"
+              >
+                <Plus size={11} /> Add Resource
               </Link>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await authApi.signInWithEmail("Judge@TSA.org", "Judge@123");
-                      loginUser("Judge", "Judge@TSA.org");
-                      setIsLoggedIn(true);
-                      setAvatarUrl(null);
-                      window.location.reload();
-                    } catch {
-                      loginUser("Judge", "Judge@TSA.org");
-                      setIsLoggedIn(true);
-                      setAvatarUrl(null);
-                    }
-                  }}
-                  className="ml-1 inline-flex h-10 items-center gap-1.5 px-3 text-sm font-bold text-red-300 border border-red-500/60 bg-red-500/10 hover:bg-red-500/25 hover:text-red-200 transition-colors"
-                  aria-label="Quick judge login"
-                >
-                  <Gavel size={14} />
-                  Judge Sign In
-                </button>
-                <Link
-                  href="/login"
-                  className="ml-1 inline-flex h-10 items-center px-4 text-sm font-bold text-secondary-300 border border-secondary-500/60 hover:bg-secondary-500/20 hover:text-secondary-200 transition-colors"
-                >
-                  Log in
-                </Link>
-              </>
+              <Link
+                href="/portal?tab=create"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border border-cream-400 text-primary-600 hover:bg-cream-100 transition-colors"
+              >
+                <Plus size={11} /> New Club
+              </Link>
+              <Link
+                href="/portal"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-full bg-primary-700 text-white hover:bg-primary-800 transition-colors"
+              >
+                <BookMarked size={11} /> Portal
+              </Link>
+            </div>
+
+            {!isLoggedIn && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await authApi.signInWithEmail("Judge@TSA.org", "Judge@123");
+                    loginUser("Judge", "Judge@TSA.org");
+                    setIsLoggedIn(true);
+                    setAvatarUrl(null);
+                    window.location.reload();
+                  } catch {
+                    loginUser("Judge", "Judge@TSA.org");
+                    setIsLoggedIn(true);
+                    setAvatarUrl(null);
+                  }
+                }}
+                className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full border border-secondary-400 text-secondary-700 hover:bg-secondary-50 transition-colors"
+                aria-label="Quick judge login"
+              >
+                <Gavel size={12} />
+                Judge
+              </button>
             )}
           </div>
         </div>
 
         {mobileMenuOpen && (
-          <nav
-            id="mobile-nav"
-            className="md:hidden pb-4 pt-2 space-y-2"
-            aria-label="Mobile navigation"
-          >
-            {navLinks.map((link) => (
+          <div className="border-t border-cream-300 md:hidden">
+            <nav
+              id="mobile-nav"
+              className="pb-4 pt-2 space-y-0.5"
+              aria-label="Mobile navigation"
+            >
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-primary-700 hover:bg-cream-200 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
               <Link
-                key={link.href}
-                href={link.href}
-                className="block  border border-primary-600 px-3 py-2 text-sm font-medium text-primary-100 hover:bg-primary-600 hover:text-white"
+                href="/references"
+                className="w-full text-left rounded-lg px-3 py-2.5 text-sm font-medium text-primary-700 hover:bg-cream-200 transition-colors flex items-center gap-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {link.label}
+                <BookMarked size={14} />
+                References
               </Link>
-            ))}
-            <button
-              type="button"
-              onClick={() => {
-                openReferencesPanel();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full border border-primary-600 px-3 py-2 text-sm font-medium text-primary-100 hover:bg-primary-600 hover:text-white text-left inline-flex items-center gap-2"
-              aria-label="Open references panel"
-            >
-              <BookMarked size={14} />
-              References
-            </button>
-          </nav>
+            </nav>
+          </div>
         )}
       </div>
     </header>

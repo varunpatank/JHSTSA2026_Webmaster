@@ -1153,8 +1153,14 @@ export default function StartAClubPage() {
       {}
       <HeroSection
         title="Start a New Club"
-        description="Follow the phases, fill in your details along the way, and submit when you&rsquo;re ready."
+        description="Follow the phases, fill in your details along the way, and submit when you're ready."
         icon={<Rocket size={40} className="animate-float" />}
+        images={[
+          "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=75",
+        ]}
+        texture="diagonal"
       />
 
       {}

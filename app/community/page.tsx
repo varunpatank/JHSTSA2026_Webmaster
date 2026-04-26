@@ -12,6 +12,7 @@ import {
   Heart,
   ImageIcon,
   MessageCircle,
+  MapPin,
   Paperclip,
   Send,
   Upload,
@@ -215,6 +216,138 @@ const MENTORS = [
   },
 ];
 
+const CLUB_EVENTS = [
+  {
+    id: 1,
+    title: "TSA State Competition 2026",
+    club: "TSA",
+    date: "March 15–17, 2026",
+    location: "Olympia Convention Center, WA",
+    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80",
+    spots: 40,
+    registered: 32,
+    type: "Competition",
+    typeColor: "bg-violet-100 text-violet-700",
+  },
+  {
+    id: 2,
+    title: "Spring Fundraiser Showcase",
+    club: "NHS",
+    date: "April 28, 2026",
+    location: "Main Gym, Juanita High School",
+    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
+    spots: 200,
+    registered: 145,
+    type: "Fundraiser",
+    typeColor: "bg-green-100 text-green-700",
+  },
+  {
+    id: 3,
+    title: "Robotics Open House",
+    club: "Robotics",
+    date: "May 3, 2026",
+    location: "STEM Lab, Room 204",
+    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80",
+    spots: 60,
+    registered: 41,
+    type: "Open House",
+    typeColor: "bg-blue-100 text-blue-700",
+  },
+  {
+    id: 4,
+    title: "Cultural Night 2026",
+    club: "Cultural Club",
+    date: "May 10, 2026",
+    location: "Auditorium",
+    image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=800&q=80",
+    spots: 350,
+    registered: 210,
+    type: "Cultural",
+    typeColor: "bg-orange-100 text-orange-700",
+  },
+  {
+    id: 5,
+    title: "DECA Regional Competition",
+    club: "DECA",
+    date: "May 22, 2026",
+    location: "Bellevue College, WA",
+    image: "https://images.unsplash.com/photo-1559223607-a43c990c692c?auto=format&fit=crop&w=800&q=80",
+    spots: 30,
+    registered: 28,
+    type: "Competition",
+    typeColor: "bg-violet-100 text-violet-700",
+  },
+  {
+    id: 6,
+    title: "End of Year Club Fair",
+    club: "Student Council",
+    date: "June 5, 2026",
+    location: "Front Courtyard",
+    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80",
+    spots: 500,
+    registered: 180,
+    type: "Fair",
+    typeColor: "bg-secondary-100 text-secondary-700",
+  },
+];
+
+const MENTOR_PHOTOS: Record<string, string> = {
+  "m1": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+  "m4": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80",
+  "m3": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80",
+};
+
+const SUCCESS_STORIES = [
+  {
+    id: 1,
+    title: "From Regionals to Nationals",
+    club: "TSA",
+    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80",
+    excerpt: "How Juanita TSA went from regional qualifiers to placing top 3 at the national conference in Louisville.",
+    author: "Maria G.",
+    role: "TSA Chapter President",
+    date: "March 2026",
+    tag: "Competition",
+    tagColor: "bg-violet-100 text-violet-700",
+  },
+  {
+    id: 2,
+    title: "500 Service Hours in One Semester",
+    club: "NHS",
+    image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=800&q=80",
+    excerpt: "NHS Chapter hit a record-breaking semester with coordinated volunteer drives across 12 community partner sites.",
+    author: "Sophie K.",
+    role: "NHS Secretary",
+    date: "February 2026",
+    tag: "Service",
+    tagColor: "bg-green-100 text-green-700",
+  },
+  {
+    id: 3,
+    title: "1st Place at HackNW 2025",
+    club: "CS Club",
+    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
+    excerpt: "CS Club took first place at the regional hackathon with an AI-powered accessibility tool built in 24 hours.",
+    author: "Alex J.",
+    role: "CS Club Lead Developer",
+    date: "November 2025",
+    tag: "Hackathon",
+    tagColor: "bg-blue-100 text-blue-700",
+  },
+  {
+    id: 4,
+    title: "Sold-Out Spring Musical",
+    club: "Drama Club",
+    image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800&q=80",
+    excerpt: "Three consecutive sold-out performances of Into the Woods — Drama Club's most successful season in school history.",
+    author: "Taylor M.",
+    role: "Drama Club Director",
+    date: "April 2026",
+    tag: "Arts",
+    tagColor: "bg-amber-100 text-amber-700",
+  },
+];
+
 const MEETINGS = [
   {
     id: 1,
@@ -350,6 +483,7 @@ export default function CommunityPage() {
     ];
   });
   const [chatInput, setChatInput] = useState("");
+  const [communityTab, setCommunityTab] = useState<"feed" | "events" | "mentors" | "stories">("feed");
 
   useEffect(() => {
     localStorage.setItem("clubconnect_community_feed", JSON.stringify(feed));
@@ -501,7 +635,8 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="relative">
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
       <input
         ref={fileInputRef}
         type="file"
@@ -710,9 +845,181 @@ export default function CommunityPage() {
 
           {/*  CENTER FEED  */}
           <div className="flex-1 min-w-0 space-y-4">
+
+            {/* Tab Navigation */}
+            <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+              <div className="flex border-b border-neutral-100">
+                {([
+                  { key: "feed",     label: "Community Feed", icon: MessageCircle },
+                  { key: "events",   label: "Club Events",    icon: Calendar },
+                  { key: "mentors",  label: "Mentors",        icon: GraduationCap },
+                  { key: "stories",  label: "Stories",        icon: Trophy },
+                ] as const).map(({ key, label, icon: Icon }) => (
+                  <button
+                    key={key}
+                    onClick={() => setCommunityTab(key)}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold transition-colors border-b-2 ${
+                      communityTab === key
+                        ? "border-primary-800 text-primary-800 bg-primary-50/50"
+                        : "border-transparent text-neutral-500 hover:text-primary-700 hover:bg-neutral-50"
+                    }`}
+                  >
+                    <Icon size={14} />
+                    <span className="hidden sm:inline">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* EVENTS TAB */}
+            {communityTab === "events" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-bold text-primary-800 text-lg">Upcoming Club Events</h2>
+                  <Link
+                    href="/portal?tab=event"
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors shadow-sm"
+                  >
+                    <Calendar size={13} /> Add Event
+                  </Link>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {CLUB_EVENTS.map(ev => {
+                    const pct = Math.round((ev.registered / ev.spots) * 100);
+                    return (
+                      <div key={ev.id} className="bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
+                        <div className="relative h-40">
+                          <Image src={ev.image} alt={ev.title} fill sizes="400px" className="object-cover" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                          <span className={`absolute top-3 left-3 text-[9px] font-bold px-2 py-1 rounded-full ${ev.typeColor}`}>{ev.type}</span>
+                          <div className="absolute bottom-3 left-3 right-3">
+                            <p className="text-white font-bold text-sm leading-tight">{ev.title}</p>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center gap-2 text-[11px] text-neutral-500 mb-3">
+                            <Calendar size={11} /> {ev.date}
+                            <span className="mx-1">·</span>
+                            <MapPin size={11} /> {ev.location.split(",")[0]}
+                          </div>
+                          <div className="mb-3">
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-neutral-500">{ev.registered} / {ev.spots} registered</span>
+                              <span className={`font-bold ${pct >= 90 ? "text-red-500" : "text-green-600"}`}>{pct}%</span>
+                            </div>
+                            <div className="h-1.5 bg-neutral-100 rounded-full">
+                              <div className={`h-1.5 rounded-full transition-all ${pct >= 90 ? "bg-red-400" : "bg-green-500"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-semibold text-primary-700 bg-primary-50 px-2 py-1 rounded-full border border-primary-100">{ev.club}</span>
+                            <button className="text-xs font-bold text-white bg-primary-800 hover:bg-primary-700 px-3 py-1.5 rounded-full transition-colors">
+                              RSVP
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* MENTORS TAB */}
+            {communityTab === "mentors" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-bold text-primary-800 text-lg">Mentor Network</h2>
+                  <Link href="/hub/mentors" className="text-xs font-semibold text-secondary-600 hover:underline flex items-center gap-1">
+                    View All <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { id: "m1", name: "Dr. Sarah Chen",   role: "Senior Software Engineer, Microsoft",  specialty: "Software Dev & AI/ML",      available: true, img: MENTOR_PHOTOS["m1"], areas: ["Software","AI/ML","Internships"] },
+                    { id: "m4", name: "David Park",        role: "Mechanical Engineer, Boeing",          specialty: "Robotics & Engineering",     available: true, img: MENTOR_PHOTOS["m4"], areas: ["Robotics","Engineering","FRC"] },
+                    { id: "m3", name: "Maria Gonzalez",    role: "Community Organizer, United Way",      specialty: "Nonprofit & Leadership",     available: true, img: MENTOR_PHOTOS["m3"], areas: ["Leadership","Service","Nonprofits"] },
+                    { id: "m5", name: "James Liu",         role: "Product Manager, Amazon",              specialty: "Business & Strategy",        available: false, img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80", areas: ["Business","DECA","Strategy"] },
+                    { id: "m6", name: "Priya Nair",        role: "Attorney, Public Defender's Office",   specialty: "Law & Public Policy",        available: true, img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80", areas: ["Law","Debate","Policy"] },
+                    { id: "m7", name: "Carlos Rivera",     role: "Biology Professor, UW",                specialty: "STEM Research & Science",    available: false, img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", areas: ["Research","Science","College"] },
+                  ].map(m => (
+                    <div key={m.id} className="bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="relative h-32">
+                        <Image src={m.img} alt={m.name} fill sizes="300px" className="object-cover object-top" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <span className={`absolute top-3 right-3 text-[9px] font-bold px-2 py-1 rounded-full ${m.available ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-500"}`}>
+                          {m.available ? "Available" : "Busy"}
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-primary-800 text-sm">{m.name}</h3>
+                        <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">{m.role}</p>
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {m.areas.map(a => (
+                            <span key={a} className="text-[9px] font-semibold bg-primary-50 text-primary-600 border border-primary-100 px-2 py-0.5 rounded-full">{a}</span>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => connectMentor(m.id)}
+                          className={`mt-3 w-full py-2 rounded-xl text-xs font-bold transition-colors ${
+                            connectedMentors.has(m.id)
+                              ? "bg-green-50 border border-green-200 text-green-700"
+                              : "bg-primary-900 text-white hover:bg-primary-800"
+                          }`}
+                        >
+                          {connectedMentors.has(m.id) ? "✓ Connected" : "Connect"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* STORIES TAB */}
+            {communityTab === "stories" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-bold text-primary-800 text-lg">Success Stories</h2>
+                  <Link href="/hub/stories" className="text-xs font-semibold text-secondary-600 hover:underline flex items-center gap-1">
+                    View All <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  {SUCCESS_STORIES.map(s => (
+                    <Link key={s.id} href="/hub/stories" className="group bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow">
+                      <div className="relative h-48">
+                        <Image src={s.image} alt={s.title} fill sizes="400px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+                        <span className={`absolute top-3 left-3 text-[9px] font-bold px-2 py-1 rounded-full ${s.tagColor}`}>{s.tag}</span>
+                        <div className="absolute bottom-3 left-3 right-3">
+                          <span className="text-[10px] font-bold text-secondary-300 uppercase tracking-wider">{s.club}</span>
+                          <h3 className="text-white font-bold text-base leading-tight mt-0.5">{s.title}</h3>
+                        </div>
+                      </div>
+                      <div className="p-5">
+                        <p className="text-sm text-neutral-600 leading-relaxed mb-4">{s.excerpt}</p>
+                        <div className="flex items-center gap-3 border-t border-neutral-100 pt-3">
+                          <div className="w-8 h-8 rounded-xl bg-primary-900 text-white flex items-center justify-center text-xs font-bold">
+                            {s.author.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-primary-800">{s.author}</p>
+                            <p className="text-[10px] text-neutral-400">{s.role} · {s.date}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* FEED TAB */}
+            {communityTab === "feed" && (<>
             {/*  Upload / Post Composer (LARGE & DETAILED)  */}
             <div
-              className={`bg-white border-2 transition-colors ${dragOver ? "border-primary-400 bg-primary-50/50" : "border-neutral-200"}`}
+              className={`bg-white border-2 transition-colors rounded-2xl overflow-hidden ${dragOver ? "border-primary-400 bg-primary-50/50" : "border-neutral-200"}`}
               onDragOver={(e) => {
                 e.preventDefault();
                 setDragOver(true);
@@ -728,7 +1035,7 @@ export default function CommunityPage() {
                     alt={userName}
                     width={44}
                     height={44}
-                    className="w-11 h-11 object-cover shrink-0"
+                    className="w-11 h-11 object-cover shrink-0 rounded-xl"
                   />
                 ) : (
                   <div className="w-11 h-11 bg-primary-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
@@ -1070,11 +1377,12 @@ export default function CommunityPage() {
             {filtered.length > 4 && (
               <button
                 onClick={() => setActiveFilter("all")}
-                className="w-full bg-white border border-neutral-200 py-3 text-xs font-semibold text-primary-600 hover:bg-primary-50 transition-colors"
+                className="w-full bg-white border border-neutral-200 rounded-xl py-3 text-xs font-semibold text-primary-600 hover:bg-primary-50 transition-colors"
               >
                 View All {filtered.length} Posts →
               </button>
             )}
+            </>)}
           </div>
 
           {/*  RIGHT SIDEBAR  */}
@@ -1176,50 +1484,56 @@ export default function CommunityPage() {
             </div>
 
             {/* Live Chat */}
-            <div className="bg-white border border-neutral-200">
-              <div className="px-4 py-2.5 border-b border-neutral-200 flex items-center justify-between">
-                <h3 className="text-xs font-bold text-primary-700 flex items-center gap-1.5">
-                  <MessageCircle size={13} /> Messages
+            <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between bg-primary-900">
+                <h3 className="text-xs font-bold text-white flex items-center gap-2">
+                  <MessageCircle size={13} /> Live Chat
                 </h3>
-                <span className="w-2 h-2 bg-green-500 rounded-full" />
+                <div className="flex items-center gap-1.5 text-[10px] text-green-400 font-semibold">
+                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                  Live
+                </div>
               </div>
-              <div className="h-44 overflow-y-auto p-3 space-y-2">
+              <div className="h-52 overflow-y-auto p-3 space-y-2 bg-neutral-50">
                 {chatMessages.map((msg, i) => (
                   <div
                     key={i}
-                    className={`px-3 py-2 text-xs ${msg.user === "You" ? "bg-primary-50 border-l-2 border-primary-400" : "bg-neutral-50"}`}
+                    className={`flex ${msg.user === "You" ? "justify-end" : "justify-start"}`}
                   >
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="font-bold text-primary-700">
-                        {msg.user}
-                      </span>
-                      <span className="text-[10px] text-neutral-400">
-                        {msg.time}
-                      </span>
+                    <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-xs shadow-sm ${
+                      msg.user === "You"
+                        ? "bg-primary-900 text-white rounded-br-sm"
+                        : "bg-white text-neutral-700 border border-neutral-200 rounded-bl-sm"
+                    }`}>
+                      {msg.user !== "You" && (
+                        <p className="text-[9px] font-bold text-primary-600 mb-0.5">{msg.user}</p>
+                      )}
+                      <p className="leading-relaxed">{msg.text}</p>
+                      <p className={`text-[9px] mt-0.5 ${msg.user === "You" ? "text-white/60" : "text-neutral-400"}`}>{msg.time}</p>
                     </div>
-                    <p className="text-neutral-600">{msg.text}</p>
                   </div>
                 ))}
               </div>
-              <div className="flex border-t border-neutral-200">
+              <div className="flex items-center border-t border-neutral-200 bg-white px-3 py-2 gap-2">
                 <input
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendChat()}
-                  placeholder="Message..."
-                  className="flex-1 px-3 py-2.5 text-xs focus:outline-none"
+                  placeholder="Type a message..."
+                  className="flex-1 text-xs focus:outline-none bg-transparent placeholder:text-neutral-400"
                 />
                 <button
                   onClick={sendChat}
-                  className="px-3 text-primary-600 hover:text-primary-700"
+                  className="w-7 h-7 bg-primary-900 hover:bg-primary-700 rounded-full flex items-center justify-center text-white transition-colors"
                 >
-                  <Send size={14} />
+                  <Send size={12} />
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

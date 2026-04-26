@@ -137,7 +137,12 @@ export default function MeetingsPage() {
   }).sort((a, b) => a.date.localeCompare(b.date));
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
       <HeroSection
         title="Meetings Schedule"
         icon={<Calendar size={36} />}
@@ -299,6 +304,7 @@ export default function MeetingsPage() {
         {filtered.length === 0 && (
           <div className="card p-8 text-center"><Calendar size={40} className="mx-auto text-neutral-300" /><p className="mt-3 text-neutral-500">No meetings match your search.</p></div>
         )}
+      </div>
       </div>
     </div>
   );

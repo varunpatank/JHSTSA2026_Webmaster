@@ -78,7 +78,7 @@ export default function DirectoryFilters({
         <div className="flex-1 min-w-[200px] relative">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-600"
           />
           <input
             value={filters.search}
@@ -99,8 +99,8 @@ export default function DirectoryFilters({
                 }
                 className={`px-3 py-1.5 text-xs font-semibold border rounded-lg transition-colors ${
                   filters.category === c
-                    ? "bg-primary-500 text-white border-primary-500"
-                    : "bg-white text-neutral-600 border-neutral-200 hover:border-primary-300"
+                    ? "bg-primary-700 text-white border-primary-700"
+                    : "bg-white text-primary-800 border-primary-200 hover:border-primary-500"
                 }`}
               >
                 {c === "Any" ? "All" : c}
@@ -112,7 +112,7 @@ export default function DirectoryFilters({
 
       {/* Expanded filter selects */}
       <details className="group">
-        <summary className="flex items-center gap-1.5 text-xs font-semibold text-primary-600 cursor-pointer select-none">
+        <summary className="flex items-center gap-1.5 text-xs font-semibold text-primary-800 cursor-pointer select-none">
           <SlidersHorizontal size={13} /> More Filters
         </summary>
         <div className="grid sm:grid-cols-5 gap-3 pt-3 mt-2 border-t border-neutral-100">
@@ -128,7 +128,7 @@ export default function DirectoryFilters({
             { label: "Frequency", key: "status" as const, options: FREQUENCIES },
           ].map((f) => (
             <div key={f.key}>
-              <label className="block text-[10px] font-semibold text-neutral-500 mb-1 uppercase tracking-wider">
+              <label className="block text-[10px] font-semibold text-primary-700 mb-1 uppercase tracking-wider">
                 {f.label}
               </label>
               <select
@@ -153,7 +153,7 @@ export default function DirectoryFilters({
       {/* Active filter info */}
       {hasFilters && (
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-neutral-500">
+          <span className="text-primary-700">
             Showing {resultCount} of {totalCount}
           </span>
           <button

@@ -34,25 +34,25 @@ type ClubMarker = {
 };
 
 const categoryColors: Record<string, string> = {
-  Academic: "bg-blue-500",
-  STEM: "bg-emerald-500",
-  Service: "bg-orange-500",
-  Arts: "bg-pink-500",
-  Cultural: "bg-purple-500",
-  Media: "bg-cyan-500",
-  Sports: "bg-red-500",
-  Leadership: "bg-amber-500",
+  Academic: "bg-primary-700",
+  STEM: "bg-primary-600",
+  Service: "bg-primary-800",
+  Arts: "bg-primary-500",
+  Cultural: "bg-primary-700",
+  Media: "bg-primary-600",
+  Sports: "bg-primary-800",
+  Leadership: "bg-primary-500",
 };
 
 const categoryDotColors: Record<string, string> = {
-  Academic: "#3b82f6",
-  STEM: "#10b981",
-  Service: "#f97316",
-  Arts: "#ec4899",
-  Cultural: "#a855f7",
-  Media: "#06b6d4",
-  Sports: "#ef4444",
-  Leadership: "#f59e0b",
+  Academic: "#1f3f69",
+  STEM: "#2a5a8f",
+  Service: "#163252",
+  Arts: "#376ca6",
+  Cultural: "#244d7c",
+  Media: "#2f6398",
+  Sports: "#102740",
+  Leadership: "#447bb6",
 };
 
 type BuildingGroup = {
@@ -636,7 +636,7 @@ export default function DirectoryLeafletMap({
                   >
                     {school.name}
                   </p>
-                  <p className="text-[9px] text-neutral-500">
+                  <p className="text-[9px] text-primary-200">
                     {school.clubs.length} club
                     {school.clubs.length !== 1 ? "s" : ""}
                   </p>
@@ -650,16 +650,16 @@ export default function DirectoryLeafletMap({
                         className="w-1.5 h-1.5 shrink-0"
                         style={{
                           backgroundColor:
-                            categoryDotColors[club.category] || "#6b7280",
+                            categoryDotColors[club.category] || "#2b4c73",
                         }}
                       />
-                      <span className="text-[10px] text-neutral-400 truncate">
+                      <span className="text-[10px] text-primary-100 truncate">
                         {club.name}
                       </span>
                     </div>
                   ))}
                   {school.clubs.length > 8 && (
-                    <p className="text-[9px] text-neutral-500">
+                    <p className="text-[9px] text-primary-200">
                       +{school.clubs.length - 8} more
                     </p>
                   )}
@@ -738,7 +738,7 @@ export default function DirectoryLeafletMap({
                   <p className="font-bold text-primary-700 text-sm">
                     {school.name}
                   </p>
-                  <p className="text-xs text-neutral-500 mb-1.5">
+                  <p className="text-xs text-primary-700 mb-1.5">
                     {school.clubs.length} club
                     {school.clubs.length !== 1 ? "s" : ""} &middot; Click to
                     explore
@@ -753,13 +753,13 @@ export default function DirectoryLeafletMap({
                           className="w-2 h-2 shrink-0"
                           style={{
                             backgroundColor:
-                              categoryDotColors[club.category] || "#6b7280",
+                              categoryDotColors[club.category] || "#2b4c73",
                           }}
                         />
-                        <span className="text-xs text-neutral-700">
+                        <span className="text-xs text-primary-900">
                           {club.name}
                         </span>
-                        <span className="text-[9px] text-neutral-400 ml-auto">
+                        <span className="text-[9px] text-primary-600 ml-auto">
                           {club.category}
                         </span>
                       </div>
@@ -860,7 +860,7 @@ export default function DirectoryLeafletMap({
                 <p className="font-semibold text-primary-700">
                   {activeMarker.chapter.name}
                 </p>
-                <p className="text-neutral-700">
+                <p className="text-primary-800">
                   {formatChapterLocation(activeMarker.chapter.meetingLocation)}
                 </p>
               </div>
@@ -875,7 +875,7 @@ export default function DirectoryLeafletMap({
                   href={`/directory/${activeMarker.chapter.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border border-neutral-300 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                  className="border border-primary-300 px-2 py-1 text-xs font-semibold text-primary-800 hover:bg-primary-50"
                 >
                   Open in New Tab
                 </Link>
@@ -899,7 +899,7 @@ export default function DirectoryLeafletMap({
               <p className="font-semibold text-primary-700">
                 {activeBuilding.building}
               </p>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-primary-700">
                 {activeBuilding.clubs.length} clubs in this building
               </p>
               {!showSplitClubDots && (
@@ -912,7 +912,7 @@ export default function DirectoryLeafletMap({
                       DIRECTORY_MAP_CONFIG.animation.focusDurationMs,
                     )
                   }
-                  className="border border-neutral-300 px-2 py-1 text-xs font-semibold text-neutral-700"
+                  className="border border-primary-300 px-2 py-1 text-xs font-semibold text-primary-800"
                 >
                   Zoom to Individual Clubs
                 </button>
@@ -923,7 +923,7 @@ export default function DirectoryLeafletMap({
                     key={clubMarker.chapter.id}
                     type="button"
                     onClick={() => focusClub(clubMarker)}
-                    className="w-full text-left border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:border-primary-300 hover:bg-primary-50"
+                    className="w-full text-left border border-primary-200 px-2 py-1 text-xs text-primary-800 hover:border-primary-500 hover:bg-primary-50"
                   >
                     {clubMarker.chapter.name}
                   </button>

@@ -273,7 +273,12 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
       <HeroSection
         title="Notifications"
         icon={<Bell size={36} />}
@@ -390,6 +395,7 @@ export default function NotificationsPage() {
             <p className="mt-3 text-neutral-500">No notifications to show.</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

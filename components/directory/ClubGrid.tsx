@@ -437,7 +437,7 @@ export default function ClubGrid({
   if (clubs.length === 0) {
     return (
       <div className="bg-white border border-neutral-200 rounded-xl p-10 text-center">
-        <p className="font-bold text-primary-700">
+        <p className="font-bold text-primary-900">
           No clubs match your filters
         </p>
         <p className="text-sm text-neutral-500 mt-1">
@@ -506,7 +506,7 @@ export default function ClubGrid({
                 </div>
               )}
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full border border-primary-200 bg-primary-50 text-primary-700">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full border border-primary-200 bg-primary-50 text-primary-900">
                   {ch.category}
                 </span>
                 <span
@@ -515,7 +515,7 @@ export default function ClubGrid({
                   {ch.meetingFrequency}
                 </span>
               </div>
-              <h3 className="font-heading font-bold text-primary-600 group-hover:text-primary-500 transition-colors">
+              <h3 className="font-heading font-bold text-primary-900 group-hover:text-primary-800 transition-colors">
                 {ch.name}
               </h3>
               <p className="text-sm text-neutral-600 mt-1 line-clamp-2">
@@ -537,7 +537,7 @@ export default function ClubGrid({
                     ? "Engage now"
                     : "Engage by applying"}
                 </span>
-                <span className="font-semibold text-primary-600">
+                <span className="font-semibold text-primary-900">
                   View details &amp; join
                 </span>
               </div>

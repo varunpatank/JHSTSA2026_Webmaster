@@ -116,9 +116,21 @@ export default function ProposeResourcePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 min-h-screen bg-neutral-50">
       {}
-      <HeroSection>
+      <HeroSection
+        images={[
+          "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=75",
+        ]}
+        texture="diagonal"
+      >
         <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 text-xs font-semibold">
           <Lightbulb size={12} /> Community Resource Hub
         </div>

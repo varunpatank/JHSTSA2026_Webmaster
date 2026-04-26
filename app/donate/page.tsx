@@ -15,11 +15,22 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
   const initialSuccess = success === "true";
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
       <HeroSection
         eyebrow="Support"
         title="Donations & Fundraising"
         description="Help fund student organizations, competitions, and community events. Payments processed securely via Stripe."
+        images={[
+          "https://images.unsplash.com/photo-1532622785990-1501ba06101d?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=75",
+        ]}
+        texture="diagonal"
       >
         <p className="mt-4 inline-block bg-white/10 px-3 py-1 text-sm">
           Judges: use promo code <strong>&quot;test&quot;</strong> to see the full payment flow at $0.
@@ -81,6 +92,7 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
           </div>
         </aside>
       </section>
+      </div>
     </div>
   );
 }

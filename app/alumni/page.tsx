@@ -97,12 +97,23 @@ export default function AlumniPage() {
   ] as const;
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
       <HeroSection
         eyebrow="Community"
         title="Alumni Network"
         icon={<GraduationCap size={40} />}
         description="Connect with graduates who paved the way. Mentorship, career advice, and ongoing support for current students."
+        images={[
+          "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1552664897-d82a47fb0ce8?auto=format&fit=crop&w=1600&q=75",
+        ]}
+        texture="diagonal"
         stats={[
           { label: "Alumni Connected", value: "240+" },
           { label: "Mentorship Sessions", value: "85" },
@@ -488,6 +499,8 @@ export default function AlumniPage() {
             </Reveal>
           </div>
         )}
+      </div>
+      </div>
       </div>
     </div>
   );

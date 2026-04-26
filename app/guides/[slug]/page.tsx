@@ -26,7 +26,12 @@ export default function GuideDetailPage() {
   const nextGuide = guideIndex < guidesData.length - 1 ? guidesData[guideIndex + 1] : null;
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.04) 18px, rgba(255,255,255,0.04) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
       <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
           <Link href="/guides" className="text-sm text-primary-200 hover:underline inline-flex items-center gap-1"><ArrowLeft size={14} /> All Guides</Link>
@@ -78,6 +83,7 @@ export default function GuideDetailPage() {
             </div>
           </div>
         </aside>
+      </div>
       </div>
     </div>
   );

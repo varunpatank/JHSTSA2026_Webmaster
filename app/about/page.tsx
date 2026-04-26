@@ -46,26 +46,38 @@ const TEAM = [
 
 export default function AboutPage() {
   return (
-    <div className="bg-neutral-100 min-h-screen">
-      <HeroSection
-        eyebrow="Our Story"
-        title="About ClubConnect"
-        description="ClubConnect is a modern hub designed to help student chapters organize, collaborate, and shine. We combine tools for meetings, events, and resources with privacy-first defaults and partner integrations that amplify student leadership."
-        stats={[
-          { label: "Active Clubs", value: schoolWideStats.totalClubs },
-          { label: "Student Members", value: schoolWideStats.totalMembers.toLocaleString() },
-          { label: "Events This Year", value: schoolWideStats.totalEvents },
-          { label: "Service Hours", value: schoolWideStats.totalServiceHours.toLocaleString() },
-        ]}
-        actions={
-          <>
-            <Link href="/start-a-club" className="btn-secondary">Propose a Chapter</Link>
-            <Link href="/directory" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">Browse Directory</Link>
-          </>
-        }
-      />
+    <div className="bg-[#f4f6fa] min-h-screen relative">
+      {/* Diagonal texture overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0">
+        <HeroSection
+          eyebrow="Our Story"
+          title="About ClubConnect"
+          description="ClubConnect is a modern hub designed to help student chapters organize, collaborate, and shine. We combine tools for meetings, events, and resources with privacy-first defaults and partner integrations that amplify student leadership."
+          images={[
+            "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
+            "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
+            "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=75",
+          ]}
+          texture="diagonal"
+          stats={[
+            { label: "Active Clubs", value: schoolWideStats.totalClubs },
+            { label: "Student Members", value: schoolWideStats.totalMembers.toLocaleString() },
+            { label: "Events This Year", value: schoolWideStats.totalEvents },
+            { label: "Service Hours", value: schoolWideStats.totalServiceHours.toLocaleString() },
+          ]}
+          actions={
+            <>
+              <Link href="/start-a-club" className="btn-secondary">Propose a Chapter</Link>
+              <Link href="/directory" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">Browse Directory</Link>
+            </>
+          }
+        />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-12">
         {}
         <Reveal>
           <div className="card p-8">
@@ -206,16 +218,18 @@ export default function AboutPage() {
 
         {}
         <Reveal>
-          <div className="card p-8 bg-primary-600 text-white text-center">
-            <h2 className="text-2xl font-heading font-bold">Ready to Get Involved?</h2>
-            <p className="mt-2 text-primary-100 max-w-lg mx-auto">Whether you want to join a club, start one, or volunteer — ClubConnect has everything you need to make an impact.</p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <div className="card p-8 bg-primary-600 text-white text-center relative overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none opacity-[0.10]" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.15) 18px, rgba(255,255,255,0.15) 19px)" }} />
+            <h2 className="text-2xl font-heading font-bold relative z-10">Ready to Get Involved?</h2>
+            <p className="mt-2 text-primary-100 max-w-lg mx-auto relative z-10">Whether you want to join a club, start one, or volunteer — ClubConnect has everything you need to make an impact.</p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3 relative z-10">
               <Link href="/directory" className="btn-secondary">Browse Clubs</Link>
               <Link href="/start-a-club" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">Start a Club</Link>
               <Link href="/events" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">View Events</Link>
             </div>
           </div>
         </Reveal>
+      </div>
       </div>
     </div>
   );

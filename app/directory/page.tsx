@@ -228,11 +228,28 @@ function DirectoryPageContent() {
   }, [filters, chapters]);
 
   return (
-    <div className="bg-neutral-50 min-h-screen">
-      <HeroSection
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.08]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-cream-200 min-h-screen diagonal-texture-light">
+        <HeroSection
         eyebrow="Discover · Filter · Engage"
-        title="Organization Directory"
+        title="Club"
+        highlightWord="Directory"
         description="Explore school clubs, compare meeting details, filter by interest, and find the right community to join."
+        texture="diagonal"
+        images={[
+          "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=75",
+        ]}
+        actions={
+          <Link href="/portal" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary-500 hover:bg-secondary-600 text-white text-sm font-bold transition-colors">
+            <ArrowRight size={15} /> Create a Club
+          </Link>
+        }
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -240,10 +257,10 @@ function DirectoryPageContent() {
         <section className="animate-fade-up" style={{ animationDelay: "60ms" }}>
           <div className="bg-white border border-neutral-200 p-4">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-heading font-bold text-primary-700">
+              <h2 className="text-lg font-heading font-bold text-primary-900">
                 Interactive Map
               </h2>
-              <span className="text-sm font-medium text-neutral-500">
+              <span className="text-sm font-medium text-primary-800">
                 {filtered.length} clubs shown
               </span>
             </div>
@@ -272,10 +289,10 @@ function DirectoryPageContent() {
         >
           <div className="flex items-center justify-center mb-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-heading font-bold text-primary-700">
+              <h2 className="text-lg font-heading font-bold text-primary-900">
                 All Clubs
               </h2>
-              <span className="text-sm text-neutral-500">
+              <span className="text-sm text-primary-800">
                 {filtered.length} of {chapters.length} clubs
               </span>
             </div>
@@ -359,10 +376,10 @@ function DirectoryPageContent() {
                           key={stat.label}
                           className="bg-white border border-neutral-200 px-2 py-2.5 text-center"
                         >
-                          <p className="text-lg font-bold text-primary-600 leading-none">
+                          <p className="text-lg font-bold text-primary-900 leading-none">
                             {stat.value}
                           </p>
-                          <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-wide font-medium">
+                          <p className="text-[10px] text-primary-700 mt-1 uppercase tracking-wide font-medium">
                             {stat.label}
                           </p>
                         </div>
@@ -392,7 +409,7 @@ function DirectoryPageContent() {
                           {!quizDone ? (
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <p className="text-[10px] text-neutral-500">
+                                <p className="text-[10px] text-primary-700">
                                   Q{quizStep + 1}/{quizQuestions.length}
                                 </p>
                                 <div className="flex gap-0.5">
@@ -439,14 +456,14 @@ function DirectoryPageContent() {
                                     href={`/directory/${club.id}`}
                                     className="flex items-center gap-2.5 p-2 border border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40 transition-all"
                                   >
-                                    <div className="w-6 h-6 bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                    <div className="w-6 h-6 bg-primary-100 text-primary-900 flex items-center justify-center font-bold text-[10px] shrink-0">
                                       {i + 1}
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                      <p className="font-semibold text-xs text-primary-700 truncate">
+                                      <p className="font-semibold text-xs text-primary-900 truncate">
                                         {club.name}
                                       </p>
-                                      <p className="text-[10px] text-neutral-500">
+                                      <p className="text-[10px] text-primary-700">
                                         {club.category} · {club.memberCount}{" "}
                                         members
                                       </p>
@@ -460,7 +477,7 @@ function DirectoryPageContent() {
                               </div>
                               <button
                                 onClick={resetQuiz}
-                                className="mt-2 w-full text-center text-[10px] text-primary-600 font-semibold hover:text-primary-700"
+                                className="mt-2 w-full text-center text-[10px] text-primary-900 font-semibold hover:text-primary-800"
                               >
                                 Retake Quiz
                               </button>
@@ -487,7 +504,7 @@ function DirectoryPageContent() {
                             d="M13 10V3L4 14h7v7l9-11h-7z"
                           />
                         </svg>
-                        <h3 className="text-xs font-heading font-bold text-primary-700 uppercase tracking-wider">
+                        <h3 className="text-xs font-heading font-bold text-primary-900 uppercase tracking-wider">
                           Student Resources
                         </h3>
                       </div>
@@ -521,10 +538,10 @@ function DirectoryPageContent() {
                               {item.icon}
                             </span>
                             <div className="min-w-0">
-                              <p className="font-semibold text-primary-700 text-sm leading-tight group-hover/link:text-primary-600 transition-colors">
+                              <p className="font-semibold text-primary-900 text-sm leading-tight group-hover/link:text-primary-800 transition-colors">
                                 {item.label}
                               </p>
-                              <p className="text-[11px] text-neutral-500 leading-tight mt-0.5">
+                              <p className="text-[11px] text-primary-700 leading-tight mt-0.5">
                                 {item.desc}
                               </p>
                             </div>
@@ -559,6 +576,7 @@ function DirectoryPageContent() {
             </div>
           </div>
         </section>
+      </div>
       </div>
     </div>
   );

@@ -7,11 +7,22 @@ import HeroSection from "@/components/HeroSection";
 
 export default function GuidesIndexPage() {
   return (
-    <div className="bg-neutral-100 min-h-screen">
-      <HeroSection
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
+        <HeroSection
         eyebrow="Resources"
         title="Guides & Handbooks"
         description="Step-by-step guides to help you navigate club life - from joining your first club to leading an organization."
+        images={[
+          "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1600&q=75",
+          "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1600&q=75",
+        ]}
+        texture="diagonal"
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div className="grid sm:grid-cols-2 gap-6">
@@ -34,14 +45,16 @@ export default function GuidesIndexPage() {
           ))}
         </div>
 
-        <div className="mt-10 card p-6 bg-primary-600 text-white text-center">
-          <h2 className="text-xl font-heading font-bold">Need Help?</h2>
-          <p className="text-primary-100 mt-2">Check our FAQ or ask our AI assistant for personalised help.</p>
-          <div className="mt-4 flex justify-center gap-3">
+        <div className="mt-10 card p-6 bg-primary-600 text-white text-center relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none opacity-[0.10]" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.15) 18px, rgba(255,255,255,0.15) 19px)" }} />
+          <h2 className="text-xl font-heading font-bold relative z-10">Need Help?</h2>
+          <p className="text-primary-100 mt-2 relative z-10">Check our FAQ or ask our AI assistant for personalised help.</p>
+          <div className="mt-4 flex justify-center gap-3 relative z-10">
             <Link href="/faq" className="btn-secondary">View FAQ</Link>
             <Link href="/explore#chatbot" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">AI Assistant</Link>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

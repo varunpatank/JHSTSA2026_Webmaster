@@ -247,9 +247,14 @@ export default function SocialPage() {
   const upcomingEvents = useMemo(() => [...events].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4), []);
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {}
-      <HeroSection align="left">
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 min-h-screen bg-neutral-50">
+        {}
+        <HeroSection align="left" texture="diagonal">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="hero-title mt-0"><Users size={24} className="hero-icon" /> <span>Student Community Hub</span></h1>
@@ -552,6 +557,7 @@ export default function SocialPage() {
         <button onClick={() => setShowAi(v => !v)} className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 ${showAi ? "bg-neutral-600 text-white" : "bg-gradient-to-br from-primary-500 to-secondary-500 text-white"}`}>
           {showAi ? <X size={20} /> : <Bot size={20} />}
         </button>
+      </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
@@ -53,12 +53,12 @@ const categoryColors: Record<string, string> = {
 };
 
 const urgencyIcons: Record<string, { icon: string; color: string }> = {
-  event: { icon: "📅", color: "bg-primary-50 border-primary-200" },
-  deadline: { icon: "⏰", color: "bg-red-50 border-red-200" },
-  volunteer: { icon: "🤝", color: "bg-amber-50 border-amber-200" },
-  meeting: { icon: "👥", color: "bg-emerald-50 border-emerald-200" },
-  competition: { icon: "🏆", color: "bg-purple-50 border-purple-200" },
-  social: { icon: "🎉", color: "bg-rose-50 border-rose-200" },
+  event: { icon: "??", color: "bg-primary-50 border-primary-200" },
+  deadline: { icon: "?", color: "bg-red-50 border-red-200" },
+  volunteer: { icon: "??", color: "bg-amber-50 border-amber-200" },
+  meeting: { icon: "??", color: "bg-emerald-50 border-emerald-200" },
+  competition: { icon: "??", color: "bg-purple-50 border-purple-200" },
+  social: { icon: "??", color: "bg-rose-50 border-rose-200" },
 };
 
 
@@ -67,7 +67,7 @@ const discussionThreads = [
   { id: 2, title: "Best fundraising ideas for spring semester", author: "James L.", club: "FBLA", avatar: "JL", replies: 18, views: 254, lastActive: "5 hours ago", hot: true, pinned: false },
   { id: 3, title: "How to balance club leadership with academics", author: "Sophie K.", club: "NHS", avatar: "SK", replies: 31, views: 487, lastActive: "1 day ago", hot: false, pinned: false },
   { id: 4, title: "Robotics competition strategies & tips", author: "Alex J.", club: "Robotics", avatar: "AJ", replies: 15, views: 198, lastActive: "1 day ago", hot: false, pinned: false },
-  { id: 5, title: "New member recruitment — what works", author: "Taylor M.", club: "Drama", avatar: "TM", replies: 12, views: 143, lastActive: "2 days ago", hot: false, pinned: false },
+  { id: 5, title: "New member recruitment � what works", author: "Taylor M.", club: "Drama", avatar: "TM", replies: 12, views: 143, lastActive: "2 days ago", hot: false, pinned: false },
   { id: 6, title: "Community service hour tracking best practices", author: "Priya R.", club: "CSC", avatar: "PR", replies: 9, views: 172, lastActive: "3 days ago", hot: false, pinned: false },
 ];
 
@@ -139,7 +139,7 @@ export default function CommunityHubPage() {
             </span>
             <h1 className="hero-title"><span>Community Hub</span></h1>
             <p className="hero-description max-w-xl text-sm leading-relaxed">
-              The heartbeat of student life — connect with peers, join discussions, celebrate achievements, and collaborate across clubs.
+              The heartbeat of student life � connect with peers, join discussions, celebrate achievements, and collaborate across clubs.
             </p>
           </div>
           <div className="flex gap-3 flex-wrap">
@@ -189,7 +189,7 @@ export default function CommunityHubPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search hub…"
+                  placeholder="Search hub�"
                   className="pl-9 pr-3 py-2 text-sm border border-neutral-200 bg-neutral-50 w-56 focus:outline-none focus:border-primary-400 focus:bg-white transition-colors"
                 />
               </div>
@@ -256,7 +256,7 @@ export default function CommunityHubPage() {
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-primary-800 text-sm">{opp.title}</h4>
                           <p className="text-xs text-neutral-500 mt-0.5">
-                            {opp.club} • {opp.date}
+                            {opp.club} � {opp.date}
                           </p>
                         </div>
                         {opp.urgent && (
@@ -414,7 +414,7 @@ export default function CommunityHubPage() {
                   ))}
                 </div>
                 <Link href="/directory" className="block text-center text-sm text-primary-600 font-medium mt-4 hover:text-primary-700">
-                  View All Clubs →
+                  View All Clubs ?
                 </Link>
               </div>
 
@@ -427,7 +427,7 @@ export default function CommunityHubPage() {
                   {schoolWideStats.topClubs.slice(0, 5).map((club, i) => (
                     <div key={club.name} className="flex items-center gap-3">
                       <span className={`w-7 h-7 flex items-center justify-center text-xs font-bold shrink-0 ${i === 0 ? "bg-yellow-100 text-yellow-700" : i === 1 ? "bg-neutral-200 text-neutral-600" : i === 2 ? "bg-amber-100 text-amber-700" : "bg-neutral-100 text-neutral-500"}`}>
-                        {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                        {i === 0 ? "??" : i === 1 ? "??" : i === 2 ? "??" : i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-primary-700 truncate">{club.name}</p>
@@ -494,10 +494,10 @@ export default function CommunityHubPage() {
                     <div className="flex-1 p-4">
                       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                         {d.pinned && (
-                          <span className="text-[10px] font-bold bg-primary-100 text-primary-700 px-2 py-0.5 uppercase">📌 Pinned</span>
+                          <span className="text-[10px] font-bold bg-primary-100 text-primary-700 px-2 py-0.5 uppercase">?? Pinned</span>
                         )}
                         {d.hot && (
-                          <span className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 uppercase">🔥 Hot</span>
+                          <span className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 uppercase">?? Hot</span>
                         )}
                         <span className="text-[10px] font-semibold bg-primary-50 text-primary-600 px-2 py-0.5 border border-primary-200">
                           {d.club}
@@ -565,7 +565,7 @@ export default function CommunityHubPage() {
                   </span>
                   <h3 className="text-2xl font-bold mb-2">{spotlights[0].title}</h3>
                   <p className="text-white/80 text-sm max-w-2xl leading-relaxed mb-4">
-                    {spotlights[0].content.slice(0, 200)}…
+                    {spotlights[0].content.slice(0, 200)}�
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {spotlights[0].highlights.slice(0, 3).map((h) => (
@@ -593,7 +593,7 @@ export default function CommunityHubPage() {
                     </div>
                     <h3 className="text-lg font-bold text-primary-800 mb-2">{s.title}</h3>
                     <p className="text-sm text-neutral-600 line-clamp-3 mb-4 leading-relaxed">
-                      {s.content.slice(0, 180)}…
+                      {s.content.slice(0, 180)}�
                     </p>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {s.highlights.slice(0, 2).map((h) => (
@@ -605,9 +605,9 @@ export default function CommunityHubPage() {
                     {}
                     {s.testimonials[0] && (
                       <blockquote className="border-l-3 border-secondary-400 pl-3 text-xs text-neutral-500 italic">
-                        &ldquo;{s.testimonials[0].quote.slice(0, 120)}…&rdquo;
+                        &ldquo;{s.testimonials[0].quote.slice(0, 120)}�&rdquo;
                         <cite className="block mt-1 not-italic font-medium text-primary-600">
-                          — {s.testimonials[0].author}, {s.testimonials[0].role}
+                          � {s.testimonials[0].author}, {s.testimonials[0].role}
                         </cite>
                       </blockquote>
                     )}
@@ -693,9 +693,9 @@ export default function CommunityHubPage() {
               </p>
               <div className="grid sm:grid-cols-3 gap-3 mb-4">
                 {[
-                  { idea: "Joint charity gala — Drama + Music + Art", votes: 34 },
-                  { idea: "School-wide hackathon — all STEM clubs", votes: 28 },
-                  { idea: "Cultural food festival — all cultural clubs", votes: 41 },
+                  { idea: "Joint charity gala � Drama + Music + Art", votes: 34 },
+                  { idea: "School-wide hackathon � all STEM clubs", votes: 28 },
+                  { idea: "Cultural food festival � all cultural clubs", votes: 41 },
                 ].map((item) => (
                   <div key={item.idea} className="bg-white border border-primary-200 p-3">
                     <p className="text-xs text-primary-700 font-medium">{item.idea}</p>
@@ -738,7 +738,7 @@ export default function CommunityHubPage() {
               </div>
               <div className="text-center mt-4">
                 <Link href="/hub/mentors" className="text-sm text-primary-600 font-medium hover:text-primary-700">
-                  View Mentor Network →
+                  View Mentor Network ?
                 </Link>
               </div>
             </div>
@@ -797,7 +797,7 @@ export default function CommunityHubPage() {
                           <div>
                             <h4 className="font-bold text-primary-800 text-sm">{story.name}</h4>
                             <p className="text-[10px] text-neutral-400">
-                              Grade {story.grade} • {story.club}
+                              Grade {story.grade} � {story.club}
                             </p>
                           </div>
                           <span className="ml-auto text-[10px] bg-primary-50 text-primary-600 px-2 py-0.5 border border-primary-200 font-medium">

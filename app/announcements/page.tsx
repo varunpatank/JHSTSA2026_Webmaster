@@ -62,13 +62,19 @@ export default function AnnouncementsPage() {
   };
 
   return (
-    <div className="bg-neutral-100 min-h-screen">
-      <HeroSection
-        eyebrow="Stay Updated"
-        title="Announcements"
-        icon={<Megaphone size={36} />}
-        description="Important updates, deadlines, and news from clubs, advisors, and the Activities Office."
-      />
+    <div className="relative">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
+        }} />
+      <div className="relative z-0 bg-neutral-100 min-h-screen">
+        <HeroSection
+          eyebrow="Stay Updated"
+          title="Announcements"
+          icon={<Megaphone size={36} />}
+          description="Important updates, deadlines, and news from clubs, advisors, and the Activities Office."
+          texture="diagonal"
+        />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {}
@@ -145,6 +151,7 @@ export default function AnnouncementsPage() {
             <p className="mt-3 text-neutral-500">No announcements match your filters.</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
