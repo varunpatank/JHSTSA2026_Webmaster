@@ -282,7 +282,6 @@ function DirectoryPageContent() {
           </div>
         </section>
 
-        {/* ── Orgs Grid + AI Chat Row ── */}
         <section
           className="animate-fade-up"
           style={{ animationDelay: "120ms" }}
