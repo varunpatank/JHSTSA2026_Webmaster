@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { BookMarked, BookOpen, Compass, Gavel, Menu, Plus, X } from "lucide-react";
+import { BookMarked, BookOpen, Compass, Gavel, Menu, Plus, X, Calendar, Users } from "lucide-react";
 import { supabase, profilesApi, storageApi, authApi } from "../lib/api";
 import { loginUser, isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
 
@@ -34,7 +34,8 @@ export default function Header() {
     { href: "/", label: "Home", icon: null },
     { href: "/resources", label: "Resources", icon: BookOpen },
     { href: "/directory", label: "Clubs", icon: Compass },
-    { href: "/community", label: "Community", icon: null },
+    { href: "/events", label: "Events", icon: Calendar },
+    { href: "/community", label: "Community", icon: Users },
   ];
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -151,12 +152,7 @@ export default function Header() {
                 </Link>
               );
             })}
-            <Link
-              href="/references"
-              className="inline-flex h-[60px] items-center px-3 text-[12.5px] font-medium text-primary-800 hover:text-primary-900 transition-colors relative after:absolute after:bottom-0 after:left-2.5 after:right-2.5 after:h-[2px] after:bg-secondary-500 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
-            >
-              References
-            </Link>
+
           </nav>
 
           {/* Right actions */}
@@ -175,16 +171,17 @@ export default function Header() {
             {/* Portal action buttons - desktop only */}
             <div className="hidden md:flex items-center gap-1">
               <Link
-                href="/portal?tab=resource"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border border-cream-400 text-primary-600 hover:bg-cream-100 transition-colors"
+                href="/references"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border border-cream-400 text-primary-600 hover:bg-cream-100 transition-colors hover:border-primary-300"
               >
-                <Plus size={11} /> Add Resource
+                References
               </Link>
               <Link
                 href="/portal?tab=create"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border border-cream-400 text-primary-600 hover:bg-cream-100 transition-colors"
+                title="List and advertise your club to the student community"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border border-cream-400 text-primary-600 hover:bg-cream-100 transition-colors hover:border-primary-300"
               >
-                <Plus size={11} /> New Club
+                <Plus size={11} /> Create My Club
               </Link>
               <Link
                 href="/portal"
@@ -194,29 +191,7 @@ export default function Header() {
               </Link>
             </div>
 
-            {!isLoggedIn && (
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await authApi.signInWithEmail("Judge@TSA.org", "Judge@123");
-                    loginUser("Judge", "Judge@TSA.org");
-                    setIsLoggedIn(true);
-                    setAvatarUrl(null);
-                    window.location.reload();
-                  } catch {
-                    loginUser("Judge", "Judge@TSA.org");
-                    setIsLoggedIn(true);
-                    setAvatarUrl(null);
-                  }
-                }}
-                className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full border border-secondary-400 text-secondary-700 hover:bg-secondary-50 transition-colors"
-                aria-label="Quick judge login"
-              >
-                <Gavel size={12} />
-                Judge
-              </button>
-            )}
+            {/* Judge button removed per user request */}
           </div>
         </div>
 

@@ -67,7 +67,7 @@ const discussionThreads = [
   { id: 2, title: "Best fundraising ideas for spring semester", author: "James L.", club: "FBLA", avatar: "JL", replies: 18, views: 254, lastActive: "5 hours ago", hot: true, pinned: false },
   { id: 3, title: "How to balance club leadership with academics", author: "Sophie K.", club: "NHS", avatar: "SK", replies: 31, views: 487, lastActive: "1 day ago", hot: false, pinned: false },
   { id: 4, title: "Robotics competition strategies & tips", author: "Alex J.", club: "Robotics", avatar: "AJ", replies: 15, views: 198, lastActive: "1 day ago", hot: false, pinned: false },
-  { id: 5, title: "New member recruitment — what works", author: "Taylor M.", club: "Drama", avatar: "TM", replies: 12, views: 143, lastActive: "2 days ago", hot: false, pinned: false },
+  { id: 5, title: "New member recruitment ï¿½ what works", author: "Taylor M.", club: "Drama", avatar: "TM", replies: 12, views: 143, lastActive: "2 days ago", hot: false, pinned: false },
   { id: 6, title: "Community service hour tracking best practices", author: "Priya R.", club: "CSC", avatar: "PR", replies: 9, views: 172, lastActive: "3 days ago", hot: false, pinned: false },
 ];
 
@@ -91,11 +91,6 @@ export default function CommunityHubPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-
-  const upcomingEvents = useMemo(
-    () => [...events].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5),
-    []
-  );
 
   const trendingClubs = useMemo(
     () =>
@@ -139,7 +134,7 @@ export default function CommunityHubPage() {
             </span>
             <h1 className="hero-title"><span>Community Hub</span></h1>
             <p className="hero-description max-w-xl text-sm leading-relaxed">
-              The heartbeat of student life — connect with peers, join discussions, celebrate achievements, and collaborate across clubs.
+              The heartbeat of student life ï¿½ connect with peers, join discussions, celebrate achievements, and collaborate across clubs.
             </p>
           </div>
           <div className="flex gap-3 flex-wrap">
@@ -189,7 +184,7 @@ export default function CommunityHubPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search hub…"
+                  placeholder="Search hubï¿½"
                   className="pl-9 pr-3 py-2 text-sm border border-neutral-200 bg-neutral-50 w-56 focus:outline-none focus:border-primary-400 focus:bg-white transition-colors"
                 />
               </div>
@@ -256,7 +251,7 @@ export default function CommunityHubPage() {
                         <div className="flex-1 min-w-0">
                           <h4 className="font-semibold text-primary-800 text-sm">{opp.title}</h4>
                           <p className="text-xs text-neutral-500 mt-0.5">
-                            {opp.club} • {opp.date}
+                            {opp.club} ï¿½ {opp.date}
                           </p>
                         </div>
                         {opp.urgent && (
@@ -273,52 +268,6 @@ export default function CommunityHubPage() {
                 </div>
               </div>
 
-              {}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-primary-800 flex items-center gap-2">
-                    <Calendar size={20} className="text-secondary-500" />
-                    Upcoming Events
-                  </h2>
-                  <Link href="/events" className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
-                    View Calendar <ChevronRight size={14} />
-                  </Link>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {upcomingEvents.map((ev) => (
-                    <Link
-                      key={ev.id}
-                      href={`/events/${ev.id}`}
-                      className="bg-white border-2 border-neutral-200 p-5 hover:border-primary-300 transition-colors group"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="bg-primary-50 border border-primary-200 px-3 py-2 text-center shrink-0">
-                          <div className="text-xs text-primary-500 font-medium">
-                            {new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}
-                          </div>
-                          <div className="text-xl font-bold text-primary-800 leading-none">
-                            {new Date(ev.date).getDate()}
-                          </div>
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="font-bold text-primary-800 text-sm group-hover:text-primary-600 transition-colors">
-                            {ev.title}
-                          </h4>
-                          <p className="text-xs text-neutral-500 mt-1">{ev.chapterName}</p>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-neutral-400">
-                            <span className="flex items-center gap-1">
-                              <Clock size={11} /> {ev.startTime}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin size={11} /> {ev.location.split(",")[0]}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
 
               {}
               <div>
@@ -565,7 +514,7 @@ export default function CommunityHubPage() {
                   </span>
                   <h3 className="text-2xl font-bold mb-2">{spotlights[0].title}</h3>
                   <p className="text-white/80 text-sm max-w-2xl leading-relaxed mb-4">
-                    {spotlights[0].content.slice(0, 200)}…
+                    {spotlights[0].content.slice(0, 200)}ï¿½
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {spotlights[0].highlights.slice(0, 3).map((h) => (
@@ -593,7 +542,7 @@ export default function CommunityHubPage() {
                     </div>
                     <h3 className="text-lg font-bold text-primary-800 mb-2">{s.title}</h3>
                     <p className="text-sm text-neutral-600 line-clamp-3 mb-4 leading-relaxed">
-                      {s.content.slice(0, 180)}…
+                      {s.content.slice(0, 180)}ï¿½
                     </p>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {s.highlights.slice(0, 2).map((h) => (
@@ -605,9 +554,9 @@ export default function CommunityHubPage() {
                     {}
                     {s.testimonials[0] && (
                       <blockquote className="border-l-3 border-secondary-400 pl-3 text-xs text-neutral-500 italic">
-                        &ldquo;{s.testimonials[0].quote.slice(0, 120)}…&rdquo;
+                        &ldquo;{s.testimonials[0].quote.slice(0, 120)}ï¿½&rdquo;
                         <cite className="block mt-1 not-italic font-medium text-primary-600">
-                          — {s.testimonials[0].author}, {s.testimonials[0].role}
+                          ï¿½ {s.testimonials[0].author}, {s.testimonials[0].role}
                         </cite>
                       </blockquote>
                     )}
@@ -693,9 +642,9 @@ export default function CommunityHubPage() {
               </p>
               <div className="grid sm:grid-cols-3 gap-3 mb-4">
                 {[
-                  { idea: "Joint charity gala — Drama + Music + Art", votes: 34 },
-                  { idea: "School-wide hackathon — all STEM clubs", votes: 28 },
-                  { idea: "Cultural food festival — all cultural clubs", votes: 41 },
+                  { idea: "Joint charity gala ï¿½ Drama + Music + Art", votes: 34 },
+                  { idea: "School-wide hackathon ï¿½ all STEM clubs", votes: 28 },
+                  { idea: "Cultural food festival ï¿½ all cultural clubs", votes: 41 },
                 ].map((item) => (
                   <div key={item.idea} className="bg-white border border-primary-200 p-3">
                     <p className="text-xs text-primary-700 font-medium">{item.idea}</p>
@@ -797,7 +746,7 @@ export default function CommunityHubPage() {
                           <div>
                             <h4 className="font-bold text-primary-800 text-sm">{story.name}</h4>
                             <p className="text-[10px] text-neutral-400">
-                              Grade {story.grade} • {story.club}
+                              Grade {story.grade} ï¿½ {story.club}
                             </p>
                           </div>
                           <span className="ml-auto text-[10px] bg-primary-50 text-primary-600 px-2 py-0.5 border border-primary-200 font-medium">

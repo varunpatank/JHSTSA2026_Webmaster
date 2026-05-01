@@ -60,7 +60,7 @@ export default function AuthStateSync() {
       });
     };
 
-    syncFromSession();
+    syncFromSession().catch(() => { /* supabase placeholder — AbortError expected in dev */ });
 
     const {
       data: { subscription },

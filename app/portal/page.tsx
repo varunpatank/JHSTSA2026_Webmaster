@@ -271,7 +271,7 @@ function AddResource() {
             <p className="text-[13px] text-neutral-700 mb-3 font-mono bg-white p-2 rounded border border-cream-300">Template</p>
             
             <p className="text-xs text-neutral-600 mb-2 font-semibold">Why it's useful:</p>
-            <p className="text-[13px] text-neutral-700 font-mono bg-white p-2 rounded border border-cream-300 text-xs line-clamp-3">Helps presidents structure efficient meetings with clear agendas, action items, and follow-ups.</p>
+            <p className="text-[13px] text-neutral-700 font-mono bg-white p-2 rounded border border-cream-300 text-xs">Helps presidents structure efficient meetings with clear agendas, action items, and follow-ups.</p>
           </div>
 
           <div className="bg-green-50 border border-green-100 rounded-2xl p-5">

@@ -7,20 +7,21 @@ import Link from "next/link";
 export default function JudgeGuide() {
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-
-    const autoOpenCookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("judge-guide-opened="));
-
-    if (!autoOpenCookie) {
-      const t = setTimeout(() => setExpanded(true), 800);
-      document.cookie =
-        "judge-guide-opened=1; Max-Age=1800; Path=/; SameSite=Lax";
-      return () => clearTimeout(t);
-    }
-  }, []);
+  // Disabled auto-open on refresh per user request
+  // useEffect(() => {
+  //   if (typeof document === "undefined") return;
+  //
+  //   const autoOpenCookie = document.cookie
+  //     .split("; ")
+  //     .find((row) => row.startsWith("judge-guide-opened="));
+  //
+  //   if (!autoOpenCookie) {
+  //     const t = setTimeout(() => setExpanded(true), 800);
+  //     document.cookie =
+  //       "judge-guide-opened=1; Max-Age=1800; Path=/; SameSite=Lax";
+  //     return () => clearTimeout(t);
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

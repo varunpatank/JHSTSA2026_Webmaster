@@ -109,8 +109,8 @@ const HERO_IMGS = [
     label: "Club members brainstorming new ideas together",
   },
   {
-    src:   "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=80",
-    label: "School event bringing the community together",
+    src:   "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=80",
+    label: "School community celebration",
   },
 ];
 
@@ -152,133 +152,205 @@ export default function HomePage() {
       <div className="absolute inset-0 pointer-events-none texture-curvy-lines opacity-[0.24]" />
       <div className="relative z-0">
 
-      {/* HERO - Warm community hero */}
-      <section className="relative overflow-hidden bg-cream-200">
-        {/* Soft banner image backdrop to echo inner-page hero style without feeling heavy */}
+      {/* HERO */}
+      <section className="relative overflow-hidden" style={{ background: "#1c3557" }}>
+        {/* Background image — shifted up, fades into navy at bottom */}
         <div className="absolute inset-0 pointer-events-none">
           <Image
             src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1800&q=80"
             alt=""
             fill
             priority
-            className="object-cover opacity-[0.15]"
+            className="object-cover opacity-[0.55]"
+            style={{ objectPosition: "center 75%" }}
             aria-hidden="true"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-cream-200/95 via-cream-200/82 to-sky-50/72" />
-          <div className="absolute inset-0 bg-gradient-to-t from-cream-200/74 via-transparent to-cream-50/48" />
+          {/* Fade photo into navy — clean bottom transition */}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 25%, #1c3557 70%)" }} />
         </div>
+        {/* Gold glow top-left */}
+        <div className="absolute top-0 left-0 w-80 h-80 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(214,162,30,0.09) 0%, transparent 70%)" }} />
 
-        {/* Subtle dot grid background */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: "radial-gradient(circle, #D9CDB8 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          opacity: 0.34,
-        }} />
-        {/* Soft pale-blue wash on the right side */}
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-sky-50/70 via-sky-50/30 to-transparent pointer-events-none" />
-        {/* Warm gold glow top-left */}
-        <div className="absolute top-0 left-0 w-72 h-72 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(214,162,30,0.10) 0%, transparent 70%)" }} />
+        {/* ── Shared content container ── */}
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-0 md:pt-7">
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-2 pb-4 md:pt-5 md:pb-6">
-          <div className="relative overflow-hidden rounded-2xl border border-primary-300/35 bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 text-white px-5 py-3.5 mb-4 shadow-[0_8px_24px_rgba(23,54,93,0.14)] lg:w-[calc(100%+0.75rem)] lg:-mr-3">
-            <div className="absolute inset-0 texture-banner-clean pointer-events-none" />
-            <div className="relative z-10 grid md:grid-cols-[1fr_auto] items-center gap-3 md:gap-5">
-              <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.17em] text-sky-100">
-                Student-Led Community Highlights
+          {/* TOP BAR — crosshatch/dashes texture only, no icons */}
+          <div className="hero-anim-bar relative overflow-hidden rounded-xl border border-primary-700/50 bg-primary-900 text-white px-6 py-3 mb-4 shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
+            {/* Crosshatch dashes — the only texture here */}
+            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.07) 12px, rgba(255,255,255,0.07) 13px), repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.07) 12px, rgba(255,255,255,0.07) 13px)" }} />
+            <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.17em] text-sky-200/90">
+                Your Journey Starts Here
               </p>
-              <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 text-[11px]">
-                <span className="inline-flex w-[122px] justify-center items-center gap-1.5 bg-white/12 border border-white/20 px-2.5 py-1 rounded-full"><Trophy size={12} /> Competitions</span>
-                <span className="inline-flex w-[122px] justify-center items-center gap-1.5 bg-white/12 border border-white/20 px-2.5 py-1 rounded-full"><Calendar size={12} /> Events</span>
-                <span className="inline-flex w-[122px] justify-center items-center gap-1.5 bg-white/12 border border-white/20 px-2.5 py-1 rounded-full"><Users size={12} /> Clubs</span>
-                <span className="inline-flex w-[122px] justify-center items-center gap-1.5 bg-white/12 border border-white/20 px-2.5 py-1 rounded-full"><Sparkles size={12} /> Resources</span>
+              <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                {[
+                  { icon: Rocket,     label: "Launch Your Club" },
+                  { icon: BookOpen,   label: "Step-by-Step Guides" },
+                  { icon: BadgeCheck, label: "Highlight Success" },
+                  { icon: Sparkles,   label: "Share Your Story" },
+                ].map(({ icon: Icon, label }) => (
+                  <div key={label} className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1.5 rounded-lg hover:bg-white/18 transition-colors">
+                    <Icon size={10} className="text-secondary-300 shrink-0" />
+                    <span className="font-semibold text-white/90">{label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-[1.06fr_0.94fr] gap-8 lg:gap-4 items-start">
+          {/* HERO GRID */}
+          <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-4 items-stretch pb-8 md:pb-10">
 
-            {/* LEFT: headline + search + CTAs */}
-            <div className="relative top-[2px]">
-              {/* Eyebrow pill */}
-              <span className="inline-flex items-center gap-2 bg-sky-50 text-primary-700 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1.5 rounded-full mb-5 border border-sky-200">
-                <Users size={11} /> Built for Juanita Students
-              </span>
-
-              <h1 className="text-4xl md:text-5xl lg:text-[3.6rem] font-heading font-bold text-primary-800 leading-[1.08]">
-                Find your place{" "}
-                <span className="relative inline-block">
-                  for
-                  <span
-                    className="absolute pointer-events-none select-none z-20"
-                    style={{ top: "-0.38em", right: "-0.42em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 6px rgba(23,54,93,0.25))" }}
-                    aria-hidden="true"
-                  >
-                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "64px", height: "64px" }}>
-                      <polygon points="20,7 35,15 20,23 5,15" fill="#174070" stroke="rgba(255,255,255,0.35)" strokeWidth="1.1" />
-                      <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#174070" fillOpacity="0.85" stroke="rgba(255,255,255,0.32)" strokeWidth="1.3" strokeLinejoin="round" />
-                      <line x1="35" y1="15" x2="35" y2="27" stroke="#D6A21E" strokeWidth="1.9" strokeLinecap="round" />
-                      <circle cx="35" cy="29" r="2.5" fill="#D6A21E" />
-                    </svg>
-                  </span>
-                </span>
-                <br />
-                <span className="md:whitespace-nowrap">
-                  <span className="inline-block text-secondary-500 align-baseline relative translate-y-[15px]"><RotatingWord /></span>
-                </span>
-              </h1>
-
-              <p className="mt-4 text-primary-600 text-base leading-relaxed max-w-[480px]">
-                ClubConnect highlights student-run clubs, student-led events, and the resources that help create a tight-knit school community.
-              </p>
-
-              {/* Search bar */}
-              <form onSubmit={handleSearch} className="mt-6 flex gap-2 max-w-md">
-                <div className="flex-1 relative">
-                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-primary-400 pointer-events-none" />
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search clubs, events, resources..."
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-sky-200 text-primary-800 placeholder:text-primary-300 text-sm outline-none focus:border-primary-400 focus:ring-2 focus:ring-sky-100 transition-all shadow-sm"
-                  />
-                </div>
-                <button type="submit" className="px-5 py-3 rounded-xl bg-primary-800 hover:bg-primary-900 text-cream-50 text-sm font-bold transition-colors shrink-0 shadow-sm">
-                  Search
-                </button>
-              </form>
-
-              {/* CTA buttons */}
-              <div className="mt-4 flex flex-wrap gap-2.5">
-                <Link href="/directory" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-800 hover:bg-primary-900 text-cream-50 text-sm font-bold transition-colors shadow-sm">
-                  Browse Clubs <ArrowRight size={13} />
-                </Link>
-                <Link href="/start-a-club" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-sky-200 text-primary-700 text-sm font-semibold hover:bg-sky-50 transition-colors shadow-sm">
-                  <Rocket size={13} /> Start a Club
-                </Link>
-                <Link href="/resources" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-secondary-50 border border-secondary-200 text-secondary-700 text-sm font-semibold hover:bg-secondary-100 transition-colors shadow-sm">
-                  <BookOpen size={13} /> Resources
-                </Link>
+            {/* LEFT — cream card, warm community feel */}
+            <div className="hero-anim-left relative overflow-hidden rounded-2xl border border-[#D9CDB8] bg-[#F7F1E8] px-5 py-5 shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
+              {/* Community icon pattern — 6 varied icons, uniform across card */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+                <svg width="100%" height="100%" style={{ opacity: 0.32 }}><defs>
+                  <pattern id="homeBoxAccent" x="0" y="0" width="150" height="130" patternUnits="userSpaceOnUse">
+                    {/* TOP-LEFT: person */}
+                    <circle cx="14" cy="10" r="7" stroke="#1c3557" strokeWidth="2.0" fill="none"/>
+                    <path d="M1 30 Q1 21 14 21 Q27 21 27 30" stroke="#1c3557" strokeWidth="2.0" fill="none" strokeLinejoin="round"/>
+                    {/* TOP-RIGHT: trophy */}
+                    <path d="M117 6 L133 6 L133 18 Q133 26 125 28 Q117 26 117 18Z" stroke="#b8860b" strokeWidth="2.0" fill="none"/>
+                    <line x1="125" y1="28" x2="125" y2="34" stroke="#b8860b" strokeWidth="1.8"/>
+                    <line x1="119" y1="34" x2="131" y2="34" stroke="#b8860b" strokeWidth="1.8"/>
+                    <path d="M117 10 Q111 10 111 16 Q111 22 117 22" stroke="#b8860b" strokeWidth="1.6" fill="none"/>
+                    <path d="M133 10 Q139 10 139 16 Q139 22 133 22" stroke="#b8860b" strokeWidth="1.6" fill="none"/>
+                    {/* LEFT: open book */}
+                    <rect x="2" y="56" width="24" height="28" rx="2" stroke="#1c3557" strokeWidth="1.9" fill="none"/>
+                    <line x1="14" y1="56" x2="14" y2="84" stroke="#1c3557" strokeWidth="1.5"/>
+                    <line x1="2" y1="66" x2="26" y2="66" stroke="#1c3557" strokeWidth="0.9"/>
+                    <line x1="2" y1="74" x2="26" y2="74" stroke="#1c3557" strokeWidth="0.9"/>
+                    {/* RIGHT: shield */}
+                    <path d="M136 52 L148 56 L148 66 Q148 76 136 80 Q124 76 124 66 L124 56Z" stroke="#1c3557" strokeWidth="2.0" fill="none"/>
+                    <path d="M130 66 L134 70 L142 62" stroke="#1c3557" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                    {/* BOTTOM-LEFT: gold star */}
+                    <path d="M16 100 L18 107 L25 107 L19.5 111 L21.5 118 L16 114 L10.5 118 L12.5 111 L7 107 L14 107Z" stroke="#b8860b" strokeWidth="1.9" fill="none"/>
+                    {/* BOTTOM-MID: calendar */}
+                    <rect x="58" y="98" width="34" height="28" rx="3" stroke="#1c3557" strokeWidth="1.9" fill="none"/>
+                    <line x1="58" y1="107" x2="92" y2="107" stroke="#1c3557" strokeWidth="1.4"/>
+                    <line x1="67" y1="95" x2="67" y2="101" stroke="#1c3557" strokeWidth="1.8" strokeLinecap="round"/>
+                    <line x1="83" y1="95" x2="83" y2="101" stroke="#1c3557" strokeWidth="1.8" strokeLinecap="round"/>
+                    <rect x="64" y="112" width="5" height="5" rx="1" stroke="#1c3557" strokeWidth="1.2" fill="none"/>
+                    <rect x="73" y="112" width="5" height="5" rx="1" stroke="#1c3557" strokeWidth="1.2" fill="none"/>
+                    <rect x="82" y="112" width="5" height="5" rx="1" stroke="#1c3557" strokeWidth="1.2" fill="none"/>
+                    {/* BOTTOM-RIGHT: chat bubble */}
+                    <rect x="104" y="100" width="38" height="24" rx="5" stroke="#1c3557" strokeWidth="1.9" fill="none"/>
+                    <path d="M112 124 L109 133 L121 124" stroke="#1c3557" strokeWidth="1.9" fill="none" strokeLinejoin="round"/>
+                    {/* MID: rocket (gold accent) */}
+                    <path d="M74 46 Q80 32 86 46 L86 60 Q80 64 74 60Z" stroke="#b8860b" strokeWidth="1.8" fill="none"/>
+                    <path d="M74 54 Q70 56 70 60 L74 60" stroke="#b8860b" strokeWidth="1.5" fill="none"/>
+                    <path d="M86 54 Q90 56 90 60 L86 60" stroke="#b8860b" strokeWidth="1.5" fill="none"/>
+                    <circle cx="80" cy="48" r="3" stroke="#b8860b" strokeWidth="1.5" fill="none"/>
+                  </pattern>
+                </defs>
+                  <rect width="100%" height="100%" fill="url(#homeBoxAccent)"/>
+                </svg>
               </div>
 
-              {/* Slideshow dots */}
-              <div className="mt-6 flex items-center gap-2">
-                {HERO_IMGS.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setBannerIdx(i)}
-                    className={`h-1.5 rounded-full transition-all duration-500 ${i === bannerIdx ? "w-8 bg-primary-700" : "w-2.5 bg-primary-300 hover:bg-primary-400"}`}
-                  />
-                ))}
+              <div className="relative z-10 flex flex-col items-center justify-center text-center py-2 px-2">
+                {/* Frosted blur box — wraps all text content */}
+                <div className="relative w-full rounded-2xl px-5 py-5 flex flex-col items-center text-center"
+                  style={{ backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", background: "rgba(247,241,232,0.82)", border: "1px solid rgba(217,205,184,0.6)" }}>
+
+                <h1 className="text-3xl md:text-[2.6rem] lg:text-[3rem] font-heading font-bold text-primary-900 leading-[1.1] tracking-tight">
+                  Find your people.{" "}
+                  <span className="relative inline-block">
+                    Build
+                    <span
+                      className="absolute pointer-events-none select-none"
+                      style={{ top: "-0.48em", right: "-0.37em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.25))", zIndex: 30 }}
+                      aria-hidden="true"
+                    >
+                      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-11 h-11 md:w-12 md:h-12">
+                        <polygon points="20,7 35,15 20,23 5,15" fill="#1c3557" stroke="#0d1b2b" strokeWidth="1.1" />
+                        <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#1c3557" stroke="#0d1b2b" strokeWidth="1.3" strokeLinejoin="round" />
+                        <line x1="35" y1="15" x2="35" y2="27" stroke="#b8860b" strokeWidth="1.9" strokeLinecap="round" />
+                        <circle cx="35" cy="29" r="2.5" fill="#b8860b" />
+                      </svg>
+                    </span>
+                  </span>
+                  <br />
+                  <span className="text-secondary-600 italic"><RotatingWord /></span>
+                </h1>
+
+                <p className="mt-1.5 text-primary-700 text-[12.5px] leading-[1.6] max-w-[380px] font-normal tracking-wide">
+                  Find your people, build your club, and stay connected with everything happening at your school.
+                </p>
+
+                {/* Search bar */}
+                <form onSubmit={handleSearch} className="mt-3.5 flex gap-2 w-full max-w-sm">
+                  <div className="flex-1 relative">
+                    <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 pointer-events-none" />
+                    <input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search clubs, events..."
+                      className="w-full pl-8 pr-3 py-2 rounded-lg bg-white border border-[#D9CDB8] text-primary-800 placeholder:text-primary-400 text-sm outline-none focus:border-secondary-400 focus:ring-2 focus:ring-secondary-200/40 transition-all shadow-sm"
+                    />
+                  </div>
+                  <button type="submit" className="px-3.5 py-2 rounded-lg bg-primary-800 hover:bg-primary-700 text-white text-sm font-bold transition-colors shrink-0 shadow-sm">
+                    Search
+                  </button>
+                </form>
+
+                {/* CTA buttons */}
+                <div className="mt-3 flex flex-wrap justify-center gap-2">
+                  <Link href="/directory" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-white text-sm font-bold transition-colors shadow-sm">
+                    Browse Clubs <ArrowRight size={11} />
+                  </Link>
+                  <Link href="/start-a-club" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary-800 border border-primary-700 text-white text-sm font-semibold hover:bg-primary-700 transition-colors">
+                    <Rocket size={11} /> Start a Club
+                  </Link>
+                  <Link href="/resources" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white border border-[#D9CDB8] text-primary-700 text-sm font-semibold hover:bg-cream-200 transition-colors">
+                    <BookOpen size={11} /> Resources
+                  </Link>
+                </div>
+
+                {/* Slideshow dots */}
+                <div className="mt-3 flex items-center justify-center gap-2">
+                  {HERO_IMGS.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setBannerIdx(i)}
+                      className={`h-1.5 rounded-full transition-all duration-500 ${i === bannerIdx ? "w-8 bg-secondary-500" : "w-2.5 bg-primary-300 hover:bg-primary-400"}`}
+                    />
+                  ))}
+                </div>
+
+                </div>{/* end blur box */}
               </div>
             </div>
 
-            {/* RIGHT: Image card with floating TSA event chip */}
-            <div className="hidden lg:block relative max-w-[620px] w-full ml-auto lg:mr-[-0.15rem] lg:translate-x-[-10px] lg:translate-y-[6px]" style={{ paddingBottom: "44px", paddingRight: "0px" }}>
-              {/* Shadow / offset card behind */}
-              <div className="absolute top-5 left-5 bg-sky-50 rounded-3xl border border-sky-200" style={{ width: "calc(100% + 8px)", height: "calc(100% + 8px)", zIndex: 0 }} />
+            {/* RIGHT — image + diagonal card + TSA info */}
+            <div className="hero-anim-right hidden lg:flex lg:flex-col h-full relative">
 
-              {/* Main image card */}
-              <div className="relative rounded-3xl overflow-hidden border border-[#D9CDB8] shadow-[0_10px_44px_rgba(23,54,93,0.16)]" style={{ aspectRatio: "16/11", zIndex: 1 }}>
+              {/* Diagonal stacked image — overlaps top-right of main image */}
+              <div
+                className="absolute overflow-hidden"
+                style={{
+                  width: "52%",
+                  aspectRatio: "4/3",
+                  top: "-14px",
+                  right: "-10px",
+                  transform: "rotate(6.5deg)",
+                  zIndex: 10,
+                  border: "3px solid white",
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 36px rgba(0,0,0,0.60)",
+                }}
+              >
+                <Image
+                  src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80"
+                  alt="Students at a team workshop"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              </div>
+
+              {/* Main image — stretches to fill left panel height */}
+              <div className="relative flex-1 min-h-0 rounded-2xl overflow-hidden border border-white/15 shadow-[0_10px_40px_rgba(0,0,0,0.40)]">
                 {HERO_IMGS.map((img, i) => (
                   <div
                     key={img.src}
@@ -287,33 +359,20 @@ export default function HomePage() {
                     <Image src={img.src} alt={img.label} fill priority={i === 0} className="object-cover" />
                   </div>
                 ))}
-                {/* Soft gradient bottom overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-primary-800/50 via-transparent to-transparent" />
-                {/* Community label */}
-                <span className="absolute bottom-4 left-4 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/90 text-primary-800 border border-[#D9CDB8] shadow-sm">
-                  Student Community
-                </span>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </div>
 
-              {/* Floating event card */}
-              <div className="absolute bottom-0 right-0 bg-white rounded-2xl px-5 py-4 border border-[#D9CDB8] shadow-[0_10px_28px_rgba(23,54,93,0.17)] w-[332px]" style={{ zIndex: 2 }}>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-secondary-600 mb-1">Featured Trip</p>
-                <p className="text-sm font-heading font-bold text-primary-800 leading-tight">TSA Nationals 2026</p>
-                <p className="text-[11px] text-primary-500 font-semibold mt-0.5">Washington, DC</p>
-                <p className="text-[11px] text-[#52677A] leading-relaxed mt-2">
-                  ClubConnect chapters will compete, attend leadership sessions, and represent Juanita on the national stage.
+              {/* TSA club card */}
+              <div className="hero-anim-card mt-3 bg-white rounded-xl px-4 py-4 border border-[#D9CDB8] shadow-[0_8px_24px_rgba(0,0,0,0.22)]">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-secondary-600 mb-1">Featured Chapter</p>
+                <p className="text-base font-heading font-bold text-primary-800 leading-tight">Washington D.C. TSA Chapter</p>
+                <p className="text-[11px] text-secondary-600 font-semibold mt-0.5">Capitol Hill Magnet · Founded 2014</p>
+                <p className="mt-2.5 text-[12px] text-primary-600 leading-[1.6] font-normal">
+                  One of the nation’s top-ranked TSA chapters — 10 national podium finishes, 3 consecutive state titles, and a community of 80+ student innovators. Open to all skill levels.
                 </p>
-                <div className="mt-2.5 flex items-center gap-3 text-[10px] font-semibold text-primary-600">
-                  <span className="inline-flex items-center gap-1"><Calendar size={11} /> June 27 - July 1</span>
-                  <span className="inline-flex items-center gap-1"><MapPin size={11} /> Washington, DC</span>
-                </div>
-                <div className="mt-1.5 pt-1.5 border-t border-[#e9dcc6] grid grid-cols-3 gap-3">
-                  {[{ n: "47", l: "Clubs" }, { n: "1,283", l: "Members" }, { n: "12", l: "Events" }].map(({ n, l }) => (
-                    <div key={l} className="text-center">
-                      <p className="text-[1.12rem] font-heading font-bold text-primary-800 leading-none">{n}</p>
-                      <p className="text-[9px] uppercase tracking-wider text-primary-400 mt-1">{l}</p>
-                    </div>
-                  ))}
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-secondary-600 bg-secondary-50 border border-secondary-200 rounded-full px-2.5 py-1">#1 in DC</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary-600 bg-primary-50 border border-primary-200 rounded-full px-2.5 py-1">Now Recruiting</span>
                 </div>
               </div>
             </div>
@@ -331,25 +390,25 @@ export default function HomePage() {
 
 
       {/* STATS STRIP */}
-      <section className="relative bg-cream-200 pt-2 pb-8 texture-stats-lines">
+      <section className="relative bg-cream-200 pt-32 pb-10 texture-stats-lines overflow-hidden" style={{ marginTop: "calc(-8rem - 17px)" }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
-              { target: stats.activeChapters, label: "Active Clubs",     icon: Trophy,   iconColor: "text-secondary-500", bgColor: "bg-secondary-50 border-secondary-100" },
-              { target: stats.totalMembers,   label: "Student Members",  icon: Users,    iconColor: "text-primary-600",   bgColor: "bg-sky-50 border-sky-200" },
-              { target: stats.upcomingEvents, label: "Upcoming Events",  icon: Calendar, iconColor: "text-primary-500",   bgColor: "bg-sky-50 border-sky-200" },
+              { target: stats.activeChapters, label: "Active Clubs",    icon: Trophy,   iconColor: "text-secondary-500", bgColor: "bg-secondary-50 border-secondary-200" },
+              { target: stats.totalMembers,   label: "Student Members", icon: Users,    iconColor: "text-primary-600",   bgColor: "bg-primary-50  border-primary-100"  },
+              { target: stats.upcomingEvents, label: "Upcoming Events", icon: Calendar, iconColor: "text-primary-600",   bgColor: "bg-primary-50  border-primary-100"  },
             ].map((s, i) => {
               const Icon = s.icon;
               return (
-                <Reveal key={s.label} delay={i * 60}>
-                  <div className="bg-[#FFFDF8] rounded-2xl p-4 text-center shadow-sm border border-[#D9CDB8] h-full hover:shadow-md hover:border-sky-200 transition-all">
-                    <div className={`w-10 h-10 rounded-xl ${s.bgColor} border flex items-center justify-center mx-auto mb-3`}>
-                      <Icon size={19} className={s.iconColor} />
+                <Reveal key={s.label} delay={i * 200} className="reveal-stat">
+                  <div className="bg-white rounded-2xl p-5 text-center shadow-[0_2px_12px_rgba(23,64,112,0.08)] border border-[#D9CDB8] h-full hover:shadow-[0_4px_18px_rgba(23,64,112,0.13)] hover:border-primary-200 transition-all">
+                    <div className={`w-11 h-11 rounded-xl ${s.bgColor} border flex items-center justify-center mx-auto mb-3`}>
+                      <Icon size={20} className={s.iconColor} />
                     </div>
-                    <p className="text-[2rem] font-heading font-bold text-primary-800 leading-none">
+                    <p className="text-[2.1rem] font-heading font-bold text-primary-800 leading-none">
                       <Counter target={s.target} suffix={"suffix" in s ? (s as { suffix?: string }).suffix ?? "" : ""} />
                     </p>
-                    <p className="text-[11px] text-[#52677A] mt-2 font-semibold uppercase tracking-widest">{s.label}</p>
+                    <p className="text-[11px] text-primary-400 mt-2 font-semibold uppercase tracking-widest">{s.label}</p>
                   </div>
                 </Reveal>
               );
@@ -359,8 +418,15 @@ export default function HomePage() {
       </section>
 
       {/* PATHWAY - What are you looking for? */}
-      <section className="bg-[#EAF2F8] border-y border-sky-200 py-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <section className="relative bg-[#EAF2F8] border-y border-sky-200 py-14 overflow-hidden">
+        {/* Subtle crosshatch texture */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(23,64,112,0.04) 18px, rgba(23,64,112,0.04) 19px), repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(23,64,112,0.04) 18px, rgba(23,64,112,0.04) 19px)"
+        }} />
+        {/* Soft radial accents */}
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(214,162,30,0.07) 0%, transparent 70%)" }} />
+        <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(23,64,112,0.07) 0%, transparent 70%)" }} />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
           <Reveal>
             <div className="text-center mb-10">
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-secondary-600 mb-2">Start Here</p>
@@ -368,7 +434,7 @@ export default function HomePage() {
               <p className="mt-2 text-sm text-primary-500 max-w-xl mx-auto">Choose your next step: launch a club, build your plan, connect with other clubs, and share your chapter stories.</p>
             </div>
           </Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
             {[
               {
                 href: "/start-a-club",
@@ -382,15 +448,15 @@ export default function HomePage() {
                 href: "/resources",
                 icon: BookOpen,
                 label: "Club Creation Resources",
-                desc: "Use templates, forms, and planning guides.",
+                desc: "Free templates, guides, and step-by-step help to start your own club.",
                 color: "text-primary-700",
                 bg: "bg-white border-sky-200 hover:border-primary-400 hover:bg-sky-50",
               },
               {
                 href: "/community",
                 icon: Users,
-                label: "See Other Clubs Socially",
-                desc: "Connect with chapters, projects, and discussions.",
+                label: "Discover Clubs & Network",
+                desc: "Browse advertised clubs, see discussions, and connect with other student leaders.",
                 color: "text-primary-700",
                 bg: "bg-white border-sky-200 hover:border-primary-400 hover:bg-sky-50",
               },
@@ -403,13 +469,13 @@ export default function HomePage() {
                 bg: "bg-white border-sky-200 hover:border-secondary-300 hover:bg-secondary-50",
               },
             ].map(({ href, icon: Icon, label, desc, color, bg }, i) => (
-              <Reveal key={href} delay={i * 50}>
-                <Link href={href} className={`group flex flex-col items-start gap-2.5 p-5 rounded-2xl border transition-all shadow-sm hover:shadow-md ${bg}`}>
+              <Reveal key={href} delay={i * 50} className="h-full">
+                <Link href={href} className={`group flex flex-col items-start gap-2.5 p-5 rounded-2xl border transition-all shadow-sm hover:shadow-md h-full ${bg}`}>
                   <div className="w-12 h-12 rounded-2xl bg-cream-200 border border-[#D9CDB8] flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Icon size={22} className={color} />
                   </div>
                   <span className={`text-[13px] font-bold leading-snug ${color}`}>{label}</span>
-                  <p className="text-[12px] text-primary-500 leading-relaxed">{desc}</p>
+                  <p className="text-[12px] text-primary-500 leading-relaxed flex-1">{desc}</p>
                 </Link>
               </Reveal>
             ))}

@@ -483,7 +483,7 @@ export default function CommunityPage() {
     ];
   });
   const [chatInput, setChatInput] = useState("");
-  const [communityTab, setCommunityTab] = useState<"feed" | "events" | "mentors" | "stories">("feed");
+  const [communityTab, setCommunityTab] = useState<"feed" | "mentors" | "stories">("feed");
 
   useEffect(() => {
     localStorage.setItem("clubconnect_community_feed", JSON.stringify(feed));
@@ -656,43 +656,43 @@ export default function CommunityPage() {
             </p>
           </div>
           <div className="hidden sm:grid grid-cols-5 gap-2 ml-auto">
-            <div className="bg-primary-500/40 border border-primary-400/30 px-5 py-3.5 text-center min-w-[90px]">
+            <div className="bg-primary-500/50 border border-primary-400/50 px-5 py-3.5 text-center min-w-[90px]">
               <p className="text-2xl font-heading font-bold text-white">
                 {feed.length}
               </p>
-              <p className="text-[10px] text-primary-200 uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] text-primary-100 uppercase tracking-wider mt-0.5">
                 Posts
               </p>
             </div>
-            <div className="bg-secondary-500/30 border border-secondary-400/30 px-5 py-3.5 text-center min-w-[90px]">
-              <p className="text-2xl font-heading font-bold text-secondary-300">
+            <div className="bg-secondary-500/50 border border-secondary-400/50 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-white">
                 47
               </p>
-              <p className="text-[10px] text-secondary-200/70 uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] text-secondary-100 uppercase tracking-wider mt-0.5">
                 Online
               </p>
             </div>
-            <div className="bg-accent-500/30 border border-accent-400/30 px-5 py-3.5 text-center min-w-[90px]">
-              <p className="text-2xl font-heading font-bold text-accent-300">
+            <div className="bg-accent-500/50 border border-accent-400/50 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-white">
                 25
               </p>
-              <p className="text-[10px] text-accent-200/70 uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] text-orange-100 uppercase tracking-wider mt-0.5">
                 Clubs
               </p>
             </div>
-            <div className="bg-emerald-500/25 border border-emerald-400/30 px-5 py-3.5 text-center min-w-[90px]">
-              <p className="text-2xl font-heading font-bold text-emerald-300">
+            <div className="bg-emerald-600/50 border border-emerald-400/50 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-white">
                 847
               </p>
-              <p className="text-[10px] text-emerald-200/70 uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] text-emerald-100 uppercase tracking-wider mt-0.5">
                 Members
               </p>
             </div>
-            <div className="bg-violet-500/25 border border-violet-400/30 px-5 py-3.5 text-center min-w-[90px]">
-              <p className="text-2xl font-heading font-bold text-violet-300">
+            <div className="bg-violet-600/50 border border-violet-400/50 px-5 py-3.5 text-center min-w-[90px]">
+              <p className="text-2xl font-heading font-bold text-white">
                 12
               </p>
-              <p className="text-[10px] text-violet-200/70 uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] text-violet-100 uppercase tracking-wider mt-0.5">
                 Events
               </p>
             </div>
@@ -705,7 +705,7 @@ export default function CommunityPage() {
           {/*  LEFT SIDEBAR (LinkedIn-style nav)  */}
           <div className="hidden lg:block w-56 shrink-0 space-y-4">
             {/* Profile Card */}
-            <div className="bg-white border border-neutral-200 overflow-hidden">
+            <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
               <div className="h-14 bg-primary-600" />
               <div className="px-4 pb-4 -mt-5">
                 {avatarUrl ? (
@@ -744,7 +744,7 @@ export default function CommunityPage() {
             </div>
 
             {/* Club Accomplishments */}
-            <div className="bg-white border border-neutral-200">
+            <div className="bg-white border border-neutral-200 rounded-2xl">
               <div className="px-4 py-3 border-b border-neutral-200">
                 <h3 className="text-sm font-bold text-primary-700 flex items-center gap-1.5">
                   <Award size={14} /> Club Highlights
@@ -818,7 +818,7 @@ export default function CommunityPage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-white border border-neutral-200 p-4">
+            <div className="bg-white border border-neutral-200 rounded-2xl p-4">
               <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">
                 Community Stats
               </h3>
@@ -851,7 +851,6 @@ export default function CommunityPage() {
               <div className="flex border-b border-neutral-100">
                 {([
                   { key: "feed",     label: "Community Feed", icon: MessageCircle },
-                  { key: "events",   label: "Club Events",    icon: Calendar },
                   { key: "mentors",  label: "Mentors",        icon: GraduationCap },
                   { key: "stories",  label: "Stories",        icon: Trophy },
                 ] as const).map(({ key, label, icon: Icon }) => (
@@ -1047,7 +1046,7 @@ export default function CommunityPage() {
                   onChange={(e) => setPostText(e.target.value)}
                   placeholder="Share a resource, start a discussion, or post an update..."
                   rows={3}
-                  className="w-full border border-neutral-200 px-4 py-3 text-sm resize-none focus:outline-none focus:border-primary-400 placeholder:text-neutral-400"
+                  className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-primary-400 placeholder:text-neutral-400"
                 />
               </div>
 
@@ -1133,7 +1132,7 @@ export default function CommunityPage() {
             </div>
 
             {/*  Feed Filters  */}
-            <div className="flex gap-1 bg-white border border-neutral-200 p-1.5">
+            <div className="flex gap-1 bg-white border border-neutral-200 rounded-xl p-1.5">
               {(
                 ["all", "discussions", "resources", "achievements"] as const
               ).map((f) => (
@@ -1149,7 +1148,7 @@ export default function CommunityPage() {
 
             {/*  Feed Posts  */}
             {filtered.slice(0, 4).map((post) => (
-              <div key={post.id} className="bg-white border border-neutral-200">
+              <div key={post.id} className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center gap-3 px-5 pt-4 pb-2">
                   <div className="w-10 h-10 bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold shrink-0">
@@ -1298,7 +1297,7 @@ export default function CommunityPage() {
                           e.key === "Enter" && submitReply(post.id)
                         }
                         placeholder="Write a reply..."
-                        className="flex-1 bg-white border border-neutral-200 px-3 py-2 text-sm focus:outline-none focus:border-primary-400"
+                        className="flex-1 bg-white border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-400"
                       />
                       <button
                         onClick={() => submitReply(post.id)}
@@ -1367,7 +1366,7 @@ export default function CommunityPage() {
             ))}
 
             {filtered.length === 0 && (
-              <div className="bg-white border border-neutral-200 py-12 text-center">
+              <div className="bg-white border border-neutral-200 rounded-2xl py-12 text-center">
                 <p className="text-sm text-neutral-400">
                   No posts match this filter.
                 </p>
@@ -1388,7 +1387,7 @@ export default function CommunityPage() {
           {/*  RIGHT SIDEBAR  */}
           <div className="hidden xl:block w-72 shrink-0 space-y-4">
             {/* Mentor Hub */}
-            <div className="bg-white border border-neutral-200">
+            <div className="bg-white border border-neutral-200 rounded-2xl">
               <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
                 <h3 className="text-sm font-bold text-primary-700 flex items-center gap-2">
                   <GraduationCap size={15} /> Mentor Hub
@@ -1432,7 +1431,7 @@ export default function CommunityPage() {
             </div>
 
             {/* Community Meetings */}
-            <div className="bg-white border border-neutral-200">
+            <div className="bg-white border border-neutral-200 rounded-2xl">
               <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
                 <h3 className="text-sm font-bold text-primary-700 flex items-center gap-2">
                   <Video size={15} /> Meetings

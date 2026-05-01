@@ -978,6 +978,52 @@ textarea:focus-visible {
   transform: translateY(0);
 }
 
+/* Hero entrance animations */
+@keyframes heroSlideDown {
+  from { opacity: 0; transform: translateY(-22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroSlideUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroSlideLeft {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.hero-anim-bar {
+  opacity: 0;
+  animation: heroSlideDown 600ms cubic-bezier(0.16, 1, 0.3, 1) 80ms forwards;
+}
+.hero-anim-left {
+  opacity: 0;
+  animation: heroSlideUp 700ms cubic-bezier(0.16, 1, 0.3, 1) 220ms forwards;
+}
+.hero-anim-right {
+  opacity: 0;
+  animation: heroSlideLeft 700ms cubic-bezier(0.16, 1, 0.3, 1) 350ms forwards;
+}
+.hero-anim-card {
+  opacity: 0;
+  animation: heroFadeIn 600ms cubic-bezier(0.16, 1, 0.3, 1) 520ms forwards;
+}
+
+.reveal-stat {
+  opacity: 0;
+  transform: translateY(130px) scale(0.96);
+  transition:
+    opacity 750ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 750ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-stat.revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
 .content-lazy {
   content-visibility: auto;
   contain-intrinsic-size: auto 500px;

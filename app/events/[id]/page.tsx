@@ -1,52 +1,49 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { events } from "@/lib/data";
-import { supabase, eventsApi, commentsApi, eventRegistrationsApi } from "@/lib/api";
-import {
-  ArrowLeft, BarChart3, BookOpen, Calendar, Clock, Download,
-  FileText, Heart, MapPin, MessageSquare, Send, Share2, ThumbsUp, Users, Loader2,
-} from "lucide-react";
+import { supabase, eventsApi, eventRegistrationsApi } from "@/lib/api";
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Share2, CheckCircle, Loader2 } from "lucide-react";
 
-interface DbComment {
-  id: string;
-  user_id: string;
-  content: string;
-  created_at: string;
-  profiles?: { name: string; avatar_url?: string };
-}
 
-const categoryResources: Record<string, { title: string; type: string; size: string }[]> = {
+const GALLERY: Record<string, string[]> = {
   Competition: [
-    { title: "Competition Rules & Guidelines", type: "PDF", size: "1.2 MB" },
-    { title: "Preparation Checklist", type: "PDF", size: "450 KB" },
-    { title: "Past Competition Results", type: "XLSX", size: "320 KB" },
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
   ],
   Social: [
-    { title: "Event Agenda & Itinerary", type: "PDF", size: "280 KB" },
-    { title: "Icebreaker Activity Guide", type: "PDF", size: "150 KB" },
+    "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
   ],
   Workshop: [
-    { title: "Workshop Materials", type: "ZIP", size: "5.2 MB" },
-    { title: "Pre-Workshop Reading", type: "PDF", size: "890 KB" },
-    { title: "Practice Exercises", type: "PDF", size: "1.1 MB" },
+    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80",
   ],
   Meeting: [
-    { title: "Meeting Agenda", type: "DOCX", size: "120 KB" },
-    { title: "Previous Meeting Notes", type: "PDF", size: "340 KB" },
+    "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=800&q=80",
   ],
   Performance: [
-    { title: "Performance Program", type: "PDF", size: "2.4 MB" },
-    { title: "Rehearsal Schedule", type: "PDF", size: "180 KB" },
+    "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80",
   ],
   Fundraiser: [
-    { title: "Fundraiser Planning Guide", type: "PDF", size: "560 KB" },
-    { title: "Donation Tracking Sheet", type: "XLSX", size: "95 KB" },
+    "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80",
   ],
   Other: [
-    { title: "Event Information Pack", type: "PDF", size: "400 KB" },
+    "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1429514513361-8a632ff5d610?auto=format&fit=crop&w=800&q=80",
   ],
 };
 
@@ -57,51 +54,40 @@ export default function EventDetailPage() {
   const [rsvp, setRsvp] = useState(false);
   const [rsvpLoading, setRsvpLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [dbComments, setDbComments] = useState<DbComment[]>([]);
-  const [commentText, setCommentText] = useState("");
-  const [commentLoading, setCommentLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [registrationCount, setRegistrationCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!cancelled && user) setCurrentUserId(user.id);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!cancelled && user) setCurrentUserId(user.id);
 
-      // Try fetching from DB
-      const { data: ev } = await eventsApi.getById(params.id);
-      if (!cancelled && ev) {
-        setDbEvent(ev);
-        setLikeCount(ev.current_attendees ?? 0);
-      }
-
-      // Fetch comments from DB
-      const { data: cmts } = await commentsApi.getByEvent(params.id);
-      if (!cancelled && cmts) setDbComments(cmts as DbComment[]);
-
-      // Fetch registrations count
-      const { data: regs } = await eventRegistrationsApi.getByEvent(params.id);
-      if (!cancelled && regs) {
-        setRegistrationCount(regs.filter((r: any) => r.status === 'registered' || r.status === 'attended').length);
-        if (user) {
-          const userReg = regs.find((r: any) => r.user_id === user.id && r.status !== 'cancelled');
-          if (userReg) setRsvp(true);
+        // Try fetching from DB
+        const { data: ev } = await eventsApi.getById(params.id);
+        if (!cancelled && ev) {
+          setDbEvent(ev);
         }
-      }
 
+        // Fetch registrations count
+        const { data: regs } = await eventRegistrationsApi.getByEvent(params.id);
+        if (!cancelled && regs) {
+          setRegistrationCount(regs.filter((r: any) => r.status === 'registered' || r.status === 'attended').length);
+          if (user) {
+            const userReg = regs.find((r: any) => r.user_id === user?.id && r.status !== 'cancelled');
+            if (userReg) setRsvp(true);
+          }
+        }
+      } catch {
+        // DB unavailable — fall through to seeded data
+      }
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
   }, [params.id]);
 
   const seeded = events.find((item) => item.id === params.id);
-
-  useEffect(() => {
-    if (seeded && !dbEvent) setLikeCount(Math.floor(seeded.currentAttendees * 0.7));
-  }, [seeded, dbEvent]);
 
   const handleRsvp = useCallback(async () => {
     if (!currentUserId || rsvpLoading) return;
@@ -117,15 +103,6 @@ export default function EventDetailPage() {
     }
     setRsvpLoading(false);
   }, [currentUserId, rsvp, rsvpLoading, params.id]);
-
-  const addComment = useCallback(async () => {
-    if (!commentText.trim() || !currentUserId || commentLoading) return;
-    setCommentLoading(true);
-    const { data } = await commentsApi.create({ user_id: currentUserId, content: commentText.trim(), event_id: params.id });
-    if (data) setDbComments(prev => [...prev, data as unknown as DbComment]);
-    setCommentText("");
-    setCommentLoading(false);
-  }, [commentText, currentUserId, commentLoading, params.id]);
 
   if (loading) {
     return (
@@ -167,17 +144,9 @@ export default function EventDetailPage() {
 
   if (!event) return null;
 
-  const relatedEvents = events
-    .filter((e) => e.id !== params.id && (e.chapterId === event.chapterId || e.category === event.category))
-    .slice(0, 3);
-
-  const resources = categoryResources[event.category] || categoryResources.Other;
   const totalAttendees = event.currentAttendees;
-  const rsvpGoing = Math.floor(totalAttendees * 0.65);
-  const rsvpMaybe = Math.floor(totalAttendees * 0.25);
-  const rsvpDeclined = totalAttendees - rsvpGoing - rsvpMaybe;
   const rsvpMax = (dbEvent?.max_attendees) || (seeded?.maxAttendees) || Math.max(Math.floor(totalAttendees * 1.4), 20);
-  const fillPct = Math.min(100, Math.round((totalAttendees / rsvpMax) * 100));
+  const spotsLeft = Math.max(0, rsvpMax - totalAttendees);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -185,235 +154,167 @@ export default function EventDetailPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikeCount(prev => liked ? prev - 1 : prev + 1);
-  };
-
-  const eventImages: Record<string, string> = {
+  const bannerImgs: Record<string, string> = {
     Competition: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1400&q=80",
-    Social: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
-    Workshop: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1400&q=80",
-    Meeting: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=80",
+    Social:      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
+    Workshop:    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1400&q=80",
+    Meeting:     "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=80",
     Performance: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=1400&q=80",
-    Fundraiser: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1400&q=80",
-    Other: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80",
+    Fundraiser:  "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1400&q=80",
+    Other:       "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1400&q=80",
   };
-  const bannerImg = event.imageUrl || eventImages[event.category] || eventImages.Other;
+  const bannerImg = event.imageUrl || bannerImgs[event.category] || bannerImgs.Other;
+  const gallery = GALLERY[event.category] || GALLERY.Other;
+
+  const relatedEvents = events
+    .filter((e) => e.id !== params.id && (e.chapterId === event.chapterId || e.category === event.category))
+    .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-neutral-100">
-      <section className="relative text-white border-b-4 border-secondary-500 overflow-hidden">
+    <div className="min-h-screen bg-[#F7F1E8]">
+
+      {/* ── BANNER ─────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-primary-900">
         <div className="absolute inset-0">
-          <img src={bannerImg} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-primary-800/80" />
+          <Image src={bannerImg} alt="" fill className="object-cover opacity-40" priority />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary-900/90 via-primary-900/60 to-primary-900/30" />
         </div>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 relative z-10">
-          <Link href="/events" className="text-sm font-semibold text-primary-100 hover:text-white flex items-center gap-1 mb-4">
-            <ArrowLeft size={14} /> Back to Events
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-10">
+          <Link href="/events" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-200 hover:text-white mb-5 transition-colors">
+            <ArrowLeft size={13} /> Back to Events
           </Link>
-          <h1 className="text-3xl md:text-4xl font-heading font-bold">{event.title}</h1>
-          <p className="mt-2 text-primary-100">
-            Hosted by{" "}
-            <Link href={`/directory/${event.chapterId}`} className="underline hover:text-white">{event.chapterName}</Link>
-          </p>
-          <div className="mt-4 flex items-center gap-4">
-            <button onClick={handleLike} className={`flex items-center gap-1.5 px-4 py-2  font-semibold text-sm transition-all ${liked ? "bg-red-500 text-white" : "bg-white/15 text-white hover:bg-white/25"}`}>
-              <Heart size={16} fill={liked ? "currentColor" : "none"} /> {likeCount}
-            </button>
-            <button onClick={handleShare} className="flex items-center gap-1.5 px-4 py-2  bg-white/15 text-white hover:bg-white/25 text-sm font-semibold">
-              <Share2 size={16} /> {copied ? "Copied!" : "Share"}
-            </button>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-block bg-secondary-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+              {event.category}
+            </span>
+            {event.isPublic
+              ? <span className="inline-block bg-white/15 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full">Open Event</span>
+              : <span className="inline-block bg-white/15 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full">Members Only</span>
+            }
           </div>
+          <h1 className="text-2xl md:text-3xl font-heading font-bold text-white leading-tight">{event.title}</h1>
+          <p className="mt-1.5 text-primary-200 text-sm">
+            Hosted by{" "}
+            <Link href={`/directory/${event.chapterId}`} className="text-white font-semibold hover:underline">{event.chapterName}</Link>
+          </p>
+          <button onClick={handleShare} className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 text-white text-xs font-semibold hover:bg-white/25 transition-colors border border-white/20">
+            <Share2 size={12} /> {copied ? "Link copied!" : "Share event"}
+          </button>
+        </div>
+        <div aria-hidden className="absolute bottom-0 left-0 right-0 leading-[0]">
+          <svg viewBox="0 0 1440 32" preserveAspectRatio="none" className="block w-full h-6">
+            <path d="M0,32 L0,16 C360,32 720,0 1080,16 C1260,24 1380,12 1440,16 L1440,32 Z" fill="#F7F1E8" />
+          </svg>
         </div>
       </section>
 
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8 grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-5">
-          <div className="card p-6">
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className={`badge ${event.isPublic ? "badge-primary" : "badge-outline"}`}>{event.isPublic ? "Open Event" : "Members Only"}</span>
-              <span className="badge badge-outline">{event.category}</span>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4 text-sm text-neutral-700">
-              <div className="flex items-center gap-3 p-3  bg-neutral-50">
-                <Calendar size={18} className="text-primary-600 shrink-0" />
-                <div><p className="font-semibold">Date</p><p>{event.date}</p></div>
-              </div>
-              <div className="flex items-center gap-3 p-3  bg-neutral-50">
-                <Clock size={18} className="text-primary-600 shrink-0" />
-                <div><p className="font-semibold">Time</p><p>{event.startTime} - {event.endTime}</p></div>
-              </div>
-              <div className="flex items-center gap-3 p-3  bg-neutral-50">
-                <MapPin size={18} className="text-primary-600 shrink-0" />
-                <div><p className="font-semibold">Location</p><p>{event.location}</p></div>
-              </div>
-              <div className="flex items-center gap-3 p-3  bg-neutral-50">
-                <Users size={18} className="text-primary-600 shrink-0" />
-                <div><p className="font-semibold">Attendees</p><p>{totalAttendees} attending</p></div>
-              </div>
-            </div>
-          </div>
+      {/* ── MAIN CONTENT ───────────────────────────────── */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
-          <div className="card p-6">
-            <h2 className="text-xl font-heading font-bold text-primary-600">About This Event</h2>
-            <p className="mt-3 text-neutral-700 leading-relaxed">{event.description}</p>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><BarChart3 size={20} /> RSVP Statistics</h2>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="text-center p-3 bg-green-50 border border-green-100 ">
-                <p className="text-2xl font-bold text-green-700">{rsvpGoing}</p>
-                <p className="text-xs text-green-600">Going</p>
+        {/* Quick info row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { icon: Calendar, label: "Date",     value: new Date(event.date + "T00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) },
+            { icon: Clock,    label: "Time",     value: `${event.startTime} – ${event.endTime}` },
+            { icon: MapPin,   label: "Location", value: event.location.split(",")[0] },
+            { icon: Users,    label: "Attending",value: `${totalAttendees} signed up` },
+          ].map(({ icon: Icon, label, value }) => (
+            <div key={label} className="bg-white border border-cream-300 rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
+                <Icon size={15} className="text-primary-600" />
               </div>
-              <div className="text-center p-3 bg-yellow-50 border border-yellow-100 ">
-                <p className="text-2xl font-bold text-yellow-700">{rsvpMaybe}</p>
-                <p className="text-xs text-yellow-600">Maybe</p>
-              </div>
-              <div className="text-center p-3 bg-red-50 border border-red-100 ">
-                <p className="text-2xl font-bold text-red-700">{rsvpDeclined}</p>
-                <p className="text-xs text-red-600">Declined</p>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{label}</p>
+                <p className="text-xs font-semibold text-primary-800 leading-tight mt-0.5">{value}</p>
               </div>
             </div>
+          ))}
+        </div>
+
+        {/* Description */}
+        <div className="bg-white border border-cream-300 rounded-2xl p-6">
+          <h2 className="font-heading font-bold text-primary-800 text-lg mb-3">About This Event</h2>
+          <p className="text-sm text-neutral-600 leading-relaxed">{event.description}</p>
+        </div>
+
+        {/* Image gallery */}
+        <div className="bg-white border border-cream-300 rounded-2xl p-6">
+          <h2 className="font-heading font-bold text-primary-800 text-lg mb-4">Event Gallery</h2>
+          <div className="grid grid-cols-3 gap-3">
+            {gallery.map((src, i) => (
+              <div key={i} className="relative aspect-video rounded-xl overflow-hidden bg-neutral-200">
+                <Image src={src} alt="" fill className="object-cover hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 33vw, 250px" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sign-up section */}
+        <div className="bg-white border border-cream-300 rounded-2xl p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-semibold text-neutral-600">Capacity</span>
-                <span className="font-bold text-primary-700">{fillPct}% filled</span>
-              </div>
-              <div className="h-4 bg-neutral-100 rounded-full overflow-hidden flex">
-                <div className="h-full bg-green-500 transition-all" style={{ width: `${(rsvpGoing / rsvpMax) * 100}%` }} />
-                <div className="h-full bg-yellow-400 transition-all" style={{ width: `${(rsvpMaybe / rsvpMax) * 100}%` }} />
-                <div className="h-full bg-red-400 transition-all" style={{ width: `${(rsvpDeclined / rsvpMax) * 100}%` }} />
-              </div>
-              <p className="text-[10px] text-neutral-400 mt-1">{totalAttendees} of {rsvpMax} spots filled</p>
-            </div>
-            <div className="mt-4">
-              <p className="text-xs font-bold text-neutral-500 mb-2">RSVP TREND (LAST 7 DAYS)</p>
-              <div className="flex items-end gap-1 h-16">
-                {[3, 5, 8, 12, 10, 15, totalAttendees].map((v, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-                    <span className="text-[8px] font-bold text-primary-600">{v}</span>
-                    <div className="w-full bg-gradient-to-t from-primary-500 to-primary-300 rounded-t" style={{ height: `${(v / Math.max(totalAttendees, 1)) * 100}%`, minHeight: "4px" }} />
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between text-[8px] text-neutral-400 mt-1">
-                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => <span key={d}>{d}</span>)}
-              </div>
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><FileText size={20} /> Event Resources</h2>
-            <div className="space-y-2">
-              {resources.map(res => (
-                <div key={res.title} className="flex items-center gap-3 p-3 border border-neutral-200  hover:border-primary-200 hover:bg-primary-50/30 transition-all">
-                  <div className="w-10 h-10  bg-primary-50 text-primary-600 flex items-center justify-center shrink-0"><BookOpen size={18} /></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-neutral-800 truncate">{res.title}</p>
-                    <p className="text-xs text-neutral-500">{res.type} · {res.size}</p>
-                  </div>
-                  <button className="btn-outline text-xs flex items-center gap-1 shrink-0"><Download size={12} /> Download</button>
+              <h2 className="font-heading font-bold text-primary-800 text-lg">Join This Event</h2>
+              <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex -space-x-1.5">
+                  {["bg-primary-400","bg-secondary-500","bg-accent-500","bg-emerald-500"].map((c,i) => (
+                    <div key={i} className={`w-6 h-6 rounded-full ${c} border-2 border-white flex items-center justify-center text-white text-[9px] font-bold`}>{String.fromCharCode(65+i)}</div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-heading font-bold text-primary-600 flex items-center gap-2 mb-4"><MessageSquare size={20} /> Comments ({dbComments.length})</h2>
-            <div className="space-y-3">
-              {dbComments.map(c => {
-                const authorName = c.profiles?.name || "Anonymous";
-                const timeAgo = c.created_at ? new Date(c.created_at).toLocaleDateString() : "";
-                return (
-                  <div key={c.id} className="border border-neutral-200  p-4 hover:bg-primary-50/20 transition-colors">
-                    <div className="flex items-center gap-2 mb-2">
-                      {c.profiles?.avatar_url
-                        ? <img src={c.profiles.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
-                        : <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold">{authorName[0]}</div>
-                      }
-                      <span className="text-sm font-semibold text-primary-700">{authorName}</span>
-                      <span className="text-xs text-neutral-400 ml-auto">{timeAgo}</span>
-                    </div>
-                    <p className="text-sm text-neutral-700 ml-10">{c.content}</p>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-4 flex gap-2">
-              <input type="text" placeholder={currentUserId ? "Add a comment..." : "Log in to comment"} value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => { if (e.key === "Enter") addComment(); }} className="flex-1 input-field text-sm" disabled={!currentUserId} />
-              <button onClick={addComment} disabled={!currentUserId || commentLoading} className="btn-primary px-4 disabled:opacity-50">{commentLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}</button>
-            </div>
-          </div>
-
-          {relatedEvents.length > 0 && (
-            <div className="card p-6">
-              <h2 className="text-xl font-heading font-bold text-primary-600 mb-4">Related Events</h2>
-              <div className="space-y-3">
-                {relatedEvents.map((re) => (
-                  <Link key={re.id} href={`/events/${re.id}`} className="block p-4  border border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40 ux-hover-lift-sm">
-                    <p className="font-semibold text-primary-700">{re.title}</p>
-                    <p className="text-sm text-neutral-500">{re.chapterName} · {re.date} · {re.location}</p>
-                  </Link>
-                ))}
+                <p className="text-sm text-neutral-600">
+                  <span className="font-bold text-primary-800">{totalAttendees}</span> people have signed up
+                  {spotsLeft > 0 && <span className="text-neutral-400"> · <span className="text-primary-600 font-semibold">{spotsLeft} spots left</span></span>}
+                </p>
+              </div>
+              {/* Capacity bar */}
+              <div className="mt-3 w-64 max-w-full">
+                <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary-600 rounded-full transition-all" style={{ width: `${Math.min(100, (totalAttendees / rsvpMax) * 100)}%` }} />
+                </div>
+                <p className="text-[10px] text-neutral-400 mt-1">{totalAttendees} of {rsvpMax} spots filled</p>
               </div>
             </div>
+            <button
+              onClick={handleRsvp}
+              disabled={!currentUserId || rsvpLoading}
+              className={`shrink-0 flex items-center gap-2 px-7 py-3 rounded-2xl font-bold text-sm transition-all disabled:opacity-50 ${
+                rsvp
+                  ? "bg-green-100 text-green-700 border-2 border-green-300 hover:bg-green-50"
+                  : "bg-primary-800 text-white hover:bg-primary-700 shadow-[0_4px_14px_rgba(23,54,93,0.3)]"
+              }`}
+            >
+              {rsvpLoading ? <Loader2 size={16} className="animate-spin" /> : rsvp ? <><CheckCircle size={16} /> Signed Up!</> : "Sign Up"}
+            </button>
+          </div>
+          {!currentUserId && (
+            <p className="mt-3 text-xs text-neutral-500">
+              <Link href="/login" className="text-primary-600 font-semibold hover:underline">Log in</Link> to sign up for this event.
+            </p>
           )}
         </div>
 
-        <aside className="space-y-5">
-          <div className="card p-6">
-            <button onClick={handleRsvp} disabled={!currentUserId || rsvpLoading} className={`w-full py-3  font-semibold text-center transition-all ${rsvp ? "bg-green-100 text-green-700 border-2 border-green-300" : "btn-primary"} disabled:opacity-50`}>
-              {rsvpLoading ? "Processing…" : rsvp ? "✓ You're Going!" : currentUserId ? "RSVP to This Event" : "Log in to RSVP"}
-            </button>
-            <button onClick={handleShare} className="btn-outline w-full mt-3 flex items-center justify-center gap-2"><Share2 size={14} /> {copied ? "Link Copied!" : "Share Event"}</button>
-            <button onClick={handleLike} className={`w-full mt-3 flex items-center justify-center gap-2 py-2.5  font-semibold text-sm transition-all ${liked ? "bg-red-50 text-red-600 border-2 border-red-200" : "btn-outline"}`}>
-              <Heart size={14} fill={liked ? "currentColor" : "none"} /> {liked ? "Loved!" : "Love This Event"} ({likeCount})
-            </button>
-          </div>
-
-          <div className="card p-6">
-            <h3 className="text-lg font-heading font-bold text-primary-600">Hosting Club</h3>
-            <Link href={`/directory/${event.chapterId}`} className="mt-3 block p-3  border border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40 ux-hover-lift-sm">
-              <p className="font-semibold text-primary-700">{event.chapterName}</p>
-              <p className="text-xs text-neutral-500 mt-1">View club details →</p>
-            </Link>
-          </div>
-
-          <div className="card p-6">
-            <h3 className="text-lg font-heading font-bold text-primary-600">Quick Links</h3>
-            <div className="mt-3 space-y-2">
-              <Link href="/events" className="block text-sm text-primary-600 hover:underline">← All Events</Link>
-              <Link href="/events/new" className="block text-sm text-primary-600 hover:underline">Submit an Event</Link>
-              <Link href="/directory" className="block text-sm text-primary-600 hover:underline">Club Directory</Link>
-              <Link href="/resources" className="block text-sm text-primary-600 hover:underline">Resources</Link>
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h3 className="text-lg font-heading font-bold text-primary-600">Attendee Breakdown</h3>
-            <div className="mt-3 space-y-2">
-              {[
-                { label: "Students", pct: 72, color: "bg-primary-500" },
-                { label: "Officers", pct: 18, color: "bg-secondary-500" },
-                { label: "Advisors", pct: 6, color: "bg-green-500" },
-                { label: "Guests", pct: 4, color: "bg-purple-500" },
-              ].map(g => (
-                <div key={g.label}>
-                  <div className="flex justify-between text-xs mb-0.5">
-                    <span className="text-neutral-600">{g.label}</span>
-                    <span className="font-bold text-primary-700">{g.pct}%</span>
+        {/* Related events */}
+        {relatedEvents.length > 0 && (
+          <div className="bg-white border border-cream-300 rounded-2xl p-6">
+            <h2 className="font-heading font-bold text-primary-800 text-lg mb-4">More Events You Might Like</h2>
+            <div className="space-y-2">
+              {relatedEvents.map(re => (
+                <Link key={re.id} href={`/events/${re.id}`}
+                  className="flex items-center gap-4 p-3 rounded-xl border border-cream-200 hover:border-primary-200 hover:bg-cream-100 transition-all">
+                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
+                    <Calendar size={16} className="text-primary-600" />
                   </div>
-                  <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
-                    <div className={`h-full ${g.color} rounded-full`} style={{ width: `${g.pct}%` }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-primary-800 truncate">{re.title}</p>
+                    <p className="text-xs text-neutral-400 mt-0.5">{re.chapterName} · {re.date}</p>
                   </div>
-                </div>
+                  <ArrowLeft size={13} className="rotate-180 text-neutral-400 shrink-0" />
+                </Link>
               ))}
             </div>
           </div>
-        </aside>
-      </section>
+        )}
+
+      </div>
     </div>
   );
 }

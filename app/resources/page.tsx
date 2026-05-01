@@ -97,7 +97,7 @@ export default function ResourcesPage() {
         eyebrow="Community Resources"
         title="Resource"
         highlightWord="Directory"
-        description="Browse guides, templates, and handbooks that help you run, grow, and lead your club to success."
+        description="Want to start your own school club or community organization? Here are resources to help you get started for every stage."
         texture="diagonal"
         images={[
           "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1600&q=75",

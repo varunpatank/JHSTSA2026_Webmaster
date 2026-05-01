@@ -143,23 +143,57 @@ export default function EventsPage() {
         </div>
 
         {/* Diagonal texture overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-5"
-          style={{
-            backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
-          }} />
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-14 pb-28 md:pt-16 md:pb-36">
-          <span className="inline-block bg-white/10 text-primary-100 text-[10px] font-semibold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-5">
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.06) 12px, rgba(255,255,255,0.06) 13px), repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.06) 12px, rgba(255,255,255,0.06) 13px)"
+        }} />
+        {/* Community icon pattern — same as other page banners */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true" style={{ opacity: 0.10 }}>
+          <svg width="100%" height="100%">
+            <defs>
+              <pattern id="eventsAccent" x="0" y="0" width="280" height="200" patternUnits="userSpaceOnUse">
+                <circle cx="28" cy="30" r="9" stroke="white" strokeWidth="1.4" fill="none"/>
+                <path d="M11 54 Q11 43 28 43 Q45 43 45 54" stroke="white" strokeWidth="1.4" fill="none"/>
+                <rect x="90" y="14" width="54" height="28" rx="7" stroke="white" strokeWidth="1.4" fill="none"/>
+                <path d="M100 42 L96 54 L110 42" stroke="white" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
+                <path d="M238 22 L240 28 L246 28 L241 32 L243 38 L238 34 L233 38 L235 32 L230 28 L236 28Z" stroke="white" strokeWidth="1.4" fill="none"/>
+                <rect x="18" y="118" width="40" height="46" rx="3" stroke="white" strokeWidth="1.4" fill="none"/>
+                <line x1="38" y1="118" x2="38" y2="164" stroke="white" strokeWidth="1.4"/>
+                <line x1="18" y1="132" x2="58" y2="132" stroke="white" strokeWidth="0.8"/>
+                <line x1="18" y1="144" x2="58" y2="144" stroke="white" strokeWidth="0.8"/>
+                <circle cx="150" cy="126" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
+                <circle cx="182" cy="114" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
+                <circle cx="192" cy="144" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
+                <line x1="154" y1="126" x2="178" y2="116" stroke="white" strokeWidth="0.9"/>
+                <line x1="154" y1="128" x2="188" y2="142" stroke="white" strokeWidth="0.9"/>
+                <line x1="182" y1="118" x2="190" y2="140" stroke="white" strokeWidth="0.9"/>
+                <path d="M90 100 L91.5 105 L97 105 L92.5 108 L94 113 L90 110 L86 113 L87.5 108 L83 105 L88.5 105Z" stroke="white" strokeWidth="1" fill="none"/>
+                <circle cx="250" cy="80" r="2.5" stroke="white" strokeWidth="1" fill="none"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#eventsAccent)"/>
+          </svg>
+        </div>
+        {/* Decorative graduation cap — upper-right */}
+        <div className="absolute pointer-events-none select-none" style={{ top: "8%", right: "5%", opacity: 0.13 }} aria-hidden="true">
+          <svg width="150" height="130" viewBox="0 0 170 148" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="85,10 142,40 85,70 28,40" stroke="white" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
+            <path d="M46 47 L46 78 Q85 102 124 78 L124 47" stroke="white" strokeWidth="2.5" fill="none"/>
+            <line x1="142" y1="40" x2="142" y2="70" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            <circle cx="142" cy="79" r="8" stroke="white" strokeWidth="2.2" fill="none"/>
+            <line x1="135" y1="79" x2="128" y2="110" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+            <line x1="142" y1="79" x2="142" y2="112" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+            <line x1="149" y1="79" x2="154" y2="110" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+        </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-11 pb-20 md:pt-12 md:pb-24">
+          <span className="inline-block bg-white/10 text-primary-100 text-[10px] font-semibold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4">
             Community Gatherings &amp; Workshops
           </span>
-          <h1 className="text-3xl md:text-5xl font-heading font-bold text-white leading-tight">
-            Upcoming{" "}
+          <h1 className="text-4xl md:text-5xl font-heading font-bold text-white leading-tight">
+            Upcoming Community{" "}
             <span className="relative inline-block text-secondary-400 italic">
-              Community
-              <span
-                className="absolute pointer-events-none select-none z-20"
-                style={{ top: "-0.52em", right: "-0.45em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}
-                aria-hidden="true"
-              >
+              Events
+              <span className="absolute pointer-events-none select-none z-20" style={{ top: "-0.52em", right: "-0.45em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }} aria-hidden="true">
                 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 md:w-16 md:h-16">
                   <polygon points="20,7 35,15 20,23 5,15" fill="#0d1b2b" stroke="rgba(255,255,255,0.45)" strokeWidth="1.1" />
                   <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#0d1b2b" fillOpacity="0.85" stroke="rgba(255,255,255,0.42)" strokeWidth="1.3" strokeLinejoin="round" />
@@ -168,20 +202,18 @@ export default function EventsPage() {
                 </svg>
               </span>
             </span>
-            <br />
-            Connections
           </h1>
-          <p className="mt-4 text-primary-200 text-sm max-w-lg leading-relaxed mb-7">
-            Join students for meaningful gatherings, club showcases, competitions, and events. Browse upcoming dates and RSVP for the ones that matter to you.
+          <p className="mt-3 text-primary-200 text-sm max-w-xl leading-relaxed mb-5">
+            Browse upcoming club events, sign up for gatherings, and stay connected with your school community.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <a href="#featured" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-800 text-white text-sm font-bold border border-white/20 hover:bg-primary-700 transition-colors">
-              <Calendar size={14} /> Featured Gathering
+          <div className="flex flex-wrap gap-2">
+            <a href="#featured" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-800 text-white text-xs font-bold border border-white/20 hover:bg-primary-700 transition-colors">
+              <Calendar size={13} /> Featured Event
             </a>
-            <a href="#schedule" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/30 text-white text-sm font-semibold hover:bg-white/10 transition-colors">
-              <Calendar size={14} /> Open Full Schedule
+            <a href="#schedule" className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-white text-xs font-semibold hover:bg-white/10 transition-colors">
+              Full Schedule
             </a>
-            <Link href="/events/new" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/30 text-white text-sm font-semibold hover:bg-white/10 transition-colors">
+            <Link href="/events/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-white text-xs font-semibold hover:bg-white/10 transition-colors">
               Submit an Event
             </Link>
           </div>
@@ -417,7 +449,6 @@ export default function EventsPage() {
             </aside>
           </div>
         </section>
-      </div>
       </div>
       </div>
     </div>
