@@ -48,10 +48,10 @@ export default function GuidesIndexPage() {
         <div className="mt-10 card p-6 bg-primary-600 text-white text-center relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none opacity-[0.10]" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.15) 18px, rgba(255,255,255,0.15) 19px)" }} />
           <h2 className="text-xl font-heading font-bold relative z-10">Need Help?</h2>
-          <p className="text-primary-100 mt-2 relative z-10">Check our FAQ or ask our AI assistant for personalised help.</p>
+          <p className="text-primary-100 mt-2 relative z-10">Check our FAQ or explore the full resource library for step-by-step help.</p>
           <div className="mt-4 flex justify-center gap-3 relative z-10">
             <Link href="/faq" className="btn-secondary">View FAQ</Link>
-            <Link href="/explore#chatbot" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">AI Assistant</Link>
+            <Link href="/resources" className="btn-outline border-white text-white hover:bg-white hover:text-primary-500">Resources</Link>
           </div>
         </div>
       </div>

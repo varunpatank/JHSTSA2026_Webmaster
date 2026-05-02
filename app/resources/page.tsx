@@ -59,7 +59,7 @@ function StarRow({ rating }: { rating: number }) {
 
 export default function ResourcesPage() {
   const router = useRouter();
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState("Getting Started");
   const [stage, setStage]       = useState("All Stages");
   const [query, setQuery]       = useState("");
   const [saved, setSaved]       = useState<Set<string>>(new Set());

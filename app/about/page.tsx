@@ -185,7 +185,7 @@ export default function AboutPage() {
               {[
                 { name: "Next.js", desc: "React framework" }, { name: "TypeScript", desc: "Type safety" },
                 { name: "Tailwind CSS", desc: "Utility-first styling" }, { name: "Supabase", desc: "Auth & database" },
-                { name: "Stripe", desc: "Payment processing" }, { name: "Gemini AI", desc: "AI assistant" },
+                { name: "Stripe", desc: "Payment processing" }, { name: "Leaflet", desc: "Interactive maps" },
                 { name: "Leaflet", desc: "Interactive maps" }, { name: "Lucide", desc: "Icon library" },
               ].map(t => (
                 <div key={t.name} className="bg-neutral-50 border border-neutral-200  p-3 text-center ux-hover-lift-sm">

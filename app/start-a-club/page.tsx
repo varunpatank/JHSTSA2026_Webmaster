@@ -884,6 +884,7 @@ export default function StartAClubPage() {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [summaryView, setSummaryView] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [resourceFiles, setResourceFiles] = useState<
     { name: string; file: File }[]
@@ -972,154 +973,77 @@ export default function StartAClubPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login?redirect=/start-a-club");
-        return;
-      }
-
-      setSubmitting(true);
-
-      let logoUrl: string | undefined;
-      if (logoFile) {
-        const res = await storageApi.uploadFile(user.id, logoFile, "uploads");
-        if (res.data) logoUrl = res.data.publicUrl;
-      }
-
-      const resourceLinksArr: { name: string; url: string }[] = [];
-      for (const rf of resourceFiles) {
-        const res = await storageApi.uploadFile(user.id, rf.file, "uploads");
-        if (res.data)
-          resourceLinksArr.push({
-            name: rf.name || rf.file.name,
-            url: res.data.publicUrl,
-          });
-      }
-
-      const socialObj: Record<string, string> = {};
-      if (formData.socialLinks.trim()) {
-        formData.socialLinks.split("\n").forEach((line) => {
-          const [key, ...rest] = line.split(":");
-          if (key && rest.length)
-            socialObj[key.trim().toLowerCase()] = rest.join(":").trim();
-        });
-      }
-
-      await clubProposalsApi.create({
-        submitted_by: user.id,
-        club_name: formData.name,
-        mission_statement: formData.purpose,
-        category: formData.category || undefined,
-        proposed_advisor: formData.advisor || undefined,
-        advisor_email: formData.advisorEmail || undefined,
-        constitution_draft: formData.constitution || undefined,
-        meeting_schedule: formData.meetingSchedule || undefined,
-        meeting_location: formData.location || undefined,
-        meeting_space_needs: formData.location || undefined,
-        interested_members: formData.officers || undefined,
-        expected_members: formData.expectedMembers
-          ? parseInt(formData.expectedMembers)
-          : undefined,
-        budget_requirements: formData.budget || undefined,
-        justification: formData.justification || undefined,
-        social_links: Object.keys(socialObj).length ? socialObj : undefined,
-        resource_links: resourceLinksArr.length ? resourceLinksArr : undefined,
-        logo_url: logoUrl,
-      });
-
-      // Also create the actual organization so it appears on the Discover page
-      const slug =
-        formData.name
-          .toLowerCase()
-          .trim()
-          .replace(/[^a-z0-9\s-]/g, "")
-          .replace(/\s+/g, "-") || `club-${Date.now()}`;
-      const orgRes = await myClubsApi.createClub({
-        name: formData.name,
-        slug,
-        description: formData.purpose,
-        category: formData.category || undefined,
-        meeting_schedule: formData.meetingSchedule || undefined,
-        meeting_location: formData.location || undefined,
-        advisor_name: formData.advisor || undefined,
-        contact_email: formData.advisorEmail || undefined,
-        logo_url: logoUrl,
-        social_links: Object.keys(socialObj).length ? socialObj : undefined,
-        created_by: user.id,
-        is_published: true,
-      });
-
-      const orgId = orgRes.data?.id || slug;
-      addAdminClub({ id: orgId, name: formData.name, status: "Published" });
-
-      // Build a Chapter object so it shows up on the directory page immediately
-      const newChapter: import("@/types").Chapter = {
-        id: slug,
-        name: formData.name,
-        description: formData.purpose,
-        category: (formData.category ||
-          "Other") as import("@/types").ChapterCategory,
-        meetingFrequency: "Weekly",
-        membershipStatus: "Open Enrollment",
-        gradeLevel: "All Grades",
-        meetingTime: "After School",
-        advisor: {
-          name: formData.advisor || "TBD",
-          email: formData.advisorEmail || "",
-          department: "General",
-        },
-        officers: formData.officers
-          ? formData.officers.split(",").map((o, i) => ({
-              name: o.trim(),
-              position:
-                i === 0
-                  ? "President"
-                  : i === 1
-                    ? "Vice President"
-                    : i === 2
-                      ? "Secretary"
-                      : "Treasurer",
-              email: "",
-              grade: 11,
-            }))
-          : [{ name: "You", position: "President", email: "", grade: 11 }],
-        meetingSchedule: formData.meetingSchedule || "TBD",
-        meetingLocation: {
-          lat: 47.7148986,
-          lng: -122.1997857,
-          parentOrg: "Juanita High School",
-          room: formData.location || "TBD",
-          internalLocation: formData.location || "",
-        },
-        membershipRequirements: "Open to all students",
-        dues: "None",
-        socialLinks: Object.keys(socialObj).length ? (socialObj as any) : {},
-        achievements: [
-          `Founded ${new Date().toLocaleDateString()}`,
-          `${Math.floor(Math.random() * 10) + 5} interest signups`,
-        ],
-        photoGallery: [],
-        memberCount: formData.expectedMembers
-          ? parseInt(formData.expectedMembers)
-          : Math.floor(Math.random() * 20) + 8,
-        foundedYear: new Date().getFullYear(),
-        isActive: true,
-      };
-      addCreatedChapter(newChapter);
-
-      // Redirect to the discover page highlighting the new club
-      router.push(`/directory?highlight=${slug}`);
-      return;
-    } catch (err) {
-      console.error("Proposal submission failed:", err);
-      alert("Failed to submit proposal. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    setSummaryView(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  if (summaryView) {
+    return (
+      <div className="bg-neutral-50 min-h-screen">
+        <HeroSection
+          eyebrow="Resources"
+          title="Start Club"
+          highlightWord="Guide"
+          description="Review your completed proposal summary below."
+          texture="diagonal"
+          images={[
+            "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
+          ]}
+        />
+        <div className="max-w-3xl mx-auto px-4 py-10">
+          <div className="bg-white rounded-2xl border border-cream-300 shadow-sm p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                <CheckCircle2 size={24} className="text-green-600" />
+              </div>
+              <div>
+                <h2 className="font-heading font-bold text-primary-800 text-xl">Proposal Summary</h2>
+                <p className="text-sm text-neutral-500">All phases complete. Review your club details below.</p>
+              </div>
+            </div>
+
+            <div className="divide-y divide-cream-200">
+              {[
+                { label: "Club Name",         value: formData.name },
+                { label: "Mission / Purpose",  value: formData.purpose },
+                { label: "Category",           value: formData.category },
+                { label: "Meeting Schedule",   value: formData.meetingSchedule },
+                { label: "Meeting Location",   value: formData.location },
+                { label: "Faculty Advisor",    value: formData.advisor },
+                { label: "Advisor Email",      value: formData.advisorEmail },
+                { label: "Officers",           value: formData.officers },
+                { label: "Expected Members",   value: formData.expectedMembers },
+                { label: "Budget",             value: formData.budget },
+                { label: "Justification",      value: formData.justification },
+              ].filter(f => f.value).map(({ label, value }) => (
+                <div key={label} className="py-3 grid grid-cols-[160px_1fr] gap-3">
+                  <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider pt-0.5">{label}</span>
+                  <span className="text-sm text-primary-800 leading-relaxed">{value}</span>
+                </div>
+              ))}
+              {formData.constitution && (
+                <div className="py-3">
+                  <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block mb-2">Constitution</span>
+                  <div className="bg-neutral-50 rounded-xl p-3 text-xs text-neutral-600 font-mono max-h-40 overflow-y-auto border border-cream-300">
+                    {formData.constitution.substring(0, 600)}{formData.constitution.length > 600 ? "..." : ""}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button onClick={() => setSummaryView(false)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-primary-200 text-primary-700 text-sm font-semibold hover:bg-primary-50 transition-colors">
+                <ArrowLeft size={14} /> Edit Proposal
+              </button>
+              <Link href="/directory" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-900 hover:bg-primary-800 text-white text-sm font-bold transition-colors">
+                Done — Browse Clubs <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -1152,15 +1076,16 @@ export default function StartAClubPage() {
     <div className="bg-neutral-50">
       {}
       <HeroSection
-        title="Start a New Club"
-        description="Follow the phases, fill in your details along the way, and submit when you're ready."
-        icon={<Rocket size={40} className="animate-float" />}
-        images={[
-          "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
-          "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
-          "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=75",
-        ]}
-        texture="diagonal"
+      eyebrow="Resources"
+      title="Start Club"
+      highlightWord="Guide"
+      description="Follow the phases, fill in your details, and get a full proposal summary when done."
+      texture="diagonal"
+      images={[
+        "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
+        "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
+        "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=75",
+      ]}
       />
 
       {}

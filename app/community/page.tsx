@@ -449,51 +449,11 @@ export default function CommunityPage() {
   );
   const [replyInputs, setReplyInputs] = useState<Record<number, string>>({});
 
-  const [chatMessages, setChatMessages] = useState<
-    { user: string; text: string; time: string }[]
-  >(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("clubconnect_community_chat");
-      if (saved)
-        try {
-          return JSON.parse(saved);
-        } catch {}
-    }
-    return [
-      {
-        user: "Sophie K.",
-        text: "TSA rubric breakdown is so helpful!",
-        time: "1h",
-      },
-      {
-        user: "Taylor M.",
-        text: "Anyone have the meeting agenda template?",
-        time: "3h",
-      },
-      {
-        user: "Maria G.",
-        text: "Check the fundraising playbook I posted!",
-        time: "6h",
-      },
-      {
-        user: "Alex J.",
-        text: "Robotics meeting moved to Room 204",
-        time: "8h",
-      },
-    ];
-  });
-  const [chatInput, setChatInput] = useState("");
   const [communityTab, setCommunityTab] = useState<"feed" | "mentors" | "stories">("feed");
 
   useEffect(() => {
     localStorage.setItem("clubconnect_community_feed", JSON.stringify(feed));
   }, [feed]);
-  useEffect(() => {
-    localStorage.setItem(
-      "clubconnect_community_chat",
-      JSON.stringify(chatMessages),
-    );
-  }, [chatMessages]);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) setAttachedFile(e.target.files[0]);
@@ -602,15 +562,6 @@ export default function CommunityPage() {
     setReplyInputs((prev) => ({ ...prev, [postId]: "" }));
   }
 
-  function sendChat() {
-    if (!chatInput.trim()) return;
-    setChatMessages((prev) => [
-      { user: "You", text: chatInput.trim(), time: "now" },
-      ...prev,
-    ]);
-    setChatInput("");
-  }
-
   function connectMentor(mentorId: string) {
     setConnectedMentors((prev) => new Set(prev).add(mentorId));
     router.push(`/hub/mentors?mentor=${encodeURIComponent(mentorId)}`);
@@ -656,7 +607,7 @@ export default function CommunityPage() {
             </p>
           </div>
           <div className="hidden sm:grid grid-cols-5 gap-2 ml-auto">
-            <div className="bg-primary-500/50 border border-primary-400/50 px-5 py-3.5 text-center min-w-[90px]">
+            <div className="bg-primary-500/50 rounded-xl px-5 py-3.5 text-center min-w-[90px]">
               <p className="text-2xl font-heading font-bold text-white">
                 {feed.length}
               </p>
@@ -664,7 +615,7 @@ export default function CommunityPage() {
                 Posts
               </p>
             </div>
-            <div className="bg-secondary-500/50 border border-secondary-400/50 px-5 py-3.5 text-center min-w-[90px]">
+            <div className="bg-secondary-500/50 rounded-xl px-5 py-3.5 text-center min-w-[90px]">
               <p className="text-2xl font-heading font-bold text-white">
                 47
               </p>
@@ -672,7 +623,7 @@ export default function CommunityPage() {
                 Online
               </p>
             </div>
-            <div className="bg-accent-500/50 border border-accent-400/50 px-5 py-3.5 text-center min-w-[90px]">
+            <div className="bg-accent-500/50 rounded-xl px-5 py-3.5 text-center min-w-[90px]">
               <p className="text-2xl font-heading font-bold text-white">
                 25
               </p>
@@ -680,7 +631,7 @@ export default function CommunityPage() {
                 Clubs
               </p>
             </div>
-            <div className="bg-emerald-600/50 border border-emerald-400/50 px-5 py-3.5 text-center min-w-[90px]">
+            <div className="bg-emerald-600/50 rounded-xl px-5 py-3.5 text-center min-w-[90px]">
               <p className="text-2xl font-heading font-bold text-white">
                 847
               </p>
@@ -688,7 +639,7 @@ export default function CommunityPage() {
                 Members
               </p>
             </div>
-            <div className="bg-violet-600/50 border border-violet-400/50 px-5 py-3.5 text-center min-w-[90px]">
+            <div className="bg-violet-600/50 rounded-xl px-5 py-3.5 text-center min-w-[90px]">
               <p className="text-2xl font-heading font-bold text-white">
                 12
               </p>
@@ -817,30 +768,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="bg-white border border-neutral-200 rounded-2xl p-4">
-              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">
-                Community Stats
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-neutral-600">Active Clubs</span>
-                  <span className="font-bold text-primary-700">25</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-neutral-600">Total Members</span>
-                  <span className="font-bold text-primary-700">847</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-neutral-600">Events This Month</span>
-                  <span className="font-bold text-primary-700">12</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-neutral-600">Service Hours</span>
-                  <span className="font-bold text-primary-700">2,450+</span>
-                </div>
-              </div>
-            </div>
+            {/* Community Stats removed — shown in banner */}
           </div>
 
           {/*  CENTER FEED  */}
@@ -1482,53 +1410,7 @@ export default function CommunityPage() {
               </div>
             </div>
 
-            {/* Live Chat */}
-            <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between bg-primary-900">
-                <h3 className="text-xs font-bold text-white flex items-center gap-2">
-                  <MessageCircle size={13} /> Live Chat
-                </h3>
-                <div className="flex items-center gap-1.5 text-[10px] text-green-400 font-semibold">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                  Live
-                </div>
-              </div>
-              <div className="h-52 overflow-y-auto p-3 space-y-2 bg-neutral-50">
-                {chatMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex ${msg.user === "You" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-xs shadow-sm ${
-                      msg.user === "You"
-                        ? "bg-primary-900 text-white rounded-br-sm"
-                        : "bg-white text-neutral-700 border border-neutral-200 rounded-bl-sm"
-                    }`}>
-                      {msg.user !== "You" && (
-                        <p className="text-[9px] font-bold text-primary-600 mb-0.5">{msg.user}</p>
-                      )}
-                      <p className="leading-relaxed">{msg.text}</p>
-                      <p className={`text-[9px] mt-0.5 ${msg.user === "You" ? "text-white/60" : "text-neutral-400"}`}>{msg.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center border-t border-neutral-200 bg-white px-3 py-2 gap-2">
-                <input
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendChat()}
-                  placeholder="Type a message..."
-                  className="flex-1 text-xs focus:outline-none bg-transparent placeholder:text-neutral-400"
-                />
-                <button
-                  onClick={sendChat}
-                  className="w-7 h-7 bg-primary-900 hover:bg-primary-700 rounded-full flex items-center justify-center text-white transition-colors"
-                >
-                  <Send size={12} />
-                </button>
-              </div>
-            </div>
+            {/* Live Chat removed */}
           </div>
         </div>
       </div>

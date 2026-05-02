@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowRight, BookOpen, Calendar, Check, ChevronRight, Gavel,
-  Plus, Users,
+  LogIn, Plus, Users,
 } from "lucide-react";
 import { chapters } from "@/lib/data";
 
@@ -316,10 +316,16 @@ export default function PortalPage() {
             <h1 className="text-2xl font-heading font-bold text-white">Your ClubConnect Hub</h1>
             <p className="mt-1 text-primary-200 text-sm">Create clubs, submit events, and manage your memberships.</p>
           </div>
-          <Link href="/login?role=judge"
-            className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-secondary-400/40 text-secondary-300 text-sm font-bold hover:bg-secondary-500/10 transition-colors">
-            <Gavel size={13} /> Judge Sign In
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/login?role=judge"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-secondary-400/40 text-secondary-300 text-sm font-bold hover:bg-secondary-500/10 transition-colors">
+              <Gavel size={13} /> Judge Sign In
+            </Link>
+            <Link href="/login"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition-colors">
+              <LogIn size={13} /> Log In
+            </Link>
+          </div>
         </div>
       </div>
 

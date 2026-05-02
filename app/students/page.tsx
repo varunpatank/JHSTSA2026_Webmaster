@@ -10,16 +10,11 @@ import {
 import { supabase, uploadsApi, uploadLikesApi, storageApi } from "@/lib/api";
 import type { Upload } from "@/lib/apiTypes";
 import {
-  ArrowRight, Bot, Calendar, Clock, GraduationCap, Heart,
+  ArrowRight, Calendar, Clock, GraduationCap, Heart,
   Loader2, MapPin, MessageCircle, MessageSquare, Paperclip, Plus,
   Search, Send, Sparkles, ThumbsUp,
   TrendingUp, Upload as UploadIcon, Users, X,
 } from "lucide-react";
-
-
-const GEMINI_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
-interface ChatMsg { role: "user" | "assistant"; text: string; file?: { name: string; size: string } }
-const SYS = `You are the ClubConnect Social AI — a friendly peer assistant. Help social with: finding/joining clubs, starting clubs, events, fundraising, leadership, competitions (TSA, DECA, etc.), mentors. Keep answers concise (2-4 sentences). Reference ClubConnect features when relevant.`;
 
 
 const SEED_UPLOADS = [
@@ -100,13 +95,6 @@ export default function SocialPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
 
-  const [aiChat, setAiChat] = useState<ChatMsg[]>([]);
-  const [aiInput, setAiInput] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [showAi, setShowAi] = useState(false);
-  const aiScrollRef = useRef<HTMLDivElement>(null);
-
-
 
   // Fetch uploads from Supabase on mount, merge with seed data
   useEffect(() => {
@@ -139,8 +127,6 @@ export default function SocialPage() {
   }, []);
 
   useEffect(() => { msgScrollRef.current && (msgScrollRef.current.scrollTop = msgScrollRef.current.scrollHeight); }, [messages]);
-  useEffect(() => { aiScrollRef.current && (aiScrollRef.current.scrollTop = aiScrollRef.current.scrollHeight); }, [aiChat, aiLoading]);
-
 
   const sendMsg = () => {
     if (!msgInput.trim() && !msgFile) return;
@@ -216,26 +202,6 @@ export default function SocialPage() {
       await uploadLikesApi.like(id, currentUserId);
     }
   }, [currentUserId, likedIds]);
-
-
-  const sendAi = useCallback(async (text: string) => {
-    if (!text.trim() || aiLoading) return;
-    const userMsg: ChatMsg = { role: "user", text: text.trim() };
-    setAiChat(p => [...p, userMsg]);
-    setAiInput("");
-    setAiLoading(true);
-    try {
-      const history = [...aiChat, userMsg].map(m => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: m.text }] }));
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ system_instruction: { parts: [{ text: SYS }] }, contents: history }),
-      });
-      const data = await res.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, try again!";
-      setAiChat(p => [...p, { role: "assistant", text: reply }]);
-    } catch { setAiChat(p => [...p, { role: "assistant", text: "Connection issue — please try again." }]); }
-    finally { setAiLoading(false); }
-  }, [aiChat, aiLoading]);
 
 
   const filteredUploads = useMemo(() => {

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
-  Bot,
   BookOpen,
   ChevronDown,
   ChevronUp,
@@ -13,7 +12,6 @@ import {
   Loader2,
   MessageSquare,
   Search,
-  Send,
   Sparkles,
   Users,
   X,
@@ -31,11 +29,10 @@ const interestToCategory: Record<string, string> = {
   "Technology & Engineering": "STEM",
   "Sports & Recreation": "Sports",
 };
-type TabKey = "chatbot" | "discussions" | "resources" | "proposals";
+type TabKey = "discussions" | "resources" | "proposals";
 
 const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
   { key: "proposals", label: "New Clubs", icon: Rocket },
-  { key: "chatbot", label: "AI Assistant", icon: Bot },
   { key: "discussions", label: "Discussions", icon: MessageSquare },
   { key: "resources", label: "Resources", icon: BookOpen },
 ];
@@ -51,15 +48,6 @@ export default function ExplorePage() {
   const [quizStep, setQuizStep] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
   const [quizDone, setQuizDone] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      text: "Hi! I'm the ClubConnect AI assistant. Ask me anything about clubs, events, resources, or how to get involved!",
-    },
-  ]);
-  const [chatInput, setChatInput] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
   const [discussionInput, setDiscussionInput] = useState("");
   const [proposals, setProposals] = useState<any[]>([]);
   const [proposalsLoading, setProposalsLoading] = useState(false);
@@ -113,9 +101,6 @@ export default function ExplorePage() {
         .finally(() => setProposalsLoading(false));
     }
   }, [activeTab]);
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
   const filteredChapters = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return chapters.slice(0, 8);
@@ -160,80 +145,6 @@ export default function ExplorePage() {
     setQuizAnswers([]);
     setQuizDone(false);
   };
-  const sendChatMessage = async () => {
-    const text = chatInput.trim();
-    if (!text || chatLoading) return;
-    setChatInput("");
-    setChatMessages((prev) => [...prev, { role: "user", text }]);
-    setChatLoading(true);
-
-    try {
-      const clubSummary = chapters
-        .map(
-          (c) =>
-            `${c.name} (${c.category}) - ${c.meetingSchedule}, ${getPrimaryLocation(c.meetingLocation)}`,
-        )
-        .join("\n");
-
-      const systemPrompt = `You are a helpful assistant for ClubConnect, a school community hub for Juanita High School. You help students find clubs, learn about events, and get involved. Here are the available clubs:\n${clubSummary}\n\nBe concise, friendly, and always encourage students to explore. If they ask about something you don't know, guide them to the relevant page on ClubConnect.`;
-
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY ?? "";
-
-      const conversationHistory: { role: string; parts: { text: string }[] }[] =
-        [];
-      conversationHistory.push({
-        role: "user",
-        parts: [{ text: systemPrompt }],
-      });
-      conversationHistory.push({
-        role: "model",
-        parts: [
-          {
-            text: "I understand! I'm the ClubConnect AI assistant for Juanita High School. How can I help you today?",
-          },
-        ],
-      });
-      for (const msg of chatMessages) {
-        if (msg.role === "user") {
-          conversationHistory.push({
-            role: "user",
-            parts: [{ text: msg.text }],
-          });
-        } else {
-          conversationHistory.push({
-            role: "model",
-            parts: [{ text: msg.text }],
-          });
-        }
-      }
-      conversationHistory.push({ role: "user", parts: [{ text }] });
-
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: conversationHistory }),
-        },
-      );
-      const data = await res.json();
-      const reply =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Sorry, I couldn't process that. Try asking something else!";
-      setChatMessages((prev) => [...prev, { role: "assistant", text: reply }]);
-    } catch {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: "Oops, something went wrong. Please try again!",
-        },
-      ]);
-    } finally {
-      setChatLoading(false);
-    }
-  };
-
   return (
     <div className="relative">
       <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
@@ -244,7 +155,7 @@ export default function ExplorePage() {
         <HeroSection
         eyebrow="Guidance"
         title="Guidance & Support"
-        description="Get AI-powered club recommendations, connect with alumni mentors, access career panels, and join community discussions."
+        description="Find club recommendations, connect with alumni mentors, access career panels, and join community discussions."
       >
         <div className="mt-6 max-w-xl relative">
           <Search
@@ -430,65 +341,6 @@ export default function ExplorePage() {
 
       {}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {}
-        {activeTab === "chatbot" && (
-          <div className="animate-fade-up max-w-2xl mx-auto">
-            <h2 className="text-2xl font-heading font-bold text-primary-700 mb-2 text-center">
-              AI Assistant
-            </h2>
-            <p className="text-neutral-600 text-center mb-6">
-              Powered by Gemini. Ask about clubs, events, how to get involved,
-              or anything else.
-            </p>
-            <div className="card bg-white overflow-hidden">
-              <div className="h-[400px] overflow-y-auto p-4 space-y-4">
-                {chatMessages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[80%] px-4 py-3  text-sm ${
-                        msg.role === "user"
-                          ? "bg-primary-500 text-white rounded-br-none"
-                          : "bg-neutral-100 text-neutral-800 rounded-bl-none"
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-                {chatLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-neutral-100 text-neutral-500 px-4 py-3  rounded-bl-none text-sm flex items-center gap-2">
-                      <Loader2 size={14} className="animate-spin" />
-                      Thinking...
-                    </div>
-                  </div>
-                )}
-                <div ref={chatEndRef} />
-              </div>
-              <div className="border-t border-neutral-200 p-3 flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Ask me anything about ClubConnect..."
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
-                  className="flex-1 px-4 py-2.5  border border-neutral-200 focus:border-primary-500 focus:outline-none text-sm"
-                />
-                <button
-                  onClick={sendChatMessage}
-                  disabled={chatLoading || !chatInput.trim()}
-                  className="btn-primary px-4 py-2.5 disabled:opacity-50"
-                >
-                  <Send size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {}
         {activeTab === "discussions" && (
           <div className="animate-fade-up">

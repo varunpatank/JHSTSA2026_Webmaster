@@ -98,8 +98,8 @@ export default function FAQPage() {
 
           <div className="card p-5 bg-gradient-to-br from-primary-50 to-secondary-50">
             <h3 className="font-bold text-primary-700">Still have questions?</h3>
-            <p className="text-sm text-neutral-600 mt-1">Contact the Activities Office or use our AI chatbot for instant help.</p>
-            <Link href="/explore#chatbot" className="btn-primary text-sm mt-3 w-full text-center block">Ask AI Assistant</Link>
+            <p className="text-sm text-neutral-600 mt-1">Contact the Activities Office for help.</p>
+            <Link href="/faq" className="btn-primary text-sm mt-3 w-full text-center block">Browse FAQ</Link>
           </div>
         </aside>
 
