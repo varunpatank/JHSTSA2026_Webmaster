@@ -201,124 +201,99 @@ export default function HomePage() {
           {/* HERO GRID */}
           <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-4 items-stretch pb-8 md:pb-10">
 
-            {/* LEFT — cream card, warm community feel */}
-            <div className="hero-anim-left relative overflow-hidden rounded-2xl border border-[#D9CDB8] bg-[#F7F1E8] px-5 py-5 shadow-[0_8px_32px_rgba(0,0,0,0.18)]">
-              {/* Community icon pattern — 6 varied icons, uniform across card */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-                <svg width="100%" height="100%" style={{ opacity: 0.32 }}><defs>
-                  <pattern id="homeBoxAccent" x="0" y="0" width="150" height="130" patternUnits="userSpaceOnUse">
-                    {/* TOP-LEFT: person */}
-                    <circle cx="14" cy="10" r="7" stroke="#1c3557" strokeWidth="2.0" fill="none"/>
-                    <path d="M1 30 Q1 21 14 21 Q27 21 27 30" stroke="#1c3557" strokeWidth="2.0" fill="none" strokeLinejoin="round"/>
-                    {/* TOP-RIGHT: trophy */}
-                    <path d="M117 6 L133 6 L133 18 Q133 26 125 28 Q117 26 117 18Z" stroke="#b8860b" strokeWidth="2.0" fill="none"/>
-                    <line x1="125" y1="28" x2="125" y2="34" stroke="#b8860b" strokeWidth="1.8"/>
-                    <line x1="119" y1="34" x2="131" y2="34" stroke="#b8860b" strokeWidth="1.8"/>
-                    <path d="M117 10 Q111 10 111 16 Q111 22 117 22" stroke="#b8860b" strokeWidth="1.6" fill="none"/>
-                    <path d="M133 10 Q139 10 139 16 Q139 22 133 22" stroke="#b8860b" strokeWidth="1.6" fill="none"/>
-                    {/* LEFT: open book */}
-                    <rect x="2" y="56" width="24" height="28" rx="2" stroke="#1c3557" strokeWidth="1.9" fill="none"/>
-                    <line x1="14" y1="56" x2="14" y2="84" stroke="#1c3557" strokeWidth="1.5"/>
-                    <line x1="2" y1="66" x2="26" y2="66" stroke="#1c3557" strokeWidth="0.9"/>
-                    <line x1="2" y1="74" x2="26" y2="74" stroke="#1c3557" strokeWidth="0.9"/>
-                    {/* RIGHT: shield */}
-                    <path d="M136 52 L148 56 L148 66 Q148 76 136 80 Q124 76 124 66 L124 56Z" stroke="#1c3557" strokeWidth="2.0" fill="none"/>
-                    <path d="M130 66 L134 70 L142 62" stroke="#1c3557" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                    {/* BOTTOM-LEFT: gold star */}
-                    <path d="M16 100 L18 107 L25 107 L19.5 111 L21.5 118 L16 114 L10.5 118 L12.5 111 L7 107 L14 107Z" stroke="#b8860b" strokeWidth="1.9" fill="none"/>
-                    {/* BOTTOM-MID: calendar */}
-                    <rect x="58" y="98" width="34" height="28" rx="3" stroke="#1c3557" strokeWidth="1.9" fill="none"/>
-                    <line x1="58" y1="107" x2="92" y2="107" stroke="#1c3557" strokeWidth="1.4"/>
-                    <line x1="67" y1="95" x2="67" y2="101" stroke="#1c3557" strokeWidth="1.8" strokeLinecap="round"/>
-                    <line x1="83" y1="95" x2="83" y2="101" stroke="#1c3557" strokeWidth="1.8" strokeLinecap="round"/>
-                    <rect x="64" y="112" width="5" height="5" rx="1" stroke="#1c3557" strokeWidth="1.2" fill="none"/>
-                    <rect x="73" y="112" width="5" height="5" rx="1" stroke="#1c3557" strokeWidth="1.2" fill="none"/>
-                    <rect x="82" y="112" width="5" height="5" rx="1" stroke="#1c3557" strokeWidth="1.2" fill="none"/>
-                    {/* BOTTOM-RIGHT: chat bubble */}
-                    <rect x="104" y="100" width="38" height="24" rx="5" stroke="#1c3557" strokeWidth="1.9" fill="none"/>
-                    <path d="M112 124 L109 133 L121 124" stroke="#1c3557" strokeWidth="1.9" fill="none" strokeLinejoin="round"/>
-                    {/* MID: rocket (gold accent) */}
-                    <path d="M74 46 Q80 32 86 46 L86 60 Q80 64 74 60Z" stroke="#b8860b" strokeWidth="1.8" fill="none"/>
-                    <path d="M74 54 Q70 56 70 60 L74 60" stroke="#b8860b" strokeWidth="1.5" fill="none"/>
-                    <path d="M86 54 Q90 56 90 60 L86 60" stroke="#b8860b" strokeWidth="1.5" fill="none"/>
-                    <circle cx="80" cy="48" r="3" stroke="#b8860b" strokeWidth="1.5" fill="none"/>
+            {/* LEFT — solid dark navy, icon pattern only (no crosshatch) */}
+            <div className="hero-anim-left relative overflow-hidden rounded-2xl border border-primary-700/50 bg-primary-900 px-7 py-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+              {/* Community icon pattern — only texture in this box */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true" style={{ opacity: 0.09 }}>
+                <svg width="100%" height="100%"><defs>
+                  <pattern id="homeBoxAccent" x="0" y="0" width="280" height="200" patternUnits="userSpaceOnUse">
+                    <circle cx="28" cy="30" r="9" stroke="white" strokeWidth="1.3" fill="none"/>
+                    <path d="M11 54 Q11 43 28 43 Q45 43 45 54" stroke="white" strokeWidth="1.3" fill="none"/>
+                    <rect x="90" y="14" width="54" height="28" rx="7" stroke="white" strokeWidth="1.3" fill="none"/>
+                    <path d="M100 42 L96 54 L110 42" stroke="white" strokeWidth="1.3" fill="none" strokeLinejoin="round"/>
+                    <path d="M238 22 L240 28 L246 28 L241 32 L243 38 L238 34 L233 38 L235 32 L230 28 L236 28Z" stroke="white" strokeWidth="1.3" fill="none"/>
+                    <rect x="18" y="118" width="40" height="46" rx="3" stroke="white" strokeWidth="1.3" fill="none"/>
+                    <line x1="38" y1="118" x2="38" y2="164" stroke="white" strokeWidth="1.2"/>
+                    <line x1="18" y1="132" x2="58" y2="132" stroke="white" strokeWidth="0.7"/>
+                    <line x1="18" y1="144" x2="58" y2="144" stroke="white" strokeWidth="0.7"/>
+                    <circle cx="150" cy="126" r="4" stroke="white" strokeWidth="1.1" fill="none"/>
+                    <circle cx="182" cy="114" r="4" stroke="white" strokeWidth="1.1" fill="none"/>
+                    <circle cx="192" cy="144" r="4" stroke="white" strokeWidth="1.1" fill="none"/>
+                    <line x1="154" y1="126" x2="178" y2="116" stroke="white" strokeWidth="0.8"/>
+                    <line x1="154" y1="128" x2="188" y2="142" stroke="white" strokeWidth="0.8"/>
+                    <line x1="182" y1="118" x2="190" y2="140" stroke="white" strokeWidth="0.8"/>
+                    <path d="M90 100 L91.5 105 L97 105 L92.5 108 L94 113 L90 110 L86 113 L87.5 108 L83 105 L88.5 105Z" stroke="white" strokeWidth="0.9" fill="none"/>
+                    <circle cx="250" cy="80" r="2.5" stroke="white" strokeWidth="0.9" fill="none"/>
                   </pattern>
-                </defs>
-                  <rect width="100%" height="100%" fill="url(#homeBoxAccent)"/>
-                </svg>
+                </defs><rect width="100%" height="100%" fill="url(#homeBoxAccent)"/></svg>
               </div>
 
-              <div className="relative z-10 flex flex-col items-center justify-center text-center py-2 px-2">
-                {/* Frosted blur box — wraps all text content */}
-                <div className="relative w-full rounded-2xl px-5 py-5 flex flex-col items-center text-center"
-                  style={{ backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", background: "rgba(247,241,232,0.82)", border: "1px solid rgba(217,205,184,0.6)" }}>
+              <div className="relative z-10 flex flex-col items-center text-center pt-4">
 
-                <h1 className="text-3xl md:text-[2.6rem] lg:text-[3rem] font-heading font-bold text-primary-900 leading-[1.1] tracking-tight">
-                  Find your people.{" "}
+                <h1 className="text-3xl md:text-[2.6rem] lg:text-[3rem] font-heading font-bold text-white leading-[1.12] tracking-tight">
+                  Find your place{" "}
                   <span className="relative inline-block">
-                    Build
+                    for
                     <span
-                      className="absolute pointer-events-none select-none"
-                      style={{ top: "-0.48em", right: "-0.37em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.25))", zIndex: 30 }}
+                      className="absolute pointer-events-none select-none z-20"
+                      style={{ top: "-0.52em", right: "-0.55em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}
                       aria-hidden="true"
                     >
-                      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-11 h-11 md:w-12 md:h-12">
-                        <polygon points="20,7 35,15 20,23 5,15" fill="#1c3557" stroke="#0d1b2b" strokeWidth="1.1" />
-                        <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#1c3557" stroke="#0d1b2b" strokeWidth="1.3" strokeLinejoin="round" />
+                      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 md:w-16 md:h-16">
+                        <polygon points="20,7 35,15 20,23 5,15" fill="#0d1b2b" stroke="rgba(255,255,255,0.45)" strokeWidth="1.1" />
+                        <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#0d1b2b" fillOpacity="0.85" stroke="rgba(255,255,255,0.42)" strokeWidth="1.3" strokeLinejoin="round" />
                         <line x1="35" y1="15" x2="35" y2="27" stroke="#b8860b" strokeWidth="1.9" strokeLinecap="round" />
                         <circle cx="35" cy="29" r="2.5" fill="#b8860b" />
                       </svg>
                     </span>
                   </span>
                   <br />
-                  <span className="text-secondary-600 italic"><RotatingWord /></span>
+                  <span className="text-secondary-400 italic"><RotatingWord /></span>
                 </h1>
 
-                <p className="mt-1.5 text-primary-700 text-[12.5px] leading-[1.6] max-w-[380px] font-normal tracking-wide">
-                  Find your people, build your club, and stay connected with everything happening at your school.
+                <p className="mt-3 text-white/75 text-[13px] leading-[1.65] max-w-[400px] font-light tracking-wide">
+                  Discover clubs, launch your own organization, and stay connected with everything happening at your school.
                 </p>
 
                 {/* Search bar */}
-                <form onSubmit={handleSearch} className="mt-3.5 flex gap-2 w-full max-w-sm">
+                <form onSubmit={handleSearch} className="mt-5 flex gap-2 w-full max-w-sm">
                   <div className="flex-1 relative">
-                    <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 pointer-events-none" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 pointer-events-none" />
                     <input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search clubs, events..."
-                      className="w-full pl-8 pr-3 py-2 rounded-lg bg-white border border-[#D9CDB8] text-primary-800 placeholder:text-primary-400 text-sm outline-none focus:border-secondary-400 focus:ring-2 focus:ring-secondary-200/40 transition-all shadow-sm"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-white/95 border border-primary-300/40 text-primary-800 placeholder:text-primary-400 text-sm outline-none focus:border-secondary-400 focus:ring-2 focus:ring-secondary-200/30 transition-all shadow-sm"
                     />
                   </div>
-                  <button type="submit" className="px-3.5 py-2 rounded-lg bg-primary-800 hover:bg-primary-700 text-white text-sm font-bold transition-colors shrink-0 shadow-sm">
+                  <button type="submit" className="px-4 py-2.5 rounded-lg bg-primary-700 hover:bg-primary-600 text-white text-sm font-bold transition-colors shrink-0 shadow-sm border border-primary-600/50">
                     Search
                   </button>
                 </form>
 
                 {/* CTA buttons */}
-                <div className="mt-3 flex flex-wrap justify-center gap-2">
-                  <Link href="/directory" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-white text-sm font-bold transition-colors shadow-sm">
-                    Browse Clubs <ArrowRight size={11} />
+                <div className="mt-4 flex flex-wrap justify-center gap-2.5">
+                  <Link href="/directory" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-white text-sm font-bold transition-colors shadow-sm">
+                    Browse Clubs <ArrowRight size={12} />
                   </Link>
-                  <Link href="/start-a-club" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary-800 border border-primary-700 text-white text-sm font-semibold hover:bg-primary-700 transition-colors">
-                    <Rocket size={11} /> Start a Club
+                  <Link href="/start-a-club" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/12 border border-white/22 text-white text-sm font-semibold hover:bg-white/20 transition-colors">
+                    <Rocket size={12} /> Start a Club
                   </Link>
-                  <Link href="/resources" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white border border-[#D9CDB8] text-primary-700 text-sm font-semibold hover:bg-cream-200 transition-colors">
-                    <BookOpen size={11} /> Resources
+                  <Link href="/resources" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/12 border border-white/22 text-white text-sm font-semibold hover:bg-white/20 transition-colors">
+                    <BookOpen size={12} /> Resources
                   </Link>
                 </div>
 
                 {/* Slideshow dots */}
-                <div className="mt-3 flex items-center justify-center gap-2">
+                <div className="mt-5 flex items-center gap-2">
                   {HERO_IMGS.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setBannerIdx(i)}
-                      className={`h-1.5 rounded-full transition-all duration-500 ${i === bannerIdx ? "w-8 bg-secondary-500" : "w-2.5 bg-primary-300 hover:bg-primary-400"}`}
+                      className={`h-1.5 rounded-full transition-all duration-500 ${i === bannerIdx ? "w-8 bg-secondary-400" : "w-2.5 bg-white/25 hover:bg-white/45"}`}
                     />
                   ))}
                 </div>
-
-                </div>{/* end blur box */}
               </div>
             </div>
 
@@ -390,7 +365,7 @@ export default function HomePage() {
 
 
       {/* STATS STRIP */}
-      <section className="relative bg-cream-200 pt-32 pb-10 texture-stats-lines overflow-hidden" style={{ marginTop: "calc(-8rem - 17px)" }}>
+      <section className="relative bg-cream-200 pt-24 pb-10 texture-stats-lines -mt-24 overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[

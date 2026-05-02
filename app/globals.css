@@ -124,11 +124,11 @@ html {
   background-image:
     linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.02)),
     repeating-linear-gradient(
-      0deg,
-      transparent 0 10px,
-      rgba(23, 54, 93, 0.055) 10px 11px
+      -45deg,
+      transparent 0 18px,
+      rgba(23, 54, 93, 0.13) 18px 20px
     );
-  background-size: auto, 100% 20px;
+  background-size: auto, 40px 40px;
   background-position: 0 0, 0 0;
 }
 
