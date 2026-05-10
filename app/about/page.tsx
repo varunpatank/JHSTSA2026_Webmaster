@@ -47,16 +47,11 @@ const TEAM = [
 export default function AboutPage() {
   return (
     <div className="bg-[#f4f6fa] min-h-screen relative">
-      {/* Diagonal texture overlay */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
-        }} />
       <div className="relative z-0">
         <HeroSection
           eyebrow="Our Story"
           title="About ClubConnect"
-          description="ClubConnect is a modern hub designed to help student chapters organize, collaborate, and shine. We combine tools for meetings, events, and resources with privacy-first defaults and partner integrations that amplify student leadership."
+          description={<>ClubConnect is your school’s <strong className="text-secondary-700 font-bold">all-in-one chapter hub</strong> — where clubs organize, students discover their community, and leadership thrives. Built <strong className="text-primary-700 font-semibold">for students, by students,</strong> with privacy-first design and tools that amplify every voice.</>}
           images={[
             "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
             "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
@@ -234,3 +229,4 @@ export default function AboutPage() {
     </div>
   );
 }
+

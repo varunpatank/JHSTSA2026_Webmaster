@@ -56,7 +56,7 @@ export default function FullScreenCall({ room, displayName }: { room: string; di
       {}
       <div className="flex items-center justify-between px-6 py-3 bg-white/95 shadow-md">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-primary-600 text-white flex items-center justify-center rounded">CC</div>
+          <div className="w-10 h-10 bg-primary-900 text-white flex items-center justify-center rounded">CC</div>
           <div>
             <div className="font-semibold">ClubConnect — Live Call</div>
             <div className="text-xs text-neutral-500">{room}</div>
@@ -64,8 +64,8 @@ export default function FullScreenCall({ room, displayName }: { room: string; di
         </div>
 
         <div className="flex items-center gap-3">
-          <button onClick={toggleAudio} className={`px-3 py-2 rounded ${muted ? 'bg-neutral-100' : 'bg-primary-600 text-white'}`}>{muted ? 'Unmute' : 'Mute'}</button>
-          <button onClick={toggleVideo} className={`px-3 py-2 rounded ${videoOff ? 'bg-neutral-100' : 'bg-primary-600 text-white'}`}>{videoOff ? 'Start Video' : 'Stop Video'}</button>
+          <button onClick={toggleAudio} className={`px-3 py-2 rounded ${muted ? 'bg-neutral-100' : 'bg-primary-900 text-white'}`}>{muted ? 'Unmute' : 'Mute'}</button>
+          <button onClick={toggleVideo} className={`px-3 py-2 rounded ${videoOff ? 'bg-neutral-100' : 'bg-primary-900 text-white'}`}>{videoOff ? 'Start Video' : 'Stop Video'}</button>
           <button onClick={hangup} className="px-3 py-2 bg-rose-600 text-white rounded">End</button>
         </div>
       </div>

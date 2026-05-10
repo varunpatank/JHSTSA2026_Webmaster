@@ -599,8 +599,16 @@ export default function CommunityPage() {
       <HeroSection align="left" contentClassName="!max-w-full">
         <div className="flex items-center gap-6">
           <div className="shrink-0">
-            <h1 className="hero-title mt-0">
-              <span>Community</span>
+            <h1 className="hero-title mt-0 flex items-center gap-3">
+              <span>Social <span className="text-secondary-400">Hub</span></span>
+              <span className="pointer-events-none select-none" aria-hidden="true" style={{ display: "inline-block", transform: "rotate(12deg)", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}>
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-14 h-14">
+                  <polygon points="20,7 35,15 20,23 5,15" fill="#0d1b2b" stroke="rgba(255,255,255,0.45)" strokeWidth="1.1" />
+                  <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#0d1b2b" fillOpacity="0.85" stroke="rgba(255,255,255,0.42)" strokeWidth="1.3" strokeLinejoin="round" />
+                  <line x1="35" y1="15" x2="35" y2="27" stroke="#b8860b" strokeWidth="1.9" strokeLinecap="round" />
+                  <circle cx="35" cy="29" r="2.5" fill="#b8860b" />
+                </svg>
+              </span>
             </h1>
             <p className="hero-description mt-1 text-sm">
               Share resources, start discussions, connect with clubs
@@ -657,7 +665,7 @@ export default function CommunityPage() {
           <div className="hidden lg:block w-56 shrink-0 space-y-4">
             {/* Profile Card */}
             <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
-              <div className="h-14 bg-primary-600" />
+              <div className="h-14 bg-primary-900" />
               <div className="px-4 pb-4 -mt-5">
                 {avatarUrl ? (
                   <Image
@@ -787,8 +795,8 @@ export default function CommunityPage() {
                     onClick={() => setCommunityTab(key)}
                     className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold transition-colors border-b-2 ${
                       communityTab === key
-                        ? "border-primary-800 text-primary-800 bg-primary-50/50"
-                        : "border-transparent text-neutral-500 hover:text-primary-700 hover:bg-neutral-50"
+                        ? "border-primary-900 text-primary-900 bg-cream-100"
+                        : "border-transparent text-neutral-500 hover:text-primary-900 hover:bg-neutral-50"
                     }`}
                   >
                     <Icon size={14} />
@@ -802,7 +810,7 @@ export default function CommunityPage() {
             {communityTab === "events" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-primary-800 text-lg">Upcoming Club Events</h2>
+                  <h2 className="font-bold text-primary-900 text-lg">Upcoming Club Events</h2>
                   <Link
                     href="/portal?tab=event"
                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors shadow-sm"
@@ -856,7 +864,7 @@ export default function CommunityPage() {
             {communityTab === "mentors" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-primary-800 text-lg">Mentor Network</h2>
+                  <h2 className="font-bold text-primary-900 text-lg">Mentor Network</h2>
                   <Link href="/hub/mentors" className="text-xs font-semibold text-secondary-600 hover:underline flex items-center gap-1">
                     View All <ArrowRight size={12} />
                   </Link>
@@ -879,7 +887,7 @@ export default function CommunityPage() {
                         </span>
                       </div>
                       <div className="p-4">
-                        <h3 className="font-bold text-primary-800 text-sm">{m.name}</h3>
+                        <h3 className="font-bold text-primary-900 text-sm">{m.name}</h3>
                         <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">{m.role}</p>
                         <div className="flex flex-wrap gap-1 mt-3">
                           {m.areas.map(a => (
@@ -907,7 +915,7 @@ export default function CommunityPage() {
             {communityTab === "stories" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-primary-800 text-lg">Success Stories</h2>
+                  <h2 className="font-bold text-primary-900 text-lg">Success Stories</h2>
                   <Link href="/hub/stories" className="text-xs font-semibold text-secondary-600 hover:underline flex items-center gap-1">
                     View All <ArrowRight size={12} />
                   </Link>
@@ -931,7 +939,7 @@ export default function CommunityPage() {
                             {s.author.charAt(0)}
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-primary-800">{s.author}</p>
+                            <p className="text-xs font-bold text-primary-900">{s.author}</p>
                             <p className="text-[10px] text-neutral-400">{s.role} · {s.date}</p>
                           </div>
                         </div>
@@ -965,7 +973,7 @@ export default function CommunityPage() {
                     className="w-11 h-11 object-cover shrink-0 rounded-xl"
                   />
                 ) : (
-                  <div className="w-11 h-11 bg-primary-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                  <div className="w-11 h-11 bg-primary-900 text-white flex items-center justify-center text-sm font-bold shrink-0">
                     {userInitials}
                   </div>
                 )}
@@ -1146,7 +1154,7 @@ export default function CommunityPage() {
                           download={post.fileName}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1.5 bg-primary-600 text-white text-xs font-bold hover:bg-primary-700 transition-colors flex items-center gap-1"
+                          className="px-3 py-1.5 bg-primary-900 text-white text-xs font-bold hover:bg-primary-800 transition-colors flex items-center gap-1"
                         >
                           <Download size={13} /> Download
                         </a>
@@ -1209,7 +1217,7 @@ export default function CommunityPage() {
                           className="w-8 h-8 object-cover shrink-0"
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-primary-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                        <div className="w-8 h-8 bg-primary-900 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
                           {userInitials}
                         </div>
                       )}
@@ -1229,7 +1237,7 @@ export default function CommunityPage() {
                       />
                       <button
                         onClick={() => submitReply(post.id)}
-                        className="px-3 py-2 bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+                        className="px-3 py-2 bg-primary-900 text-white hover:bg-primary-800 transition-colors"
                       >
                         <Send size={14} />
                       </button>

@@ -63,7 +63,7 @@ export default function AIChatbot() {
 
   return (
     <div className="bg-white border border-primary-200 rounded-xl overflow-hidden">
-      <div className="bg-primary-600 px-3.5 py-2.5 flex items-center gap-2">
+      <div className="bg-primary-900 px-3.5 py-2.5 flex items-center gap-2">
         <Bot size={14} className="text-primary-200" />
         <h3 className="text-xs font-heading font-bold text-white uppercase tracking-wider">
           AI Club Finder
@@ -106,7 +106,7 @@ export default function AIChatbot() {
               <div
                 className={`max-w-[85%] px-2.5 py-1.5 text-xs leading-relaxed rounded-lg ${
                   msg.role === "user"
-                    ? "bg-primary-600 text-white"
+                    ? "bg-primary-900 text-white"
                     : "bg-white border border-neutral-200 text-neutral-700"
                 }`}
               >
@@ -151,7 +151,7 @@ export default function AIChatbot() {
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="bg-primary-600 text-white px-2.5 py-1.5 rounded-lg text-xs hover:bg-primary-700 disabled:opacity-50"
+            className="bg-primary-900 text-white px-2.5 py-1.5 rounded-lg text-xs hover:bg-primary-900 disabled:opacity-50"
           >
             <Send size={12} />
           </button>

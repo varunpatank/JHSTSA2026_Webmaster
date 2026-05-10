@@ -315,10 +315,10 @@ export default function CommunityHubPage() {
             <aside className="space-y-6">
               {}
               <div className="bg-white border-2 border-neutral-200 p-5">
-                <h3 className="font-bold text-primary-800 text-sm mb-3">Quick Actions</h3>
-                <div className="grid grid-cols-2 gap-2">
+                <h3 className="font-bold text-primary-800 text-sm mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-3">
                   {[
-                    { href: "/hub/discussions", label: "New Post", icon: Plus, color: "bg-primary-600 text-white hover:bg-primary-700" },
+                    { href: "/hub/discussions", label: "New Post", icon: Plus, color: "bg-primary-900 text-white hover:bg-primary-900" },
                     { href: "/events/new", label: "Create Event", icon: Calendar, color: "bg-secondary-500 text-white hover:bg-secondary-600" },
                     { href: "/propose", label: "Start a Club", icon: Lightbulb, color: "bg-emerald-600 text-white hover:bg-emerald-700" },
                     { href: "/hub/collaborate", label: "Collaborate", icon: Users, color: "bg-purple-600 text-white hover:bg-purple-700" },
@@ -326,9 +326,9 @@ export default function CommunityHubPage() {
                     <Link
                       key={a.label}
                       href={a.href}
-                      className={`flex flex-col items-center gap-1.5 p-3 text-xs font-semibold text-center transition-colors ${a.color}`}
+                      className={`flex flex-col items-center gap-2.5 py-5 px-3 text-sm font-semibold text-center rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md ${a.color}`}
                     >
-                      <a.icon size={18} />
+                      <a.icon size={24} />
                       {a.label}
                     </Link>
                   ))}
@@ -395,7 +395,7 @@ export default function CommunityHubPage() {
               </div>
 
               {}
-              <div className="bg-primary-800 text-white p-5">
+              <div className="bg-primary-900 text-white p-5">
                 <Sparkles size={24} className="text-secondary-400 mb-2" />
                 <h3 className="font-bold text-sm mb-1">Have Something to Share?</h3>
                 <p className="text-xs text-neutral-300 mb-3">Submit spotlights, stories, or event proposals to the community.</p>
@@ -656,7 +656,7 @@ export default function CommunityHubPage() {
               </div>
               <Link
                 href="/hub/ideas"
-                className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold px-4 py-2 transition-colors"
+                className="inline-flex items-center gap-2 bg-primary-900 hover:bg-primary-900 text-white text-xs font-semibold px-4 py-2 transition-colors"
               >
                 Submit Your Idea <ArrowRight size={13} />
               </Link>
@@ -718,7 +718,7 @@ export default function CommunityHubPage() {
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${
                     selectedCategory === cat
-                      ? "bg-primary-600 text-white border-primary-600"
+                      ? "bg-primary-900 text-white border-primary-600"
                       : "bg-white text-neutral-600 border-neutral-200 hover:border-primary-300"
                   }`}
                 >
@@ -767,7 +767,7 @@ export default function CommunityHubPage() {
             </div>
 
             {}
-            <div className="mt-8 bg-primary-800 text-white p-8">
+            <div className="mt-8 bg-primary-900 text-white p-8">
               <h3 className="text-xl font-bold mb-4 text-center">Community Impact at a Glance</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
@@ -791,7 +791,7 @@ export default function CommunityHubPage() {
       {}
       <div className="bg-white border-t-2 border-neutral-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="bg-primary-700 text-white p-8 flex flex-wrap items-center justify-between gap-6">
+          <div className="bg-primary-900 text-white p-8 flex flex-wrap items-center justify-between gap-6">
             <div>
               <h2 className="text-xl font-bold mb-1">Looking for downloadable guides and templates?</h2>
               <p className="text-neutral-300 text-sm">

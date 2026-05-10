@@ -147,15 +147,11 @@ export default function ExplorePage() {
   };
   return (
     <div className="relative">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
-        }} />
       <div className="relative z-0 bg-neutral-100 min-h-screen">
         <HeroSection
         eyebrow="Guidance"
         title="Guidance & Support"
-        description="Find club recommendations, connect with alumni mentors, access career panels, and join community discussions."
+        description={<>Get <strong className="text-secondary-700 font-bold">personalized club recommendations</strong>, connect with alumni mentors, explore career panels, and join community discussions. Your complete guide to <strong className="text-primary-700 font-semibold">school life beyond the classroom.</strong></>}
       >
         <div className="mt-6 max-w-xl relative">
           <Search
@@ -226,7 +222,7 @@ export default function ExplorePage() {
       {/* ═══ Inline Club Finder Quiz ═══ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="bg-white border border-neutral-200 overflow-hidden">
-          <div className="bg-primary-600 text-white px-5 py-3 flex items-center justify-between">
+          <div className="bg-primary-900 text-white px-5 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <HelpCircle size={18} />
               <h2 className="font-bold text-sm font-heading">
@@ -605,3 +601,4 @@ export default function ExplorePage() {
     </div>
   );
 }
+

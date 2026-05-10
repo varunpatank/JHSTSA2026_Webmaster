@@ -17,9 +17,11 @@
   "author": "TSA Team",
   "license": "ISC",
   "dependencies": {
+    "@anthropic-ai/claude-code": "^2.1.138",
     "@stripe/stripe-js": "^8.9.0",
     "@supabase/supabase-js": "^2.95.3",
     "aos": "^2.3.4",
+    "claude": "^0.1.2",
     "docx": "^9.6.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.577.0",
@@ -47,6 +49,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@anthropic-ai/claude-code",
+      "sharp",
       "supabase"
     ]
   }

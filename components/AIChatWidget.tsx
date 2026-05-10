@@ -111,7 +111,7 @@ export default function AIChatWidget() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary-600 text-white shadow-lg hover:bg-primary-700 flex items-center justify-center transition-transform hover:scale-110 animate-scale-bounce"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary-900 text-white shadow-lg hover:brightness-110 flex items-center justify-center transition-transform hover:scale-110 animate-scale-bounce"
           aria-label="Open AI Assistant"
         >
           <MessageSquare size={24} />
@@ -123,7 +123,7 @@ export default function AIChatWidget() {
         <div className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)]  border border-primary-200 bg-white shadow-2xl flex flex-col overflow-hidden animate-fade-up"
           style={{ height: "500px", maxHeight: "calc(100vh - 6rem)" }}>
           {}
-          <div className="bg-primary-600 text-white px-4 py-3 flex items-center justify-between shrink-0">
+          <div className="bg-primary-900 text-white px-4 py-3 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <Bot size={18} />
               <span className="font-semibold text-sm">AI Assistant</span>
@@ -182,7 +182,7 @@ export default function AIChatWidget() {
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              className="bg-primary-600 text-white px-3 py-2  hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="bg-primary-900 text-white px-3 py-2  hover:brightness-110 disabled:opacity-50 transition-colors"
             >
               <Send size={16} />
             </button>

@@ -3,14 +3,10 @@ import HeroSection from "@/components/HeroSection";
 export default function TermsPage() {
   return (
     <div className="relative">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
-        }} />
       <div className="relative z-0 min-h-screen bg-neutral-100">
         <HeroSection
         title="Terms of Use"
-        description="Guidelines and responsibilities for using ClubConnect and participating in the school community."
+        description={<>The <strong className="text-secondary-700 font-bold">rules and responsibilities</strong> for using ClubConnect. Short version: be respectful, represent your club honestly, and use this platform to <strong className="text-primary-700 font-semibold">build community</strong> — not tear it down.</>}
         align="left"
         shellClassName="max-w-4xl"
         images={[
@@ -28,3 +24,4 @@ export default function TermsPage() {
     </div>
   );
 }
+

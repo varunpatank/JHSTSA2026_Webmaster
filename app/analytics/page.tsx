@@ -188,15 +188,11 @@ export default function AnalyticsPage() {
 
   return (
     <div className="relative">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
-        }} />
       <div className="relative z-0 bg-neutral-100 min-h-screen">
         <HeroSection
           eyebrow="Insights"
           title="School-Wide Analytics"
-          description={`Live statistics, growth trends, and engagement metrics across all ${stats.totalClubs} clubs.`}
+          description={<>Live <strong className="text-secondary-700 font-bold">statistics and growth trends</strong> — member counts, event attendance, and engagement data across all <strong className="text-primary-700 font-semibold">{stats.totalClubs} active clubs.</strong> Updated in real time.</>}
           texture="diagonal"
         actions={
           <>
@@ -537,3 +533,4 @@ export default function AnalyticsPage() {
     </div>
   );
 }
+

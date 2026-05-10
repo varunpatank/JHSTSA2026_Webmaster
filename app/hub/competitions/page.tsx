@@ -83,7 +83,7 @@ export default function CompetitionsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-700 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-900 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-purple-200 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Trophy size={36} /> Competitions Hub</h1>
@@ -132,7 +132,7 @@ export default function CompetitionsPage() {
                     {c.prizes.map(p => <span key={p} className="text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700">{p}</span>)}
                   </div>
                   <p className="text-xs text-neutral-500 mt-2">Entry: {c.entryFee} · Difficulty: {c.difficulty}</p>
-                  <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-3 w-full py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-600 text-white hover:bg-primary-700"}`}>{registeredIds.has(c.id) ? "✓ Registered" : "Register Interest"}</button>
+                  <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-3 w-full py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-900 text-white hover:bg-primary-900"}`}>{registeredIds.has(c.id) ? "✓ Registered" : "Register Interest"}</button>
                 </div>
               ))}
             </div>
@@ -178,7 +178,7 @@ export default function CompetitionsPage() {
                         <div className="flex flex-wrap gap-2">{c.prepResources.map(r => <span key={r.title} className="text-xs px-2 py-1  bg-primary-50 text-primary-600">{r.title} ({r.type})</span>)}</div>
                       </div>
                     )}
-                    <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-2 px-4 py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-600 text-white hover:bg-primary-700"}`}>{registeredIds.has(c.id) ? "✓ Registered" : "Register Interest"}</button>
+                    <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-2 px-4 py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-900 text-white hover:bg-primary-900"}`}>{registeredIds.has(c.id) ? "✓ Registered" : "Register Interest"}</button>
                   </div>
                 )}
               </div>

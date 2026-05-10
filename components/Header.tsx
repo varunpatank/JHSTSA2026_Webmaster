@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -10,19 +10,19 @@ import { loginUser, isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
 function ClubConnectLogo({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 40 40"
+      viewBox="0 0 44 40"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Mortarboard flat board (diamond) */}
-      <polygon points="20,7 35,15 20,23 5,15" fill="#174070" />
-      {/* Cap body visible below board */}
-      <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#174070" fillOpacity="0.55" />
-      {/* Tassel cord from right vertex */}
-      <line x1="35" y1="15" x2="35" y2="27" stroke="#D6A21E" strokeWidth="1.7" strokeLinecap="round" />
+      {/* Mortarboard flat top (diamond) */}
+      <polygon points="22,5 40,13 22,21 4,13" fill="#111111" strokeLinejoin="round" />
+      {/* Cap body */}
+      <path d="M10 14.5 L10 26 Q22 35 34 26 L34 14.5" fill="#222222" />
+      {/* Tassel cord */}
+      <line x1="40" y1="13" x2="40" y2="23" stroke="#C8940A" strokeWidth="2" strokeLinecap="round" />
       {/* Tassel ball */}
-      <circle cx="35" cy="29" r="2.2" fill="#D6A21E" />
+      <circle cx="40" cy="26" r="3" fill="#C8940A" stroke="#A67C00" strokeWidth="0.8" />
     </svg>
   );
 }
@@ -35,7 +35,7 @@ export default function Header() {
     { href: "/resources", label: "Resources", icon: BookOpen },
     { href: "/directory", label: "Clubs", icon: Compass },
     { href: "/events", label: "Events", icon: Calendar },
-    { href: "/community", label: "Community", icon: Users },
+    { href: "/community", label: "Social Hub", icon: Users },
   ];
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export default function Header() {
                 ClubConnect
               </span>
               <span className="text-[9px] text-amber-700/70 uppercase tracking-[0.15em] leading-none font-semibold">
-                School Chapter Hub
+                For students, by students!
               </span>
             </div>
           </Link>
@@ -145,7 +145,7 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="inline-flex h-[60px] items-center gap-1.5 px-3 text-[12.5px] font-medium text-primary-800 hover:text-primary-900 transition-colors relative after:absolute after:bottom-0 after:left-2.5 after:right-2.5 after:h-[2px] after:bg-secondary-500 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
+                  className="inline-flex h-[60px] items-center gap-1.5 px-3 text-[12.5px] font-medium text-primary-900 hover:text-secondary-600 transition-colors relative after:absolute after:bottom-0 after:left-2.5 after:right-2.5 after:h-[2px] after:bg-secondary-500 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
                 >
                   {Icon && <Icon size={14} />}
                   {link.label}
@@ -159,7 +159,7 @@ export default function Header() {
           <div className="flex items-center gap-1.5">
             <button
               type="button"
-              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-200 text-primary-600 hover:bg-cream-200"
+              className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-900 text-primary-900 hover:bg-cream-200"
               onClick={() => setMobileMenuOpen((open) => !open)}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav"
@@ -168,26 +168,25 @@ export default function Header() {
               {mobileMenuOpen ? <X size={17} /> : <Menu size={17} />}
             </button>
 
-            {/* Portal action buttons - desktop only */}
-            <div className="hidden md:flex items-center gap-1">
+            {/* Desktop action buttons */}
+            <div className="hidden md:flex items-center gap-2">
               <Link
-                href="/references"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border border-cream-400 text-primary-600 hover:bg-cream-100 transition-colors hover:border-primary-300"
+                href="/portal"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full border border-primary-900 text-primary-900 hover:bg-cream-200 hover:border-primary-900 transition-colors"
               >
-                References
+                <BookMarked size={11} /> Portal
+              </Link>
+              <Link
+                href="/portal?tab=resource"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full border border-primary-900 text-primary-900 hover:bg-cream-200 hover:border-primary-900 transition-colors"
+              >
+                <BookOpen size={11} /> Suggest Resource
               </Link>
               <Link
                 href="/portal?tab=create"
-                title="List and advertise your club to the student community"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-full border border-cream-400 text-primary-600 hover:bg-cream-100 transition-colors hover:border-primary-300"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-bold rounded-full bg-primary-900 hover:brightness-110 text-white transition-colors shadow-sm"
               >
-                <Plus size={11} /> Create My Club
-              </Link>
-              <Link
-                href="/portal"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-full bg-primary-700 text-white hover:bg-primary-800 transition-colors"
-              >
-                <BookMarked size={11} /> Portal
+                <Plus size={11} /> Create Club
               </Link>
             </div>
 
@@ -206,20 +205,13 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-primary-700 hover:bg-cream-200 transition-colors"
+                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-primary-900 hover:bg-cream-200 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-              <Link
-                href="/references"
-                className="w-full text-left rounded-lg px-3 py-2.5 text-sm font-medium text-primary-700 hover:bg-cream-200 transition-colors flex items-center gap-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <BookMarked size={14} />
-                References
-              </Link>
+
             </nav>
           </div>
         )}

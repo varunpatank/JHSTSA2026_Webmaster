@@ -715,10 +715,6 @@ function DashboardContent() {
 
   return (
     <div className="relative">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
-        }} />
       <div className="relative z-0 bg-neutral-50">
       {/* Confetti overlay */}
       {showConfetti && (
@@ -1139,7 +1135,7 @@ function DashboardContent() {
                   </Link>
                   <Link
                     href="/directory"
-                    className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-2  font-semibold flex items-center gap-1 transition-colors"
+                    className="text-xs bg-primary-900 hover:bg-primary-900 text-white px-3 py-2  font-semibold flex items-center gap-1 transition-colors"
                   >
                     <PlusCircle size={13} /> Join Club
                   </Link>
@@ -1303,7 +1299,7 @@ function DashboardContent() {
                             <div className="flex gap-2 pt-1">
                               <button
                                 onClick={() => handleSaveClubEdit(club.id)}
-                                className="flex-1 text-xs bg-primary-500 hover:bg-primary-600 text-white py-1.5  font-semibold flex items-center justify-center gap-1 transition-colors"
+                                className="flex-1 text-xs bg-primary-900 hover:bg-primary-900 text-white py-1.5  font-semibold flex items-center justify-center gap-1 transition-colors"
                               >
                                 <Check size={12} /> Save
                               </button>
@@ -1536,7 +1532,7 @@ function DashboardContent() {
                   </h2>
                   <button
                     onClick={() => setProfileEditing((prev) => !prev)}
-                    className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 font-semibold transition-colors"
+                    className="text-xs bg-primary-900 hover:bg-primary-900 text-white px-3 py-1.5 font-semibold transition-colors"
                   >
                     {profileEditing ? "Cancel" : "Edit Profile"}
                   </button>
@@ -1642,7 +1638,7 @@ function DashboardContent() {
                     <button
                       onClick={handleSaveProfile}
                       disabled={profileSaving}
-                      className="w-full bg-primary-500 hover:bg-primary-600 disabled:opacity-70 text-white text-sm font-semibold py-2 transition-colors"
+                      className="w-full bg-primary-900 hover:bg-primary-900 disabled:opacity-70 text-white text-sm font-semibold py-2 transition-colors"
                     >
                       {profileSaving ? "Saving..." : "Save Changes"}
                     </button>

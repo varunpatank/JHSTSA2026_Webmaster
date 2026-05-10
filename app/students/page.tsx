@@ -255,7 +255,7 @@ export default function SocialPage() {
                 {messages.map(msg => (
                   <div key={msg.id} className={`flex gap-2.5 ${msg.user === "You" ? "flex-row-reverse" : ""}`}>
                     <div className="w-7 h-7 bg-primary-100 text-primary-700 flex items-center justify-center text-[10px] font-bold shrink-0">{msg.user.charAt(0)}</div>
-                    <div className={`max-w-[75%] ${msg.user === "You" ? "bg-primary-600 text-white" : "bg-white border border-neutral-200"} px-3 py-2`}>
+                    <div className={`max-w-[75%] ${msg.user === "You" ? "bg-primary-900 text-white" : "bg-white border border-neutral-200"} px-3 py-2`}>
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className={`text-[10px] font-semibold ${msg.user === "You" ? "text-primary-200" : "text-primary-600"}`}>{msg.user}</span>
                         <span className={`text-[9px] ${msg.user === "You" ? "text-primary-300" : "text-neutral-400"}`}>{msg.time}</span>
@@ -281,7 +281,7 @@ export default function SocialPage() {
                   </label>
                   {msgFile && <span className="text-[9px] bg-primary-100 text-primary-700 px-1.5 py-0.5 flex items-center gap-1">{msgFile.name} <button type="button" onClick={() => setMsgFile(null)}><X size={10} /></button></span>}
                   <input type="text" value={msgInput} onChange={e => setMsgInput(e.target.value)} placeholder="Type a message..." className="flex-1 text-xs py-2 px-3 border border-neutral-200 focus:outline-none focus:border-primary-400" />
-                  <button type="submit" className="bg-primary-600 text-white px-3 py-2 text-xs font-semibold hover:bg-primary-700 transition-colors"><Send size={14} /></button>
+                  <button type="submit" className="bg-primary-900 text-white px-3 py-2 text-xs font-semibold hover:brightness-110 transition-colors"><Send size={14} /></button>
                 </form>
               </div>
             </div>
@@ -317,7 +317,7 @@ export default function SocialPage() {
             <div className="bg-white border-2 border-neutral-200 overflow-hidden">
               <div className="bg-neutral-50 border-b border-neutral-200 px-4 py-2.5 flex items-center justify-between">
                 <h2 className="font-bold text-primary-800 text-sm flex items-center gap-2"><UploadIcon size={16} className="text-secondary-500" /> Community Resources</h2>
-                <button onClick={() => setShowUploadForm(v => !v)} className="bg-primary-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-primary-700 flex items-center gap-1 transition-colors">
+                <button onClick={() => setShowUploadForm(v => !v)} className="bg-primary-900 text-white px-3 py-1.5 text-xs font-semibold hover:brightness-110 flex items-center gap-1 transition-colors">
                   <UploadIcon size={12} /> Upload
                 </button>
               </div>
@@ -337,7 +337,7 @@ export default function SocialPage() {
                       <input type="file" className="hidden" onChange={e => setUploadFile(e.target.files?.[0] || null)} />
                     </label>
                     <div className="flex gap-2">
-                      <button onClick={submitUpload} disabled={!uploadTitle.trim() || !uploadFile || uploadSubmitting} className="bg-primary-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-1">
+                      <button onClick={submitUpload} disabled={!uploadTitle.trim() || !uploadFile || uploadSubmitting} className="bg-primary-900 text-white px-3 py-1.5 text-xs font-semibold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-1">
                         {uploadSubmitting ? <><Loader2 size={11} className="animate-spin" /> Uploading…</> : <><Send size={11} /> Submit</>}
                       </button>
                       <button onClick={() => setShowUploadForm(false)} className="text-xs text-neutral-500 px-3 py-1.5 border border-neutral-200 hover:bg-neutral-50">Cancel</button>
@@ -450,7 +450,7 @@ export default function SocialPage() {
             </div>
 
             {/* Resource Center */}
-            <Link href="/resources" className="block bg-primary-700 text-white p-4 hover:bg-primary-600 transition-all group">
+            <Link href="/resources" className="block bg-primary-900 text-white p-4 hover:brightness-110 transition-all group">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold">Need school-provided guides?</p>
@@ -462,7 +462,7 @@ export default function SocialPage() {
         </div>
 
         {}
-        <div className="mt-5 bg-primary-800 text-white p-5">
+        <div className="mt-5 bg-primary-900 text-white p-5">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             {[
               { label: "Service Hours", value: schoolWideStats.totalServiceHours.toLocaleString(), icon: Heart },
@@ -503,7 +503,7 @@ export default function SocialPage() {
               )}
               {aiChat.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[85%] px-3 py-2 text-xs leading-relaxed ${msg.role === "user" ? "bg-primary-600 text-white" : "bg-white border border-neutral-200 text-neutral-700 shadow-sm"}`}>
+                  <div className={`max-w-[85%] px-3 py-2 text-xs leading-relaxed ${msg.role === "user" ? "bg-primary-900 text-white" : "bg-white border border-neutral-200 text-neutral-700 shadow-sm"}`}>
                     {msg.role === "assistant" && <Bot size={10} className="inline mr-1 text-primary-400" />}{msg.text}
                   </div>
                 </div>
@@ -515,7 +515,7 @@ export default function SocialPage() {
             <div className="px-3 py-2 border-t border-neutral-100 bg-white">
               <form onSubmit={e => { e.preventDefault(); sendAi(aiInput); }} className="flex gap-2">
                 <input type="text" value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="Ask a question…" className="flex-1 text-xs py-1.5 px-3 border border-neutral-200 focus:outline-none focus:border-primary-400" disabled={aiLoading} />
-                <button type="submit" disabled={aiLoading || !aiInput.trim()} className="bg-primary-600 text-white px-2.5 py-1.5 text-xs hover:bg-primary-700 disabled:opacity-50"><Send size={12} /></button>
+                <button type="submit" disabled={aiLoading || !aiInput.trim()} className="bg-primary-900 text-white px-2.5 py-1.5 text-xs hover:brightness-110 disabled:opacity-50"><Send size={12} /></button>
               </form>
             </div>
           </div>

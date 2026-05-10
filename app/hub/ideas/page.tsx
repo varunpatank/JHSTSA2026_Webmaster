@@ -153,7 +153,7 @@ export default function IdeasPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-600">
+      <section className="bg-primary-900 text-white border-b-4 border-secondary-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-yellow-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Lightbulb size={36} /> Club Ideas</h1>

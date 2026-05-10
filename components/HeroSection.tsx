@@ -1,14 +1,12 @@
-"use client";
-import { useState, useEffect } from "react";
 import { ReactNode } from "react";
 
 type HeroStat = { label: string; value: ReactNode };
 
 // Texture patterns: each page hero gets a different subtle background texture
 export const HERO_TEXTURES = {
-  dots:      { backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.10) 1px, transparent 1px)", backgroundSize: "22px 22px" },
+  dots:      { backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.09) 1px, transparent 1px)", backgroundSize: "20px 20px" },
   grid:      { backgroundImage: "linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)", backgroundSize: "40px 40px" },
-  diagonal:  { backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 9px, rgba(255,255,255,0.07) 9px, rgba(255,255,255,0.07) 10px), repeating-linear-gradient(-45deg, transparent, transparent 9px, rgba(255,255,255,0.07) 9px, rgba(255,255,255,0.07) 10px)" },
+  diagonal:  { backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.09) 1px, transparent 1px)", backgroundSize: "20px 20px" },
   cross:     { backgroundImage: "linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)", backgroundSize: "20px 20px" },
   waves:     { backgroundImage: "repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 22px, rgba(255,255,255,0.06) 22px, rgba(255,255,255,0.06) 23px)" },
 };
@@ -48,86 +46,54 @@ export default function HeroSection({
   children,
   bgImage,
   images,
-  texture = "diagonal",
+  texture = "dots",
   align = "left",
 }: HeroSectionProps) {
+  // Use only the first image — no cycling
   const allImages = images ?? (bgImage ? [bgImage] : []);
-  const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    if (allImages.length <= 1) return;
-    const t = setInterval(() => setIdx(i => (i + 1) % allImages.length), 5000);
-    return () => clearInterval(t);
-  }, [allImages.length]);
+  const heroImage = allImages[0] ?? null;
 
   return (
     <section className="relative overflow-hidden bg-primary-900">
-      {/* Crossfading background images */}
-      {allImages.length > 0 && (
-        <div className="absolute inset-0">
-          {allImages.map((src, i) => (
-            <div key={src} className={`absolute inset-0 transition-opacity duration-[2000ms] ${i === idx ? "opacity-100" : "opacity-0"}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="w-full h-full object-cover opacity-[0.22]" />
-            </div>
-          ))}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/95 via-primary-900/80 to-primary-900/55" />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary-900/60 via-transparent to-transparent" />
-        </div>
-      )}
-
-      {/* Diagonal crosshatch + community icon accents on all banners */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.06) 12px, rgba(255,255,255,0.06) 13px), repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.06) 12px, rgba(255,255,255,0.06) 13px)"
-      }} />
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true" style={{ opacity: 0.10 }}>
-        <svg width="100%" height="100%">
+      {/* Shared banner pattern — wavy blobs + social icons on navy */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <svg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id="bannerAccent" x="0" y="0" width="280" height="200" patternUnits="userSpaceOnUse">
-              <circle cx="28" cy="30" r="9" stroke="white" strokeWidth="1.4" fill="none"/>
-              <path d="M11 54 Q11 43 28 43 Q45 43 45 54" stroke="white" strokeWidth="1.4" fill="none"/>
-              <rect x="90" y="14" width="54" height="28" rx="7" stroke="white" strokeWidth="1.4" fill="none"/>
-              <path d="M100 42 L96 54 L110 42" stroke="white" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
-              <path d="M238 22 L240 28 L246 28 L241 32 L243 38 L238 34 L233 38 L235 32 L230 28 L236 28Z" stroke="white" strokeWidth="1.4" fill="none"/>
-              <rect x="18" y="118" width="40" height="46" rx="3" stroke="white" strokeWidth="1.4" fill="none"/>
-              <line x1="38" y1="118" x2="38" y2="164" stroke="white" strokeWidth="1.4"/>
-              <line x1="18" y1="132" x2="58" y2="132" stroke="white" strokeWidth="0.8"/>
-              <line x1="18" y1="144" x2="58" y2="144" stroke="white" strokeWidth="0.8"/>
-              <circle cx="150" cy="126" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-              <circle cx="182" cy="114" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-              <circle cx="192" cy="144" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-              <line x1="154" y1="126" x2="178" y2="116" stroke="white" strokeWidth="0.9"/>
-              <line x1="154" y1="128" x2="188" y2="142" stroke="white" strokeWidth="0.9"/>
-              <line x1="182" y1="118" x2="190" y2="140" stroke="white" strokeWidth="0.9"/>
-              <path d="M90 100 L91.5 105 L97 105 L92.5 108 L94 113 L90 110 L86 113 L87.5 108 L83 105 L88.5 105Z" stroke="white" strokeWidth="1" fill="none"/>
-              <circle cx="250" cy="80" r="2.5" stroke="white" strokeWidth="1" fill="none"/>
+            <pattern id="hsBannerPat" x="0" y="0" width="520" height="300" patternUnits="userSpaceOnUse">
+              {/* Wavy blob shapes */}
+              <path d="M-20,80 C60,40 120,120 200,90 C280,60 320,130 400,100 C460,78 500,110 540,95" stroke="rgba(255,255,255,0.10)" strokeWidth="2.5" fill="none"/>
+              <path d="M-20,160 C50,130 100,180 180,155 C260,130 310,175 390,150 C450,132 490,165 540,148" stroke="rgba(255,255,255,0.07)" strokeWidth="2" fill="none"/>
+              <path d="M-20,240 C70,210 140,255 220,230 C300,205 360,248 440,222 C490,207 520,232 540,220" stroke="rgba(255,255,255,0.06)" strokeWidth="1.8" fill="none"/>
+              {/* Organic blob fills */}
+              <ellipse cx="80" cy="60" rx="48" ry="32" fill="rgba(255,255,255,0.045)" />
+              <ellipse cx="300" cy="200" rx="60" ry="38" fill="rgba(255,255,255,0.035)" />
+              <ellipse cx="450" cy="80" rx="42" ry="28" fill="rgba(255,255,255,0.04)" />
+              {/* Dots grid top-right */}
+              <g opacity="0.30" fill="white">
+                <circle cx="460" cy="30" r="2.2"/><circle cx="470" cy="30" r="2.2"/><circle cx="480" cy="30" r="2.2"/>
+                <circle cx="460" cy="40" r="2.2"/><circle cx="470" cy="40" r="2.2"/><circle cx="480" cy="40" r="2.2"/>
+                <circle cx="460" cy="50" r="2.2"/><circle cx="470" cy="50" r="2.2"/><circle cx="480" cy="50" r="2.2"/>
+              </g>
+              {/* Dots grid bottom-left */}
+              <g opacity="0.25" fill="white">
+                <circle cx="20" cy="230" r="2"/><circle cx="30" cy="230" r="2"/><circle cx="40" cy="230" r="2"/>
+                <circle cx="20" cy="240" r="2"/><circle cx="30" cy="240" r="2"/><circle cx="40" cy="240" r="2"/>
+                <circle cx="20" cy="250" r="2"/><circle cx="30" cy="250" r="2"/><circle cx="40" cy="250" r="2"/>
+              </g>
+              {/* Small circles scatter */}
+              <circle cx="100" cy="185" r="8" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+              <circle cx="310" cy="55" r="10" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" fill="none"/>
+              <circle cx="415" cy="245" r="6" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+              <circle cx="510" cy="190" r="8" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" fill="none"/>
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#bannerAccent)"/>
-        </svg>
-      </div>
-
-      {/* Decorative graduation cap — upper-right, elegant white outline */}
-      <div className="absolute pointer-events-none select-none" style={{ top: "10%", right: "6%", opacity: 0.13 }} aria-hidden="true">
-        <svg width="170" height="148" viewBox="0 0 170 148" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Mortarboard top */}
-          <polygon points="85,10 142,40 85,70 28,40" stroke="white" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
-          {/* Cap body */}
-          <path d="M46 47 L46 78 Q85 102 124 78 L124 47" stroke="white" strokeWidth="2.5" fill="none"/>
-          {/* Tassel cord */}
-          <line x1="142" y1="40" x2="142" y2="70" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-          {/* Tassel ball */}
-          <circle cx="142" cy="79" r="8" stroke="white" strokeWidth="2.2" fill="none"/>
-          {/* Tassel strands */}
-          <line x1="135" y1="79" x2="128" y2="110" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-          <line x1="142" y1="79" x2="142" y2="112" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-          <line x1="149" y1="79" x2="154" y2="110" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+          <rect width="100%" height="100%" fill="url(#hsBannerPat)"/>
         </svg>
       </div>
 
       <div className={`relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-11 pb-20 md:pt-12 md:pb-24 ${align === "center" ? "text-center" : ""}`}>
         {eyebrow && (
-          <span className="inline-block bg-white/10 text-primary-100 text-[10px] font-semibold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4">
+          <span className="inline-block cream-textured border border-cream-400 text-primary-900 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4">
             {eyebrow}
           </span>
         )}
@@ -162,9 +128,13 @@ export default function HeroSection({
         )}
 
         {description && (
-          <p className={`mt-3 text-primary-200 text-sm leading-relaxed ${align === "center" ? "max-w-xl mx-auto" : "max-w-xl"}`}>
-            {description}
-          </p>
+          <div className={`mt-4 max-w-xl ${align === "center" ? "mx-auto" : ""}`}>
+            <div className="cream-textured border border-cream-400 rounded-xl px-5 py-3.5">
+                <div className="text-[13px] text-primary-900 font-medium leading-[1.75] [&_strong]:text-secondary-700 [&_strong]:font-bold [&_a]:text-primary-700">
+                {description}
+              </div>
+            </div>
+          </div>
         )}
 
         {actions && <div className="mt-5 flex flex-wrap gap-3">{actions}</div>}

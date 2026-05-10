@@ -268,7 +268,7 @@ export default function EventDetailPage() {
               {/* Capacity bar */}
               <div className="mt-3 w-64 max-w-full">
                 <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary-600 rounded-full transition-all" style={{ width: `${Math.min(100, (totalAttendees / rsvpMax) * 100)}%` }} />
+                  <div className="h-full bg-primary-900 rounded-full transition-all" style={{ width: `${Math.min(100, (totalAttendees / rsvpMax) * 100)}%` }} />
                 </div>
                 <p className="text-[10px] text-neutral-400 mt-1">{totalAttendees} of {rsvpMax} spots filled</p>
               </div>
@@ -279,7 +279,7 @@ export default function EventDetailPage() {
               className={`shrink-0 flex items-center gap-2 px-7 py-3 rounded-2xl font-bold text-sm transition-all disabled:opacity-50 ${
                 rsvp
                   ? "bg-green-100 text-green-700 border-2 border-green-300 hover:bg-green-50"
-                  : "bg-primary-800 text-white hover:bg-primary-700 shadow-[0_4px_14px_rgba(23,54,93,0.3)]"
+                  : "bg-primary-800 text-white hover:bg-primary-800 shadow-[0_4px_14px_rgba(23,54,93,0.3)]"
               }`}
             >
               {rsvpLoading ? <Loader2 size={16} className="animate-spin" /> : rsvp ? <><CheckCircle size={16} /> Signed Up!</> : "Sign Up"}

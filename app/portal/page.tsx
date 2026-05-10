@@ -106,7 +106,7 @@ function CreateClub() {
           <Field label="Proposed Meeting Time">
             <input value={meeting} onChange={e => setMeeting(e.target.value)} className={inputCls} placeholder="e.g. Tuesdays at 3:30 PM, Room 104" />
           </Field>
-          <button type="submit" className="w-full py-3 rounded-2xl bg-primary-900 hover:bg-primary-800 text-white text-sm font-bold transition-colors">
+          <button type="submit" className="w-full py-3 rounded-2xl bg-primary-900 hover:bg-primary-900 text-white text-sm font-bold transition-colors">
             Submit Proposal
           </button>
           <p className="text-center text-xs text-neutral-400 pt-2">Want a full creation wizard? <Link href="/start-a-club" className="font-bold text-primary-600 hover:underline">Use the Club Builder</Link></p>
@@ -180,7 +180,7 @@ function SubmitEvent() {
           <Field label="Hosting Club (optional)">
             <input value={club} onChange={e => setClub(e.target.value)} className={inputCls} placeholder="e.g. STEM Club" />
           </Field>
-          <button type="submit" className="w-full py-3 rounded-2xl bg-primary-900 hover:bg-primary-800 text-white text-sm font-bold transition-colors">
+          <button type="submit" className="w-full py-3 rounded-2xl bg-primary-900 hover:bg-primary-900 text-white text-sm font-bold transition-colors">
             Submit Event
           </button>
         </form>
@@ -256,7 +256,7 @@ function AddResource() {
           <Field label="Why is this useful?">
             <textarea required value={desc} onChange={e => setDesc(e.target.value)} rows={3} className={inputCls + " resize-none"} placeholder="Briefly describe what this covers and who it helps." />
           </Field>
-          <button type="submit" className="w-full py-3 rounded-2xl bg-primary-900 hover:bg-primary-800 text-white text-sm font-bold transition-colors">
+          <button type="submit" className="w-full py-3 rounded-2xl bg-primary-900 hover:bg-primary-900 text-white text-sm font-bold transition-colors">
             Submit Suggestion
           </button>
         </form>

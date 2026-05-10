@@ -146,7 +146,7 @@ export default function MeetingsPage() {
       <HeroSection
         title="Meetings Schedule"
         icon={<Calendar size={36} />}
-        description="View upcoming club meetings, RSVPs, and agendas all in one place."
+        description={<>Your <strong className="text-secondary-700 font-bold">complete meeting schedule</strong> — filter by club, date, type, or location. RSVP to reserve your spot, view full agendas in advance, and <strong className="text-primary-700 font-semibold">never miss a session.</strong></>}
         actions={
           <>
             <button onClick={() => setShowForm(!showForm)} className="btn-secondary inline-flex items-center gap-2">
@@ -309,3 +309,4 @@ export default function MeetingsPage() {
     </div>
   );
 }
+

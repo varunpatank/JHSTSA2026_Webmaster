@@ -122,13 +122,8 @@ export default function ProposeResourcePage() {
           backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
         }} />
       <div className="relative z-0 min-h-screen bg-neutral-50">
-      {}
       <HeroSection
-        images={[
-          "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75",
-          "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
-          "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=75",
-        ]}
+        bgImage="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=75"
         texture="diagonal"
       >
         <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 text-xs font-semibold">
@@ -150,7 +145,7 @@ export default function ProposeResourcePage() {
           ].map((s, i) => (
             <div key={s.num} className="flex items-center gap-2">
               <button onClick={() => { if (s.num < step || canProceed()) setStep(s.num); }}
-                className={`w-8 h-8 flex items-center justify-center text-sm font-bold transition-colors ${step === s.num ? "bg-primary-600 text-white" : step > s.num ? "bg-green-100 text-green-700" : "bg-neutral-200 text-neutral-400"}`}>
+                className={`w-8 h-8 flex items-center justify-center text-sm font-bold transition-colors ${step === s.num ? "bg-primary-900 text-white" : step > s.num ? "bg-green-100 text-green-700" : "bg-neutral-200 text-neutral-400"}`}>
                 {step > s.num ? "\u2713" : s.num}
               </button>
               <span className={`text-xs font-semibold hidden sm:inline ${step === s.num ? "text-primary-700" : "text-neutral-400"}`}>{s.label}</span>
@@ -220,7 +215,7 @@ export default function ProposeResourcePage() {
                 <div className="flex flex-wrap gap-2">
                   {TARGET_AUDIENCE.map(aud => (
                     <button key={aud} onClick={() => toggleAudience(aud)} type="button"
-                      className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${form.targetAudience.includes(aud) ? "bg-primary-600 text-white border-primary-600" : "bg-white text-neutral-600 border-neutral-200 hover:border-primary-300"}`}>
+                      className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${form.targetAudience.includes(aud) ? "bg-primary-900 text-white border-primary-600" : "bg-white text-neutral-600 border-neutral-200 hover:border-primary-300"}`}>
                       {aud}
                     </button>
                   ))}
@@ -350,7 +345,7 @@ export default function ProposeResourcePage() {
 
             {step < 3 ? (
               <button onClick={() => setStep(s => s + 1)} disabled={!canProceed()}
-                className="px-4 py-2 text-sm font-bold bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
+                className="px-4 py-2 text-sm font-bold bg-primary-900 text-white hover:bg-primary-900 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1">
                 Next <ArrowRight size={14} />
               </button>
             ) : (
@@ -380,6 +375,7 @@ export default function ProposeResourcePage() {
             <p className="text-xs text-neutral-600 mt-1">Submitted resources are typically reviewed within 48 hours.</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -34,14 +34,14 @@ type ClubMarker = {
 };
 
 const categoryColors: Record<string, string> = {
-  Academic: "bg-primary-700",
-  STEM: "bg-primary-600",
-  Service: "bg-primary-800",
-  Arts: "bg-primary-500",
-  Cultural: "bg-primary-700",
-  Media: "bg-primary-600",
-  Sports: "bg-primary-800",
-  Leadership: "bg-primary-500",
+  Academic: "bg-primary-900",
+  STEM: "bg-primary-900",
+  Service: "bg-primary-900",
+  Arts: "bg-primary-900",
+  Cultural: "bg-primary-900",
+  Media: "bg-primary-900",
+  Sports: "bg-primary-900",
+  Leadership: "bg-primary-900",
 };
 
 const categoryDotColors: Record<string, string> = {
@@ -622,11 +622,11 @@ export default function DirectoryLeafletMap({
               onClick={() => focusSchool(school)}
               onMouseEnter={() => setHoveredSchool(school.name)}
               onMouseLeave={() => setHoveredSchool(null)}
-              className={`w-full text-left px-3 py-2 border-b border-neutral-800/50 transition-colors ${isActive ? "bg-primary-600/40" : "hover:bg-neutral-800/60"}`}
+              className={`w-full text-left px-3 py-2 border-b border-neutral-800/50 transition-colors ${isActive ? "bg-primary-900/40" : "hover:bg-neutral-800/60"}`}
             >
               <div className="flex items-center gap-2">
                 <div
-                  className={`w-7 h-7 flex items-center justify-center text-[9px] font-bold shrink-0 ${isActive ? "bg-secondary-500 text-white" : "bg-primary-600 text-white"}`}
+                  className={`w-7 h-7 flex items-center justify-center text-[9px] font-bold shrink-0 ${isActive ? "bg-secondary-500 text-white" : "bg-primary-900 text-white"}`}
                 >
                   {getSchoolAbbrev(school.name)}
                 </div>
@@ -705,7 +705,7 @@ export default function DirectoryLeafletMap({
                 aria-label={`${school.name} ${school.clubs.length} clubs`}
               >
                 <div
-                  className={`min-w-10 h-10 px-2 border-2 border-white shadow-lg flex items-center justify-center text-xs font-bold text-white ${activeSchool === school.name ? "bg-secondary-500" : "bg-primary-600"}`}
+                  className={`min-w-10 h-10 px-2 border-2 border-white shadow-lg flex items-center justify-center text-xs font-bold text-white ${activeSchool === school.name ? "bg-secondary-500" : "bg-primary-900"}`}
                 >
                   {school.clubs.length}
                 </div>
@@ -785,7 +785,7 @@ export default function DirectoryLeafletMap({
                   <button
                     type="button"
                     onClick={() => focusCluster(buildingGroup)}
-                    className="min-w-8 h-8 px-2 border-2 border-white shadow-lg text-[11px] font-bold text-white bg-primary-700"
+                    className="min-w-8 h-8 px-2 border-2 border-white shadow-lg text-[11px] font-bold text-white bg-primary-900"
                     aria-label={`${buildingGroup.clubs.length} clubs in ${buildingGroup.building}`}
                   >
                     {buildingGroup.clubs.length}
@@ -813,7 +813,7 @@ export default function DirectoryLeafletMap({
                     <button
                       type="button"
                       onClick={() => focusClub(clubMarker, dotPosition)}
-                      className={`h-4 w-4 border-2 border-white shadow-lg ${isActive ? "bg-secondary-500" : "bg-primary-500"}`}
+                      className={`h-4 w-4 border-2 border-white shadow-lg ${isActive ? "bg-secondary-500" : "bg-primary-900"}`}
                       aria-label={`${clubMarker.chapter.name} in ${buildingGroup.building}`}
                     />
                   </Marker>
@@ -824,7 +824,7 @@ export default function DirectoryLeafletMap({
             const [singleClub] = buildingGroup.clubs;
             const isActive = singleClub.room === activeRoom;
             const categoryColor =
-              categoryColors[singleClub.chapter.category] || "bg-primary-500";
+              categoryColors[singleClub.chapter.category] || "bg-primary-900";
 
             return (
               <Marker

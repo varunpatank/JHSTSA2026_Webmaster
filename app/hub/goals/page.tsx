@@ -126,7 +126,7 @@ export default function GoalsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-600">
+      <section className="bg-primary-900 text-white border-b-4 border-secondary-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-orange-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Target size={36} /> Goal Tracker</h1>
@@ -144,7 +144,7 @@ export default function GoalsPage() {
         {}
         <div className="flex flex-wrap gap-2 mb-6">
           {(["active", "completed", "insights"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} className={`px-4 py-2  text-sm font-semibold transition-all ${tab === t ? "bg-primary-600 text-white" : "bg-white text-neutral-600 hover:bg-primary-50"}`}>
+            <button key={t} onClick={() => setTab(t)} className={`px-4 py-2  text-sm font-semibold transition-all ${tab === t ? "bg-primary-900 text-white" : "bg-white text-neutral-600 hover:bg-primary-50"}`}>
               {t === "active" ? `Active (${active.length})` : t === "completed" ? `Completed (${completed.length})` : "Insights"}
             </button>
           ))}

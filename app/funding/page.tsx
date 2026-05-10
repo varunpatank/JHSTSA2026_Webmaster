@@ -77,7 +77,7 @@ export default function FundingPage() {
       <HeroSection
         title="Funding & Budgets"
         icon={<DollarSign size={36} />}
-        description="Track club budgets, discover grants, and manage fundraising campaigns."
+        description={<>Manage your club’s <strong className="text-secondary-700 font-bold">budget, track expenses,</strong> discover open grant opportunities, and run fundraising campaigns — all from one dashboard. <strong className="text-primary-700 font-semibold">No spreadsheets required.</strong></>}
         stats={[
           { label: "Total Budget", value: `$${(totalAllocated / 1000).toFixed(1)}k` },
           { label: "Spent", value: `$${(totalSpent / 1000).toFixed(1)}k` },
@@ -91,7 +91,7 @@ export default function FundingPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-wrap gap-2 mb-6">
           {(["budgets", "grants", "fundraisers"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} className={`px-5 py-2  text-sm font-semibold transition-all ${tab === t ? "bg-primary-600 text-white" : "bg-white text-neutral-600 hover:bg-primary-50"}`}>
+            <button key={t} onClick={() => setTab(t)} className={`px-5 py-2  text-sm font-semibold transition-all ${tab === t ? "bg-primary-900 text-white" : "bg-white text-neutral-600 hover:bg-primary-50"}`}>
               {t === "budgets" ? "Budget Allocations" : t === "grants" ? `Grants (${GRANTS.filter(g => g.status !== "closed").length} Open)` : "Fundraisers"}
             </button>
           ))}
@@ -202,3 +202,4 @@ export default function FundingPage() {
     </div>
   );
 }
+

@@ -69,7 +69,6 @@ export default function ClubDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [imgIdx, setImgIdx] = useState(0);
   const [activeTab, setActiveTab] = useState<"overview" | "events" | "resources">("overview");
 
   useEffect(() => { setMounted(true); }, []);
@@ -82,13 +81,7 @@ export default function ClubDetailPage() {
   const nextClub = clubIdx < allChapters.length - 1 ? allChapters[clubIdx + 1] : null;
 
   const heroBgs = CLUB_IMAGES[chapter?.category ?? "General"] ?? CLUB_IMAGES.General;
-
-  // Auto-cycle hero image
-  useEffect(() => {
-    if (heroBgs.length <= 1) return;
-    const t = setInterval(() => setImgIdx(i => (i + 1) % heroBgs.length), 5500);
-    return () => clearInterval(t);
-  }, [heroBgs.length]);
+  const heroImage = heroBgs[0];
 
   const chapterEvents = events.filter(e => e.chapterId === params.id).slice(0, 6);
 
@@ -128,36 +121,13 @@ export default function ClubDetailPage() {
 
       {/* ── HERO ──────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-primary-900" style={{ minHeight: "280px" }}>
-        {heroBgs.map((src, i) => (
-          <div key={src} className={`absolute inset-0 transition-opacity duration-[2000ms] ${i === imgIdx ? "opacity-100" : "opacity-0"}`}>
-            <Image src={src} alt="" fill className="object-cover opacity-25" priority={i === 0} />
+        {heroImage && (
+          <div className="absolute inset-0">
+            <Image src={heroImage} alt="" fill className="object-cover opacity-25" priority />
           </div>
-        ))}
-        {/* Diagonal crosshatch + community icon overlay */}
-        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.06) 12px, rgba(255,255,255,0.06) 13px), repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.06) 12px, rgba(255,255,255,0.06) 13px)" }} />
-        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true" style={{ opacity: 0.09 }}>
-          <svg width="100%" height="100%">
-            <defs>
-              <pattern id="clubHeroIcons" x="0" y="0" width="280" height="200" patternUnits="userSpaceOnUse">
-                <circle cx="28" cy="30" r="9" stroke="white" strokeWidth="1.4" fill="none"/>
-                <path d="M11 54 Q11 43 28 43 Q45 43 45 54" stroke="white" strokeWidth="1.4" fill="none"/>
-                <rect x="90" y="14" width="54" height="28" rx="7" stroke="white" strokeWidth="1.4" fill="none"/>
-                <path d="M100 42 L96 54 L110 42" stroke="white" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
-                <path d="M238 22 L240 28 L246 28 L241 32 L243 38 L238 34 L233 38 L235 32 L230 28 L236 28Z" stroke="white" strokeWidth="1.4" fill="none"/>
-                <rect x="18" y="118" width="40" height="46" rx="3" stroke="white" strokeWidth="1.4" fill="none"/>
-                <line x1="38" y1="118" x2="38" y2="164" stroke="white" strokeWidth="1.4"/>
-                <circle cx="150" cy="126" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-                <circle cx="182" cy="114" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-                <circle cx="192" cy="144" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-                <line x1="154" y1="126" x2="178" y2="116" stroke="white" strokeWidth="0.9"/>
-                <line x1="154" y1="128" x2="188" y2="142" stroke="white" strokeWidth="0.9"/>
-                <circle cx="250" cy="80" r="2.5" stroke="white" strokeWidth="1" fill="none"/>
-                <circle cx="65" cy="170" r="2" stroke="white" strokeWidth="1" fill="none"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#clubHeroIcons)"/>
-          </svg>
-        </div>
+        )}
+        {/* Dot grid overlay */}
+        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
         <div className="absolute inset-0 bg-gradient-to-r from-primary-900/95 via-primary-900/80 to-primary-900/50" />
         <div className="absolute inset-0 bg-gradient-to-t from-primary-900/60 via-transparent to-transparent" />
 

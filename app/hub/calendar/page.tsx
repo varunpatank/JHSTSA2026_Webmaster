@@ -98,7 +98,7 @@ export default function CalendarPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-600 text-white border-b-4 border-secondary-500">
+      <section className="bg-primary-900 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-sky-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><CalIcon size={36} /> Community Calendar</h1>
@@ -119,8 +119,8 @@ export default function CalendarPage() {
               {types.map(t => <option key={t} value={t}>{t === "All" ? "All Types" : t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
             </select>
             <div className="flex  border border-neutral-200 overflow-hidden">
-              <button onClick={() => setView("month")} className={`px-3 py-1.5 text-sm ${view === "month" ? "bg-primary-600 text-white" : "bg-white text-neutral-600"}`}>Month</button>
-              <button onClick={() => setView("list")} className={`px-3 py-1.5 text-sm ${view === "list" ? "bg-primary-600 text-white" : "bg-white text-neutral-600"}`}>List</button>
+              <button onClick={() => setView("month")} className={`px-3 py-1.5 text-sm ${view === "month" ? "bg-primary-900 text-white" : "bg-white text-neutral-600"}`}>Month</button>
+              <button onClick={() => setView("list")} className={`px-3 py-1.5 text-sm ${view === "list" ? "bg-primary-900 text-white" : "bg-white text-neutral-600"}`}>List</button>
             </div>
           </div>
         </div>

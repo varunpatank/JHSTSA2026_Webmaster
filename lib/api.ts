@@ -4,11 +4,13 @@ import type { } from './apiTypes'
 import { signIn, signOut as nextAuthSignOut, getSession } from 'next-auth/react'
 import webpfy from 'webpfy'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ?? ''
 
 if (!supabaseUrl || !supabasePublishableKey) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in environment')
+    if (typeof window === 'undefined') {
+        console.warn('[ClubConnect] Supabase env vars not set — auth features disabled.')
+    }
 }
 
 const browserStorage =

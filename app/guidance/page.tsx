@@ -124,7 +124,7 @@ export default function GuidancePage() {
             <div className="w-14 h-14 bg-white/10 flex items-center justify-center"><Brain size={28} /></div>
             <div>
               <h1 className="hero-title mt-0"><span>Guidance Center</span></h1>
-              <p className="hero-description mt-1 text-sm">AI-Powered Student Assistant &middot; Gemini 2.0 Flash</p>
+              <p className="hero-description mt-2">Get <strong className="text-secondary-400 font-bold">AI-powered guidance</strong> 24/7 — personalized club recommendations, career path advice, mentor connections, and answers to all your school life questions. <strong className="text-sky-300 font-semibold">Powered by Gemini 2.0 Flash.</strong></p>
             </div>
           </div>
           <div className="hidden sm:flex gap-4 text-center">
@@ -185,7 +185,7 @@ export default function GuidancePage() {
                 {chat.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[80%] px-4 py-3  text-sm leading-relaxed ${msg.role === "user"
-                      ? "bg-primary-600 text-white rounded-br-sm"
+                      ? "bg-primary-900 text-white rounded-br-sm"
                       : "bg-white border border-neutral-200 text-neutral-700 rounded-bl-sm shadow-sm"
                     }`}>
                       {msg.role === "assistant" && <Bot size={14} className="inline mr-1.5 text-primary-400" />}

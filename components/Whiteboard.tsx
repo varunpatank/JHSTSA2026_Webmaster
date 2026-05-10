@@ -111,7 +111,7 @@ export default function Whiteboard({ width = 800, height = 480 }: { width?: numb
         <div className="ml-auto flex gap-2">
           <button onClick={undo} className="px-3 py-1 border rounded text-sm">Undo</button>
           <button onClick={clear} className="px-3 py-1 border rounded text-sm">Clear</button>
-          <button onClick={downloadPNG} className="px-3 py-1 bg-primary-600 text-white rounded text-sm">Download</button>
+          <button onClick={downloadPNG} className="px-3 py-1 bg-primary-900 text-white rounded text-sm">Download</button>
         </div>
       </div>
       <div className="border rounded overflow-hidden">

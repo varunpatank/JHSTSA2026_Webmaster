@@ -545,7 +545,7 @@ function GamifiedProgress({
         <Trophy size={16} /> Your Progress
       </h3>
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center text-lg font-bold">
+        <div className="w-12 h-12 rounded-full bg-primary-900 text-white flex items-center justify-center text-lg font-bold">
           L{level}
         </div>
         <div className="flex-1">
@@ -553,7 +553,7 @@ function GamifiedProgress({
           <p className="text-xs text-primary-600">{xp} XP earned</p>
           <div className="h-1.5 bg-primary-200 rounded-full mt-1">
             <div
-              className="h-full bg-primary-600 rounded-full transition-all"
+              className="h-full bg-primary-900 rounded-full transition-all"
               style={{ width: `${Math.min((xp % 200) / 2, 100)}%` }}
             />
           </div>
@@ -1035,7 +1035,7 @@ export default function StartAClubPage() {
               <button onClick={() => setSummaryView(false)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-primary-200 text-primary-700 text-sm font-semibold hover:bg-primary-50 transition-colors">
                 <ArrowLeft size={14} /> Edit Proposal
               </button>
-              <Link href="/directory" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-900 hover:bg-primary-800 text-white text-sm font-bold transition-colors">
+              <Link href="/directory" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-900 hover:bg-primary-900 text-white text-sm font-bold transition-colors">
                 Done — Browse Clubs <ArrowRight size={14} />
               </Link>
             </div>

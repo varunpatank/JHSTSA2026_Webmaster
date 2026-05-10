@@ -16,7 +16,7 @@ export default function GuidesIndexPage() {
         <HeroSection
         eyebrow="Resources"
         title="Guides & Handbooks"
-        description="Step-by-step guides to help you navigate club life - from joining your first club to leading an organization."
+        description={<>Step-by-step walkthroughs for <strong className="text-secondary-700 font-bold">every stage of club life</strong> — from attending your first meeting to running officer elections, planning events, and applying for school funding. <strong className="text-primary-700 font-semibold">Written by students, for students.</strong></>}
         images={[
           "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1600&q=75",
           "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1600&q=75",
@@ -45,7 +45,7 @@ export default function GuidesIndexPage() {
           ))}
         </div>
 
-        <div className="mt-10 card p-6 bg-primary-600 text-white text-center relative overflow-hidden">
+        <div className="mt-10 card p-6 bg-primary-900 text-white text-center relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none opacity-[0.10]" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.15) 18px, rgba(255,255,255,0.15) 19px)" }} />
           <h2 className="text-xl font-heading font-bold relative z-10">Need Help?</h2>
           <p className="text-primary-100 mt-2 relative z-10">Check our FAQ or explore the full resource library for step-by-step help.</p>
@@ -59,3 +59,4 @@ export default function GuidesIndexPage() {
     </div>
   );
 }
+

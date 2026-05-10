@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --primary: #174070;
-  --primary-light: #285985;
+  --primary: #1c3557;
+  --primary-light: #2a4d7a;
   --secondary: #D6A21E;
   --accent: #B8734A;
   --background: #F7F1E8;
@@ -57,14 +57,19 @@ body {
     "Segoe UI",
     sans-serif;
   background-color: var(--background);
-  /* Subtle warm dot texture */
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23F7F1E8'/%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23D9CDB8' opacity='.4'/%3E%3Ccircle cx='3' cy='3' r='0.6' fill='%23D9CDB8' opacity='.4'/%3E%3C/svg%3E");
-  background-size: 4px 4px;
   color: var(--text-primary);
   font-size: 0.9375rem;
   line-height: 1.6;
   text-rendering: optimizeLegibility;
+}
+
+/* ── Global page-wrapper texture — normalises all neutral/cream min-h-screen containers
+   without touching individual page files. Overrides bg-neutral-100, bg-neutral-50 etc. –– */
+div[class*="min-h-screen"][class*="bg-neutral-100"],
+div[class*="min-h-screen"][class*="bg-neutral-50"],
+div[class*="min-h-screen"][class*="bg-\[#f4f6fa\]"],
+div[class*="min-h-screen"][class*="bg-\[#F7F1E8\]"] {
+  background-color: #F7F1E8 !important;
 }
 
 h1,
@@ -104,42 +109,45 @@ html {
 .texture-banner-clean,
 .diagonal-texture {
   background-image:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)),
-    repeating-linear-gradient(
-      45deg,
-      transparent 0 18px,
-      rgba(255, 255, 255, 0.08) 18px 19px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0 18px,
-      rgba(255, 255, 255, 0.08) 18px 19px
-    );
-  background-size: auto, 24px 24px, 24px 24px;
-  background-position: 0 0, 0 0, 12px 12px;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0)),
+    radial-gradient(circle, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+  background-size: auto, 20px 20px;
+  background-position: 0 0, 0 0;
 }
 
-/* Clean line texture for stats strip */
+/* Clean dot texture for stats strip */
 .texture-stats-lines {
   background-image:
     linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.02)),
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0 18px,
-      rgba(23, 54, 93, 0.13) 18px 20px
-    );
-  background-size: auto, 40px 40px;
+    radial-gradient(circle, rgba(23, 54, 93, 0.10) 1px, transparent 1px);
+  background-size: auto, 20px 20px;
   background-position: 0 0, 0 0;
 }
 
-/* Warm paper texture for cream sections */
+/* Cream texture classes — diagonal line pattern */
 .texture-paper-warm,
 .diagonal-texture-light {
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(184, 115, 74, 0.16) 1px, transparent 1.2px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
-  background-size: 14px 14px, auto;
-  background-position: 0 0, 0 0;
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 5px,
+      rgba(180, 155, 110, 0.10) 5px,
+      rgba(180, 155, 110, 0.10) 6px
+    );
+}
+
+/* Shared cream-200 background + diagonal texture — apply to any cream section */
+.cream-textured {
+  background-color: #F7F1E8;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 5px,
+      rgba(180, 155, 110, 0.10) 5px,
+      rgba(180, 155, 110, 0.10) 6px
+    );
 }
 
 /* Linen style for light sky panels */
@@ -160,17 +168,9 @@ html {
   background-position: 0 0, 0 0, 0 0;
 }
 
-/* Soft canvas texture for larger cream blocks */
+/* Cream canvas — plain */
 .texture-canvas-cream {
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent 0 18px,
-      rgba(23, 54, 93, 0.045) 18px 19px
-    ),
-    radial-gradient(circle at 20% 12%, rgba(214, 162, 30, 0.09), transparent 45%);
-  background-size: 24px 24px, auto;
-  background-position: 0 0, 0 0;
+  background-color: var(--background);
 }
 
 /* Curvy horizontal line texture for welcoming light hero areas */
@@ -226,7 +226,7 @@ html {
 
   .hero-section,
   .page-hero {
-    @apply relative overflow-hidden bg-primary-800 text-white;
+    @apply relative overflow-hidden bg-primary-900 text-white;
   }
 
   .hero-section::before,
@@ -284,7 +284,14 @@ html {
 
   .hero-eyebrow,
   .page-hero-eyebrow {
-    @apply text-xs sm:text-sm uppercase tracking-[0.12em] font-semibold text-primary-100;
+    @apply text-xs sm:text-sm uppercase tracking-[0.12em] font-bold text-primary-900 bg-cream-200 border border-cream-400 px-3 py-1 rounded-full inline-block;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 5px,
+      rgba(180, 155, 110, 0.10) 5px,
+      rgba(180, 155, 110, 0.10) 6px
+    );
   }
 
   .hero-title,
@@ -303,7 +310,14 @@ html {
 
   .hero-description,
   .page-hero-description {
-    @apply mt-3 max-w-3xl text-base md:text-lg leading-relaxed text-primary-100;
+    @apply mt-4 max-w-xl text-[13px] leading-[1.75] text-primary-900 font-medium bg-cream-200 border border-cream-400 rounded-xl px-5 py-3.5;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 5px,
+      rgba(180, 155, 110, 0.10) 5px,
+      rgba(180, 155, 110, 0.10) 6px
+    );
   }
 
   .hero-section-content-center .hero-description {
@@ -966,16 +980,42 @@ textarea:focus-visible {
   background-clip: text;
 }
 
+/* ── Scroll-reveal: base ── */
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(16px);
   transition:
-    opacity 400ms cubic-bezier(0.2, 0.9, 0.2, 1),
-    transform 400ms cubic-bezier(0.2, 0.9, 0.2, 1);
+    opacity 550ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .reveal-on-scroll.revealed {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
+}
+
+/* ── Reveal variants (initial hidden transforms) ── */
+.reveal-up    { transform: translateY(22px); }
+.reveal-left  { transform: translateX(-44px); }
+.reveal-right { transform: translateX(44px); }
+.reveal-pop   { transform: scale(0.87) translateY(14px); }
+.reveal-flip  {
+  transform: perspective(700px) rotateX(22deg) translateY(10px);
+  transform-origin: top center;
+}
+
+/* ── Expand-float: box bounces open from top ── */
+@keyframes expandFloat {
+  0%   { opacity: 0; transform: scaleY(0.62) translateY(18px); }
+  58%  { opacity: 1; transform: scaleY(1.04) translateY(-5px); }
+  78%  { transform: scaleY(0.98) translateY(2px); }
+  100% { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+.reveal-expand-float {
+  transform: scaleY(0.62) translateY(18px);
+  transform-origin: top center;
+}
+.reveal-on-scroll.reveal-expand-float.revealed {
+  animation: expandFloat 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 1;
 }
 
 /* Hero entrance animations */

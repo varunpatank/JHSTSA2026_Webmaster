@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       <div className="relative z-0 min-h-screen bg-neutral-100">
       <HeroSection
         title="Privacy Policy"
-        description="How ClubConnect collects, uses, and protects student and community data."
+        description={<>How ClubConnect <strong className="text-secondary-700 font-bold">collects, stores, and protects</strong> student and community data. We follow strict privacy-first principles — your information is <strong className="text-primary-700 font-semibold">never sold or shared</strong> without your explicit consent.</>}
         align="left"
         shellClassName="max-w-4xl"
         images={[
@@ -32,3 +32,4 @@ export default function PrivacyPage() {
     </div>
   );
 }
+

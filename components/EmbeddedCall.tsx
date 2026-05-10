@@ -107,8 +107,8 @@ export default function EmbeddedCall({ room, displayName, onClose }: { room: str
 
           <div className="mt-3 flex items-center justify-between gap-3">
             <div className="flex gap-2 items-center">
-              <button onClick={toggleAudio} className={`px-3 py-2 rounded ${muted ? 'bg-neutral-100' : 'bg-primary-600 text-white'}`}>{muted ? 'Unmute' : 'Mute'}</button>
-              <button onClick={toggleVideo} className={`px-3 py-2 rounded ${videoOff ? 'bg-neutral-100' : 'bg-primary-600 text-white'}`}>{videoOff ? 'Start Video' : 'Stop Video'}</button>
+              <button onClick={toggleAudio} className={`px-3 py-2 rounded ${muted ? 'bg-neutral-100' : 'bg-primary-900 text-white'}`}>{muted ? 'Unmute' : 'Mute'}</button>
+              <button onClick={toggleVideo} className={`px-3 py-2 rounded ${videoOff ? 'bg-neutral-100' : 'bg-primary-900 text-white'}`}>{videoOff ? 'Start Video' : 'Stop Video'}</button>
               <button onClick={toggleScreenShare} className={`px-3 py-2 rounded ${screenShared ? 'bg-neutral-100' : 'border'}`}>Share Screen</button>
               <button onClick={() => setShowWhiteboard(s => !s)} className="px-3 py-2 rounded border">Whiteboard</button>
             </div>

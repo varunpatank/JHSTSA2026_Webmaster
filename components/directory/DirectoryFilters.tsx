@@ -99,7 +99,7 @@ export default function DirectoryFilters({
                 }
                 className={`px-3 py-1.5 text-xs font-semibold border rounded-lg transition-colors ${
                   filters.category === c
-                    ? "bg-primary-700 text-white border-primary-700"
+                    ? "bg-primary-900 text-white border-primary-700"
                     : "bg-white text-primary-800 border-primary-200 hover:border-primary-500"
                 }`}
               >

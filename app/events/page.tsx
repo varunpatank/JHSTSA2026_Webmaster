@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Calendar, ChevronLeft, ChevronRight, MapPin, Clock, Users, Filter } from "lucide-react";
@@ -93,18 +93,11 @@ export default function EventsPage() {
   const [filter, setFilter] = useState("All");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [view, setView] = useState<"list" | "grid">("list");
-  const [heroImgIdx, setHeroImgIdx] = useState(0);
-
   const heroImages = [
     "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=75",
     "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=75",
     "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=75",
   ];
-
-  useEffect(() => {
-    const t = setInterval(() => setHeroImgIdx(i => (i + 1) % heroImages.length), 5000);
-    return () => clearInterval(t);
-  }, [heroImages.length]);
 
   const featured = events[0];
 
@@ -126,67 +119,31 @@ export default function EventsPage() {
 
       {/* ══ HERO ══════════════════════════════════════════════ */}
       <section className="relative overflow-hidden bg-primary-900">
-        <div className="absolute inset-0">
-          {heroImages.map((img, i) => (
-            <div
-              key={img}
-              className={`absolute inset-0 transition-opacity duration-[2000ms] ${i === heroImgIdx ? "opacity-100" : "opacity-0"}`}
-            >
-              <Image
-                src={img}
-                alt="" fill className="object-cover opacity-35" priority={i === 0}
-              />
-            </div>
-          ))}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/90 via-primary-900/70 to-primary-900/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary-900/60 via-transparent to-transparent" />
-        </div>
 
-        {/* Diagonal texture overlay */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.06) 12px, rgba(255,255,255,0.06) 13px), repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.06) 12px, rgba(255,255,255,0.06) 13px)"
-        }} />
-        {/* Community icon pattern — same as other page banners */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true" style={{ opacity: 0.10 }}>
-          <svg width="100%" height="100%">
+
+        {/* Shared banner pattern — wavy blobs + social icons on navy */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <svg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="eventsAccent" x="0" y="0" width="280" height="200" patternUnits="userSpaceOnUse">
-                <circle cx="28" cy="30" r="9" stroke="white" strokeWidth="1.4" fill="none"/>
-                <path d="M11 54 Q11 43 28 43 Q45 43 45 54" stroke="white" strokeWidth="1.4" fill="none"/>
-                <rect x="90" y="14" width="54" height="28" rx="7" stroke="white" strokeWidth="1.4" fill="none"/>
-                <path d="M100 42 L96 54 L110 42" stroke="white" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
-                <path d="M238 22 L240 28 L246 28 L241 32 L243 38 L238 34 L233 38 L235 32 L230 28 L236 28Z" stroke="white" strokeWidth="1.4" fill="none"/>
-                <rect x="18" y="118" width="40" height="46" rx="3" stroke="white" strokeWidth="1.4" fill="none"/>
-                <line x1="38" y1="118" x2="38" y2="164" stroke="white" strokeWidth="1.4"/>
-                <line x1="18" y1="132" x2="58" y2="132" stroke="white" strokeWidth="0.8"/>
-                <line x1="18" y1="144" x2="58" y2="144" stroke="white" strokeWidth="0.8"/>
-                <circle cx="150" cy="126" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-                <circle cx="182" cy="114" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-                <circle cx="192" cy="144" r="4" stroke="white" strokeWidth="1.2" fill="none"/>
-                <line x1="154" y1="126" x2="178" y2="116" stroke="white" strokeWidth="0.9"/>
-                <line x1="154" y1="128" x2="188" y2="142" stroke="white" strokeWidth="0.9"/>
-                <line x1="182" y1="118" x2="190" y2="140" stroke="white" strokeWidth="0.9"/>
-                <path d="M90 100 L91.5 105 L97 105 L92.5 108 L94 113 L90 110 L86 113 L87.5 108 L83 105 L88.5 105Z" stroke="white" strokeWidth="1" fill="none"/>
-                <circle cx="250" cy="80" r="2.5" stroke="white" strokeWidth="1" fill="none"/>
+              <pattern id="eventsBannerPat" x="0" y="0" width="520" height="300" patternUnits="userSpaceOnUse">
+                <path d="M-20,80 C60,40 120,120 200,90 C280,60 320,130 400,100 C460,78 500,110 540,95" stroke="rgba(255,255,255,0.10)" strokeWidth="2.5" fill="none"/>
+                <path d="M-20,160 C50,130 100,180 180,155 C260,130 310,175 390,150 C450,132 490,165 540,148" stroke="rgba(255,255,255,0.07)" strokeWidth="2" fill="none"/>
+                <path d="M-20,240 C70,210 140,255 220,230 C300,205 360,248 440,222 C490,207 520,232 540,220" stroke="rgba(255,255,255,0.06)" strokeWidth="1.8" fill="none"/>
+                <ellipse cx="80" cy="60" rx="48" ry="32" fill="rgba(255,255,255,0.045)"/>
+                <ellipse cx="300" cy="200" rx="60" ry="38" fill="rgba(255,255,255,0.035)"/>
+                <ellipse cx="450" cy="80" rx="42" ry="28" fill="rgba(255,255,255,0.04)"/>
+                <g opacity="0.30" fill="white"><circle cx="460" cy="30" r="2.2"/><circle cx="470" cy="30" r="2.2"/><circle cx="480" cy="30" r="2.2"/><circle cx="460" cy="40" r="2.2"/><circle cx="470" cy="40" r="2.2"/><circle cx="480" cy="40" r="2.2"/><circle cx="460" cy="50" r="2.2"/><circle cx="470" cy="50" r="2.2"/><circle cx="480" cy="50" r="2.2"/></g>
+                <g opacity="0.25" fill="white"><circle cx="20" cy="230" r="2"/><circle cx="30" cy="230" r="2"/><circle cx="40" cy="230" r="2"/><circle cx="20" cy="240" r="2"/><circle cx="30" cy="240" r="2"/><circle cx="40" cy="240" r="2"/><circle cx="20" cy="250" r="2"/><circle cx="30" cy="250" r="2"/><circle cx="40" cy="250" r="2"/></g>
+                <circle cx="100" cy="185" r="8" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+                <circle cx="310" cy="55" r="10" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" fill="none"/>
+                <circle cx="415" cy="245" r="6" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#eventsAccent)"/>
-          </svg>
-        </div>
-        {/* Decorative graduation cap — upper-right */}
-        <div className="absolute pointer-events-none select-none" style={{ top: "8%", right: "5%", opacity: 0.13 }} aria-hidden="true">
-          <svg width="150" height="130" viewBox="0 0 170 148" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="85,10 142,40 85,70 28,40" stroke="white" strokeWidth="2.5" fill="none" strokeLinejoin="round"/>
-            <path d="M46 47 L46 78 Q85 102 124 78 L124 47" stroke="white" strokeWidth="2.5" fill="none"/>
-            <line x1="142" y1="40" x2="142" y2="70" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-            <circle cx="142" cy="79" r="8" stroke="white" strokeWidth="2.2" fill="none"/>
-            <line x1="135" y1="79" x2="128" y2="110" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-            <line x1="142" y1="79" x2="142" y2="112" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-            <line x1="149" y1="79" x2="154" y2="110" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+            <rect width="100%" height="100%" fill="url(#eventsBannerPat)"/>
           </svg>
         </div>
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-11 pb-20 md:pt-12 md:pb-24">
-          <span className="inline-block bg-white/10 text-primary-100 text-[10px] font-semibold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4">
+          <span className="inline-block cream-textured border border-cream-400 text-primary-900 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4">
             Community Gatherings &amp; Workshops
           </span>
           <h1 className="text-4xl md:text-5xl font-heading font-bold text-white leading-tight">
@@ -203,19 +160,10 @@ export default function EventsPage() {
               </span>
             </span>
           </h1>
-          <p className="mt-3 text-primary-200 text-sm max-w-xl leading-relaxed mb-5">
-            Browse upcoming club events, sign up for gatherings, and stay connected with your school community.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <a href="#featured" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-800 text-white text-xs font-bold border border-white/20 hover:bg-primary-700 transition-colors">
-              <Calendar size={13} /> Featured Event
-            </a>
-            <a href="#schedule" className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-white text-xs font-semibold hover:bg-white/10 transition-colors">
-              Full Schedule
-            </a>
-            <Link href="/events/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/30 text-white text-xs font-semibold hover:bg-white/10 transition-colors">
-              Submit an Event
-            </Link>
+          <div className="mt-3 cream-textured border border-cream-400 rounded-xl px-5 py-3.5 max-w-xl">
+            <p className="text-primary-900 font-medium text-sm leading-relaxed">
+              Browse upcoming club events, sign up for gatherings, and stay connected with your school community.
+            </p>
           </div>
         </div>
         <div aria-hidden className="absolute bottom-0 left-0 right-0 leading-[0]">

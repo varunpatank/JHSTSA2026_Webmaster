@@ -63,16 +63,12 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="relative">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
-        }} />
       <div className="relative z-0 bg-neutral-100 min-h-screen">
         <HeroSection
           eyebrow="Stay Updated"
           title="Announcements"
           icon={<Megaphone size={36} />}
-          description="Important updates, deadlines, and news from clubs, advisors, and the Activities Office."
+          description={<><strong className="text-secondary-700 font-bold">Official updates</strong> from clubs, advisors, and the Activities Office — deadline reminders, officer election notices, event changes, and school-wide news. Organized by <strong className="text-primary-700 font-semibold">priority and category</strong> so nothing slips through.</>}
           texture="diagonal"
         />
 
@@ -156,3 +152,4 @@ export default function AnnouncementsPage() {
     </div>
   );
 }
+

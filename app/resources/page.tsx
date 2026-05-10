@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -97,13 +97,21 @@ export default function ResourcesPage() {
         eyebrow="Community Resources"
         title="Resource"
         highlightWord="Directory"
-        description="Want to start your own school club or community organization? Here are resources to help you get started for every stage."
+        description={<>Everything a club leader needs � <strong className="text-secondary-700 font-bold">constitution templates, budget worksheets,</strong> recruitment guides, advisor pitch decks, and step-by-step handbooks. <strong className="text-primary-700 font-semibold">Free for all students</strong> at every stage of club life.</>}
         texture="diagonal"
         images={[
           "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1600&q=75",
           "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1600&q=75",
           "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1600&q=75",
         ]}
+        actions={
+          <Link
+            href="/portal?tab=resource"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary-500 hover:bg-secondary-400 text-white font-bold text-sm transition-colors shadow-md"
+          >
+            <span className="text-base leading-none">+</span> Suggest a Resource
+          </Link>
+        }
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -129,6 +137,30 @@ export default function ResourcesPage() {
               )}
             </div>
 
+            {/* Stage filter � above category */}
+            <div className="bg-white rounded-2xl border border-cream-300 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400 mb-3">Club Stage</p>
+              <div className="space-y-1.5">
+                {STAGES.map(s => {
+                  const active = stage === s;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setStage(s)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium transition-colors ${
+                        active
+                          ? (STAGE_COLORS[s] ?? "bg-primary-900 text-white") + " font-bold"
+                          : "text-neutral-600 hover:bg-cream-100"
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${active ? "bg-current opacity-70" : "bg-neutral-300"}`} />
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Category filter */}
             <div className="bg-white rounded-2xl border border-cream-300 overflow-hidden">
               <div className="px-4 pt-4 pb-2">
@@ -143,7 +175,7 @@ export default function ResourcesPage() {
                     onClick={() => setCategory(cat)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors text-sm ${
                       active
-                        ? "bg-primary-800 text-white font-semibold"
+                        ? "bg-primary-900 text-white font-semibold"
                         : "text-neutral-600 hover:bg-cream-100 hover:text-primary-700"
                     }`}
                   >
@@ -152,30 +184,6 @@ export default function ResourcesPage() {
                   </button>
                 );
               })}
-            </div>
-
-            {/* Stage filter */}
-            <div className="bg-white rounded-2xl border border-cream-300 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400 mb-3">Club Stage</p>
-              <div className="space-y-1.5">
-                {STAGES.map(s => {
-                  const active = stage === s;
-                  return (
-                    <button
-                      key={s}
-                      onClick={() => setStage(s)}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left text-xs font-medium transition-colors ${
-                        active
-                          ? (STAGE_COLORS[s] ?? "bg-primary-800 text-white") + " font-bold"
-                          : "text-neutral-600 hover:bg-cream-100"
-                      }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${active ? "bg-current opacity-70" : "bg-neutral-300"}`} />
-                      {s}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
 
             {hasFilters && (
@@ -235,7 +243,7 @@ export default function ResourcesPage() {
                         />
                         <button
                           type="submit"
-                          className="shrink-0 px-3 py-2 rounded-xl bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors"
+                          className="shrink-0 px-3 py-2 rounded-xl bg-primary-900 hover:bg-primary-900 text-white text-xs font-bold transition-colors"
                         >
                           Go
                         </button>
@@ -251,12 +259,12 @@ export default function ResourcesPage() {
               <div className="flex-1 h-px bg-cream-400" />
               <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                 {filtered.length} Resource{filtered.length !== 1 ? "s" : ""}
-                {category !== "All" && ` · ${category}`}
+                {category !== "All" && ` � ${category}`}
               </p>
               <div className="flex-1 h-px bg-cream-400" />
               <Link
                 href="/portal?tab=resource"
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors shadow-sm whitespace-nowrap"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-900 text-white text-xs font-bold transition-colors shadow-sm whitespace-nowrap"
               >
                 <span className="text-base leading-none">+</span> Add Resource
               </Link>
@@ -302,7 +310,7 @@ export default function ResourcesPage() {
                         <span className="flex items-center gap-1 text-[10px] text-neutral-400"><Download size={9} /> {r.downloads}</span>
                       </div>
                       <Link href={`/resources/${r.id}`}
-                        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl bg-cream-100 hover:bg-primary-800 hover:text-white text-primary-700 text-xs font-bold transition-colors">
+                        className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl bg-cream-100 hover:bg-primary-900 hover:text-white text-primary-700 text-xs font-bold transition-colors">
                         View Details <ArrowRight size={11} />
                       </Link>
                     </div>
@@ -312,17 +320,32 @@ export default function ResourcesPage() {
             )}
 
             {/* Suggest Resources CTA */}
-            <div className="bg-primary-900 rounded-2xl p-7 flex flex-col sm:flex-row items-center gap-5 text-white relative overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none opacity-[0.10]" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.15) 18px, rgba(255,255,255,0.15) 19px)" }} />
-              <div className="flex-1 relative z-10">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary-400 mb-1">Missing something?</p>
-                <h3 className="font-heading font-bold text-lg mb-1">Suggest a Resource</h3>
-                <p className="text-sm text-primary-200 leading-relaxed">Know a guide, template, or handbook that would help other clubs? Share it via the portal.</p>
+            <div className="relative rounded-2xl overflow-hidden">
+              {/* Background */}
+              <div className="absolute inset-0 bg-primary-900" />
+              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
+              {/* Gold accent top bar */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-secondary-500 via-secondary-300 to-secondary-500" />
+              <div className="relative z-10 p-8 flex flex-col sm:flex-row items-center gap-6 text-white">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-secondary-400 animate-pulse" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-secondary-400">Missing something?</p>
+                  </div>
+                  <h3 className="font-heading font-bold text-xl mb-2">Suggest a Resource</h3>
+                  <p className="text-sm text-primary-200 leading-relaxed max-w-md">Know a guide, template, or handbook that would help other clubs? Share it and help your school community grow.</p>
+                </div>
+                <div className="flex flex-col gap-3 shrink-0">
+                  <Link href="/portal?tab=resource"
+                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-secondary-500 hover:bg-secondary-400 text-white font-bold text-sm transition-colors shadow-lg whitespace-nowrap">
+                    <Sparkles size={15} /> Suggest a Resource
+                  </Link>
+                  <Link href="/portal"
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full border border-white/25 text-white/80 font-semibold text-sm hover:bg-white/10 hover:text-white transition-all whitespace-nowrap">
+                    Open Club Portal
+                  </Link>
+                </div>
               </div>
-              <Link href="/portal"
-                className="shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-secondary-500 hover:bg-secondary-400 text-white font-bold text-sm transition-colors shadow-md relative z-10">
-                Go to Portal <ArrowRight size={14} />
-              </Link>
             </div>
 
           </main>
@@ -332,3 +355,4 @@ export default function ResourcesPage() {
     </div>
   );
 }
+

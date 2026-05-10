@@ -238,7 +238,7 @@ function DirectoryPageContent() {
         eyebrow="Discover · Filter · Engage"
         title="Club"
         highlightWord="Directory"
-        description="Explore school clubs, compare meeting details, filter by interest, and find the right community to join."
+        description={<>Browse <strong className="text-secondary-700 font-bold">active clubs</strong> across STEM, arts, service, leadership, cultural, and more. Filter by interest area, meeting schedule, or open enrollment status, then <strong className="text-primary-700 font-semibold">connect directly with club officers</strong> to join your community.</>}
         texture="diagonal"
         images={[
           "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=75",
@@ -306,7 +306,7 @@ function DirectoryPageContent() {
               onClick={() => setSidebarOpen((o) => !o)}
               className={`hidden lg:flex absolute top-5 z-10 items-center justify-center w-7 h-14 text-white shadow-lg transition-all duration-300 group ${
                 sidebarOpen
-                  ? "-left-3.5 bg-primary-600 hover:bg-primary-700"
+                  ? "-left-3.5 bg-primary-900 hover:bg-primary-900"
                   : "left-0 bg-secondary-500 hover:bg-secondary-600"
               }`}
               title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
@@ -340,7 +340,7 @@ function DirectoryPageContent() {
                   className="border border-primary-200 bg-gradient-to-b from-primary-50/60 to-white shadow-sm overflow-hidden"
                 >
                   {/* Sidebar header */}
-                  <div className="bg-primary-700 px-4 py-3 flex items-center gap-2.5">
+                  <div className="bg-primary-900 px-4 py-3 flex items-center gap-2.5">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 text-primary-200"
@@ -373,7 +373,7 @@ function DirectoryPageContent() {
                       ].map((stat) => (
                         <div
                           key={stat.label}
-                          className="bg-white border border-neutral-200 px-2 py-2.5 text-center"
+                          className="bg-white border border-neutral-200 px-2 py-1.5 text-center"
                         >
                           <p className="text-lg font-bold text-primary-900 leading-none">
                             {stat.value}
@@ -389,7 +389,7 @@ function DirectoryPageContent() {
                     <div className="bg-white border border-neutral-200 overflow-hidden">
                       <button
                         onClick={() => setQuizOpen((o) => !o)}
-                        className="w-full bg-primary-600 text-white px-3.5 py-2.5 flex items-center justify-between"
+                        className="w-full bg-primary-900 text-white px-3.5 py-2.5 flex items-center justify-between"
                       >
                         <div className="flex items-center gap-2">
                           <HelpCircle size={14} />
@@ -485,93 +485,18 @@ function DirectoryPageContent() {
                         </div>
                       )}
                     </div>
-
-                    {/* Student Resources Quick Links */}
-                    <div className="bg-white border border-neutral-200 p-3.5 space-y-2.5">
-                      <div className="flex items-center gap-2">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3.5 w-3.5 text-secondary-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                          />
-                        </svg>
-                        <h3 className="text-xs font-heading font-bold text-primary-900 uppercase tracking-wider">
-                          Student Resources
-                        </h3>
-                      </div>
-                      <div className="space-y-1.5">
-                        {[
-                          {
-                            icon: "\uD83D\uDCC5",
-                            label: "Counselor Meetings",
-                            desc: "Schedule advisor time",
-                            href: "/meetings",
-                          },
-                          {
-                            icon: "\uD83D\uDCDA",
-                            label: "Resource Library",
-                            desc: "Templates, guides & forms",
-                            href: "/resources",
-                          },
-                          {
-                            icon: "\uD83D\uDE80",
-                            label: "Start a Club",
-                            desc: "Proposal guide & forms",
-                            href: "/start-a-club",
-                          },
-                        ].map((item) => (
-                          <Link
-                            key={item.label}
-                            href={item.href}
-                            className="group/link flex items-center gap-3 border border-neutral-100 bg-neutral-50/50 p-2.5 hover:border-primary-300 hover:bg-primary-50 transition-all duration-200"
-                          >
-                            <span className="text-lg leading-none group-hover/link:scale-110 transition-transform duration-200">
-                              {item.icon}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="font-semibold text-primary-900 text-sm leading-tight group-hover/link:text-primary-800 transition-colors">
-                                {item.label}
-                              </p>
-                              <p className="text-[11px] text-primary-700 leading-tight mt-0.5">
-                                {item.desc}
-                              </p>
-                            </div>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-3.5 w-3.5 text-neutral-300 group-hover/link:text-primary-400 ml-auto shrink-0 transition-colors"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </aside>
               )}
 
-              <ClubGrid
-                clubs={filtered}
-                highlightId={highlightId}
-                highlightRef={highlightRef}
-                onDeleteClub={handleDeleteClub}
-              />
+              <div className="overflow-y-auto max-h-[820px] pr-1 rounded-xl">
+                <ClubGrid
+                  clubs={filtered}
+                  highlightId={highlightId}
+                  highlightRef={highlightRef}
+                  onDeleteClub={handleDeleteClub}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -588,3 +513,4 @@ export default function DirectoryPage() {
     </Suspense>
   );
 }
+

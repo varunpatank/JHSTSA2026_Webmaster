@@ -44,15 +44,11 @@ export default function FAQPage() {
 
   return (
     <div className="relative">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
-        }} />
       <div className="relative z-0 bg-neutral-100 min-h-screen">
         <HeroSection
           eyebrow="Help Center"
           title="Frequently Asked Questions"
-          description="Find answers to common questions about clubs, membership, events, and more."
+          description={<>Get fast answers to the <strong className="text-secondary-700 font-bold">most common questions</strong> about joining clubs, submitting events, managing your membership, and using platform features. Still stuck? <strong className="text-primary-700 font-semibold">Ask us directly</strong> from the search box below.</>}
           texture="diagonal"
       >
         <div className="mt-6 relative max-w-xl">
@@ -140,3 +136,4 @@ export default function FAQPage() {
     </div>
   );
 }
+

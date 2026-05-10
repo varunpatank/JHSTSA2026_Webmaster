@@ -171,7 +171,7 @@ export default function ResourceDetailPage() {
                   className="flex-1 border border-cream-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-secondary-400/30"
                 />
                 <button type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-800 hover:bg-primary-700 text-white text-xs font-bold transition-colors shrink-0">
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors shrink-0">
                   <Send size={12} /> Send
                 </button>
               </form>

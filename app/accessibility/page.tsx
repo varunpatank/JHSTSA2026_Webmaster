@@ -10,7 +10,7 @@ export default function AccessibilityPage() {
       <div className="relative z-0 min-h-screen bg-neutral-100">
         <HeroSection
         title="Accessibility"
-        description="Accessibility commitments, support details, and inclusive design standards for ClubConnect."
+        description={<>ClubConnect is built for <strong className="text-secondary-700 font-bold">every student</strong> — including those using screen readers, keyboard navigation, or assistive devices. Here’s how we meet <strong className="text-primary-700 font-semibold">WCAG accessibility standards</strong> and where to report issues.</>}
         align="left"
         shellClassName="max-w-4xl"
         images={[
@@ -32,3 +32,4 @@ export default function AccessibilityPage() {
     </div>
   );
 }
+

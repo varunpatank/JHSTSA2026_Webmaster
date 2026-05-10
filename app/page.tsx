@@ -5,11 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  ArrowRight, BookOpen, Calendar, ChevronLeft, ChevronRight, MapPin, Rocket, Trophy, Users, Search, Sparkles, Zap, Lightbulb, Users2, BadgeCheck,
+  ArrowRight, BookOpen, Calendar, ChevronRight, GraduationCap, MapPin, Rocket, Trophy, Users, Search, Sparkles, Zap, Lightbulb, Users2, BadgeCheck,
 } from "lucide-react";
 import { events, stats, chapters } from "@/lib/data";
 
-const WORDS = ["Community.", "Competitions.", "Events.", "Mentors.", "Resources."];
+const WORDS = ["Community.", "Connection.", "Leadership.", "Belonging.", "Friendships."];
 
 function RotatingWord() {
   const [idx, setIdx] = useState(0);
@@ -20,15 +20,25 @@ function RotatingWord() {
   return (
     <span
       className="relative inline-block"
-      style={{ height: "1.16em", minWidth: "7.8em", verticalAlign: "0.02em" }}
+      style={{ height: "1.16em", minWidth: "8.2em", verticalAlign: "0.02em" }}
     >
-      {/* Overflow-hidden wrapper keeps the slide animation clipped */}
       <span className="absolute inset-0 overflow-hidden" aria-live="polite">
         {WORDS.map((word, i) => (
           <span
             key={word}
-            className={`absolute left-0 right-0 text-secondary-500 font-heading transition-all duration-500 leading-[1.12]
-              ${i === idx ? "opacity-100 translate-y-0" : i < idx ? "opacity-0 -translate-y-full" : "opacity-0 translate-y-full"}`}
+            className="absolute left-0 right-0 font-heading leading-[1.12]"
+            style={{
+              color: "#F2C75C",
+              fontStyle: "italic",
+              opacity: i === idx ? 1 : 0,
+              transform: i === idx
+                ? "translateY(0px) scale(1)"
+                : i < idx
+                  ? "translateY(-110%) scale(0.96)"
+                  : "translateY(110%) scale(0.96)",
+              filter: i === idx ? "blur(0px)" : "blur(6px)",
+              transition: "opacity 0.55s cubic-bezier(0.4,0,0.2,1), transform 0.55s cubic-bezier(0.4,0,0.2,1), filter 0.55s ease",
+            }}
           >
             {word}
           </span>
@@ -38,33 +48,8 @@ function RotatingWord() {
   );
 }
 
-function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const started = useRef(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        const dur = 1100, startT = performance.now();
-        const tick = (now: number) => {
-          const p = Math.min((now - startT) / dur, 1);
-          setCount(Math.floor((1 - Math.pow(1 - p, 3)) * target));
-          if (p < 1) requestAnimationFrame(tick); else setCount(target);
-        };
-        requestAnimationFrame(tick);
-        obs.disconnect();
-      }
-    }, { threshold: 0.5 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [target]);
-  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
-}
-
-function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+type RevealVariant = "up" | "left" | "right" | "pop" | "flip" | "expand-float";
+function Reveal({ children, className = "", delay = 0, variant = "up" }: { children: React.ReactNode; className?: string; delay?: number; variant?: RevealVariant }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -74,7 +59,7 @@ function Reveal({ children, className = "", delay = 0 }: { children: React.React
     obs.observe(el);
     return () => obs.disconnect();
   }, [delay]);
-  return <div ref={ref} className={`reveal-on-scroll ${className}`}>{children}</div>;
+  return <div ref={ref} className={`reveal-on-scroll reveal-${variant} ${className}`}>{children}</div>;
 }
 
 const CATEGORY_IMGS: Record<string, string> = {
@@ -101,16 +86,20 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const HERO_IMGS = [
   {
-    src:   "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=80",
-    label: "Students collaborating on a group project",
-  },
-  {
     src:   "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80",
-    label: "Club members brainstorming new ideas together",
+    label: "Students collaborating at a table",
   },
   {
-    src:   "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1600&q=80",
-    label: "School community celebration",
+    src:   "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1600&q=80",
+    label: "High school students in a classroom",
+  },
+  {
+    src:   "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=1600&q=80",
+    label: "Students at school working together",
+  },
+  {
+    src:   "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&w=1600&q=80",
+    label: "Students learning together in class",
   },
 ];
 
@@ -124,7 +113,7 @@ export default function HomePage() {
   const featuredClubs  = chapters.slice(0, 6);
 
   useEffect(() => {
-    const t = setInterval(() => setBannerIdx((i) => (i + 1) % HERO_IMGS.length), 5500);
+    const t = setInterval(() => setBannerIdx((i) => (i + 1) % HERO_IMGS.length), 4500);
     return () => clearInterval(t);
   }, []);
 
@@ -148,310 +137,438 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="bg-cream-200 min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none texture-curvy-lines opacity-[0.24]" />
+    <div className="bg-cream-200 min-h-screen">
       <div className="relative z-0">
 
       {/* HERO */}
       <section className="relative overflow-hidden" style={{ background: "#1c3557" }}>
-        {/* Background image — shifted up, fades into navy at bottom */}
+        {/* Background image — community photo, partially transparent */}
         <div className="absolute inset-0 pointer-events-none">
           <Image
             src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1800&q=80"
             alt=""
             fill
             priority
-            className="object-cover opacity-[0.55]"
-            style={{ objectPosition: "center 75%" }}
+            className="object-cover"
+            style={{ objectPosition: "0% center", opacity: 0.62 }}
             aria-hidden="true"
           />
-          {/* Fade photo into navy — clean bottom transition */}
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 25%, #1c3557 70%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(28,53,87,0.90) 0%, rgba(28,53,87,0.52) 42%, rgba(28,53,87,0.18) 65%, transparent 100%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 45%, rgba(28,53,87,0.75) 72%, #1c3557 100%)" }} />
         </div>
-        {/* Gold glow top-left */}
-        <div className="absolute top-0 left-0 w-80 h-80 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(214,162,30,0.09) 0%, transparent 70%)" }} />
 
-        {/* ── Shared content container ── */}
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-0 md:pt-7">
+        {/* Decorative overlay */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <svg viewBox="0 0 1440 520" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            {/* ── Horizontal flow waves ── */}
+            <path d="M-20,80  C200,58  440,92  680,72  C920,52  1120,86  1340,66  C1400,58  1440,72  1460,66"  stroke="rgba(255,255,255,0.09)" strokeWidth="2.5" fill="none"/>
+            <path d="M-20,160 C240,138 500,170 740,152 C980,132 1180,166 1400,146 C1430,140 1450,152 1460,146" stroke="rgba(255,255,255,0.07)" strokeWidth="2"   fill="none"/>
+            <path d="M-20,240 C280,218 560,250 820,230 C1060,210 1260,244 1460,224"                            stroke="rgba(255,255,255,0.055)" strokeWidth="1.8" fill="none"/>
+            <path d="M-20,320 C200,300 480,332 740,314 C1000,294 1220,326 1460,306"                            stroke="rgba(255,255,255,0.045)" strokeWidth="1.6" fill="none"/>
+            <path d="M-20,400 C260,382 540,408 820,390 C1060,372 1280,400 1460,382"                            stroke="rgba(255,255,255,0.06)" strokeWidth="2"   fill="none"/>
+            <path d="M-20,470 C220,452 480,476 740,460 C1000,444 1220,468 1450,452"                            stroke="rgba(255,255,255,0.10)" strokeWidth="2.2" fill="none"/>
+            <path d="M-20,500 C260,484 540,506 820,490 C1060,474 1280,498 1452,484"                            stroke="rgba(255,255,255,0.07)" strokeWidth="1.8" fill="none"/>
+            {/* ── Large arcing highlight — sweeps across lower-left, feels like stadium light ── */}
+            <path d="M-60,600 Q300,180 720,60" stroke="rgba(255,255,255,0.06)" strokeWidth="80" fill="none" strokeLinecap="round"/>
+            {/* ── Subtle vertical institutional grid ── */}
+            <line x1="400" y1="0" x2="400" y2="520" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+            <line x1="720" y1="0" x2="720" y2="520" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
+            <line x1="1060" y1="0" x2="1060" y2="520" stroke="rgba(255,255,255,0.03)" strokeWidth="1"/>
+            {/* ── Diagonal slash accents ── */}
+            <line x1="60"   y1="30"  x2="110" y2="130" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" strokeLinecap="round"/>
+            <line x1="90"   y1="20"  x2="140" y2="120" stroke="rgba(255,255,255,0.05)" strokeWidth="1"   strokeLinecap="round"/>
+            <line x1="1350" y1="380" x2="1420" y2="480" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5" strokeLinecap="round"/>
+            <line x1="1380" y1="370" x2="1450" y2="470" stroke="rgba(255,255,255,0.05)" strokeWidth="1"   strokeLinecap="round"/>
+            {/* ── Plus / cross markers at grid intersections ── */}
+            <g stroke="rgba(255,255,255,0.13)" strokeWidth="1.2" strokeLinecap="round">
+              <line x1="397" y1="78"  x2="403" y2="82" /><line x1="403" y1="78"  x2="397" y2="82" />
+              <line x1="717" y1="152" x2="723" y2="156"/><line x1="723" y1="152" x2="717" y2="156"/>
+              <line x1="1057" y1="230" x2="1063" y2="234"/><line x1="1063" y1="230" x2="1057" y2="234"/>
+              <line x1="397" y1="314" x2="403" y2="318"/><line x1="403" y1="314" x2="397" y2="318"/>
+              <line x1="717" y1="390" x2="723" y2="394"/><line x1="723" y1="390" x2="717" y2="394"/>
+            </g>
+            {/* ── Corner brackets ── */}
+            <path d="M1400,10 L1435,10 L1435,50" stroke="rgba(255,255,255,0.20)" strokeWidth="2" fill="none" strokeLinecap="square"/>
+            <path d="M10,510 L10,475 L45,475"   stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" strokeLinecap="square"/>
+            <path d="M10,10 L10,45 L45,10"      stroke="rgba(255,255,255,0.10)" strokeWidth="1.5" fill="none" strokeLinecap="square"/>
+            {/* ── Gold glows ── */}
+            <ellipse cx="1420" cy="20"  rx="90" ry="44" fill="rgba(214,162,30,0.09)"/>
+            <ellipse cx="1430" cy="300" rx="60" ry="38" fill="rgba(214,162,30,0.05)"/>
+            <ellipse cx="80"   cy="500" rx="70" ry="32" fill="rgba(214,162,30,0.04)"/>
+            {/* ── Soft white atmosphere blobs ── */}
+            <ellipse cx="120"  cy="100" rx="110" ry="55" fill="rgba(255,255,255,0.025)"/>
+            <ellipse cx="300"  cy="390" rx="100" ry="48" fill="rgba(255,255,255,0.02)"/>
+            <ellipse cx="820"  cy="450" rx="120" ry="52" fill="rgba(255,255,255,0.018)"/>
+            <ellipse cx="1260" cy="430" rx="100" ry="46" fill="rgba(255,255,255,0.022)"/>
+            {/* ── Dot grids ── */}
+            <g opacity="0.26" fill="white">
+              <circle cx="1302" cy="18" r="2.2"/><circle cx="1317" cy="18" r="2.2"/><circle cx="1332" cy="18" r="2.2"/><circle cx="1347" cy="18" r="2.2"/>
+              <circle cx="1302" cy="32" r="2.2"/><circle cx="1317" cy="32" r="2.2"/><circle cx="1332" cy="32" r="2.2"/><circle cx="1347" cy="32" r="2.2"/>
+              <circle cx="1302" cy="46" r="2.2"/><circle cx="1317" cy="46" r="2.2"/><circle cx="1332" cy="46" r="2.2"/><circle cx="1347" cy="46" r="2.2"/>
+            </g>
+            <g opacity="0.20" fill="white">
+              <circle cx="18" cy="462" r="2"/><circle cx="32" cy="462" r="2"/><circle cx="46" cy="462" r="2"/>
+              <circle cx="18" cy="476" r="2"/><circle cx="32" cy="476" r="2"/><circle cx="46" cy="476" r="2"/>
+            </g>
+            <g opacity="0.16" fill="white">
+              <circle cx="620" cy="486" r="2"/><circle cx="634" cy="486" r="2"/><circle cx="648" cy="486" r="2"/>
+            </g>
+          </svg>
+        </div>
 
-          {/* TOP BAR — crosshatch/dashes texture only, no icons */}
-          <div className="hero-anim-bar relative overflow-hidden rounded-xl border border-primary-700/50 bg-primary-900 text-white px-6 py-3 mb-4 shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
-            {/* Crosshatch dashes — the only texture here */}
-            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.07) 12px, rgba(255,255,255,0.07) 13px), repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.07) 12px, rgba(255,255,255,0.07) 13px)" }} />
-            <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.17em] text-sky-200/90">
-                Your Journey Starts Here
-              </p>
-              <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                {[
-                  { icon: Rocket,     label: "Launch Your Club" },
-                  { icon: BookOpen,   label: "Step-by-Step Guides" },
-                  { icon: BadgeCheck, label: "Highlight Success" },
-                  { icon: Sparkles,   label: "Share Your Story" },
-                ].map(({ icon: Icon, label }) => (
-                  <div key={label} className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1.5 rounded-lg hover:bg-white/18 transition-colors">
-                    <Icon size={10} className="text-secondary-300 shrink-0" />
-                    <span className="font-semibold text-white/90">{label}</span>
-                  </div>
-                ))}
+        {/* ── Content container ── */}
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-0 md:pt-6">
+
+          {/* HERO 2-COL GRID */}
+          <div className="grid lg:grid-cols-2 gap-10 items-start">
+
+            {/* LEFT — headline + subtext + search + CTA */}
+            <div className="py-4 hero-anim-left">
+              {/* Eyebrow badge — cream pill */}
+              <div className="mb-5 inline-flex items-center gap-2.5 cream-textured border border-cream-400 rounded-full px-4 py-1.5">
+                <span className="w-2 h-2 rounded-full bg-secondary-500 animate-pulse shrink-0" />
+                <span className="text-[11px] font-bold text-primary-900 uppercase tracking-[0.18em]">For Students, By Students</span>
               </div>
-            </div>
-          </div>
 
-          {/* HERO GRID */}
-          <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-4 items-stretch pb-8 md:pb-10">
-
-            {/* LEFT — solid dark navy, icon pattern only (no crosshatch) */}
-            <div className="hero-anim-left relative overflow-hidden rounded-2xl border border-primary-700/50 bg-primary-900 px-7 py-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              {/* Community icon pattern — only texture in this box */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true" style={{ opacity: 0.09 }}>
-                <svg width="100%" height="100%"><defs>
-                  <pattern id="homeBoxAccent" x="0" y="0" width="280" height="200" patternUnits="userSpaceOnUse">
-                    <circle cx="28" cy="30" r="9" stroke="white" strokeWidth="1.3" fill="none"/>
-                    <path d="M11 54 Q11 43 28 43 Q45 43 45 54" stroke="white" strokeWidth="1.3" fill="none"/>
-                    <rect x="90" y="14" width="54" height="28" rx="7" stroke="white" strokeWidth="1.3" fill="none"/>
-                    <path d="M100 42 L96 54 L110 42" stroke="white" strokeWidth="1.3" fill="none" strokeLinejoin="round"/>
-                    <path d="M238 22 L240 28 L246 28 L241 32 L243 38 L238 34 L233 38 L235 32 L230 28 L236 28Z" stroke="white" strokeWidth="1.3" fill="none"/>
-                    <rect x="18" y="118" width="40" height="46" rx="3" stroke="white" strokeWidth="1.3" fill="none"/>
-                    <line x1="38" y1="118" x2="38" y2="164" stroke="white" strokeWidth="1.2"/>
-                    <line x1="18" y1="132" x2="58" y2="132" stroke="white" strokeWidth="0.7"/>
-                    <line x1="18" y1="144" x2="58" y2="144" stroke="white" strokeWidth="0.7"/>
-                    <circle cx="150" cy="126" r="4" stroke="white" strokeWidth="1.1" fill="none"/>
-                    <circle cx="182" cy="114" r="4" stroke="white" strokeWidth="1.1" fill="none"/>
-                    <circle cx="192" cy="144" r="4" stroke="white" strokeWidth="1.1" fill="none"/>
-                    <line x1="154" y1="126" x2="178" y2="116" stroke="white" strokeWidth="0.8"/>
-                    <line x1="154" y1="128" x2="188" y2="142" stroke="white" strokeWidth="0.8"/>
-                    <line x1="182" y1="118" x2="190" y2="140" stroke="white" strokeWidth="0.8"/>
-                    <path d="M90 100 L91.5 105 L97 105 L92.5 108 L94 113 L90 110 L86 113 L87.5 108 L83 105 L88.5 105Z" stroke="white" strokeWidth="0.9" fill="none"/>
-                    <circle cx="250" cy="80" r="2.5" stroke="white" strokeWidth="0.9" fill="none"/>
-                  </pattern>
-                </defs><rect width="100%" height="100%" fill="url(#homeBoxAccent)"/></svg>
-              </div>
-
-              <div className="relative z-10 flex flex-col items-center text-center pt-4">
-
-                <h1 className="text-3xl md:text-[2.6rem] lg:text-[3rem] font-heading font-bold text-white leading-[1.12] tracking-tight">
-                  Find your place{" "}
-                  <span className="relative inline-block">
-                    for
-                    <span
-                      className="absolute pointer-events-none select-none z-20"
-                      style={{ top: "-0.52em", right: "-0.55em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}
-                      aria-hidden="true"
-                    >
-                      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 md:w-16 md:h-16">
-                        <polygon points="20,7 35,15 20,23 5,15" fill="#0d1b2b" stroke="rgba(255,255,255,0.45)" strokeWidth="1.1" />
-                        <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#0d1b2b" fillOpacity="0.85" stroke="rgba(255,255,255,0.42)" strokeWidth="1.3" strokeLinejoin="round" />
-                        <line x1="35" y1="15" x2="35" y2="27" stroke="#b8860b" strokeWidth="1.9" strokeLinecap="round" />
-                        <circle cx="35" cy="29" r="2.5" fill="#b8860b" />
-                      </svg>
-                    </span>
+              <h1 className="text-[2.6rem] md:text-[3.2rem] font-heading font-bold text-white leading-[1.06] tracking-tight">
+                Find your place{" "}
+                <span className="relative inline-block">
+                  for
+                  <span
+                    className="absolute pointer-events-none select-none z-20"
+                    style={{ top: "calc(0.15em - 32px)", right: "calc(-0.8em + 12px)", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}
+                    aria-hidden="true"
+                  >
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 md:w-16 md:h-16">
+                      <polygon points="20,7 35,15 20,23 5,15" fill="#0d1b2b" stroke="rgba(255,255,255,0.45)" strokeWidth="1.1" />
+                      <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#0d1b2b" fillOpacity="0.85" stroke="rgba(255,255,255,0.42)" strokeWidth="1.3" strokeLinejoin="round" />
+                      <line x1="35" y1="15" x2="35" y2="27" stroke="#b8860b" strokeWidth="1.9" strokeLinecap="round" />
+                      <circle cx="35" cy="29" r="2.5" fill="#b8860b" />
+                    </svg>
                   </span>
-                  <br />
-                  <span className="text-secondary-400 italic"><RotatingWord /></span>
-                </h1>
+                </span>
+                <br />
+                <span className="text-secondary-400 italic"><RotatingWord /></span>
+              </h1>
 
-                <p className="mt-3 text-white/75 text-[13px] leading-[1.65] max-w-[400px] font-light tracking-wide">
-                  Discover clubs, launch your own organization, and stay connected with everything happening at your school.
+              <div className="mt-5 cream-textured border border-cream-400 rounded-xl px-5 py-3.5 max-w-[480px]">
+                <p className="text-sm text-primary-900 font-medium leading-relaxed">
+                  Discover <strong className="text-secondary-700 font-bold">student-run clubs, events, and mentors</strong> at your school and in your local community. Connect with student leaders and build your story — from TSA competitions to neighborhood drives.
                 </p>
-
-                {/* Search bar */}
-                <form onSubmit={handleSearch} className="mt-5 flex gap-2 w-full max-w-sm">
-                  <div className="flex-1 relative">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-400 pointer-events-none" />
-                    <input
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search clubs, events..."
-                      className="w-full pl-9 pr-3 py-2.5 rounded-lg bg-white/95 border border-primary-300/40 text-primary-800 placeholder:text-primary-400 text-sm outline-none focus:border-secondary-400 focus:ring-2 focus:ring-secondary-200/30 transition-all shadow-sm"
-                    />
-                  </div>
-                  <button type="submit" className="px-4 py-2.5 rounded-lg bg-primary-700 hover:bg-primary-600 text-white text-sm font-bold transition-colors shrink-0 shadow-sm border border-primary-600/50">
-                    Search
-                  </button>
-                </form>
-
-                {/* CTA buttons */}
-                <div className="mt-4 flex flex-wrap justify-center gap-2.5">
-                  <Link href="/directory" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary-500 hover:bg-secondary-600 text-white text-sm font-bold transition-colors shadow-sm">
-                    Browse Clubs <ArrowRight size={12} />
-                  </Link>
-                  <Link href="/start-a-club" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/12 border border-white/22 text-white text-sm font-semibold hover:bg-white/20 transition-colors">
-                    <Rocket size={12} /> Start a Club
-                  </Link>
-                  <Link href="/resources" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/12 border border-white/22 text-white text-sm font-semibold hover:bg-white/20 transition-colors">
-                    <BookOpen size={12} /> Resources
-                  </Link>
-                </div>
-
-                {/* Slideshow dots */}
-                <div className="mt-5 flex items-center gap-2">
-                  {HERO_IMGS.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setBannerIdx(i)}
-                      className={`h-1.5 rounded-full transition-all duration-500 ${i === bannerIdx ? "w-8 bg-secondary-400" : "w-2.5 bg-white/25 hover:bg-white/45"}`}
-                    />
-                  ))}
-                </div>
               </div>
+
+              {/* Search bar */}
+              <form onSubmit={handleSearch} className="mt-6 flex gap-2 max-w-[480px]">
+                <div className="flex-1 relative">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search clubs, events..."
+                    className="w-full pl-10 pr-3 py-3 rounded-xl bg-white border border-transparent text-primary-800 placeholder:text-neutral-400 text-sm outline-none focus:border-secondary-400 focus:ring-2 focus:ring-secondary-300/30 transition-all shadow-sm"
+                  />
+                </div>
+                <button type="submit" className="px-5 py-3 rounded-xl bg-primary-900 hover:brightness-110 text-white text-sm font-bold transition-all shadow-sm border border-white/20">
+                  Search
+                </button>
+                <Link href="/resources" className="px-5 py-3 rounded-xl border border-white/30 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-colors whitespace-nowrap">
+                  Resources
+                </Link>
+              </form>
             </div>
 
-            {/* RIGHT — image + diagonal card + TSA info */}
-            <div className="hero-anim-right hidden lg:flex lg:flex-col h-full relative">
+            {/* RIGHT — crossfading photo + stats card covering bottom-right */}
+            <div className="hidden lg:block pt-0 hero-anim-right">
 
-              {/* Diagonal stacked image — overlaps top-right of main image */}
-              <div
-                className="absolute overflow-hidden"
-                style={{
-                  width: "52%",
-                  aspectRatio: "4/3",
-                  top: "-14px",
-                  right: "-10px",
-                  transform: "rotate(6.5deg)",
-                  zIndex: 10,
-                  border: "3px solid white",
-                  borderRadius: "12px",
-                  boxShadow: "0 10px 36px rgba(0,0,0,0.60)",
-                }}
-              >
-                <Image
-                  src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80"
-                  alt="Students at a team workshop"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-              </div>
-
-              {/* Main image — stretches to fill left panel height */}
-              <div className="relative flex-1 min-h-0 rounded-2xl overflow-hidden border border-white/15 shadow-[0_10px_40px_rgba(0,0,0,0.40)]">
+              {/* Photo panel */}
+              <div className="relative h-[360px] rounded-2xl overflow-hidden border border-white/15 shadow-[0_20px_56px_rgba(0,0,0,0.55)]">
                 {HERO_IMGS.map((img, i) => (
                   <div
                     key={img.src}
-                    className={`absolute inset-0 transition-opacity duration-[350ms] ${i === bannerIdx ? "opacity-100" : "opacity-0"}`}
+                    className={`absolute inset-0 transition-opacity duration-1000 ${i === bannerIdx ? "opacity-100" : "opacity-0"}`}
                   >
                     <Image src={img.src} alt={img.label} fill priority={i === 0} className="object-cover" />
                   </div>
                 ))}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                {/* Bottom gradient — darkens overlap zone */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
               </div>
 
-              {/* TSA club card */}
-              <div className="hero-anim-card mt-3 bg-white rounded-xl px-4 py-4 border border-[#D9CDB8] shadow-[0_8px_24px_rgba(0,0,0,0.22)]">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-secondary-600 mb-1">Featured Chapter</p>
-                <p className="text-base font-heading font-bold text-primary-800 leading-tight">Washington D.C. TSA Chapter</p>
-                <p className="text-[11px] text-secondary-600 font-semibold mt-0.5">Capitol Hill Magnet · Founded 2014</p>
-                <p className="mt-2.5 text-[12px] text-primary-600 leading-[1.6] font-normal">
-                  One of the nation’s top-ranked TSA chapters — 10 national podium finishes, 3 consecutive state titles, and a community of 80+ student innovators. Open to all skill levels.
-                </p>
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-secondary-600 bg-secondary-50 border border-secondary-200 rounded-full px-2.5 py-1">#1 in DC</span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary-600 bg-primary-50 border border-primary-200 rounded-full px-2.5 py-1">Now Recruiting</span>
+              {/* STATS CARD — straight, bigger, covers bottom-right of photo */}
+              <div className="-mt-[8rem] ml-[24%] mr-0 relative z-10 cream-textured rounded-2xl overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.44),0_6px_20px_rgba(0,0,0,0.20)]">
+                <div className="h-[4px] bg-gradient-to-r from-secondary-500 via-secondary-300 to-secondary-500" />
+                <div className="px-8 py-7">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-primary-400 mb-5">Our Community</p>
+                  <div className="grid grid-cols-3 divide-x divide-cream-100">
+                    {[
+                      { value: stats.activeChapters,               label: "Active Clubs",  icon: Trophy   },
+                      { value: stats.totalMembers.toLocaleString(), label: "Total Members", icon: Users    },
+                      { value: stats.upcomingEvents,                label: "Events Soon",   icon: Calendar },
+                    ].map(({ value, label, icon: Icon }, idx) => (
+                      <div key={label} className={`flex flex-col items-center ${idx === 0 ? "pr-7" : idx === 2 ? "pl-7" : "px-7"}`}>
+                        <Icon size={22} className="text-secondary-500 mb-2.5" />
+                        <p className="text-[42px] font-bold text-primary-900 leading-none font-heading">{String(value)}</p>
+                        <p className="text-[12px] text-primary-400 font-medium mt-2">{label}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-
           </div>
-        </div>
 
-        {/* Wave bottom */}
-        <div aria-hidden className="absolute bottom-0 left-0 right-0 leading-[0]">
-          <svg viewBox="0 0 1440 48" preserveAspectRatio="none" className="block w-full h-10 md:h-12">
-            <path d="M0,48 L0,24 C360,48 720,4 1080,24 C1260,34 1380,18 1440,22 L1440,48 Z" fill="#F7F1E8" />
+        </div>
+      </section>
+
+      {/* UPCOMING EVENTS — clean split: navy above, cream below, card centered */}
+      <div className="relative">
+        <div className="absolute inset-x-0 top-0 bottom-1/2 bg-[#1c3557]" />
+
+        {/* Pattern on navy band */}
+        <div className="absolute inset-x-0 top-0 bottom-1/2 overflow-hidden pointer-events-none" aria-hidden="true">
+          <svg viewBox="0 0 1440 200" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            {/* Waves */}
+            <path d="M-20,50  C200,28  440,62  680,42  C920,22  1120,56  1340,36  C1400,28  1440,42  1460,36"  stroke="rgba(255,255,255,0.10)" strokeWidth="2.5" fill="none"/>
+            <path d="M-20,95  C240,74  500,106 740,88  C980,68  1180,102 1400,82  C1430,76  1450,88  1460,82"  stroke="rgba(255,255,255,0.07)" strokeWidth="2"   fill="none"/>
+            <path d="M-20,140 C280,122 560,150 820,132 C1060,114 1260,146 1460,128"                            stroke="rgba(255,255,255,0.05)" strokeWidth="1.6" fill="none"/>
+            {/* Ellipse blobs */}
+            <ellipse cx="120"  cy="60"  rx="90"  ry="44" fill="rgba(255,255,255,0.03)"/>
+            <ellipse cx="500"  cy="100" rx="110" ry="50" fill="rgba(255,255,255,0.025)"/>
+            <ellipse cx="920"  cy="55"  rx="95"  ry="42" fill="rgba(255,255,255,0.03)"/>
+            <ellipse cx="1300" cy="110" rx="100" ry="48" fill="rgba(255,255,255,0.035)"/>
+            {/* Gold accent */}
+            <ellipse cx="1400" cy="20" rx="80" ry="36" fill="rgba(214,162,30,0.07)"/>
+            {/* Dot grid — top-right */}
+            <g opacity="0.26" fill="white">
+              <circle cx="1310" cy="16" r="2"/><circle cx="1324" cy="16" r="2"/><circle cx="1338" cy="16" r="2"/>
+              <circle cx="1310" cy="28" r="2"/><circle cx="1324" cy="28" r="2"/><circle cx="1338" cy="28" r="2"/>
+              <circle cx="1310" cy="40" r="2"/><circle cx="1324" cy="40" r="2"/><circle cx="1338" cy="40" r="2"/>
+            </g>
+            {/* Dot grid — bottom-left */}
+            <g opacity="0.20" fill="white">
+              <circle cx="22"  cy="148" r="2"/><circle cx="36"  cy="148" r="2"/><circle cx="50"  cy="148" r="2"/>
+              <circle cx="22"  cy="162" r="2"/><circle cx="36"  cy="162" r="2"/><circle cx="50"  cy="162" r="2"/>
+            </g>
+            {/* Scatter hollow circles */}
+            <circle cx="340"  cy="72"  r="8" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5" fill="none"/>
+            <circle cx="700"  cy="118" r="7" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" fill="none"/>
+            <circle cx="1060" cy="80"  r="9" stroke="rgba(255,255,255,0.13)" strokeWidth="1.5" fill="none"/>
+            <circle cx="1420" cy="155" r="6" stroke="rgba(255,255,255,0.11)" strokeWidth="1.5" fill="none"/>
           </svg>
         </div>
-      </section>
 
+        <div className="absolute inset-x-0 top-1/2 bottom-0 bg-cream-200" />
 
-      {/* STATS STRIP */}
-      <section className="relative bg-cream-200 pt-24 pb-10 texture-stats-lines -mt-24 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {[
-              { target: stats.activeChapters, label: "Active Clubs",    icon: Trophy,   iconColor: "text-secondary-500", bgColor: "bg-secondary-50 border-secondary-200" },
-              { target: stats.totalMembers,   label: "Student Members", icon: Users,    iconColor: "text-primary-600",   bgColor: "bg-primary-50  border-primary-100"  },
-              { target: stats.upcomingEvents, label: "Upcoming Events", icon: Calendar, iconColor: "text-primary-600",   bgColor: "bg-primary-50  border-primary-100"  },
-            ].map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <Reveal key={s.label} delay={i * 200} className="reveal-stat">
-                  <div className="bg-white rounded-2xl p-5 text-center shadow-[0_2px_12px_rgba(23,64,112,0.08)] border border-[#D9CDB8] h-full hover:shadow-[0_4px_18px_rgba(23,64,112,0.13)] hover:border-primary-200 transition-all">
-                    <div className={`w-11 h-11 rounded-xl ${s.bgColor} border flex items-center justify-center mx-auto mb-3`}>
-                      <Icon size={20} className={s.iconColor} />
-                    </div>
-                    <p className="text-[2.1rem] font-heading font-bold text-primary-800 leading-none">
-                      <Counter target={s.target} suffix={"suffix" in s ? (s as { suffix?: string }).suffix ?? "" : ""} />
-                    </p>
-                    <p className="text-[11px] text-primary-400 mt-2 font-semibold uppercase tracking-widest">{s.label}</p>
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-8">
+          {/* Eyebrow */}
+          <div className="flex items-center mb-5">
+            <div className="flex items-center gap-2">
+              <div className="w-0.5 h-4 rounded-full bg-secondary-400" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">Upcoming Events</p>
+            </div>
+          </div>
+
+          {/* Card */}
+          <div className="bg-white rounded-2xl overflow-hidden border border-cream-200">
+            <div className="h-[3px] bg-gradient-to-r from-secondary-500 via-secondary-300 to-secondary-500" />
+            <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-cream-100">
+              {[
+                { month: "May", day: "16", emoji: "🌸", title: "Spring Fest 2026",           club: "Student Council",  where: "Courtyard",  tag: "All clubs welcome · Free",  color: "bg-secondary-50 border-secondary-200 text-secondary-700" },
+                { month: "Jun", day: "7",  emoji: "🚀", title: "Hack Club × NASA Challenge", club: "Hack Club",         where: "STEM Lab",   tag: "Open to all students",       color: "bg-primary-50 border-primary-200 text-primary-700"    },
+                { month: "Jun", day: "21", emoji: "🎨", title: "Arts Fest End-of-Year Show", club: "Arts & Drama Club", where: "Auditorium", tag: "Drama, Music & Visual Arts",  color: "bg-amber-50 border-amber-200 text-amber-700"          },
+              ].map(({ month, day, emoji, title, club, where, tag, color }) => (
+                <div key={title} className="flex items-start gap-4 px-7 py-6 hover:bg-cream-50/80 transition-colors group cursor-pointer">
+                  <div className={`w-12 h-12 rounded-xl border-2 flex flex-col items-center justify-center shrink-0 ${color}`}>
+                    <span className="text-[8px] font-bold uppercase leading-none">{month}</span>
+                    <span className="text-[20px] font-bold leading-none mt-0.5">{day}</span>
                   </div>
+                  <div>
+                    <p className="font-bold text-[14px] text-primary-800 leading-tight group-hover:text-primary-600 transition-colors">{emoji} {title}</p>
+                    <p className="text-[11px] font-semibold text-primary-600 mt-1">By {club}</p>
+                    <p className="text-[12px] text-primary-400 mt-1 flex items-center gap-1.5">
+                      <MapPin size={10} className="shrink-0 text-secondary-400" /> {where}
+                    </p>
+                    <p className="text-[11px] text-neutral-400 mt-0.5">{tag}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* WHAT ARE YOU LOOKING FOR? */}
+      <section className="bg-cream-200 pt-4 pb-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          {/* Section header - centered */}
+          <Reveal variant="pop">
+          <div className="text-center mb-10">
+            <span className="inline-flex items-center gap-2 bg-secondary-100 border border-secondary-200 text-secondary-700 text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full mb-5">
+              <Sparkles size={11} /> Start Here
+            </span>
+            <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-primary-900">
+              What are you <span className="text-secondary-500">looking for?</span>
+            </h2>
+            <div className="mt-5 bg-white border border-cream-400 rounded-xl px-5 py-3 shadow-sm max-w-xl mx-auto">
+              <p className="text-sm text-primary-700">
+                Student clubs connect you with peers, competitions, and causes — find yours, or start your own.
+              </p>
+            </div>
+            <Link href="/directory" className="inline-flex items-center gap-1.5 mt-4 text-[12px] font-semibold text-primary-600 hover:text-primary-800 transition-colors">
+              Browse all clubs <ArrowRight size={12} />
+            </Link>
+          </div>
+          </Reveal>
+          {/* Cards */}
+          <div className="grid md:grid-cols-3 gap-5">
+              {[
+                {
+                  icon: Trophy,
+                  title: "Compete & Excel",
+                  desc: "TSA, DECA, FBLA, Science Olympiad — compete at district, state, and national levels. Real achievements for your college applications and résumé.",
+                  iconBg: "bg-amber-100",
+                  iconColor: "text-amber-600",
+                  topBorder: "border-t-4 border-t-amber-400",
+                  tag: "Competitions",
+                },
+                {
+                  icon: Users,
+                  title: "Connect & Lead",
+                  desc: "Robotics, Model UN, Photography — meet like-minded peers, grow leadership skills, and build relationships that last well beyond graduation.",
+                  iconBg: "bg-blue-100",
+                  iconColor: "text-blue-600",
+                  topBorder: "border-t-4 border-t-blue-400",
+                  tag: "Community",
+                },
+                {
+                  icon: Lightbulb,
+                  title: "Explore & Create",
+                  desc: "Have a passion without a club? Any student can propose and launch a new organization. Build leadership and shape your school's culture.",
+                  iconBg: "bg-violet-100",
+                  iconColor: "text-violet-600",
+                  topBorder: "border-t-4 border-t-violet-400",
+                  tag: "Leadership",
+                },
+              ].map(({ icon: Icon, title, desc, iconBg, iconColor, topBorder, tag }, i) => (
+                <Reveal key={title} delay={i * 110} className="h-full" variant={i === 0 ? "left" : i === 2 ? "right" : "up"}>
+                <div className={`bg-white rounded-2xl border border-cream-300 ${topBorder} p-7 flex flex-col shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 h-full`}>
+                  <div className="flex items-start justify-between mb-5">
+                    <div className={`w-[52px] h-[52px] rounded-2xl ${iconBg} flex items-center justify-center`}>
+                      <Icon size={24} className={iconColor} />
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 border border-neutral-200 rounded-full px-2.5 py-1">{tag}</span>
+                  </div>
+                  <h3 className="font-bold text-[17px] text-primary-900 mb-2.5 font-heading">{title}</h3>
+                  <p className="text-[13px] text-neutral-500 leading-relaxed flex-grow">{desc}</p>
+                </div>
                 </Reveal>
-              );
-            })}
+              ))}
           </div>
         </div>
       </section>
 
-      {/* PATHWAY - What are you looking for? */}
-      <section className="relative bg-[#EAF2F8] border-y border-sky-200 py-14 overflow-hidden">
-        {/* Subtle crosshatch texture */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(23,64,112,0.04) 18px, rgba(23,64,112,0.04) 19px), repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(23,64,112,0.04) 18px, rgba(23,64,112,0.04) 19px)"
-        }} />
-        {/* Soft radial accents */}
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(214,162,30,0.07) 0%, transparent 70%)" }} />
-        <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(23,64,112,0.07) 0%, transparent 70%)" }} />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
-          <Reveal>
-            <div className="text-center mb-10">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-secondary-600 mb-2">Start Here</p>
-              <h2 className="text-2xl md:text-3xl font-heading font-bold text-primary-800">What are you looking for?</h2>
-              <p className="mt-2 text-sm text-primary-500 max-w-xl mx-auto">Choose your next step: launch a club, build your plan, connect with other clubs, and share your chapter stories.</p>
+      {/* START YOUR JOURNEY */}
+      <section className="relative bg-primary-900 py-14 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <svg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="sjBannerPat" x="0" y="0" width="520" height="300" patternUnits="userSpaceOnUse">
+                <path d="M-20,80 C60,40 120,120 200,90 C280,60 320,130 400,100 C460,78 500,110 540,95" stroke="rgba(255,255,255,0.10)" strokeWidth="2.5" fill="none"/>
+                <path d="M-20,160 C50,130 100,180 180,155 C260,130 310,175 390,150 C450,132 490,165 540,148" stroke="rgba(255,255,255,0.07)" strokeWidth="2" fill="none"/>
+                <path d="M-20,240 C70,210 140,255 220,230 C300,205 360,248 440,222 C490,207 520,232 540,220" stroke="rgba(255,255,255,0.06)" strokeWidth="1.8" fill="none"/>
+                <ellipse cx="80" cy="60" rx="48" ry="32" fill="rgba(255,255,255,0.045)"/>
+                <ellipse cx="300" cy="200" rx="60" ry="38" fill="rgba(255,255,255,0.035)"/>
+                <ellipse cx="450" cy="80" rx="42" ry="28" fill="rgba(255,255,255,0.04)"/>
+                <g opacity="0.30" fill="white"><circle cx="460" cy="30" r="2.2"/><circle cx="470" cy="30" r="2.2"/><circle cx="480" cy="30" r="2.2"/><circle cx="460" cy="40" r="2.2"/><circle cx="470" cy="40" r="2.2"/><circle cx="480" cy="40" r="2.2"/><circle cx="460" cy="50" r="2.2"/><circle cx="470" cy="50" r="2.2"/><circle cx="480" cy="50" r="2.2"/></g>
+                <g opacity="0.25" fill="white"><circle cx="20" cy="230" r="2"/><circle cx="30" cy="230" r="2"/><circle cx="40" cy="230" r="2"/><circle cx="20" cy="240" r="2"/><circle cx="30" cy="240" r="2"/><circle cx="40" cy="240" r="2"/><circle cx="20" cy="250" r="2"/><circle cx="30" cy="250" r="2"/><circle cx="40" cy="250" r="2"/></g>
+                <circle cx="100" cy="185" r="8" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+                <circle cx="310" cy="55" r="10" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" fill="none"/>
+                <circle cx="415" cy="245" r="6" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#sjBannerPat)"/>
+          </svg>
+        </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
+          {/* Header */}
+          <Reveal variant="flip">
+          <div className="text-center mb-10">
+            <span className="inline-flex items-center gap-2 cream-textured border border-cream-400 text-primary-900 text-[10px] font-bold uppercase tracking-[0.2em] px-4 py-1.5 rounded-full mb-3">
+              Your Pathways
+            </span>
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-white leading-tight">
+              Start your <span className="text-secondary-400">journey</span>
+            </h2>
+            <Reveal variant="expand-float" delay={220}>
+            <div className="mt-3 cream-textured border border-cream-400 rounded-xl px-5 py-3.5 max-w-lg mx-auto">
+              <p className="text-[14px] text-primary-900 font-medium leading-relaxed">Everything you need to find your place, launch your idea, or lead your school.</p>
             </div>
+            </Reveal>
+            <div className="mt-3">
+              <Link href="/directory" className="inline-flex items-center gap-2 text-sm font-semibold text-secondary-400 hover:text-secondary-300 transition-colors">
+                Browse all clubs <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
           </Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+
+          {/* Pathway cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               {
                 href: "/start-a-club",
                 icon: Rocket,
-                label: "Start Your Own Club",
-                desc: "Launch a chapter with step-by-step guidance.",
-                color: "text-secondary-600",
-                bg: "bg-white border-sky-200 hover:border-secondary-300 hover:bg-secondary-50",
+                label: "Start a Club",
+                desc: "Step-by-step guidance, templates, and everything you need to launch a new organization.",
+                iconColor: "text-amber-300",
+                pill: "Most Popular",
+                pillCn: "bg-amber-500/20 text-amber-300 border border-amber-400/30",
               },
               {
                 href: "/resources",
                 icon: BookOpen,
-                label: "Club Creation Resources",
-                desc: "Free templates, guides, and step-by-step help to start your own club.",
-                color: "text-primary-700",
-                bg: "bg-white border-sky-200 hover:border-primary-400 hover:bg-sky-50",
+                label: "Club Resources",
+                desc: "Free constitutions, budget trackers, meeting agendas, and recruitment playbooks.",
+                iconColor: "text-sky-300",
+                pill: null,
+                pillCn: "",
               },
               {
-                href: "/community",
+                href: "/directory",
                 icon: Users,
-                label: "Discover Clubs & Network",
-                desc: "Browse advertised clubs, see discussions, and connect with other student leaders.",
-                color: "text-primary-700",
-                bg: "bg-white border-sky-200 hover:border-primary-400 hover:bg-sky-50",
+                label: "Discover Clubs",
+                desc: "Browse the full directory and connect with student leaders across every category.",
+                iconColor: "text-blue-300",
+                pill: null,
+                pillCn: "",
               },
               {
                 href: "/hub/stories",
                 icon: Sparkles,
-                label: "Post Stories",
-                desc: "Share wins, updates, and club moments.",
-                color: "text-secondary-600",
-                bg: "bg-white border-sky-200 hover:border-secondary-300 hover:bg-secondary-50",
+                label: "Share Stories",
+                desc: "Post your club's wins, event recaps, and milestones to build your community profile.",
+                iconColor: "text-violet-300",
+                pill: null,
+                pillCn: "",
               },
-            ].map(({ href, icon: Icon, label, desc, color, bg }, i) => (
-              <Reveal key={href} delay={i * 50} className="h-full">
-                <Link href={href} className={`group flex flex-col items-start gap-2.5 p-5 rounded-2xl border transition-all shadow-sm hover:shadow-md h-full ${bg}`}>
-                  <div className="w-12 h-12 rounded-2xl bg-cream-200 border border-[#D9CDB8] flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Icon size={22} className={color} />
-                  </div>
-                  <span className={`text-[13px] font-bold leading-snug ${color}`}>{label}</span>
-                  <p className="text-[12px] text-primary-500 leading-relaxed flex-1">{desc}</p>
-                </Link>
+            ].map(({ href, icon: Icon, label, desc, iconColor, pill, pillCn }, i) => (
+              <Reveal key={href} delay={i * 100}>
+              <Link
+                href={href}
+                className="group flex flex-col bg-[#162d4a] border border-white/10 rounded-2xl p-6 hover:bg-[#1c3a5c] hover:border-secondary-400/40 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-200 h-full"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <Icon size={28} className={`${iconColor} group-hover:scale-110 transition-transform duration-200`} />
+                  {pill && (
+                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${pillCn}`}>{pill}</span>
+                  )}
+                </div>
+                <p className="text-[14px] font-bold text-white leading-snug mb-2">{label}</p>
+                <p className="text-[12px] text-primary-300 leading-relaxed flex-grow">{desc}</p>
+                <div className="flex items-center gap-1 mt-5 text-[11px] font-semibold text-white/40 group-hover:text-secondary-400 transition-colors duration-200">
+                  Explore <ArrowRight size={11} />
+                </div>
+              </Link>
               </Reveal>
             ))}
           </div>
@@ -459,58 +576,98 @@ export default function HomePage() {
       </section>
 
       {/* ACTIVE CLUBS - warm cream background */}
-      <section className="bg-cream-200 py-20 texture-canvas-cream">
+      <section className="bg-cream-200 py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex items-end justify-between mb-5">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Users2 size={14} className="text-secondary-600" />
-                <p className="eyebrow">Growing Together</p>
-              </div>
-              <h2 className="text-xl md:text-2xl font-heading font-bold text-primary-800">Active Clubs Across Our Schools</h2>
-              <p className="mt-1 text-sm text-neutral-500 max-w-lg">
-                Spanning STEM, arts, service, debate, and more &mdash; find a chapter that fits you.
+          <Reveal variant="left"><div className="text-center mb-6">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Users2 size={14} className="text-secondary-500" />
+              <p className="eyebrow">Growing Together</p>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-primary-900">
+              Active Clubs{" "}
+              <span className="text-secondary-500">Across Our Schools</span>
+            </h2>
+            <div className="mt-3 bg-white border border-cream-400 rounded-xl px-5 py-3 shadow-sm max-w-xl mx-auto">
+              <p className="text-sm text-primary-700">
+                Spanning <strong className="text-primary-900">STEM, arts, service, debate,</strong> and more &mdash; find a chapter that fits you.
               </p>
             </div>
-            <Link href="/directory" className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-800 hover:underline">
-              View all {chapters.length} clubs <ArrowRight size={12} />
-            </Link>
-          </div>
+            <div className="mt-3">
+              <Link href="/directory" className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-800 hover:underline">
+                View all {chapters.length} clubs <ArrowRight size={12} />
+              </Link>
+            </div>
+          </div></Reveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {featuredClubs.slice(0, 4).map((club, i) => (
-              <Reveal key={club.id} delay={i * 55}>
+              <Reveal key={club.id} delay={i * 55} variant="pop">
                 <Link
                   href={`/directory/${club.id}`}
                   className="group flex flex-col bg-white border border-[#e8dfc8] hover:border-primary-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all h-full"
                 >
-                  {/* Club image */}
-                  <div className="relative h-40 bg-primary-900 shrink-0 overflow-hidden">
-                    <Image
-                      src={CATEGORY_IMGS[club.category] ?? CATEGORY_IMGS.General}
-                      alt={club.name}
-                      fill
-                      className="object-cover opacity-80 group-hover:opacity-95 group-hover:scale-110 transition-all duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-primary-900/80 via-primary-900/40 to-transparent" />
-                    <span className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${CATEGORY_COLORS[club.category] ?? CATEGORY_COLORS.General}`}>
-                      {club.category}
-                    </span>
-                    <span className={`absolute top-4 right-4 text-[9px] px-3 py-1 font-semibold rounded-full ${club.membershipStatus === "Open Enrollment" ? "bg-green-500/90 text-white" : "bg-secondary-500/90 text-white"}`}>
-                      {club.membershipStatus === "Open Enrollment" ? "Open" : "Apply"}
-                    </span>
-                  </div>
+                  {/* Club image / featured logo */}
+                  {i === 0 ? (
+                    <div className="relative h-40 bg-primary-900 shrink-0 overflow-hidden flex items-center justify-center">
+                      <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.11 }}>
+                        <svg width="100%" height="100%"><defs>
+                          <pattern id="featuredCardPat" x="0" y="0" width="120" height="100" patternUnits="userSpaceOnUse">
+                            <circle cx="20" cy="20" r="8" stroke="white" strokeWidth="1.2" fill="none"/>
+                            <path d="M8 36 Q8 28 20 28 Q32 28 32 36" stroke="white" strokeWidth="1.2" fill="none"/>
+                            <polygon points="80,12 100,20 80,28 60,20" stroke="white" strokeWidth="1" fill="none"/>
+                            <path d="M64 21 L64 32 Q80 40 96 32 L96 21" stroke="white" strokeWidth="1" fill="none"/>
+                            <line x1="100" y1="20" x2="100" y2="32" stroke="#F5C842" strokeWidth="1.5" strokeLinecap="round"/>
+                            <circle cx="100" cy="35" r="2" fill="#F5C842"/>
+                          </pattern>
+                        </defs><rect width="100%" height="100%" fill="url(#featuredCardPat)"/></svg>
+                      </div>
+                      <div className="relative z-10 flex flex-col items-center text-center px-4">
+                        <div className="w-14 h-14 bg-white/10 border border-white/25 rounded-xl flex items-center justify-center mb-2.5">
+                          <svg viewBox="0 0 44 40" fill="none" className="w-8 h-8">
+                            <polygon points="22,5 40,13 22,21 4,13" fill="#7B8FD4"/>
+                            <path d="M10 14.5 L10 26 Q22 35 34 26 L34 14.5" fill="#4B5FA6"/>
+                            <line x1="40" y1="13" x2="40" y2="23" stroke="#F5C842" strokeWidth="2" strokeLinecap="round"/>
+                            <circle cx="40" cy="26" r="3" fill="#F5C842"/>
+                          </svg>
+                        </div>
+                        <p className="text-white font-bold text-[13px] font-heading leading-tight">{club.name}</p>
+                        <p className="text-primary-300 text-[10px] mt-0.5 uppercase tracking-wider">{club.category}</p>
+                      </div>
+                      <span className="absolute top-3 left-3 px-2.5 py-1 bg-secondary-500/90 text-white text-[9px] font-bold uppercase tracking-wider rounded-full">
+                        ★ Featured
+                      </span>
+                      <span className={`absolute top-3 right-3 text-[9px] px-2.5 py-1 font-semibold rounded-full ${club.membershipStatus === "Open Enrollment" ? "bg-green-500/90 text-white" : "bg-white/20 text-white"}`}>
+                        {club.membershipStatus === "Open Enrollment" ? "Open" : "Apply"}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="relative h-40 bg-primary-900 shrink-0 overflow-hidden">
+                      <Image
+                        src={CATEGORY_IMGS[club.category] ?? CATEGORY_IMGS.General}
+                        alt={club.name}
+                        fill
+                        className="object-cover opacity-80 group-hover:opacity-95 group-hover:scale-110 transition-all duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary-900/80 via-primary-900/40 to-transparent" />
+                      <span className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${CATEGORY_COLORS[club.category] ?? CATEGORY_COLORS.General}`}>
+                        {club.category}
+                      </span>
+                      <span className={`absolute top-4 right-4 text-[9px] px-3 py-1 font-semibold rounded-full ${club.membershipStatus === "Open Enrollment" ? "bg-green-500/90 text-white" : "bg-secondary-500/90 text-white"}`}>
+                        {club.membershipStatus === "Open Enrollment" ? "Open" : "Apply"}
+                      </span>
+                    </div>
+                  )}
                   {/* Content */}
                   <div className="flex flex-col flex-1 p-6">
                     <h3 className="font-bold text-[1rem] text-primary-800 group-hover:text-primary-600 transition-colors leading-snug mb-3">{club.name}</h3>
                     <p className="text-[0.82rem] text-neutral-600 line-clamp-3 leading-relaxed flex-1 mb-4">{club.description}</p>
                     
                     {/* Statistics row */}
-                    <div className="grid grid-cols-3 gap-3 py-4 border-t border-b border-cream-200">
+                    <div className="grid grid-cols-3 gap-3 py-4 border-t border-b border-cream-400">
                       <div className="text-center">
                         <p className="text-lg font-bold font-heading text-primary-700">{club.memberCount}</p>
                         <p className="text-[9px] text-neutral-400 uppercase tracking-wider">Members</p>
                       </div>
-                      <div className="text-center border-l border-r border-cream-300">
+                      <div className="text-center border-l border-r border-cream-400">
                         <p className="text-lg font-bold font-heading text-primary-700">{club.foundedYear ? new Date().getFullYear() - club.foundedYear : 5}</p>
                         <p className="text-[9px] text-neutral-400 uppercase tracking-wider">Years</p>
                       </div>
@@ -534,120 +691,66 @@ export default function HomePage() {
 
 
 
-      {/* ACHIEVEMENT SPOTLIGHT */}
-      <section className="relative bg-primary-800 overflow-hidden py-12 lg:py-16">
-        {/* Faded background image */}
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=80"
-            alt="Students at conference"
-            fill
-            className="object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-800/95 via-primary-800/85 to-primary-800/70" />
-        </div>
-        {/* Diagonal lines on dark */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.055) 12px, rgba(255,255,255,0.055) 13px), repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.055) 12px, rgba(255,255,255,0.055) 13px)"
-        }} />
-        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true" style={{ opacity: 0.09 }}>
-          <svg width="100%" height="100%">
+      {/* COMMUNITY VOICES + CTA COMBINED */}
+      <section className="relative bg-primary-900 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <svg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="commAchieve" x="0" y="0" width="240" height="180" patternUnits="userSpaceOnUse">
-                <circle cx="28" cy="28" r="9" stroke="rgba(255,255,255,0.98)" strokeWidth="1.4" fill="none"/>
-                <path d="M12 52 Q12 41 28 41 Q44 41 44 52" stroke="rgba(255,255,255,0.98)" strokeWidth="1.4" fill="none"/>
-                <rect x="92" y="12" width="52" height="28" rx="7" stroke="rgba(255,255,255,0.98)" strokeWidth="1.4" fill="none"/>
-                <path d="M102 40 L98 52 L112 40" stroke="rgba(255,255,255,0.98)" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
-                <path d="M200 20 L202 26 L208 26 L203 30 L205 36 L200 32 L195 36 L197 30 L192 26 L198 26Z" stroke="rgba(255,255,255,0.98)" strokeWidth="1.2" fill="none"/>
-                <rect x="18" y="108" width="40" height="44" rx="3" stroke="rgba(255,255,255,0.98)" strokeWidth="1.4" fill="none"/>
-                <line x1="38" y1="108" x2="38" y2="152" stroke="rgba(255,255,255,0.98)" strokeWidth="1.4"/>
-                <circle cx="130" cy="116" r="4" stroke="rgba(255,255,255,0.98)" strokeWidth="1.2" fill="none"/>
-                <circle cx="162" cy="106" r="4" stroke="rgba(255,255,255,0.98)" strokeWidth="1.2" fill="none"/>
-                <circle cx="170" cy="134" r="4" stroke="rgba(255,255,255,0.98)" strokeWidth="1.2" fill="none"/>
-                <line x1="134" y1="116" x2="158" y2="108" stroke="rgba(255,255,255,0.98)" strokeWidth="0.9"/>
-                <line x1="134" y1="118" x2="166" y2="132" stroke="rgba(255,255,255,0.98)" strokeWidth="0.9"/>
-                <circle cx="76" cy="80" r="2" stroke="rgba(255,255,255,0.98)" strokeWidth="1" fill="none"/>
+              <pattern id="cvBannerPat" x="0" y="0" width="520" height="300" patternUnits="userSpaceOnUse">
+                <path d="M-20,80 C60,40 120,120 200,90 C280,60 320,130 400,100 C460,78 500,110 540,95" stroke="rgba(255,255,255,0.10)" strokeWidth="2.5" fill="none"/>
+                <path d="M-20,160 C50,130 100,180 180,155 C260,130 310,175 390,150 C450,132 490,165 540,148" stroke="rgba(255,255,255,0.07)" strokeWidth="2" fill="none"/>
+                <path d="M-20,240 C70,210 140,255 220,230 C300,205 360,248 440,222 C490,207 520,232 540,220" stroke="rgba(255,255,255,0.06)" strokeWidth="1.8" fill="none"/>
+                <ellipse cx="80" cy="60" rx="48" ry="32" fill="rgba(255,255,255,0.045)"/>
+                <ellipse cx="300" cy="200" rx="60" ry="38" fill="rgba(255,255,255,0.035)"/>
+                <ellipse cx="450" cy="80" rx="42" ry="28" fill="rgba(255,255,255,0.04)"/>
+                <g opacity="0.30" fill="white"><circle cx="460" cy="30" r="2.2"/><circle cx="470" cy="30" r="2.2"/><circle cx="480" cy="30" r="2.2"/><circle cx="460" cy="40" r="2.2"/><circle cx="470" cy="40" r="2.2"/><circle cx="480" cy="40" r="2.2"/><circle cx="460" cy="50" r="2.2"/><circle cx="470" cy="50" r="2.2"/><circle cx="480" cy="50" r="2.2"/></g>
+                <g opacity="0.25" fill="white"><circle cx="20" cy="230" r="2"/><circle cx="30" cy="230" r="2"/><circle cx="40" cy="230" r="2"/><circle cx="20" cy="240" r="2"/><circle cx="30" cy="240" r="2"/><circle cx="40" cy="240" r="2"/><circle cx="20" cy="250" r="2"/><circle cx="30" cy="250" r="2"/><circle cx="40" cy="250" r="2"/></g>
+                <circle cx="100" cy="185" r="8" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+                <circle cx="310" cy="55" r="10" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" fill="none"/>
+                <circle cx="415" cy="245" r="6" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#commAchieve)"/>
+            <rect width="100%" height="100%" fill="url(#cvBannerPat)"/>
           </svg>
         </div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
-          <div className="grid lg:grid-cols-[3fr_2fr] gap-10 items-center">
-            <div className="py-4">
-              <div className="flex items-center gap-2 mb-5">
-                <BadgeCheck size={16} className="text-secondary-400" />
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-secondary-400">School Achievement</p>
-              </div>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white leading-tight">
-                Our clubs competed at <em className="text-secondary-400 not-italic">nationals</em> this year.
-              </h2>
-              <p className="mt-5 text-primary-200 text-base leading-relaxed max-w-lg">
-                From TSA to DECA, Model UN to Robotics &mdash; ClubConnect students represented their school on the national stage.
-              </p>
-              <div className="mt-10 grid grid-cols-3 gap-5">
-                {[{ n: "14", l: "Awards Won" }, { n: "6", l: "National Events" }, { n: "300+", l: "Participants" }].map(({ n, l }) => (
-                  <div key={l} className="relative bg-white/[0.07] border border-white/15 rounded-2xl px-4 py-4 overflow-hidden">
-                    {/* Gold top border accent */}
-                    <div className="absolute inset-x-0 top-0 h-[2px] rounded-t-2xl" style={{ background: "linear-gradient(90deg, #b8860b, #d4a520)" }} />
-                    <p className="text-[2.4rem] font-heading font-bold text-white leading-none mt-1">{n}</p>
-                    <p className="text-[10px] text-primary-300 uppercase tracking-widest mt-2">{l}</p>
-                  </div>
-                ))}
-              </div>
-              <Link href="/directory" className="mt-10 inline-flex items-center gap-2 text-base font-semibold text-secondary-400 hover:text-secondary-300 transition-colors">
-                View our clubs <ArrowRight size={16} />
-              </Link>
-            </div>
-            {/* Right side: visual stats block */}
-            <div className="hidden lg:block">
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-secondary-400 mb-6">2025–2026 Season</p>
-                {[
-                  { label: "TSA Nationals", result: "Top 3 Placement",   bar: "#b8860b" },
-                  { label: "DECA ICDC",     result: "2 Finalists",       bar: "#10b981" },
-                  { label: "Robotics FRC",  result: "Regional Champions", bar: "#8b5cf6" },
-                  { label: "Model UN",      result: "Best Delegation",    bar: "#0ea5e9" },
-                ].map(({label, result, bar}) => (
-                  <div key={label} className="flex items-center gap-4 mb-5 last:mb-0">
-                    <div className="w-2 h-10 rounded-full shrink-0" style={{ backgroundColor: bar }} />
-                    <div>
-                      <p className="text-sm font-bold text-white">{label}</p>
-                      <p className="text-xs text-primary-300">{result}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* COMMUNITY VOICES + CTA COMBINED */}
-      <section className="relative bg-[#faf7f2] border-t border-[#e8dfc8] overflow-hidden">
-        {/* Top accent bar */}
-        <div className="h-1 w-full bg-gradient-to-r from-secondary-500 via-primary-800 to-secondary-500" />
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-20">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-16">
           {/* Section header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary-50 border border-primary-100 rounded-full px-4 py-1.5 mb-4">
-              <Lightbulb size={13} className="text-secondary-600" />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-primary-700">Community</span>
+          <Reveal variant="right">
+          <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 cream-textured border border-cream-400 rounded-full px-4 py-1.5 mb-4">
+              <GraduationCap size={13} className="text-secondary-600" />
+              <span className="text-[11px] font-bold uppercase tracking-widest text-primary-900">Community <span className="text-secondary-600">Social</span></span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-primary-900">
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-white">
               Students love{" "}
-              <em className="text-secondary-600 not-italic">ClubConnect.</em>
+              <span className="relative inline-block">
+                <em className="text-secondary-400 not-italic">ClubConnect.</em>
+                <span
+                  className="absolute pointer-events-none select-none"
+                  style={{ top: "-0.55em", right: "-0.5em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10">
+                    <polygon points="20,7 35,15 20,23 5,15" fill="#0d1b2b" stroke="rgba(255,255,255,0.45)" strokeWidth="1.1" />
+                    <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#0d1b2b" fillOpacity="0.85" stroke="rgba(255,255,255,0.42)" strokeWidth="1.3" strokeLinejoin="round" />
+                    <line x1="35" y1="15" x2="35" y2="27" stroke="#b8860b" strokeWidth="1.9" strokeLinecap="round" />
+                    <circle cx="35" cy="29" r="2.5" fill="#b8860b" />
+                  </svg>
+                </span>
+              </span>
             </h2>
-            <p className="mt-3 text-sm text-neutral-500 max-w-md mx-auto">Join thousands of students already using ClubConnect to find their community.</p>
+            <div className="mt-3 cream-textured border border-cream-400 rounded-xl px-5 py-3.5 max-w-md mx-auto">
+              <p className="text-sm text-primary-900 font-medium">Join thousands of students already using ClubConnect to find their community.</p>
+            </div>
           </div>
+          </Reveal>
 
           <div className="grid lg:grid-cols-[3fr_2fr] gap-8 items-stretch">
             {/* Left: Testimonial card */}
             <div className="flex flex-col">
-              <div className="flex flex-col flex-1 bg-white rounded-3xl border border-[#e8dfc8] shadow-[0_4px_24px_rgba(30,58,95,0.07)] overflow-hidden">
+              <div className="flex flex-col flex-1 cream-textured rounded-2xl border border-cream-400 shadow-[0_4px_24px_rgba(0,0,0,0.25)] overflow-hidden">
                 {/* Accent top stripe */}
-                <div className="h-1 bg-gradient-to-r from-secondary-500 to-primary-800" />
+                <div className="h-1 bg-gradient-to-r from-secondary-500 to-primary-900" />
                 <div className="p-10">
                   {/* Stars */}
                   <div className="flex items-center gap-0.5 mb-6">
@@ -659,7 +762,7 @@ export default function HomePage() {
                     <span className="ml-2 text-sm text-neutral-400 font-medium">5.0 avg. rating</span>
                   </div>
 
-                  <p className="text-2xl md:text-3xl text-primary-800 leading-relaxed mb-8 font-medium min-h-[120px]">
+                  <p className="text-2xl md:text-3xl text-primary-900 leading-relaxed mb-8 font-medium min-h-[120px]">
                     &ldquo;{testimonials[tIdx].quote}&rdquo;
                   </p>
 
@@ -689,10 +792,9 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Mini stats below testimonial */}
-              <div className="mt-4 grid grid-cols-3 gap-3">
+                <div className="mt-4 grid grid-cols-3 gap-3">
                 {[{v:"4.9★",l:"Avg. Rating"},{v:"2,400+",l:"Active Users"},{v:"98%",l:"Would Recommend"}].map(({v,l})=>(
-                  <div key={l} className="bg-white rounded-2xl p-4 text-center border border-[#e8dfc8]">
+                  <div key={l} className="cream-textured rounded-xl p-4 text-center border border-cream-400 shadow-sm">
                     <p className="text-lg font-bold font-heading text-primary-800">{v}</p>
                     <p className="text-[9px] text-neutral-500 uppercase tracking-widest mt-0.5">{l}</p>
                   </div>
@@ -702,11 +804,7 @@ export default function HomePage() {
 
             {/* Right: CTA card */}
             <div className="lg:sticky lg:top-24 flex flex-col">
-              <div className="flex flex-col flex-1 bg-primary-900 rounded-3xl overflow-hidden shadow-[0_8px_40px_rgba(30,58,95,0.25)] relative">
-                {/* Diagonal lines on dark CTA box */}
-                <div className="absolute inset-0 pointer-events-none" style={{
-                  backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(255,255,255,0.04) 12px, rgba(255,255,255,0.04) 13px), repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(255,255,255,0.04) 12px, rgba(255,255,255,0.04) 13px)",
-                }} />
+              <div className="flex flex-col flex-1 bg-primary-900 rounded-3xl overflow-hidden border border-white/20 shadow-[0_8px_40px_rgba(0,0,0,0.3)] relative">
                 {/* Gold top accent */}
                 <div className="h-1 bg-gradient-to-r from-secondary-500 to-secondary-400" />
                 <div className="p-8 relative z-10 flex flex-col flex-1">

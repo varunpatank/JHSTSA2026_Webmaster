@@ -272,7 +272,7 @@ export default function MyCollectionsPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-primary-600/90"></div>
+          <div className="absolute inset-0 bg-primary-900/90"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function MyCollectionsPage() {
                   <h2 className="font-bold text-primary-500">Collections</h2>
                   <button
                     onClick={() => setIsCreating(true)}
-                    className="text-sm bg-primary-500 text-white px-3 py-1 font-semibold hover:bg-primary-600 transition-colors"
+                    className="text-sm bg-primary-500 text-white px-3 py-1 font-semibold hover:bg-primary-900 transition-colors"
                   >
                     + New
                   </button>

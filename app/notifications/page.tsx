@@ -282,7 +282,7 @@ export default function NotificationsPage() {
       <HeroSection
         title="Notifications"
         icon={<Bell size={36} />}
-        description="Stay updated with club events, achievements, and important announcements."
+        description={<>Never miss a beat — get <strong className="text-secondary-700 font-bold">real-time updates</strong> on club announcements, event reminders, new member approvals, achievement posts, and messages from your <strong className="text-primary-700 font-semibold">club officers and advisors.</strong></>}
       >
         {unreadCount > 0 && (
           <p className="mt-4 inline-block bg-white/10 px-4 py-2 text-sm">
@@ -400,3 +400,4 @@ export default function NotificationsPage() {
     </div>
   );
 }
+

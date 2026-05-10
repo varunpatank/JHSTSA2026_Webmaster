@@ -86,7 +86,7 @@ export default function ResourceRequestPage() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-primary-600/90"></div>
+          <div className="absolute inset-0 bg-primary-900/90"></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4">
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
@@ -285,7 +285,7 @@ export default function ResourceRequestPage() {
       </section>
 
       {}
-      <section className="py-16 bg-primary-600 text-white">
+      <section className="py-16 bg-primary-900 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold font-heading mb-4">Have an Idea?</h2>
           <p className="text-lg text-white/90 mb-8">

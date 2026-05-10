@@ -24,7 +24,7 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
       <HeroSection
         eyebrow="Support"
         title="Donations & Fundraising"
-        description="Help fund student organizations, competitions, and community events. Payments processed securely via Stripe."
+        description={<>Support <strong className="text-secondary-700 font-bold">student-led clubs</strong> and help fund competitions, community service events, and the tools students need to make real impact. <strong className="text-primary-700 font-semibold">Every dollar goes directly</strong> to student activities. Payments secured via Stripe.</>}
         images={[
           "https://images.unsplash.com/photo-1532622785990-1501ba06101d?auto=format&fit=crop&w=1600&q=75",
           "https://images.unsplash.com/photo-1517457373614-b7152f800529?auto=format&fit=crop&w=1600&q=75",
@@ -96,3 +96,4 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
     </div>
   );
 }
+
