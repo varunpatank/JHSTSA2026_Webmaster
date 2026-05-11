@@ -79,7 +79,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     date: "2026-03-04T14:00:00",
     read: false,
     club: "Robotics Club",
-    actionUrl: "/meetings",
+    actionUrl: "/events",
     actionLabel: "View Meeting",
   },
   {

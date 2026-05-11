@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
-  Award, CheckCircle, Crown, Lock, Medal, Search, Shield, Star, Trophy, Users, Zap
+  Award, CheckCircle, Crown, Lock, Medal, Search, Shield, Star, Trophy, Users, Zap, GraduationCap, Lightbulb, BookOpen
 } from "lucide-react";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -30,17 +30,17 @@ const BADGES: AchievementBadge[] = [
   { id: "a3", name: "Event Explorer", description: "Attend 5 club events", icon: "🗺️", category: "Participation", rarity: "common", requirement: "Attend 5 events", earnedBy: 567, progress: 80, unlocked: false },
   { id: "a4", name: "Regular", description: "Attend 10 consecutive meetings", icon: "📅", category: "Participation", rarity: "uncommon", requirement: "10 consecutive meetings", earnedBy: 312, progress: 70, unlocked: false },
   { id: "a5", name: "Helping Hand", description: "Complete 20 hours of community service", icon: "🤝", category: "Service", rarity: "uncommon", requirement: "20 service hours", earnedBy: 189, progress: 100, unlocked: true },
-  { id: "a6", name: "Service Star", description: "Complete 100 hours of community service", icon: "⭐", category: "Service", rarity: "rare", requirement: "100 service hours", earnedBy: 45, progress: 52, unlocked: false },
+  { id: "a6", name: "Service Star", description: "Complete 100 hours of community service", icon: Star, category: "Service", rarity: "rare", requirement: "100 service hours", earnedBy: 45, progress: 52, unlocked: false },
   { id: "a7", name: "Leader", description: "Become a club officer", icon: "👑", category: "Leadership", rarity: "rare", requirement: "Hold officer position", earnedBy: 87, progress: 100, unlocked: true },
   { id: "a8", name: "Visionary", description: "Successfully propose and launch a new club", icon: "🚀", category: "Leadership", rarity: "epic", requirement: "Found a new club", earnedBy: 12, progress: 0, unlocked: false },
-  { id: "a9", name: "Champion", description: "Win first place at a state competition", icon: "🏆", category: "Competitions", rarity: "epic", requirement: "1st place at state", earnedBy: 23, progress: 0, unlocked: false },
+  { id: "a9", name: "Champion", description: "Win first place at a state competition", icon: Trophy, category: "Competitions", rarity: "epic", requirement: "1st place at state", earnedBy: 23, progress: 0, unlocked: false },
   { id: "a10", name: "Fundraiser", description: "Help raise $500+ for your club", icon: "💰", category: "Contributions", rarity: "rare", requirement: "Raise $500+", earnedBy: 56, progress: 40, unlocked: false },
-  { id: "a11", name: "Mentor", description: "Mentor 3 newer members", icon: "🎓", category: "Leadership", rarity: "rare", requirement: "Mentor 3 members", earnedBy: 67, progress: 33, unlocked: false },
+  { id: "a11", name: "Mentor", description: "Mentor 3 newer members", icon: GraduationCap, category: "Leadership", rarity: "rare", requirement: "Mentor 3 members", earnedBy: 67, progress: 33, unlocked: false },
   { id: "a12", name: "Collaborator", description: "Participate in a cross-club project", icon: "🔗", category: "Participation", rarity: "uncommon", requirement: "Join cross-club event", earnedBy: 156, progress: 100, unlocked: true },
   { id: "a13", name: "All-Star", description: "Earn badges in 5 different categories", icon: "🌟", category: "Special", rarity: "epic", requirement: "5 category badges", earnedBy: 8, progress: 60, unlocked: false },
   { id: "a14", name: "Legend", description: "Earn 15+ badges and hold a leadership position", icon: "🏅", category: "Special", rarity: "legendary", requirement: "15 badges + officer", earnedBy: 3, progress: 27, unlocked: false },
-  { id: "a15", name: "Innovator", description: "Submit a winning idea to the Ideas Board", icon: "💡", category: "Contributions", rarity: "rare", requirement: "Approved club idea", earnedBy: 34, progress: 0, unlocked: false },
-  { id: "a16", name: "Storyteller", description: "Have your success story featured on the hub", icon: "📖", category: "Contributions", rarity: "rare", requirement: "Featured story", earnedBy: 18, progress: 0, unlocked: false },
+  { id: "a15", name: "Innovator", description: "Submit a winning idea to the Ideas Board", icon: Lightbulb, category: "Contributions", rarity: "rare", requirement: "Approved club idea", earnedBy: 34, progress: 0, unlocked: false },
+  { id: "a16", name: "Storyteller", description: "Have your success story featured on the hub", icon: BookOpen, category: "Contributions", rarity: "rare", requirement: "Featured story", earnedBy: 18, progress: 0, unlocked: false },
 ];
 
 const RARITY_COLORS: Record<string, { bg: string; border: string; text: string; glow: string }> = {
@@ -94,7 +94,7 @@ export default function AchievementsPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-900 text-white border-b-4 border-secondary-700">
+      <section className="bg-primary-900 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-yellow-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
           <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Award size={36} /> Achievement Badges</h1>

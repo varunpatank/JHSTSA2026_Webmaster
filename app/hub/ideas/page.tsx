@@ -7,6 +7,7 @@ import {
   Search, Star, ThumbsUp, Trash2, Users, Zap
 } from "lucide-react";
 import { supabase, clubIdeasApi } from "@/lib/api";
+import StageBannerPattern from "@/components/StageBannerPattern";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -153,15 +154,20 @@ export default function IdeasPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-900 text-white border-b-4 border-secondary-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <Link href="/hub" className="text-sm text-yellow-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Lightbulb size={36} /> Club Ideas</h1>
-          <p className="mt-3 max-w-2xl text-yellow-50 text-lg">Propose new clubs, vote on ideas, and help shape the future of our school community.</p>
+      <section className="relative overflow-hidden text-white border-b-4 border-emerald-300" style={{ background: "#059669" }}>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.06) 18px, rgba(255,255,255,0.06) 19px)" }}
+        />
+        <StageBannerPattern patternId="ideas-tool-banner-pattern" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative z-10">
+          <Link href="/hub" className="text-sm text-white/90 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><Lightbulb size={36} /> Club Ideas</h1>
+          <p className="mt-3 max-w-2xl text-white/90 text-lg">Propose new clubs, vote on ideas, and help shape the future of our school community.</p>
           <div className="mt-6 flex gap-3">
-            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{ideas.length}</p><p className="text-xs text-yellow-100">Ideas</p></div>
-            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{ideas.reduce((s, i) => s + i.upvotes, 0)}+</p><p className="text-xs text-yellow-100">Total Votes</p></div>
-            <div className="bg-white/10  px-4 py-3 text-center"><p className="text-xl font-bold">{ideas.filter(i => i.status === "forming").length}</p><p className="text-xs text-yellow-100">Now Forming</p></div>
+            <div className="bg-white/15 px-4 py-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{ideas.length}</p><p className="text-xs text-white/85">Ideas</p></div>
+            <div className="bg-white/15 px-4 py-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{ideas.reduce((s, i) => s + i.upvotes, 0)}+</p><p className="text-xs text-white/85">Total Votes</p></div>
+            <div className="bg-white/15 px-4 py-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{ideas.filter(i => i.status === "forming").length}</p><p className="text-xs text-white/85">Now Forming</p></div>
           </div>
         </div>
       </section>

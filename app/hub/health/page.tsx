@@ -7,6 +7,7 @@ import {
   Activity, AlertTriangle, ArrowDown, ArrowUp, CheckCircle, Heart,
   Info, TrendingDown, TrendingUp, Users, Zap
 } from "lucide-react";
+import StageBannerPattern from "@/components/StageBannerPattern";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -77,16 +78,21 @@ export default function HealthPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-900 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <Link href="/hub" className="text-sm text-emerald-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Activity size={36} /> Club Health Dashboard</h1>
-          <p className="mt-3 max-w-2xl text-emerald-50 text-lg">Monitor club vitality, spot trends, and get recommendations for improvement.</p>
+      <section className="relative overflow-hidden text-white border-b-4 border-amber-300" style={{ background: "#d97706" }}>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.06) 18px, rgba(255,255,255,0.06) 19px)" }}
+        />
+        <StageBannerPattern patternId="health-tool-banner-pattern" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative z-10">
+          <Link href="/hub" className="text-sm text-white/90 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><Activity size={36} /> Club Health Dashboard</h1>
+          <p className="mt-3 max-w-2xl text-white/90 text-lg">Monitor club vitality, spot trends, and get recommendations for improvement.</p>
           <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{CLUB_HEALTH.length}</p><p className="text-xs text-emerald-100">Tracked</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{avgScore}</p><p className="text-xs text-emerald-100">Avg Score</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{improving}</p><p className="text-xs text-emerald-100">Improving</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{needsAttention}</p><p className="text-xs text-emerald-100">Need Help</p></div>
+            <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{CLUB_HEALTH.length}</p><p className="text-xs text-white/85">Tracked</p></div>
+            <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{avgScore}</p><p className="text-xs text-white/85">Avg Score</p></div>
+            <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{improving}</p><p className="text-xs text-white/85">Improving</p></div>
+            <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{needsAttention}</p><p className="text-xs text-white/85">Need Help</p></div>
           </div>
         </div>
       </section>

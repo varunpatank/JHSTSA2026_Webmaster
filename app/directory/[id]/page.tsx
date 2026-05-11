@@ -12,7 +12,7 @@ import { supabase, membershipsApi, organizationsApi, profilesApi } from "@/lib/a
 import { formatChapterLocation } from "@/lib/location";
 import {
   ArrowLeft, ArrowRight, BookOpen, Calendar, ChevronLeft, ChevronRight,
-  Clock, FileText, Heart, Mail, MapPin, Star, Users, Video, UserPlus,
+  Clock, FileText, Mail, MapPin, Star, Users, Video, UserPlus,
 } from "lucide-react";
 
 const CLUB_IMAGES: Record<string, string[]> = {
@@ -108,7 +108,7 @@ export default function ClubDetailPage() {
     if (!mounted) return <div className="min-h-screen flex items-center justify-center bg-cream-200"><p className="text-neutral-400">Loading&hellip;</p></div>;
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream-200 px-4">
-        <div className="bg-white rounded-2xl shadow p-8 max-w-md w-full text-center">
+        <div className="bg-white rounded-none shadow p-8 max-w-md w-full text-center">
           <h1 className="text-xl font-heading font-bold text-primary-800 mb-2">Club Not Found</h1>
           <Link href="/directory" className="inline-flex items-center gap-1.5 mt-4 text-sm font-bold text-primary-600 hover:underline"><ArrowLeft size={13} /> Back to Directory</Link>
         </div>
@@ -117,49 +117,33 @@ export default function ClubDetailPage() {
   }
 
   return (
-    <div className="bg-cream-200 min-h-screen diagonal-texture-light">
+    <div className="bg-cream-200 min-h-screen">
 
       {/* ── HERO ──────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-primary-900" style={{ minHeight: "280px" }}>
         {heroImage && (
           <div className="absolute inset-0">
-            <Image src={heroImage} alt="" fill className="object-cover opacity-25" priority />
+            <Image src={heroImage} alt="" fill className="object-cover opacity-40" priority />
           </div>
         )}
-        {/* Dot grid overlay */}
-        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/95 via-primary-900/80 to-primary-900/50" />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-900/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary-900/90 via-primary-900/60 to-primary-900/30" />
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-20 md:pt-12 md:pb-24">
           <Link href="/directory" className="inline-flex items-center gap-1 text-xs text-primary-300 hover:text-white mb-4 transition-colors">
             <ChevronLeft size={13} /> Back to Directory
           </Link>
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div>
-              <div className="flex flex-wrap gap-2 mb-3">
-                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-white/15 text-white rounded-full">{chapter.category}</span>
-                <span className="px-3 py-1 text-xs font-semibold bg-secondary-500/20 text-secondary-300 border border-secondary-500/30 rounded-full">{chapter.membershipStatus}</span>
-                <span className="px-3 py-1 text-xs font-semibold bg-green-500/20 text-green-200 border border-green-400/30 rounded-full">Active</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-heading font-bold text-white leading-tight">{chapter.name}</h1>
-              <p className="mt-2 text-primary-200 text-sm max-w-xl leading-relaxed">{chapter.description}</p>
-              <div className="mt-4 flex flex-wrap items-center gap-5 text-white/70 text-xs">
-                <span className="flex items-center gap-1"><Users size={12} className="text-secondary-400" /> {chapter.memberCount} members</span>
-                <span className="flex items-center gap-1"><Clock size={12} className="text-secondary-400" /> Founded {chapter.foundedYear}</span>
-                <span className="flex items-center gap-1"><MapPin size={12} className="text-secondary-400" /> {formatChapterLocation(chapter.meetingLocation)}</span>
-              </div>
+          <div>
+            <div className="flex flex-wrap gap-2 mb-3">
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-white/15 text-white rounded-full">{chapter.category}</span>
+              <span className="px-3 py-1 text-xs font-semibold bg-secondary-500/20 text-secondary-300 border border-secondary-500/30 rounded-full">{chapter.membershipStatus}</span>
+              <span className="px-3 py-1 text-xs font-semibold bg-green-500/20 text-green-200 border border-green-400/30 rounded-full">Active</span>
             </div>
-            <div className="flex flex-wrap gap-2 shrink-0">
-              <button onClick={handleJoin} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-sm font-bold transition-colors">
-                <UserPlus size={14} /> Join Club
-              </button>
-              <Link href={`/call/preview?room=${chapter.id}`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-white/30 text-white text-sm font-semibold hover:bg-white/10 transition-colors">
-                <Video size={14} /> Join Meeting
-              </Link>
-              <Link href={`/donate?club=${chapter.id}`} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-white/20 text-white/80 text-sm hover:bg-white/10 transition-colors">
-                <Heart size={14} /> Donate
-              </Link>
+            <h1 className="text-3xl md:text-4xl font-heading font-bold text-white leading-tight drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]">{chapter.name}</h1>
+            <p className="mt-2 text-sm max-w-xl leading-relaxed inline-block bg-black/40 backdrop-blur-sm text-white px-3 py-2 rounded">{chapter.description}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-5 text-white/70 text-xs">
+              <span className="flex items-center gap-1"><Users size={12} className="text-secondary-400" /> {chapter.memberCount} members</span>
+              <span className="flex items-center gap-1"><Clock size={12} className="text-secondary-400" /> Founded {chapter.foundedYear}</span>
+              <span className="flex items-center gap-1"><MapPin size={12} className="text-secondary-400" /> {formatChapterLocation(chapter.meetingLocation)}</span>
             </div>
           </div>
         </div>
@@ -193,7 +177,7 @@ export default function ClubDetailPage() {
             {activeTab === "overview" && (
               <>
                 {/* About */}
-                <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
                   <h2 className="font-heading font-bold text-primary-800 text-base mb-4 flex items-center gap-2">
                     <BookOpen size={16} className="text-secondary-500" /> About this Club
                   </h2>
@@ -209,7 +193,7 @@ export default function ClubDetailPage() {
                       { label: "Grade Level", value: chapter.gradeLevel },
                       { label: "Membership", value: chapter.membershipStatus },
                     ].map(item => (
-                      <div key={item.label} className="flex items-start gap-2 bg-cream-50 rounded-xl px-3 py-2">
+                      <div key={item.label} className="flex items-start gap-2 bg-cream-50 rounded-none px-3 py-2">
                         <span className="text-xs font-bold text-primary-600 min-w-[110px]">{item.label}</span>
                         <span className="text-xs text-primary-700">{item.value}</span>
                       </div>
@@ -218,11 +202,11 @@ export default function ClubDetailPage() {
                 </div>
 
                 {/* Leadership */}
-                <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
                   <h2 className="font-heading font-bold text-primary-800 text-base mb-4">Leadership</h2>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {chapter.officers.map(officer => (
-                      <div key={officer.email} className="flex items-center gap-3 bg-cream-50 rounded-xl p-3">
+                      <div key={officer.email} className="flex items-center gap-3 bg-cream-50 rounded-none p-3">
                         <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold shrink-0">
                           {officer.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                         </div>
@@ -234,7 +218,7 @@ export default function ClubDetailPage() {
                       </div>
                     ))}
                     {/* Advisor */}
-                    <div className="flex items-center gap-3 bg-secondary-50 rounded-xl border border-secondary-100 p-3 sm:col-span-2">
+                    <div className="flex items-center gap-3 bg-secondary-50 rounded-none border border-secondary-100 p-3 sm:col-span-2">
                       <div className="w-10 h-10 rounded-full bg-secondary-100 text-secondary-700 flex items-center justify-center shrink-0">
                         <Star size={14} />
                       </div>
@@ -250,7 +234,7 @@ export default function ClubDetailPage() {
                 </div>
 
                 {/* Membership Requirements */}
-                <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
                   <h2 className="font-heading font-bold text-primary-800 text-base mb-3">Membership Requirements</h2>
                   <p className="text-sm text-primary-700">{chapter.membershipRequirements}</p>
                   <p className="mt-2 text-xs text-primary-500 font-semibold">
@@ -264,7 +248,7 @@ export default function ClubDetailPage() {
 
             {/* EVENTS TAB */}
             {activeTab === "events" && (
-              <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
+              <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
                 <h2 className="font-heading font-bold text-primary-800 text-base mb-4 flex items-center gap-2">
                   <Calendar size={16} className="text-secondary-500" /> Upcoming Events
                 </h2>
@@ -278,8 +262,8 @@ export default function ClubDetailPage() {
                   <div className="space-y-3">
                     {chapterEvents.map(ev => (
                       <Link key={ev.id} href={`/events/${ev.id}`}
-                        className="flex items-start gap-4 p-4 rounded-xl bg-cream-50 border border-cream-200 hover:border-primary-300 hover:bg-white transition-all group">
-                        <div className="bg-primary-800 text-white text-center px-3 py-2 rounded-lg shrink-0">
+                        className="flex items-start gap-4 p-4 rounded-none bg-cream-50 border border-cream-200 hover:border-primary-300 hover:bg-white transition-all group">
+                        <div className="bg-primary-800 text-white text-center px-3 py-2 rounded-none shrink-0">
                           <p className="text-[9px] font-bold uppercase opacity-70">{new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}</p>
                           <p className="text-lg font-bold font-heading leading-none">{new Date(ev.date).getDate()}</p>
                         </div>
@@ -297,7 +281,7 @@ export default function ClubDetailPage() {
             {/* RESOURCES TAB */}
             {activeTab === "resources" && (
               <div className="space-y-5">
-                <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
+                <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
                   <h2 className="font-heading font-bold text-primary-800 text-base mb-1 flex items-center gap-2">
                     <FileText size={16} className="text-secondary-500" /> Helpful Resources
                   </h2>
@@ -305,8 +289,8 @@ export default function ClubDetailPage() {
                   <div className="grid sm:grid-cols-2 gap-3">
                     {RESOURCE_LINKS.map(r => (
                       <Link key={r.href} href={r.href}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-cream-200 hover:border-primary-300 hover:bg-cream-50 transition-all group">
-                        <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
+                        className="flex items-center gap-3 p-3 rounded-none border border-cream-200 hover:border-primary-300 hover:bg-cream-50 transition-all group">
+                        <div className="w-8 h-8 rounded-none bg-primary-100 flex items-center justify-center shrink-0">
                           <BookOpen size={14} className="text-primary-600" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -328,9 +312,9 @@ export default function ClubDetailPage() {
           </div>
 
           {/* ── SIDEBAR (1/3) ── */}
-          <aside className="space-y-5">
+          <aside className="space-y-5 md:max-h-[620px] md:overflow-y-auto pr-1">
             {/* Quick Info */}
-            <div className="bg-white rounded-2xl border border-cream-300 p-5 shadow-sm">
+            <div className="bg-white rounded-none border border-cream-300 p-5 shadow-sm">
               <h3 className="font-heading font-bold text-primary-800 text-sm mb-4">Quick Info</h3>
               <div className="space-y-3 text-xs">
                 <div className="flex items-center gap-2 text-primary-700">
@@ -354,7 +338,7 @@ export default function ClubDetailPage() {
                 className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors">
                 <UserPlus size={12} /> Join Club
               </button>
-              <Link href={`/call/preview?room=${chapter.id}`}
+              <Link href={`/call/${encodeURIComponent(chapter.id)}?returnTo=${encodeURIComponent(`/directory/${chapter.id}`)}`}
                 className="mt-2 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-primary-300 text-primary-700 text-xs font-semibold hover:bg-primary-50 transition-colors">
                 <Video size={12} /> Join Virtual Meeting
               </Link>
@@ -362,7 +346,7 @@ export default function ClubDetailPage() {
 
             {/* Tags */}
             {chapter.tags && chapter.tags.length > 0 && (
-              <div className="bg-white rounded-2xl border border-cream-300 p-5 shadow-sm">
+              <div className="bg-white rounded-none border border-cream-300 p-5 shadow-sm">
                 <h3 className="font-heading font-bold text-primary-800 text-sm mb-3">Tags</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {chapter.tags.map(tag => (
@@ -374,7 +358,7 @@ export default function ClubDetailPage() {
 
             {/* Contact */}
             {chapter.contactEmail && (
-              <div className="bg-white rounded-2xl border border-cream-300 p-5 shadow-sm">
+              <div className="bg-white rounded-none border border-cream-300 p-5 shadow-sm">
                 <h3 className="font-heading font-bold text-primary-800 text-sm mb-3">Contact</h3>
                 <a href={`mailto:${chapter.contactEmail}`} className="text-xs text-primary-600 hover:underline flex items-center gap-1.5">
                   <Mail size={12} /> {chapter.contactEmail}
@@ -383,7 +367,7 @@ export default function ClubDetailPage() {
             )}
 
             {/* Portal CTA */}
-            <div className="bg-primary-900 rounded-2xl p-5">
+            <div className="bg-primary-900 rounded-none p-5">
               <p className="text-xs font-bold uppercase tracking-widest text-primary-300 mb-2">Want to manage a club?</p>
               <p className="text-xs text-primary-200 leading-relaxed mb-4">Use the Portal to create events, manage members, and track your club&apos;s progress.</p>
               <Link href="/portal" className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors">
@@ -399,7 +383,7 @@ export default function ClubDetailPage() {
         <div className="border-t border-cream-400 pt-6 flex items-center justify-between gap-4">
           {prevClub ? (
             <Link href={`/directory/${prevClub.id}`}
-              className="flex items-center gap-3 bg-white rounded-2xl border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group">
+              className="flex items-center gap-3 bg-white rounded-none border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group">
               <ChevronLeft size={18} className="text-primary-400 group-hover:text-primary-700 transition-colors" />
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-400">Previous Club</p>
@@ -414,7 +398,7 @@ export default function ClubDetailPage() {
 
           {nextClub ? (
             <Link href={`/directory/${nextClub.id}`}
-              className="flex items-center gap-3 bg-white rounded-2xl border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group text-right">
+              className="flex items-center gap-3 bg-white rounded-none border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group text-right">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-400">Next Club</p>
                 <p className="text-sm font-bold text-primary-800 group-hover:text-primary-600 transition-colors">{nextClub.name}</p>

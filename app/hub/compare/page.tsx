@@ -6,6 +6,7 @@ import { chapters } from "@/lib/data";
 import {
   ArrowLeftRight, BarChart2, Calendar, CheckCircle, MapPin, Minus, Plus, Star, Trophy, Users, X
 } from "lucide-react";
+import StageBannerPattern from "@/components/StageBannerPattern";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -84,11 +85,16 @@ export default function ComparePage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-900 text-white border-b-4 border-secondary-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <Link href="/hub" className="text-sm text-cyan-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><ArrowLeftRight size={36} /> Club Comparison</h1>
-          <p className="mt-3 max-w-2xl text-cyan-50 text-lg">Compare up to 4 clubs side-by-side across key metrics to find your best fit.</p>
+      <section className="relative overflow-hidden text-white border-b-4 border-violet-300" style={{ background: "#7c3aed" }}>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.06) 18px, rgba(255,255,255,0.06) 19px)" }}
+        />
+        <StageBannerPattern patternId="compare-tool-banner-pattern" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative z-10">
+          <Link href="/hub" className="text-sm text-white/90 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><ArrowLeftRight size={36} /> Club Comparison</h1>
+          <p className="mt-3 max-w-2xl text-white/90 text-lg">Compare up to 4 clubs side-by-side across key metrics to find your best fit.</p>
         </div>
       </section>
 

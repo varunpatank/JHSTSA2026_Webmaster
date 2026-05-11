@@ -5,7 +5,7 @@ import Link from "next/link";
 import { chapters } from "@/lib/data";
 import {
   Award, Calendar, CheckCircle, ChevronDown, Clock, ExternalLink,
-  Filter, Globe, MapPin, Search, Shield, Star, Trophy, Users, Zap,
+  Filter, Globe, MapPin, Search, Shield, Star, Trophy, Users, Zap, Check,
 } from "lucide-react";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -132,7 +132,7 @@ export default function CompetitionsPage() {
                     {c.prizes.map(p => <span key={p} className="text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700">{p}</span>)}
                   </div>
                   <p className="text-xs text-neutral-500 mt-2">Entry: {c.entryFee} · Difficulty: {c.difficulty}</p>
-                  <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-3 w-full py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-900 text-white hover:bg-primary-900"}`}>{registeredIds.has(c.id) ? "✓ Registered" : "Register Interest"}</button>
+                  <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-3 w-full py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-900 text-white hover:bg-primary-900"}`}>{registeredIds.has(c.id) ? <span className="flex items-center justify-center gap-1"><Check size={14} /> Registered</span> : "Register Interest"}</button>
                 </div>
               ))}
             </div>
@@ -178,7 +178,7 @@ export default function CompetitionsPage() {
                         <div className="flex flex-wrap gap-2">{c.prepResources.map(r => <span key={r.title} className="text-xs px-2 py-1  bg-primary-50 text-primary-600">{r.title} ({r.type})</span>)}</div>
                       </div>
                     )}
-                    <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-2 px-4 py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-900 text-white hover:bg-primary-900"}`}>{registeredIds.has(c.id) ? "✓ Registered" : "Register Interest"}</button>
+                    <button onClick={() => handleRegister(c.id)} disabled={registeredIds.has(c.id)} className={`mt-2 px-4 py-2 text-sm font-bold transition-colors ${registeredIds.has(c.id) ? "bg-green-100 text-green-700 cursor-default" : "bg-primary-900 text-white hover:bg-primary-900"}`}>{registeredIds.has(c.id) ? <span className="flex items-center justify-center gap-1"><Check size={14} /> Registered</span> : "Register Interest"}</button>
                   </div>
                 )}
               </div>

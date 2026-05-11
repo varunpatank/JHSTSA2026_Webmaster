@@ -209,7 +209,7 @@ export default function ExternalResourcesPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
       {}
-      <section className="relative py-20 overflow-hidden">
+      <section className="relative py-20 overflow-hidden border-b-4 border-secondary-500">
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1920&q=80"

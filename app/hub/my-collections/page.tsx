@@ -263,7 +263,7 @@ export default function MyCollectionsPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
       {}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative py-16 overflow-hidden border-b-4 border-secondary-500">
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1920&q=80"
@@ -296,10 +296,10 @@ export default function MyCollectionsPage() {
             <div className="lg:w-80 flex-shrink-0">
               <div className="card p-4 sticky top-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-primary-500">Collections</h2>
+                  <h2 className="font-bold text-primary-900">Collections</h2>
                   <button
                     onClick={() => setIsCreating(true)}
-                    className="text-sm bg-primary-500 text-white px-3 py-1 font-semibold hover:bg-primary-900 transition-colors"
+                    className="text-sm bg-primary-900 text-white px-3 py-1 font-semibold hover:bg-primary-700 transition-colors"
                   >
                     + New
                   </button>

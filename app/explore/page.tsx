@@ -575,7 +575,7 @@ export default function ExplorePage() {
                   title: "Leadership Development",
                   desc: "Workshops and exercises for building strong officer teams.",
                   href: "/resources",
-                  icon: "⭐",
+                  icon: Star,
                 },
               ].map((resource) => (
                 <Link

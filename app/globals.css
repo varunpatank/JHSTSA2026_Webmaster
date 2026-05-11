@@ -35,7 +35,13 @@ button,
 .card,
 [class*="rounded-2xl"],
 [class*="rounded-xl"] {
-  border-radius: 1rem;
+  border-radius: 1.25rem;
+}
+
+.grid > .card,
+.grid > a.card,
+.grid > div.card {
+  height: 100%;
 }
 
 /* Ensure all cards and surfaces have rounded corners */
@@ -103,6 +109,24 @@ html {
 .animate-ken-burns {
   animation: kenBurns 10s ease-in-out infinite alternate;
   transform-origin: center center;
+}
+
+@keyframes slideInFromLeft {
+  from { opacity: 0; transform: translateX(-48px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInFromRight {
+  from { opacity: 0; transform: translateX(48px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slide-in-left {
+  animation: slideInFromLeft 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-slide-in-right {
+  animation: slideInFromRight 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Hero/top banner texture on dark blue surfaces */
@@ -182,24 +206,24 @@ html {
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-500 text-white px-5 py-2 text-sm font-semibold border border-primary-500;
+    @apply bg-primary-500 text-white px-5 py-2 text-sm font-semibold border border-primary-500 rounded-2xl;
     @apply hover:bg-primary-600 hover:border-primary-600 transition-all duration-200;
     @apply shadow-sm hover:shadow-md;
   }
 
   .btn-secondary {
-    @apply bg-secondary-500 text-white px-5 py-2 text-sm font-semibold border border-secondary-500;
+    @apply bg-secondary-500 text-white px-5 py-2 text-sm font-semibold border border-secondary-500 rounded-2xl;
     @apply hover:bg-secondary-600 hover:border-secondary-600 transition-all duration-200;
     @apply shadow-sm hover:shadow-md;
   }
 
   .btn-outline {
-    @apply bg-transparent text-primary-500 px-5 py-2 text-sm font-semibold border border-primary-500;
+    @apply bg-transparent text-primary-500 px-5 py-2 text-sm font-semibold border border-primary-500 rounded-2xl;
     @apply hover:bg-primary-500 hover:text-white transition-all duration-200;
   }
 
   .card {
-    @apply bg-[#FFFDF8] border border-[#D9CDB8] shadow-sm;
+    @apply bg-[#FFFDF8] border border-[#D9CDB8] shadow-sm rounded-3xl;
   }
 
   .card-hover {
@@ -401,12 +425,12 @@ html {
   }
 
   .input-field {
-    @apply w-full px-3 py-2 text-sm border border-neutral-300 bg-white;
+    @apply w-full px-3 py-2 text-sm border border-neutral-300 bg-white rounded-2xl;
     @apply focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all;
   }
 
   .select-field {
-    @apply w-full px-3 py-2 text-sm border border-neutral-300 bg-white;
+    @apply w-full px-3 py-2 text-sm border border-neutral-300 bg-white rounded-2xl;
     @apply focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all cursor-pointer;
   }
 
@@ -436,7 +460,7 @@ html {
   }
 
   .feature-small {
-    @apply bg-white border p-4 flex items-start gap-3;
+    @apply bg-white border p-4 flex items-start gap-3 rounded-2xl;
     min-height: 88px;
     align-items: flex-start;
   }
@@ -742,6 +766,21 @@ textarea:focus-visible {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes mortarboardFly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-20px, -30px) rotate(180deg) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(280px, -120px) rotate(360deg) scale(1);
   }
 }
 @keyframes float {

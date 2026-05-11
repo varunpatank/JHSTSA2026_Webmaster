@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { BookMarked, BookOpen, Compass, Gavel, Menu, Plus, X, Calendar, Users } from "lucide-react";
+import { BookMarked, BookOpen, Compass, Gavel, Menu, X, Calendar, Users } from "lucide-react";
 import { supabase, profilesApi, storageApi, authApi } from "../lib/api";
 import { loginUser, isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
 
@@ -172,21 +172,15 @@ export default function Header() {
             <div className="hidden md:flex items-center gap-2">
               <Link
                 href="/portal"
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full border border-primary-900 text-primary-900 hover:bg-cream-200 hover:border-primary-900 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full bg-primary-900 text-white hover:brightness-110 transition-colors"
               >
                 <BookMarked size={11} /> Portal
               </Link>
               <Link
                 href="/portal?tab=resource"
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full border border-primary-900 text-primary-900 hover:bg-cream-200 hover:border-primary-900 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full bg-primary-900 text-white hover:brightness-110 transition-colors"
               >
                 <BookOpen size={11} /> Suggest Resource
-              </Link>
-              <Link
-                href="/portal?tab=create"
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-bold rounded-full bg-primary-900 hover:brightness-110 text-white transition-colors shadow-sm"
-              >
-                <Plus size={11} /> Create Club
               </Link>
             </div>
 

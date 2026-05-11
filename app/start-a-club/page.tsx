@@ -48,6 +48,8 @@ import {
   Download,
   Eye,
   Edit3,
+  Check,
+  Circle,
 } from "lucide-react";
 
 const CONSTITUTION_TEMPLATE = `ARTICLE I — NAME
@@ -1124,7 +1126,7 @@ export default function StartAClubPage() {
                   <div
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${done ? "bg-green-500 text-white" : active ? "bg-primary-500 text-white" : "bg-neutral-200 text-neutral-500"}`}
                   >
-                    {done ? "✓" : s.id}
+                    {done ? <Check size={14} /> : s.id}
                   </div>
                   <span className="hidden sm:inline truncate">{s.title}</span>
                 </button>
@@ -1617,7 +1619,7 @@ export default function StartAClubPage() {
                   key={item.label}
                   className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium border ${item.done ? "bg-green-50 text-green-700 border-green-200" : "bg-neutral-50 text-neutral-400 border-neutral-200"}`}
                 >
-                  {item.done ? "✓" : "○"} {item.label}
+                  {item.done ? <Check size={14} /> : <Circle size={14} />} {item.label}
                 </span>
               ))}
             </div>

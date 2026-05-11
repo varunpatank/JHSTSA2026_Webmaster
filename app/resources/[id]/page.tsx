@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import { RESOURCES, TYPE_COLORS, STAGE_COLORS } from "@/lib/resourcesData";
 import {
   ArrowLeft, ArrowRight, BookOpen, Check, ChevronLeft, Download, FileText,
-  Heart, MessageSquare, Send, Share2, Star, Tag, ThumbsUp, Users,
+  Heart, MessageSquare, Send, Share2, Star, ThumbsUp, Users,
 } from "lucide-react";
 
 function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
@@ -74,16 +74,14 @@ export default function ResourceDetailPage() {
   };
 
   return (
-    <div className="bg-cream-200 min-h-screen diagonal-texture-light">
+    <div className="bg-cream-200 min-h-screen">
 
       {/* ── HERO ──────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-primary-900" style={{ minHeight: "280px" }}>
         <div className="absolute inset-0">
-          <Image src={resource.img} alt="" fill className="object-cover opacity-20" priority />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/95 via-primary-900/80 to-primary-900/50" />
+          <Image src={resource.img} alt="" fill className="object-cover opacity-40" priority />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary-900/90 via-primary-900/60 to-primary-900/30" />
         </div>
-        {/* texture */}
-        <div className="absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.025) 18px, rgba(255,255,255,0.025) 19px)" }} />
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-10 pb-20 md:pb-24">
           <Link href="/resources" className="inline-flex items-center gap-1 text-xs text-primary-300 hover:text-white mb-4 transition-colors">
             <ChevronLeft size={13} /> Back to Resources
@@ -94,7 +92,7 @@ export default function ResourceDetailPage() {
             <span className="px-3 py-1 text-[10px] font-semibold rounded-full bg-white/15 text-white">{resource.format}</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-heading font-bold text-white leading-tight">{resource.title}</h1>
-          <p className="mt-2 text-primary-200 text-sm max-w-xl leading-relaxed">{resource.details}</p>
+          <p className="mt-2 text-primary-200 text-sm max-w-xl leading-relaxed">Resources that help students create clubs and/or organizations at their school and take initiative. {resource.details}</p>
           <div className="mt-4 flex flex-wrap items-center gap-5 text-white/70 text-xs">
             <span className="flex items-center gap-1"><Download size={12} className="text-secondary-400" /> {resource.downloads} downloads</span>
             <span className="flex items-center gap-1"><Heart size={12} className="text-secondary-400" /> {resource.saved + (saved ? 1 : 0)} saved</span>
@@ -113,19 +111,6 @@ export default function ResourceDetailPage() {
 
           {/* ── MAIN (2/3) ── */}
           <div className="md:col-span-2 space-y-5">
-
-            {/* Preview image */}
-            <div className="relative w-full aspect-[16/7] rounded-2xl overflow-hidden shadow-sm border border-cream-300">
-              <Image src={resource.img} alt={resource.title} fill className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent" />
-              <div className="absolute bottom-4 left-4 flex flex-wrap gap-1.5">
-                {resource.tags.map(tag => (
-                  <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold rounded-full">
-                    <Tag size={8} /> {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
 
             {/* Description */}
             <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">

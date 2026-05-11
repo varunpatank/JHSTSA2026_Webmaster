@@ -30,6 +30,9 @@ import {
   Zap,
   X,
   Check,
+  HelpCircle,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { chapters, events } from "@/lib/data";
 import {
@@ -1027,7 +1030,7 @@ function DashboardContent() {
                                 : "bg-yellow-100 text-yellow-700"
                             }`}
                           >
-                            {ev.rsvpStatus === "going" ? "✓" : "?"}
+                            {ev.rsvpStatus === "going" ? <Check size={14} className="inline" /> : <HelpCircle size={14} className="inline" />}
                           </span>
                         </div>
                       ))}
@@ -1359,9 +1362,9 @@ function DashboardContent() {
                               {p.status === "pending"
                                 ? "⏳ Pending Review"
                                 : p.status === "approved"
-                                  ? "✅ Approved"
+                                  ? <span className="flex items-center gap-1"><CheckCircle size={14} /> Approved</span>
                                   : p.status === "rejected"
-                                    ? "❌ Rejected"
+                                    ? <span className="flex items-center gap-1"><XCircle size={14} /> Rejected</span>
                                     : p.status}
                             </span>
                           </div>
@@ -1467,7 +1470,7 @@ function DashboardContent() {
                           }`}
                         >
                           {s === "going"
-                            ? "✓ Going"
+                            ? <span className="flex items-center gap-1"><Check size={14} /> Going</span>
                             : s === "maybe"
                               ? "? Maybe"
                               : "✕ Skip"}

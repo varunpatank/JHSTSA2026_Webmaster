@@ -77,7 +77,7 @@ export default function ResourceRequestPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
       {}
-      <section className="relative py-20 overflow-hidden">
+      <section className="relative py-20 overflow-hidden border-b-4 border-secondary-500">
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1920&q=80"

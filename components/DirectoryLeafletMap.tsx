@@ -597,8 +597,8 @@ export default function DirectoryLeafletMap({
   }, [groupedBuildings, hasLoaded, buildingAnchorMap]);
 
   return (
-    <div className="border border-neutral-300 bg-white relative overflow-hidden">
-      <div className="absolute top-3 right-14 z-20 bg-neutral-900/90 border border-neutral-700/80 max-h-[480px] overflow-y-auto w-52">
+    <div className="border border-neutral-300 bg-white relative overflow-hidden rounded-none">
+      <div className="absolute top-3 right-14 z-20 bg-neutral-900/90 border border-neutral-700/80 max-h-[480px] overflow-y-auto w-52 rounded-none overflow-hidden">
         <div className="px-3 py-2 border-b border-neutral-700/60 flex items-center justify-between">
           <span className="text-[11px] font-bold text-neutral-100 uppercase tracking-wider">
             Schools

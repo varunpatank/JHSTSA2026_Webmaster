@@ -233,7 +233,7 @@ function DirectoryPageContent() {
         style={{
           backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
         }} />
-      <div className="relative z-0 bg-cream-200 min-h-screen diagonal-texture-light">
+      <div className="relative z-0 bg-cream-200 min-h-screen">
         <HeroSection
         eyebrow="Discover · Filter · Engage"
         title="Club"
@@ -255,7 +255,7 @@ function DirectoryPageContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* ── Map + Filters Island ── */}
         <section className="animate-fade-up" style={{ animationDelay: "60ms" }}>
-          <div className="bg-white border border-neutral-200 p-4">
+          <div className="bg-white border border-neutral-200 rounded-none p-4 overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-heading font-bold text-primary-900">
                 Interactive Map
@@ -264,7 +264,7 @@ function DirectoryPageContent() {
                 {filtered.length} clubs shown
               </span>
             </div>
-            <div className="relative">
+            <div className="relative rounded-none overflow-hidden">
               <DirectoryLeafletMap
                 chapters={filtered}
                 activeRoom={filters.scopeFilter}
@@ -337,10 +337,10 @@ function DirectoryPageContent() {
               {sidebarOpen && (
                 <aside
                   id="directory-sidebar"
-                  className="border border-primary-200 bg-gradient-to-b from-primary-50/60 to-white shadow-sm overflow-hidden"
+                  className="border border-primary-200 bg-white shadow-sm overflow-hidden rounded-none max-h-[820px] flex flex-col"
                 >
                   {/* Sidebar header */}
-                  <div className="bg-primary-900 px-4 py-3 flex items-center gap-2.5">
+                  <div className="bg-primary-900 px-4 py-3.5 flex items-center justify-between gap-2.5">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4 text-primary-200"
@@ -356,11 +356,12 @@ function DirectoryPageContent() {
                       />
                     </svg>
                     <h3 className="text-sm font-heading font-bold text-white uppercase tracking-wider">
-                      Quick Tools
+                      Club List Tools
                     </h3>
+                    <span className="text-[10px] font-semibold text-primary-200 uppercase tracking-widest">Refine</span>
                   </div>
 
-                  <div className="p-3.5 space-y-3.5">
+                  <div className="p-3.5 flex flex-col gap-3.5 overflow-hidden flex-1 bg-gradient-to-b from-white to-cream-50">
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-2">
                       {[
@@ -485,11 +486,38 @@ function DirectoryPageContent() {
                         </div>
                       )}
                     </div>
+
+                    {/* Most Popular Clubs — fills remaining space */}
+                    <div className="bg-white border border-neutral-200 overflow-hidden flex-1 flex flex-col min-h-0">
+                      <div className="bg-secondary-500/10 border-b border-neutral-200 px-3.5 py-2.5 flex items-center gap-2">
+                        <Sparkles size={13} className="text-secondary-600" />
+                        <h3 className="text-xs font-heading font-bold uppercase tracking-wider text-primary-900">Most Popular</h3>
+                      </div>
+                      <div className="divide-y divide-neutral-100 overflow-y-auto flex-1">
+                        {[...chapters]
+                          .sort((a, b) => b.memberCount - a.memberCount)
+                          .slice(0, 12)
+                          .map((club, i) => (
+                            <Link
+                              key={club.id}
+                              href={`/directory/${club.id}`}
+                              className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-primary-50/50 transition-colors group"
+                            >
+                              <span className="text-[10px] font-bold text-neutral-400 w-4 shrink-0">{i + 1}</span>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-primary-900 truncate group-hover:text-primary-700">{club.name}</p>
+                                <p className="text-[10px] text-neutral-400">{club.memberCount} members · {club.category}</p>
+                              </div>
+                              <ArrowRight size={11} className="text-neutral-300 group-hover:text-primary-400 shrink-0" />
+                            </Link>
+                          ))}
+                      </div>
+                    </div>
                   </div>
                 </aside>
               )}
 
-              <div className="overflow-y-auto max-h-[820px] pr-1 rounded-xl">
+              <div className="overflow-y-auto overflow-x-auto max-h-[820px] pr-1 pt-1 pl-1 -ml-1 rounded-none">
                 <ClubGrid
                   clubs={filtered}
                   highlightId={highlightId}

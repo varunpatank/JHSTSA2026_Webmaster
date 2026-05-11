@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowRight, BookOpen, Calendar, Check, ChevronRight, Gavel,
-  LogIn, Plus, Users,
+  Lightbulb, LogIn, Plus, Users,
 } from "lucide-react";
 import { chapters } from "@/lib/data";
 
@@ -85,7 +85,7 @@ function CreateClub() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="grid lg:grid-cols-[2fr_1.2fr] gap-8 items-start">
+        <div className="grid lg:grid-cols-[2fr_1.5fr] gap-8 items-start">
         <form onSubmit={submit} className="space-y-5">
           <div>
             <h2 className="font-heading font-bold text-primary-800 text-lg mb-1">Create a New Club</h2>
@@ -126,7 +126,7 @@ function CreateClub() {
           </div>
 
           <div className="bg-secondary-50 border border-secondary-100 rounded-2xl p-5">
-            <p className="text-xs font-bold text-secondary-700 mb-2">💡 Pro Tip</p>
+            <p className="text-xs font-bold text-secondary-700 mb-2 flex items-center gap-1.5"><Lightbulb size={14} /> Pro Tip</p>
             <p className="text-xs text-neutral-600 leading-relaxed">Be specific about your club's mission. Include concrete details about meeting times to show you're serious.</p>
           </div>
         </div>
@@ -156,7 +156,7 @@ function SubmitEvent() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="grid lg:grid-cols-[2fr_1.2fr] gap-8 items-start">
+        <div className="grid lg:grid-cols-[2fr_1.5fr] gap-8 items-start">
         <form onSubmit={submit} className="space-y-5">
           <div>
             <h2 className="font-heading font-bold text-primary-800 text-lg mb-1">Submit an Event</h2>
@@ -232,7 +232,7 @@ function AddResource() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="grid lg:grid-cols-[2fr_1.2fr] gap-8 items-start">
+      <div className="grid lg:grid-cols-[2fr_1.5fr] gap-8 items-start">
         <form onSubmit={submit} className="space-y-5">
           <div>
             <h2 className="font-heading font-bold text-primary-800 text-lg mb-1">Suggest a Resource</h2>
@@ -275,7 +275,7 @@ function AddResource() {
           </div>
 
           <div className="bg-green-50 border border-green-100 rounded-2xl p-5">
-            <p className="text-xs font-bold text-green-700 mb-2">📚 Types of Resources</p>
+            <p className="text-xs font-bold text-green-700 mb-2 flex items-center gap-1.5"><BookOpen size={14} /> Types of Resources</p>
             <ul className="text-xs text-neutral-600 space-y-1.5">
               <li><strong>Guide:</strong> How-to articles</li>
               <li><strong>Template:</strong> Reusable forms</li>
@@ -306,7 +306,7 @@ export default function PortalPage() {
         style={{
           backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
         }} />
-      <div className="relative z-0 bg-cream-200 min-h-screen diagonal-texture-light">
+      <div className="relative z-0 bg-cream-200 min-h-screen">
 
         {/* Header */}
       <div className="bg-primary-900 px-4 sm:px-6 py-8">

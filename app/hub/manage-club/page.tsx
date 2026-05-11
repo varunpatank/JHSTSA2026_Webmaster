@@ -201,7 +201,7 @@ export default function ClubManagerPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
       {}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative py-16 overflow-hidden border-b-4 border-secondary-500">
         <div className="absolute inset-0">
           <Image
             src={club.coverImage}

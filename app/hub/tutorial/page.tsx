@@ -218,7 +218,7 @@ export default function TutorialPage() {
   return (
     <div className="bg-neutral-100 min-h-screen">
       {}
-      <section className="bg-primary-500 text-white py-4">
+      <section className="bg-primary-900 text-white border-b-4 border-secondary-500 py-4">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-between">
             <Link href="/hub" className="text-white/80 hover:text-white text-sm flex items-center gap-2">
@@ -241,7 +241,7 @@ export default function TutorialPage() {
                 onClick={() => goToStep(index)}
                 className={`flex-1 h-2 transition-all ${
                   index === currentStep
-                    ? 'bg-primary-500'
+                    ? 'bg-primary-900'
                     : completedSteps.includes(index)
                     ? 'bg-green-500'
                     : 'bg-neutral-200 hover:bg-neutral-300'
@@ -272,7 +272,7 @@ export default function TutorialPage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/80 to-transparent" />
               <div className="absolute bottom-4 left-6 right-6">
-                <span className="bg-primary-500 text-white px-3 py-1 text-sm font-semibold">
+                <span className="bg-primary-900 text-white px-3 py-1 text-sm font-semibold">
                   Step {step.id}
                 </span>
                 <h1 className="text-3xl font-bold text-white font-heading mt-2">{step.title}</h1>
@@ -292,7 +292,7 @@ export default function TutorialPage() {
 
               {}
               <div className="bg-secondary-50 border-l-4 border-secondary-500 p-4 mb-8">
-                <h3 className="font-bold text-secondary-700 mb-2">💡 Pro Tips</h3>
+                <h3 className="font-bold text-secondary-700 mb-2 flex items-center gap-1.5"><Lightbulb size={14} /> Pro Tips</h3>
                 <ul className="space-y-1">
                   {step.tips.map((tip, index) => (
                     <li key={index} className="text-sm text-neutral-700 flex items-start gap-2">
@@ -324,7 +324,7 @@ export default function TutorialPage() {
                   className={`px-6 py-2 font-semibold border-2 transition-colors ${
                     currentStep === 0
                       ? 'border-neutral-200 text-neutral-400 cursor-not-allowed'
-                      : 'border-primary-500 text-primary-500 hover:bg-primary-50'
+                      : 'border-primary-900 text-primary-900 hover:bg-primary-50'
                   }`}
                 >
                   ← Previous
@@ -337,7 +337,7 @@ export default function TutorialPage() {
                       onClick={() => goToStep(index)}
                       className={`w-3 h-3 transition-all ${
                         index === currentStep
-                          ? 'bg-primary-500 scale-125'
+                          ? 'bg-primary-900 scale-125'
                           : completedSteps.includes(index)
                           ? 'bg-green-500'
                           : 'bg-neutral-300'
@@ -372,7 +372,7 @@ export default function TutorialPage() {
                   onClick={() => goToStep(index)}
                   className={`p-3 text-left text-sm border transition-all ${
                     index === currentStep
-                      ? 'border-primary-500 bg-primary-50 text-primary-700'
+                      ? 'border-primary-900 bg-primary-50 text-primary-700'
                       : completedSteps.includes(index)
                       ? 'border-green-300 bg-green-50 text-green-700'
                       : 'border-neutral-200 hover:border-neutral-300 text-neutral-600'

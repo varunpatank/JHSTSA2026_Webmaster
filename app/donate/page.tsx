@@ -2,6 +2,7 @@ import Link from "next/link";
 import { chapters } from "@/lib/data";
 import DonationForm from "@/components/DonationForm";
 import HeroSection from "@/components/HeroSection";
+import { Trophy, BookOpen, Package, PartyPopper, Cpu, Handshake } from "lucide-react";
 
 interface DonatePageProps {
   searchParams: Promise<{ club?: string; success?: string; canceled?: string }>;
@@ -66,15 +67,15 @@ export default async function DonatePage({ searchParams }: DonatePageProps) {
             <h3 className="text-lg font-heading font-bold text-primary-600">How Funds Are Used</h3>
             <div className="mt-3 space-y-2">
               {[
-                { icon: "🏆", label: "Competition registration & travel" },
-                { icon: "📦", label: "Supplies & workshop materials" },
-                { icon: "🎉", label: "Community events & outreach" },
-                { icon: "💻", label: "Tech & equipment" },
-                { icon: "📚", label: "Educational resources" },
-                { icon: "🤝", label: "Inter-school collaborations" },
+                { icon: Trophy, label: "Competition registration & travel" },
+                { icon: Package, label: "Supplies & workshop materials" },
+                { icon: PartyPopper, label: "Community events & outreach" },
+                { icon: Cpu, label: "Tech & equipment" },
+                { icon: BookOpen, label: "Educational resources" },
+                { icon: Handshake, label: "Inter-school collaborations" },
               ].map((item) => (
                 <div key={item.label} className="flex items-start gap-2 text-sm">
-                  <span>{item.icon}</span>
+                  <span><item.icon size={20} className="text-secondary-500" /></span>
                   <p className="text-neutral-700">{item.label}</p>
                 </div>
               ))}

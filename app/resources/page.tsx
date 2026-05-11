@@ -57,10 +57,44 @@ function StarRow({ rating }: { rating: number }) {
   );
 }
 
+function BannerPattern({ patternId }: { patternId: string }) {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+      <svg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id={patternId} x="0" y="0" width="520" height="300" patternUnits="userSpaceOnUse">
+            <path d="M-20,80 C60,40 120,120 200,90 C280,60 320,130 400,100 C460,78 500,110 540,95" stroke="rgba(255,255,255,0.10)" strokeWidth="2.5" fill="none"/>
+            <path d="M-20,160 C50,130 100,180 180,155 C260,130 310,175 390,150 C450,132 490,165 540,148" stroke="rgba(255,255,255,0.07)" strokeWidth="2" fill="none"/>
+            <path d="M-20,240 C70,210 140,255 220,230 C300,205 360,248 440,222 C490,207 520,232 540,220" stroke="rgba(255,255,255,0.06)" strokeWidth="1.8" fill="none"/>
+            <ellipse cx="80" cy="60" rx="48" ry="32" fill="rgba(255,255,255,0.045)" />
+            <ellipse cx="300" cy="200" rx="60" ry="38" fill="rgba(255,255,255,0.035)" />
+            <ellipse cx="450" cy="80" rx="42" ry="28" fill="rgba(255,255,255,0.04)" />
+            <g opacity="0.30" fill="white">
+              <circle cx="460" cy="30" r="2.2"/><circle cx="470" cy="30" r="2.2"/><circle cx="480" cy="30" r="2.2"/>
+              <circle cx="460" cy="40" r="2.2"/><circle cx="470" cy="40" r="2.2"/><circle cx="480" cy="40" r="2.2"/>
+              <circle cx="460" cy="50" r="2.2"/><circle cx="470" cy="50" r="2.2"/><circle cx="480" cy="50" r="2.2"/>
+            </g>
+            <g opacity="0.25" fill="white">
+              <circle cx="20" cy="230" r="2"/><circle cx="30" cy="230" r="2"/><circle cx="40" cy="230" r="2"/>
+              <circle cx="20" cy="240" r="2"/><circle cx="30" cy="240" r="2"/><circle cx="40" cy="240" r="2"/>
+              <circle cx="20" cy="250" r="2"/><circle cx="30" cy="250" r="2"/><circle cx="40" cy="250" r="2"/>
+            </g>
+            <circle cx="100" cy="185" r="8" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+            <circle cx="310" cy="55" r="10" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" fill="none"/>
+            <circle cx="415" cy="245" r="6" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+            <circle cx="510" cy="190" r="8" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" fill="none"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill={`url(#${patternId})`} />
+      </svg>
+    </div>
+  );
+}
+
 export default function ResourcesPage() {
   const router = useRouter();
-  const [category, setCategory] = useState("Getting Started");
-  const [stage, setStage]       = useState("All Stages");
+  const [category, setCategory] = useState("All");
+  const [stage, setStage]       = useState("Beginner");
   const [query, setQuery]       = useState("");
   const [saved, setSaved]       = useState<Set<string>>(new Set());
   const [toolInputs, setToolInputs] = useState<Record<string, string>>({});
@@ -91,13 +125,13 @@ export default function ResourcesPage() {
         style={{
           backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
         }} />
-      <div className="relative z-0 bg-cream-200 min-h-screen diagonal-texture-light">
+      <div className="relative z-0 bg-cream-200 min-h-screen">
 
       <HeroSection
         eyebrow="Community Resources"
         title="Resource"
         highlightWord="Directory"
-        description={<>Everything a club leader needs � <strong className="text-secondary-700 font-bold">constitution templates, budget worksheets,</strong> recruitment guides, advisor pitch decks, and step-by-step handbooks. <strong className="text-primary-700 font-semibold">Free for all students</strong> at every stage of club life.</>}
+        description={<>Students have a lot of ambitions and hopes. They can instill this upon others through creation of clubs, where they can create their own organization of change.</>}
         texture="diagonal"
         images={[
           "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1600&q=75",
@@ -143,6 +177,13 @@ export default function ResourcesPage() {
               <div className="space-y-1.5">
                 {STAGES.map(s => {
                   const active = stage === s;
+                  const dotColors = {
+                    "All Stages": "bg-primary-900",
+                    "Beginner": "bg-emerald-500",
+                    "Growing": "bg-blue-500", 
+                    "Active": "bg-amber-500",
+                    "Advanced": "bg-purple-500"
+                  };
                   return (
                     <button
                       key={s}
@@ -153,7 +194,7 @@ export default function ResourcesPage() {
                           : "text-neutral-600 hover:bg-cream-100"
                       }`}
                     >
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${active ? "bg-current opacity-70" : "bg-neutral-300"}`} />
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${active ? "bg-current opacity-70" : dotColors[s] || "bg-neutral-300"}`} />
                       {s}
                     </button>
                   );
@@ -199,59 +240,143 @@ export default function ResourcesPage() {
           {/* -- MAIN CONTENT -- */}
           <main className="flex-1 min-w-0 space-y-8">
 
-            {/* Tools */}
+            {/* ClubConnect Feature Tools */}
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-secondary-600 mb-1">Interactive Tools</p>
-              <h2 className="text-base font-heading font-bold text-primary-800 mb-1">Stage-specific tools</h2>
-              <p className="text-xs text-neutral-500 mb-4">
-                {stage === "All Stages"
-                  ? "Select a club stage on the left to narrow these tools to the most relevant set."
-                  : `Showing tools for ${stage} clubs.`}
-              </p>
-              <div className="grid lg:grid-cols-2 gap-3">
-                {visibleTools.map(tool => {
-                  const Icon = tool.icon;
-                  const toolValue = toolInputs[tool.label] ?? "";
-                  const handleToolSubmit = (e: React.FormEvent) => {
-                    e.preventDefault();
-                    const value = toolValue.trim();
-                    const href = value
-                      ? `${tool.href}?${tool.queryParam}=${encodeURIComponent(value)}`
-                      : tool.href;
-                    router.push(href);
-                  };
-                  return (
-                    <div
-                      key={tool.label}
-                      className={`bg-white rounded-2xl border border-l-4 border-cream-200 ${tool.border} px-3.5 py-3.5 hover:shadow-md hover:-translate-y-0.5 transition-all group`}
-                    >
-                      <div className="flex items-start gap-3 mb-2.5">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${tool.color} text-white`}>
-                          <Icon size={15} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-primary-700 leading-tight">{tool.label}</p>
-                          <p className="text-[11px] text-neutral-500 mt-1">{tool.prompt}</p>
-                        </div>
-                      </div>
-                      <form onSubmit={handleToolSubmit} className="flex items-center gap-2">
-                        <input
-                          value={toolValue}
-                          onChange={(e) => setToolInputs((prev) => ({ ...prev, [tool.label]: e.target.value }))}
-                          placeholder={tool.placeholder}
-                          className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-cream-300 text-xs text-primary-800 placeholder-neutral-400 outline-none focus:ring-2 focus:ring-secondary-400/25 focus:border-secondary-400"
-                        />
-                        <button
-                          type="submit"
-                          className="shrink-0 px-3 py-2 rounded-xl bg-primary-900 hover:bg-primary-900 text-white text-xs font-bold transition-colors"
-                        >
-                          Go
-                        </button>
-                      </form>
-                    </div>
-                  );
-                })}
+              {/* Section header */}
+              <div className="mb-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.20em] text-secondary-600 mb-1">ClubConnect Feature Tools</p>
+                <h2 className="text-3xl font-heading font-extrabold text-primary-900 leading-tight">A dedicated tool for every stage of your club</h2>
+                <p className="mt-1.5 text-sm text-neutral-500 font-medium">No matter where your club is in its journey, ClubConnect has a built-in tool to help you level up.</p>
               </div>
+
+              {/* Stage-aware banner cards */}
+              {(() => {
+                const toolCards = [
+                  {
+                    id: "t1",
+                    stageKey: "Beginner",
+                    name: "Ideas Board",
+                    href: "/hub/ideas",
+                    desc: "Turn early club concepts into clear, vote-backed plans your team can execute.",
+                    outcomes: ["Collect ideas", "Rank by interest", "Start with confidence"],
+                    stat: "156 ideas proposed this month",
+                    solidBg: "#059669",   /* emerald-600 */
+                    patternColor: "rgba(255,255,255,0.10)",
+                    diagonalColor: "rgba(255,255,255,0.06)",
+                  },
+                  {
+                    id: "t2",
+                    stageKey: "Growing",
+                    name: "Goal Tracker",
+                    href: "/hub/goals",
+                    desc: "Set measurable milestones, track weekly progress, and keep every member accountable.",
+                    outcomes: ["Define milestones", "Measure progress", "Celebrate wins"],
+                    stat: "89% goal completion rate",
+                    solidBg: "#2563eb",   /* blue-600 */
+                    patternColor: "rgba(255,255,255,0.10)",
+                    diagonalColor: "rgba(255,255,255,0.06)",
+                  },
+                  {
+                    id: "t3",
+                    stageKey: "Active",
+                    name: "Club Health",
+                    href: "/hub/health",
+                    desc: "Monitor attendance, momentum, and engagement before small issues become big ones.",
+                    outcomes: ["Spot weak points", "Improve consistency", "Boost retention"],
+                    stat: "342 clubs improved health scores",
+                    solidBg: "#d97706",   /* amber-600 */
+                    patternColor: "rgba(255,255,255,0.10)",
+                    diagonalColor: "rgba(255,255,255,0.06)",
+                  },
+                  {
+                    id: "t4",
+                    stageKey: "Advanced",
+                    name: "Compare Clubs",
+                    href: "/hub/compare",
+                    desc: "Benchmark your chapter against peers to find proven strategies worth adopting.",
+                    outcomes: ["Benchmark performance", "Find best practices", "Plan improvements"],
+                    stat: "67% found strong growth opportunities",
+                    solidBg: "#7c3aed",   /* violet-600 */
+                    patternColor: "rgba(255,255,255,0.10)",
+                    diagonalColor: "rgba(255,255,255,0.06)",
+                  },
+                ] as const;
+
+                const visibleCards = stage === "All Stages"
+                  ? toolCards
+                  : toolCards.filter(card => card.stageKey === stage);
+
+                return (
+                  <div className={stage === "All Stages" ? "grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-fr" : "grid grid-cols-1"}>
+                    {visibleCards.map(({ id, stageKey, name, href, desc, outcomes, stat, solidBg, diagonalColor }, idx) => (
+                      <Link
+                        key={id}
+                        href={href}
+                        className={`group relative rounded-3xl overflow-hidden flex flex-col h-full hover:scale-[1.01] hover:shadow-2xl transition-all duration-300 ${idx % 2 === 0 ? "animate-slide-in-left" : "animate-slide-in-right"}`}
+                        style={{ background: solidBg, animationDelay: `${idx * 0.08}s` }}
+                      >
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 18px, ${diagonalColor} 18px, ${diagonalColor} 19px)`,
+                          }}
+                        />
+                        <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+                          <svg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                              <pattern id={`tool-pattern-${id}`} x="0" y="0" width="520" height="300" patternUnits="userSpaceOnUse">
+                                <path d="M-20,80 C60,40 120,120 200,90 C280,60 320,130 400,100 C460,78 500,110 540,95" stroke="rgba(255,255,255,0.13)" strokeWidth="2.5" fill="none"/>
+                                <path d="M-20,160 C50,130 100,180 180,155 C260,130 310,175 390,150 C450,132 490,165 540,148" stroke="rgba(255,255,255,0.09)" strokeWidth="2" fill="none"/>
+                                <path d="M-20,240 C70,210 140,255 220,230 C300,205 360,248 440,222 C490,207 520,232 540,220" stroke="rgba(255,255,255,0.07)" strokeWidth="1.8" fill="none"/>
+                                <ellipse cx="80" cy="60" rx="48" ry="32" fill="rgba(255,255,255,0.06)" />
+                                <ellipse cx="300" cy="200" rx="60" ry="38" fill="rgba(255,255,255,0.045)" />
+                                <ellipse cx="450" cy="80" rx="42" ry="28" fill="rgba(255,255,255,0.05)" />
+                                <g opacity="0.35" fill="white">
+                                  <circle cx="460" cy="30" r="2.2"/><circle cx="470" cy="30" r="2.2"/><circle cx="480" cy="30" r="2.2"/>
+                                  <circle cx="460" cy="40" r="2.2"/><circle cx="470" cy="40" r="2.2"/><circle cx="480" cy="40" r="2.2"/>
+                                  <circle cx="460" cy="50" r="2.2"/><circle cx="470" cy="50" r="2.2"/><circle cx="480" cy="50" r="2.2"/>
+                                </g>
+                                <g opacity="0.28" fill="white">
+                                  <circle cx="20" cy="230" r="2"/><circle cx="30" cy="230" r="2"/><circle cx="40" cy="230" r="2"/>
+                                  <circle cx="20" cy="240" r="2"/><circle cx="30" cy="240" r="2"/><circle cx="40" cy="240" r="2"/>
+                                  <circle cx="20" cy="250" r="2"/><circle cx="30" cy="250" r="2"/><circle cx="40" cy="250" r="2"/>
+                                </g>
+                                <circle cx="100" cy="185" r="8" stroke="rgba(255,255,255,0.20)" strokeWidth="1.5" fill="none"/>
+                                <circle cx="310" cy="55" r="10" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+                                <circle cx="415" cy="245" r="6" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" fill="none"/>
+                                <circle cx="510" cy="190" r="8" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" fill="none"/>
+                              </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill={`url(#tool-pattern-${id})`} />
+                          </svg>
+                        </div>
+
+                        <div className={stage === "All Stages" ? "relative z-10 p-4 flex flex-col flex-1" : "relative z-10 p-4 md:p-5 grid gap-3 md:grid-cols-[1.25fr_1fr] md:items-center"}>
+                          <div>
+                            <span className="self-start inline-block text-[9px] font-extrabold uppercase tracking-[0.18em] px-2.5 py-1 rounded-full bg-white/20 text-white mb-3">
+                              {stageKey}
+                            </span>
+                            <h3 className="text-xl md:text-2xl font-heading font-extrabold text-white leading-tight mb-1.5">{name}</h3>
+                            <p className="text-xs md:text-sm text-white/90 leading-relaxed font-medium mb-3 line-clamp-2">{desc}</p>
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              {outcomes.slice(0, 2).map(o => (
+                                <span key={o} className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white">{o}</span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="md:justify-self-end">
+                            <div className="rounded-2xl bg-white/15 border border-white/25 px-6 py-4 flex items-center gap-3 group-hover:bg-white/25 transition-colors">
+                              <span className="text-base font-extrabold text-white tracking-wide">Open Tool</span>
+                              <ArrowRight size={18} className="text-white group-hover:translate-x-1 transition-transform" />
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Divider + count */}
@@ -280,12 +405,13 @@ export default function ResourcesPage() {
                   className="mt-4 text-sm font-semibold text-primary-600 hover:underline">Clear filters</button>
               </div>
             ) : (
-              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-fr">
                 {filtered.map(r => (
-                  <div key={r.id} className="bg-white rounded-2xl overflow-hidden border border-cream-300 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.11)] hover:-translate-y-0.5 transition-all duration-200 group flex flex-col">
+                  <div key={r.id} className="bg-white rounded-2xl overflow-hidden border border-cream-300 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.11)] hover:-translate-y-0.5 transition-all duration-200 group flex flex-col h-full">
                     <div className="relative h-40 overflow-hidden bg-primary-900">
                       <Image src={r.img} alt={r.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90" />
                       <div className="absolute inset-0 bg-gradient-to-t from-primary-900/65 to-transparent" />
+                      <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 45%, rgba(28,53,87,0.75) 72%, #1c3557 100%)" }} />
                       <span className={`absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold ${TYPE_COLORS[r.type]}`}>
                         {TYPE_ICONS[r.type]} {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
                       </span>
@@ -298,7 +424,7 @@ export default function ResourcesPage() {
                           saved.has(r.id) ? "bg-secondary-500 text-white" : "bg-white/80 text-neutral-600 hover:bg-white"
                         }`}
                       >
-                        {saved.has(r.id) ? "?" : "?"}
+                        {saved.has(r.id) ? "★" : "☆"}
                       </button>
                     </div>
                     <div className="p-4 flex flex-col flex-1">
@@ -307,7 +433,9 @@ export default function ResourcesPage() {
                       <p className="text-xs text-neutral-500 leading-relaxed mb-3 flex-1 line-clamp-2">{r.details}</p>
                       <div className="flex items-center justify-between border-t border-cream-200 pt-3 mt-auto">
                         <StarRow rating={r.rating} />
-                        <span className="flex items-center gap-1 text-[10px] text-neutral-400"><Download size={9} /> {r.downloads}</span>
+                        <a href={r.downloadUrl ?? `/resources-pdfs/${r.id}.pdf`} download={`${r.id}.pdf`} className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] text-primary-600 hover:text-primary-700 hover:bg-cream-100 transition-colors" onClick={(e) => e.stopPropagation()}>
+                          <Download size={9} /> Download PDF
+                        </a>
                       </div>
                       <Link href={`/resources/${r.id}`}
                         className="mt-3 w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-xl bg-cream-100 hover:bg-primary-900 hover:text-white text-primary-700 text-xs font-bold transition-colors">
@@ -321,23 +449,22 @@ export default function ResourcesPage() {
 
             {/* Suggest Resources CTA */}
             <div className="relative rounded-2xl overflow-hidden">
-              {/* Background */}
               <div className="absolute inset-0 bg-primary-900" />
-              <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
-              {/* Gold accent top bar */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-secondary-500 via-secondary-300 to-secondary-500" />
+              <BannerPattern patternId="resources-cta-banner-pattern" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-300 to-blue-500" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-300 to-blue-500" />
               <div className="relative z-10 p-8 flex flex-col sm:flex-row items-center gap-6 text-white">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2 h-2 rounded-full bg-secondary-400 animate-pulse" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-secondary-400">Missing something?</p>
+                    <span className="w-2 h-2 rounded-full bg-cyan-300 animate-pulse" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-300">Missing something?</p>
                   </div>
                   <h3 className="font-heading font-bold text-xl mb-2">Suggest a Resource</h3>
                   <p className="text-sm text-primary-200 leading-relaxed max-w-md">Know a guide, template, or handbook that would help other clubs? Share it and help your school community grow.</p>
                 </div>
                 <div className="flex flex-col gap-3 shrink-0">
                   <Link href="/portal?tab=resource"
-                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-secondary-500 hover:bg-secondary-400 text-white font-bold text-sm transition-colors shadow-lg whitespace-nowrap">
+                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-blue-500 hover:bg-blue-400 text-white font-bold text-sm transition-colors shadow-lg whitespace-nowrap">
                     <Sparkles size={15} /> Suggest a Resource
                   </Link>
                   <Link href="/portal"

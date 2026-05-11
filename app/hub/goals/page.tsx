@@ -6,8 +6,7 @@ import {
   Award, Calendar, CheckCircle, ChevronDown, Edit3, Flag, Plus,
   Target, TrendingUp, Trophy, Trash2, Zap
 } from "lucide-react";
-import { useAuthGate } from "@/lib/useAuthGate";
-import AuthRequiredNotice from "@/components/AuthRequiredNotice";
+import StageBannerPattern from "@/components/StageBannerPattern";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -65,7 +64,6 @@ function saveGoals(goals: Goal[]) {
 }
 
 export default function GoalsPage() {
-  const { ready, loggedIn } = useAuthGate();
   const [goals, setGoals] = useState<Goal[]>(SEED_GOALS);
   const [tab, setTab] = useState<"active" | "completed" | "insights">("active");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -113,29 +111,23 @@ export default function GoalsPage() {
   const avgProgress = Math.round(active.reduce((s, g) => s + g.progress, 0) / (active.length || 1));
   const atRisk = active.filter(g => g.status === "at-risk" || g.status === "behind").length;
 
-  if (ready && !loggedIn) {
-    return (
-      <AuthRequiredNotice
-        title="Login Required for Goal Tracker"
-        message="It's better to login to track your club goals, milestones, and achievements. Please sign in to access your personalized goal tracker."
-        redirectTo="/hub/goals"
-        loginLabel="Sign In to Continue"
-      />
-    );
-  }
-
   return (
     <div className="bg-neutral-100 min-h-screen">
-      <section className="bg-primary-900 text-white border-b-4 border-secondary-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-          <Link href="/hub" className="text-sm text-orange-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Target size={36} /> Goal Tracker</h1>
-          <p className="mt-3 max-w-2xl text-orange-50 text-lg">Set club goals, track milestones, and celebrate achievements together.</p>
+      <section className="relative overflow-hidden text-white border-b-4 border-blue-300" style={{ background: "#2563eb" }}>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.06) 18px, rgba(255,255,255,0.06) 19px)" }}
+        />
+        <StageBannerPattern patternId="goals-tool-banner-pattern" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative z-10">
+          <Link href="/hub" className="text-sm text-white/90 hover:underline mb-2 inline-block">← Back to Hub</Link>
+          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><Target size={36} /> Goal Tracker</h1>
+          <p className="mt-3 max-w-2xl text-white/90 text-lg">Set club goals, track milestones, and celebrate achievements together.</p>
           <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{goals.length}</p><p className="text-xs text-orange-100">Total Goals</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{avgProgress}%</p><p className="text-xs text-orange-100">Avg Progress</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{completed.length}</p><p className="text-xs text-orange-100">Completed</p></div>
-            <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{atRisk}</p><p className="text-xs text-orange-100">At Risk</p></div>
+            <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{goals.length}</p><p className="text-xs text-white/85">Total Goals</p></div>
+            <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{avgProgress}%</p><p className="text-xs text-white/85">Avg Progress</p></div>
+            <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{completed.length}</p><p className="text-xs text-white/85">Completed</p></div>
+            <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{atRisk}</p><p className="text-xs text-white/85">At Risk</p></div>
           </div>
         </div>
       </section>

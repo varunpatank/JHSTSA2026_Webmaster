@@ -22,7 +22,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
     return (
       <div className="bg-neutral-100 min-h-screen py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-2xl font-bold text-primary-500 mb-4">Guide Not Found</h1>
+          <h1 className="text-2xl font-bold text-primary-900 mb-4">Guide Not Found</h1>
           <p className="text-neutral-600 mb-6">The guide you&apos;re looking for doesn&apos;t exist.</p>
           <Link href="/hub" className="btn-primary">Back to Hub</Link>
         </div>
@@ -44,7 +44,7 @@ export default function GuideDetailPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="bg-neutral-100 min-h-screen">
       {}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative py-16 overflow-hidden border-b-4 border-secondary-500">
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1920&q=80"

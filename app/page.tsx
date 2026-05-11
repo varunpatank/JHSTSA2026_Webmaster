@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  ArrowRight, BookOpen, Calendar, ChevronRight, GraduationCap, MapPin, Rocket, Trophy, Users, Search, Sparkles, Zap, Lightbulb, Users2, BadgeCheck,
+  ArrowRight, BookOpen, Calendar, ChevronRight, GraduationCap, MapPin, Rocket, Trophy, Users, Search, Sparkles, Zap, Lightbulb, Users2, BadgeCheck, Palette,
 } from "lucide-react";
 import { events, stats, chapters } from "@/lib/data";
 
@@ -362,10 +362,7 @@ export default function HomePage() {
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-8">
           {/* Eyebrow */}
           <div className="flex items-center mb-5">
-            <div className="flex items-center gap-2">
-              <div className="w-0.5 h-4 rounded-full bg-secondary-400" />
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/65">Upcoming Events</p>
-            </div>
+            <p className="text-[13px] font-bold uppercase tracking-[0.22em] text-white/75">Upcoming Events</p>
           </div>
 
           {/* Card */}
@@ -373,17 +370,17 @@ export default function HomePage() {
             <div className="h-[3px] bg-gradient-to-r from-secondary-500 via-secondary-300 to-secondary-500" />
             <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-cream-100">
               {[
-                { month: "May", day: "16", emoji: "🌸", title: "Spring Fest 2026",           club: "Student Council",  where: "Courtyard",  tag: "All clubs welcome · Free",  color: "bg-secondary-50 border-secondary-200 text-secondary-700" },
-                { month: "Jun", day: "7",  emoji: "🚀", title: "Hack Club × NASA Challenge", club: "Hack Club",         where: "STEM Lab",   tag: "Open to all students",       color: "bg-primary-50 border-primary-200 text-primary-700"    },
-                { month: "Jun", day: "21", emoji: "🎨", title: "Arts Fest End-of-Year Show", club: "Arts & Drama Club", where: "Auditorium", tag: "Drama, Music & Visual Arts",  color: "bg-amber-50 border-amber-200 text-amber-700"          },
-              ].map(({ month, day, emoji, title, club, where, tag, color }) => (
+                { month: "May", day: "16", icon: Calendar, title: "Spring Fest 2026",           club: "Student Council",  where: "Courtyard",  tag: "All clubs welcome · Free",  color: "bg-secondary-50 border-secondary-200 text-secondary-700" },
+                { month: "Jun", day: "7",  icon: Zap, title: "Hack Club × NASA Challenge", club: "Hack Club",         where: "STEM Lab",   tag: "Open to all students",       color: "bg-primary-50 border-primary-200 text-primary-700"    },
+                { month: "Jun", day: "21", icon: Palette, title: "Arts Fest End-of-Year Show", club: "Arts & Drama Club", where: "Auditorium", tag: "Drama, Music & Visual Arts",  color: "bg-amber-50 border-amber-200 text-amber-700"          },
+              ].map(({ month, day, icon: Icon, title, club, where, tag, color }) => (
                 <div key={title} className="flex items-start gap-4 px-7 py-6 hover:bg-cream-50/80 transition-colors group cursor-pointer">
                   <div className={`w-12 h-12 rounded-xl border-2 flex flex-col items-center justify-center shrink-0 ${color}`}>
                     <span className="text-[8px] font-bold uppercase leading-none">{month}</span>
                     <span className="text-[20px] font-bold leading-none mt-0.5">{day}</span>
                   </div>
                   <div>
-                    <p className="font-bold text-[14px] text-primary-800 leading-tight group-hover:text-primary-600 transition-colors">{emoji} {title}</p>
+                    <p className="font-bold text-[14px] text-primary-800 leading-tight group-hover:text-primary-600 transition-colors flex items-center gap-2"><Icon size={16} className="shrink-0" /> {title}</p>
                     <p className="text-[11px] font-semibold text-primary-600 mt-1">By {club}</p>
                     <p className="text-[12px] text-primary-400 mt-1 flex items-center gap-1.5">
                       <MapPin size={10} className="shrink-0 text-secondary-400" /> {where}
