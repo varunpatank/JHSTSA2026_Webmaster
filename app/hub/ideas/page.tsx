@@ -197,7 +197,7 @@ export default function IdeasPage() {
               <h3 className="font-bold text-primary-700 mb-2 text-sm">💡 How It Works</h3>
               <ol className="text-xs text-neutral-600 space-y-2"><li><strong>1.</strong> Submit your club idea</li><li><strong>2.</strong> Community votes on proposals</li><li><strong>3.</strong> Ideas with 30+ votes get reviewed</li><li><strong>4.</strong> Approved clubs start forming!</li></ol>
             </div>
-            <button onClick={() => setShowForm(!showForm)} className="btn-primary w-full text-sm flex items-center justify-center gap-2"><Plus size={16} /> Propose New Idea</button>
+            <button onClick={() => { if (!currentUserId) { router.push("/portal"); return; } setShowForm(!showForm); }} className="btn-primary w-full text-sm flex items-center justify-center gap-2"><Plus size={16} /> Propose New Idea</button>
           </aside>
 
           {}

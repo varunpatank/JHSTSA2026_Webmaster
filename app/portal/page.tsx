@@ -814,13 +814,21 @@ export default function PortalPage() {
               <p className="text-sm text-neutral-500 max-w-xs mx-auto mb-6">
                 {tab === "clubs" ? "Sign in to view your enrolled clubs and create new ones." : tab === "event" ? "You need a ClubConnect account to submit an event." : tab === "resource" ? "You need a ClubConnect account to add a resource." : "You need a ClubConnect account to view your profile."}
               </p>
-              <div className="flex items-center justify-center gap-3">
-                <Link href="/signup" className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-900 text-white text-sm font-bold hover:brightness-110 transition-colors">
-                  Create Account
-                </Link>
-                <Link href="/login" className="inline-flex items-center gap-2 px-5 py-2.5 border border-primary-200 text-primary-700 text-sm font-semibold hover:bg-primary-50 transition-colors">
-                  Sign In
-                </Link>
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center justify-center gap-3">
+                  <Link href="/signup" className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-900 text-white text-sm font-bold hover:brightness-110 transition-colors">
+                    Create Account
+                  </Link>
+                  <Link href="/login" className="inline-flex items-center gap-2 px-5 py-2.5 border border-primary-200 text-primary-700 text-sm font-semibold hover:bg-primary-50 transition-colors">
+                    Sign In
+                  </Link>
+                </div>
+                <button
+                  onClick={handleJudgeLogin}
+                  disabled={judgeLoading}
+                  className="inline-flex items-center gap-2 px-5 py-2 border border-secondary-400/50 text-secondary-600 text-xs font-bold hover:bg-secondary-50 transition-colors disabled:opacity-60">
+                  <Gavel size={13} /> {judgeLoading ? "Signing in…" : "Judge Sign In"}
+                </button>
               </div>
             </div>
           ) : (
