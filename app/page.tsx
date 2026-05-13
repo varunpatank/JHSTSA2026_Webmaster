@@ -77,8 +77,8 @@ function TypedTitle({ prefix, highlight = "", highlightClass = "text-secondary-4
       if (e.isIntersecting && !started.current) {
         started.current = true;
         let i = 0;
-        const tick = () => { i++; setCount(i); if (i < full.length) setTimeout(tick, 26); };
-        setTimeout(tick, 180);
+        const tick = () => { i++; setCount(i); if (i < full.length) setTimeout(tick, 110); };
+        setTimeout(tick, 400);
         obs.unobserve(el);
       }
     }, { threshold: 0.3 });
