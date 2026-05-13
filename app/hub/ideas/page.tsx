@@ -125,7 +125,7 @@ export default function IdeasPage() {
   });
 
   async function handleVote(id: string) {
-    if (!currentUserId) { router.push("/login"); return; }
+    if (!currentUserId) { router.push("/portal"); return; }
     const wasVoted = myVotes.has(id);
     setMyVotes(prev => { const n = new Set(prev); wasVoted ? n.delete(id) : n.add(id); return n; });
     setIdeas(prev => prev.map(i => i.id === id ? { ...i, upvotes: wasVoted ? i.upvotes - 1 : i.upvotes + 1 } : i));
@@ -134,7 +134,7 @@ export default function IdeasPage() {
   }
 
   async function handleSubmitIdea() {
-    if (!currentUserId) { router.push("/login"); return; }
+    if (!currentUserId) { router.push("/portal"); return; }
     if (!formTitle.trim() || !formDescription.trim() || submitting) return;
     setSubmitting(true);
     const newIdea: ClubIdea = {

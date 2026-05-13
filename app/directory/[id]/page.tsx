@@ -126,7 +126,7 @@ export default function ClubDetailPage() {
   const handleJoin = async () => {
     const { data: authData } = await supabase.auth.getUser();
     if (!authData.user) {
-      router.push(`/login?redirect=/directory/${params.id}&action=join&club=${params.id}`);
+      router.push(`/portal`);
       return;
     }
     const status = chapter.membershipStatus === "Open Enrollment" ? "member" : "pending";

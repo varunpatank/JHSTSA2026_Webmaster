@@ -94,7 +94,7 @@ export default function StoriesPage() {
   }, []);
 
   async function handleSubmitStory() {
-    if (!currentUserId) { router.push("/login"); return; }
+    if (!currentUserId) { router.push("/portal"); return; }
     if (!storyTitle.trim() || !storyContent.trim() || submitting) return;
     setSubmitting(true);
     const newStory: SuccessStory = {

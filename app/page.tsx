@@ -14,36 +14,45 @@ const WORDS = ["Community.", "Connection.", "Leadership.", "Belonging.", "Friend
 
 function RotatingWord() {
   const [idx, setIdx] = useState(0);
+  const [prev, setPrev] = useState<number | null>(null);
   useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % WORDS.length), 2600);
+    const t = setInterval(() => {
+      setIdx((i) => { setPrev(i); return (i + 1) % WORDS.length; });
+    }, 2800);
     return () => clearInterval(t);
   }, []);
   return (
     <span
-      className="relative inline-block"
-      style={{ height: "1.16em", minWidth: "8.2em", verticalAlign: "0.02em" }}
+      className="relative inline-block overflow-hidden"
+      style={{ height: "1.16em", minWidth: "9em", verticalAlign: "0.02em" }}
     >
-      <span className="absolute inset-0 overflow-hidden" aria-live="polite">
-        {WORDS.map((word, i) => (
-          <span
-            key={word}
-            className="absolute left-0 right-0 font-heading leading-[1.12]"
-            style={{
-              color: "#F2C75C",
-              fontStyle: "italic",
-              opacity: i === idx ? 1 : 0,
-              transform: i === idx
-                ? "translateY(0px) scale(1)"
-                : i < idx
-                  ? "translateY(-110%) scale(0.96)"
-                  : "translateY(110%) scale(0.96)",
-              filter: i === idx ? "blur(0px)" : "blur(6px)",
-              transition: "opacity 0.55s cubic-bezier(0.4,0,0.2,1), transform 0.55s cubic-bezier(0.4,0,0.2,1), filter 0.55s ease",
-            }}
-          >
-            {word}
-          </span>
-        ))}
+      <span aria-live="polite">
+        {WORDS.map((word, i) => {
+          const isCurrent = i === idx;
+          const isPrev = i === prev;
+          return (
+            <span
+              key={word}
+              className="absolute left-0 font-heading leading-[1.12] whitespace-nowrap"
+              style={{
+                color: "#F2C75C",
+                fontStyle: "italic",
+                opacity: isCurrent ? 1 : 0,
+                transform: isCurrent
+                  ? "translateX(0%)"
+                  : isPrev
+                    ? "translateX(-60%)"
+                    : "translateX(60%)",
+                transition: isCurrent || isPrev
+                  ? "opacity 0.5s ease, transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)"
+                  : "none",
+                pointerEvents: "none",
+              }}
+            >
+              {word}
+            </span>
+          );
+        })}
       </span>
     </span>
   );
@@ -66,32 +75,30 @@ function Reveal({ children, className = "", delay = 0, variant = "up" }: { child
 function TypedTitle({ prefix, highlight = "", highlightClass = "text-secondary-400", className = "" }: {
   prefix: string; highlight?: string; highlightClass?: string; className?: string;
 }) {
-  const full = prefix + highlight;
-  const [count, setCount] = useState(0);
+  const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
-  const started = useRef(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        let i = 0;
-        const tick = () => { i++; setCount(i); if (i < full.length) setTimeout(tick, 110); };
-        setTimeout(tick, 400);
-        obs.unobserve(el);
-      }
-    }, { threshold: 0.3 });
+      if (e.isIntersecting) { setVisible(true); obs.unobserve(el); }
+    }, { threshold: 0.2 });
     obs.observe(el);
     return () => obs.disconnect();
-  }, [full.length]);
-  const shownPrefix = prefix.slice(0, Math.min(count, prefix.length));
-  const shownHighlight = count > prefix.length ? highlight.slice(0, count - prefix.length) : "";
+  }, []);
   return (
-    <span ref={ref} className={className}>
-      {shownPrefix}
-      {highlight && <em className={`not-italic ${highlightClass}`}>{shownHighlight}</em>}
-      {count < full.length && <span className="opacity-60 animate-pulse">|</span>}
+    <span
+      ref={ref}
+      className={className}
+      style={{
+        display: "inline-block",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateX(0px)" : "translateX(-32px)",
+        transition: "opacity 0.65s cubic-bezier(0.25,0.46,0.45,0.94), transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94)",
+      }}
+    >
+      {prefix}
+      {highlight && <em className={`not-italic ${highlightClass}`}>{highlight}</em>}
     </span>
   );
 }

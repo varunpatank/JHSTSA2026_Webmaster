@@ -322,7 +322,7 @@ export default function EventDetailPage() {
           </div>
           {!currentUserId && (
             <p className="mt-3 text-xs text-neutral-500">
-              <Link href="/login" className="text-primary-600 font-semibold hover:underline">Log in</Link> to sign up for this event.
+              <Link href="/portal" className="text-primary-600 font-semibold hover:underline">Sign in</Link> to sign up for this event.
             </p>
           )}
         </div>

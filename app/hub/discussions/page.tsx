@@ -127,7 +127,7 @@ export default function DiscussionsPage() {
   const totalReplies = discussions.reduce((s, d) => s + d.replies, 0);
 
   async function handlePostDiscussion() {
-    if (!currentUserId) { router.push("/login"); return; }
+    if (!currentUserId) { router.push("/portal"); return; }
     if (!newTitle.trim() || !newContent.trim() || submitting) return;
     setSubmitting(true);
     const tags = newTags.split(",").map(t => t.trim()).filter(Boolean);
