@@ -20,9 +20,13 @@ const presetAmounts = [5, 10, 25, 50, 100];
 export default function DonationForm({
   selectedClub,
   initialSuccess,
+  compact,
+  returnPath,
 }: {
   selectedClub?: { id: string; name: string };
   initialSuccess?: boolean;
+  compact?: boolean;
+  returnPath?: string;
 }) {
   const [amount, setAmount] = useState<number>(25);
   const [customAmount, setCustomAmount] = useState("");
@@ -42,9 +46,11 @@ export default function DonationForm({
   const effectiveAmount = promoApplied ? 0 : amount;
   const selectedClubData = chapters.find((c) => c.id === clubId);
 
+  const VALID_PROMO_CODES = ["test", "judge2026"];
+
   const applyPromo = () => {
     setPromoError("");
-    if (promoCode.toLowerCase().trim() === "test") {
+    if (VALID_PROMO_CODES.includes(promoCode.toLowerCase().trim())) {
       setPromoApplied(true);
     } else {
       setPromoError("Invalid promo code. Try again.");
@@ -69,6 +75,7 @@ export default function DonationForm({
           message,
           isRecurring,
           promoApplied,
+          returnPath: returnPath || undefined,
         }),
       });
 
@@ -137,6 +144,58 @@ export default function DonationForm({
           </Link>
         </div>
       </div>
+    );
+  }
+
+  // ── COMPACT MODE (sidebar) ────────────────────────────────────────
+  if (compact) {
+    if (success) {
+      return (
+        <div className="text-center py-3">
+          <CheckCircle size={24} className="mx-auto text-green-500 mb-2" />
+          <p className="text-xs font-bold text-primary-800">Thank you!</p>
+          <p className="text-[10px] text-neutral-500 mt-0.5">Donation processed via Stripe.</p>
+        </div>
+      );
+    }
+    return (
+      <form onSubmit={handleSubmit} className="space-y-2.5">
+        {error && <div className="p-2 bg-red-50 border border-red-200 text-[10px] text-red-700">{error}</div>}
+        <div className="grid grid-cols-5 gap-1">
+          {presetAmounts.map(a => (
+            <button key={a} type="button"
+              onClick={() => { setAmount(a); setCustomAmount(""); }}
+              className={`py-1.5 rounded-lg font-bold text-[10px] transition-all border ${amount === a && !customAmount ? "bg-primary-900 text-white border-primary-900" : "bg-cream-50 text-primary-800 hover:bg-primary-50 border-cream-300"}`}>
+              ${a}
+            </button>
+          ))}
+        </div>
+        <div className="relative">
+          <DollarSign size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <input type="number" min="1" placeholder="Custom amount"
+            value={customAmount}
+            onChange={e => { setCustomAmount(e.target.value); if (e.target.value) setAmount(Math.max(1, parseInt(e.target.value) || 0)); }}
+            className="w-full border border-cream-300 rounded-lg pl-7 pr-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary-400"
+          />
+        </div>
+        <input type="email" placeholder="Email (for receipt)"
+          value={donorEmail} onChange={e => setDonorEmail(e.target.value)}
+          className="w-full border border-cream-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary-400"
+        />
+        <input type="text" placeholder="Promo code (optional)"
+          value={promoCode}
+          onChange={e => { setPromoCode(e.target.value); setPromoApplied(false); setPromoError(""); }}
+          onBlur={() => { const v = promoCode.toLowerCase().trim(); if (["test","judge2026"].includes(v)) { setPromoApplied(true); setPromoError(""); } else if (promoCode) setPromoError("Invalid code"); }}
+          className="w-full border border-cream-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary-400"
+        />
+        {promoApplied && <p className="text-[10px] text-green-600 font-medium flex items-center gap-1"><CheckCircle size={10} /> Code applied — $0 charge</p>}
+        {promoError && <p className="text-[10px] text-red-600">{promoError}</p>}
+        <button type="submit" disabled={processing}
+          className="w-full py-2 rounded-xl bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60">
+          {processing ? "Processing…" : `Donate $${effectiveAmount.toFixed(2)}`}
+        </button>
+        <p className="text-[9px] text-neutral-400 flex items-center justify-center gap-1"><Lock size={8} /> Secured by Stripe</p>
+      </form>
     );
   }
 

@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(30,58,95,0.08) 18px, rgba(30,58,95,0.08) 19px)"
         }} />
       <div className="relative z-0">
-        <LoginFormClient redirect={params.redirect || "/dashboard"} />
+        <LoginFormClient redirect={params.redirect || "/portal"} />
       </div>
     </div>
   );

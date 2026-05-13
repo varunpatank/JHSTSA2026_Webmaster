@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, ChevronLeft, ChevronRight, MapPin, Clock, Users } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Check, MapPin, Clock, Users } from "lucide-react";
 import type { Event } from "@/types";
+import { getCreatedEvents } from "@/lib/clientState";
 
 const EVENT_IMGS: Record<string, string> = {
   Academic: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80",
@@ -88,12 +89,46 @@ function MiniCalendar({ events, selectedDate, onSelect }: {
   );
 }
 
-export default function EventsClient({ events }: { events: Event[] }) {
+export default function EventsClient({ events: staticEvents }: { events: Event[] }) {
   const [filter, setFilter] = useState("All");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [view, setView] = useState<"list" | "grid">("list");
+  const [events, setEvents] = useState<Event[]>(staticEvents);
+  const [userEventIds, setUserEventIds] = useState<Set<string>>(new Set());
+  const [fromCreated, setFromCreated] = useState(false);
+  const scheduleRef = useRef<HTMLDivElement>(null);
 
-  const featured = events[0];
+  useEffect(() => {
+    const userCreated = getCreatedEvents().map(e => ({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      date: e.date,
+      startTime: e.startTime,
+      endTime: e.endTime,
+      location: e.location,
+      chapterId: e.clubId,
+      chapterName: e.clubName,
+      category: (e.category || "General") as Event["category"],
+      isPublic: true,
+      requiresRSVP: false,
+      currentAttendees: 0,
+    } as Event));
+    const staticIds = new Set(staticEvents.map(e => e.id));
+    const fresh = userCreated.filter(e => !staticIds.has(e.id));
+    setUserEventIds(new Set(fresh.map(e => e.id)));
+    // Append user events after static events so they don't hijack featured
+    setEvents([...staticEvents, ...fresh]);
+
+    // Scroll to schedule section if redirected after creation
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("from") === "created") {
+      setFromCreated(true);
+      setTimeout(() => scheduleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+    }
+  }, [staticEvents]);
+
+  const featured = staticEvents[0];
 
   const filtered = useMemo(() => events.filter(e => {
     const matchCat  = filter === "All" || e.category === filter;
@@ -186,7 +221,13 @@ export default function EventsClient({ events }: { events: Event[] }) {
       )}
 
       {/* ══ UPCOMING SCHEDULE ═════════════════════════════ */}
-      <section id="schedule">
+      <section id="schedule" ref={scheduleRef}>
+        {fromCreated && (
+          <div className="mb-5 flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-sm font-semibold">
+            <Check size={16} className="shrink-0" />
+            Your event was created! It&apos;s now listed below.
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-primary-500 mb-1">Upcoming Schedule</p>

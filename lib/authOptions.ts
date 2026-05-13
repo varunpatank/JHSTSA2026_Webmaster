@@ -39,7 +39,7 @@ export const authOptions: NextAuthOptions = {
         const password = credentials?.password;
 
         if (!email || !password) {
-          return null;
+          throw new Error('Email and password are required.');
         }
 
         const { data, error } = await authSupabase.auth.signInWithPassword({
@@ -47,8 +47,12 @@ export const authOptions: NextAuthOptions = {
           password,
         });
 
-        if (error || !data.user) {
-          return null;
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        if (!data.user) {
+          throw new Error('Sign in failed.');
         }
 
         return {

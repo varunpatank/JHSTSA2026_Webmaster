@@ -42,7 +42,10 @@ export const authApi = {
         })
 
         if (nextAuthRes?.error) {
-            return { data: { user: null, session: null }, error: { message: nextAuthRes.error } as any }
+            // nextAuthRes.error is a code like 'CredentialsSignin'; the real message
+            // comes back in nextAuthRes.error when authorize() throws.
+            const msg = (nextAuthRes as any).error ?? nextAuthRes.error ?? 'Sign in failed';
+            return { data: { user: null, session: null }, error: { message: msg } as any }
         }
 
         const session = await getSession()
@@ -914,4 +917,46 @@ export const chatApi = {
 
     subscribeToMessages: (channelId: string, callback: (msg: any) => void) =>
         supabase.channel(`chat:${channelId}`).on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `channel_id=eq.${channelId}` }, (payload) => callback(payload.new)).subscribe(),
+}
+
+
+
+export const goalsApi = {
+    getByUser: (userId: string) =>
+        supabase.from('club_goals').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(100),
+
+    create: (data: { user_id: string; title: string; club?: string; category?: string; description?: string; target_date?: string | null; progress?: number; priority?: string; status?: string; milestones?: unknown[] }) =>
+        supabase.from('club_goals').insert(data).select().single(),
+
+    update: (id: string, data: { title?: string; club?: string; category?: string; description?: string; target_date?: string | null; progress?: number; status?: string; milestones?: unknown[]; priority?: string }) =>
+        supabase.from('club_goals').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id),
+
+    delete: (id: string) =>
+        supabase.from('club_goals').delete().eq('id', id),
+}
+
+
+
+export const clubFinderResultsApi = {
+    getByUser: (userId: string) =>
+        supabase.from('club_finder_results').select('*').eq('user_id', userId).maybeSingle(),
+
+    upsert: (data: { user_id: string; answers: number[]; top_categories: string[] }) =>
+        supabase.from('club_finder_results').upsert(
+            { ...data, updated_at: new Date().toISOString() },
+            { onConflict: 'user_id' }
+        ).select().single(),
+}
+
+
+
+export const rubricProgressApi = {
+    getByUser: (userId: string) =>
+        supabase.from('rubric_progress').select('*').eq('user_id', userId).limit(100),
+
+    upsert: (data: { user_id: string; rubric_id: string; scores: Record<string, number>; notes?: string }) =>
+        supabase.from('rubric_progress').upsert(
+            { ...data, updated_at: new Date().toISOString() },
+            { onConflict: 'user_id,rubric_id' }
+        ).select().single(),
 }

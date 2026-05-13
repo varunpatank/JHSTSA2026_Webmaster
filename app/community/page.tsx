@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import HeroSection from "@/components/HeroSection";
 import { supabase, profilesApi, storageApi } from "@/lib/api";
 import {
@@ -11,6 +12,7 @@ import {
   FileText,
   Heart,
   ImageIcon,
+  Loader2,
   MessageCircle,
   Send,
   Upload,
@@ -28,6 +30,11 @@ import {
   Trophy,
   Trash2,
   Check,
+  Users,
+  Star,
+  TrendingUp,
+  BookOpen,
+  Layers,
 } from "lucide-react";
 
 /*  Types  */
@@ -60,139 +67,124 @@ interface FeedPost {
 const INITIAL_FEED: FeedPost[] = [
   {
     id: 1,
-    author: "Elena Ruiz",
-    avatar: "ER",
+    author: "Maria G.",
+    avatar: "MG",
     club: "TSA",
-    time: "12 minutes ago",
-    text: "Posted the final judging checklist and pitch slides we used at state. If you're presenting this month, steal anything useful and make it your own.",
+    time: "2 hours ago",
+    text: "Just uploaded the full TSA presentation template pack our chapter used at States. Feel free to download and customize!",
     type: "resource",
-    fileName: "State_Pitch_Kit.zip",
-    fileSize: "4.6 MB",
-    likes: 38,
+    fileName: "TSA_Presentation_Templates.zip",
+    fileSize: "4.2 MB",
+    likes: 24,
     liked: false,
     saved: false,
     replies: [
       {
         id: 1,
-        author: "Drew Kim",
-        avatar: "DK",
-        text: "This is so clean. We're using the checklist for our mock round tonight.",
-        time: "8m ago",
+        author: "James L.",
+        avatar: "JL",
+        text: "This is incredible, thanks Maria! Using this for regionals.",
+        time: "1h ago",
       },
       {
         id: 2,
-        author: "Maya Singh",
-        avatar: "MS",
-        text: "The slide structure is perfect. Thanks for sharing the full pack.",
-        time: "5m ago",
+        author: "Sophie K.",
+        avatar: "SK",
+        text: "The slide layouts are really clean. Great work!",
+        time: "45m ago",
       },
     ],
   },
   {
     id: 2,
-    author: "Noah Bennett",
-    avatar: "NB",
+    author: "Alex J.",
+    avatar: "AJ",
     club: "Robotics",
-    time: "1 hour ago",
-    text: "Need a fresh idea: should we use a mecanum base or keep it simple with a tank drive for our first FTC bot? Looking for opinions from teams that already tested both.",
+    time: "5 hours ago",
+    text: "Does anyone have experience with PID tuning for FTC robots? We keep overshooting our target position.",
     type: "discussion",
-    likes: 21,
+    likes: 8,
     liked: false,
     saved: false,
     replies: [
       {
         id: 1,
-        author: "Lila Park",
-        avatar: "LP",
-        text: "Mecanum looks cool, but tank drive is way easier to debug on a tight timeline.",
-        time: "42m ago",
-      },
-      {
-        id: 2,
-        author: "Owen Hart",
-        avatar: "OH",
-        text: "We started tank drive, then swapped later. For a first build, simpler usually wins.",
-        time: "28m ago",
+        author: "Taylor M.",
+        avatar: "TM",
+        text: "Try reducing your P gain and adding a small D term. We had the same issue last season.",
+        time: "4h ago",
       },
     ],
   },
   {
     id: 3,
-    author: "Ava Thompson",
-    avatar: "AT",
+    author: "Sophie K.",
+    avatar: "SK",
     club: "NHS",
-    time: "3 hours ago",
-    text: "We crossed 650 volunteer hours this semester. Honestly proud of the team for showing up every week and keeping the momentum going.",
+    time: "1 day ago",
+    text: "Our chapter just hit 500 community service hours this semester! So proud of everyone who contributed to this milestone.",
     type: "achievement",
-    likes: 54,
+    likes: 42,
     liked: false,
     saved: false,
     replies: [],
   },
   {
     id: 4,
-    author: "Mateo Alvarez",
-    avatar: "MA",
+    author: "James L.",
+    avatar: "JL",
     club: "FBLA",
-    time: "5 hours ago",
-    text: "Dropped the fundraiser tracker I made for our chapter. It has a cleaner summary dashboard now and auto-updates totals after every sale.",
+    time: "1 day ago",
+    text: "Here is the fundraiser tracking spreadsheet I made. It auto-calculates profit margins and has a built-in dashboard view.",
     type: "resource",
     fileName: "FBLA_Fundraiser_Tracker.xlsx",
-    fileSize: "1.9 MB",
-    likes: 29,
+    fileSize: "1.8 MB",
+    likes: 31,
     liked: false,
     saved: false,
     replies: [
       {
         id: 1,
-        author: "Grace Lee",
-        avatar: "GL",
-        text: "This dashboard is exactly what our treasurer needed. Great work.",
-        time: "2h ago",
+        author: "Maria G.",
+        avatar: "MG",
+        text: "The formulas in this are next level. Sharing with our treasurer!",
+        time: "22h ago",
       },
     ],
   },
   {
     id: 5,
-    author: "Zoe Carter",
-    avatar: "ZC",
+    author: "Taylor M.",
+    avatar: "TM",
     club: "Drama",
-    time: "8 hours ago",
-    text: "Auditions are next week and we're building a huge sign-up sheet. If you have any warm-up routines or monologue picks that helped you, drop them here.",
+    time: "2 days ago",
+    text: "Spring musical auditions are next week! Drop your best monologue tips below.",
     type: "text",
-    likes: 18,
+    likes: 15,
     liked: false,
     saved: false,
-    replies: [
-      {
-        id: 1,
-        author: "Ethan Moss",
-        avatar: "EM",
-        text: "Physical warm-ups before lines made a huge difference for me last year.",
-        time: "6h ago",
-      },
-    ],
+    replies: [],
   },
   {
     id: 6,
-    author: "Priya Nair",
-    avatar: "PN",
+    author: "Priya K.",
+    avatar: "PK",
     club: "Debate",
-    time: "1 day ago",
-    text: "Uploaded our case briefs and evidence blocks from the winter tournament. Hopefully these help someone build a stronger flow for districts.",
+    time: "3 days ago",
+    text: "Uploading my evidence files and case briefs from last tournament. Hope these help someone prepping for districts!",
     type: "resource",
-    fileName: "Debate_Case_Briefs.pdf",
-    fileSize: "2.7 MB",
-    likes: 26,
+    fileName: "Debate_Evidence_Briefs.pdf",
+    fileSize: "2.5 MB",
+    likes: 19,
     liked: false,
     saved: false,
     replies: [
       {
         id: 1,
-        author: "Amir Patel",
-        avatar: "AP",
-        text: "This is a huge help. We're reorganizing our evidence library right now.",
-        time: "20h ago",
+        author: "Alex J.",
+        avatar: "AJ",
+        text: "These sources are gold. Thank you so much!",
+        time: "2d ago",
       },
     ],
   },
@@ -375,23 +367,23 @@ const MEETINGS = [
     club: "Robotics",
     time: "Today, 5:30 PM",
     attendees: 8,
-    live: false,
+    live: true,
   },
   {
     id: 3,
     title: "NHS Volunteer Planning",
     club: "NHS",
-    time: "Tomorrow, 3:00 PM",
+    time: "Today, 3:00 PM",
     attendees: 15,
-    live: false,
+    live: true,
   },
   {
     id: 4,
     title: "FBLA Competition Prep",
     club: "FBLA",
-    time: "Wed, 4:00 PM",
+    time: "Today, 6:00 PM",
     attendees: 6,
-    live: false,
+    live: true,
   },
 ];
 
@@ -402,9 +394,27 @@ export default function CommunityPage() {
   const [userName, setUserName] = useState("Guest123");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isGuest, setIsGuest] = useState(true);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
+    // When NextAuth definitively says unauthenticated, reset to guest
+    if (status === "unauthenticated") {
+      setUserName("Guest123");
+      setAvatarUrl(null);
+      setIsGuest(true);
+      return;
+    }
+    if (status === "loading") return;
+
     async function loadUser() {
+      // Prefer NextAuth session name if available
+      if (session?.user) {
+        const nextAuthName = session.user.name || session.user.email?.split("@")[0] || "Member";
+        setUserName(nextAuthName);
+        setIsGuest(false);
+      }
+
+      // Also try Supabase for avatar and richer profile data
       const { data } = await supabase.auth.getUser();
       if (!data.user) {
         // Fallback to localStorage identity (Judge login)
@@ -419,14 +429,14 @@ export default function CommunityPage() {
       setIsGuest(false);
       const res = await profilesApi.getById(data.user.id);
       if (!res.error && res.data) {
-        setUserName(res.data.name || data.user.email || "Guest123");
+        setUserName(res.data.name || data.user.email || "Member");
         setAvatarUrl(res.data.avatar_url || null);
       } else {
-        setUserName(data.user.email || "Guest123");
+        setUserName(data.user.email || "Member");
       }
     }
     loadUser();
-  }, []);
+  }, [status, session?.user?.email]);
 
   const userInitials = isGuest
     ? "G"
@@ -450,7 +460,7 @@ export default function CommunityPage() {
   const [postText, setPostText] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [activeFilter, setActiveFilter] = useState<
-    "all" | "discussions" | "resources" | "achievements"
+    "all" | "discussions" | "resources"
   >("all");
   const [connectedMentors, setConnectedMentors] = useState<Set<string>>(
     new Set(),
@@ -462,6 +472,11 @@ export default function CommunityPage() {
   const [replyInputs, setReplyInputs] = useState<Record<number, string>>({});
 
   const [communityTab, setCommunityTab] = useState<"feed" | "mentors" | "stories">("feed");
+  const [storyTitle, setStoryTitle] = useState("");
+  const [storyBody, setStoryBody] = useState("");
+  const [storySubmitting, setStorySubmitting] = useState(false);
+  const [storyPosted, setStoryPosted] = useState(false);
+  const [userStories, setUserStories] = useState<typeof SUCCESS_STORIES>([]);
 
   useEffect(() => {
     localStorage.setItem("clubconnect_community_feed", JSON.stringify(feed));
@@ -574,27 +589,6 @@ export default function CommunityPage() {
     setReplyInputs((prev) => ({ ...prev, [postId]: "" }));
   }
 
-  function deletePost(postId: number) {
-    if (!confirm("Delete this message?")) return;
-    setFeed((prev) => prev.filter((post) => post.id !== postId));
-    setExpandedReplies((prev) => {
-      const next = new Set(prev);
-      next.delete(postId);
-      return next;
-    });
-  }
-
-  function deleteReply(postId: number, replyId: number) {
-    if (!confirm("Delete this reply?")) return;
-    setFeed((prev) =>
-      prev.map((post) =>
-        post.id === postId
-          ? { ...post, replies: post.replies.filter((reply) => reply.id !== replyId) }
-          : post,
-      ),
-    );
-  }
-
   function connectMentor(mentorId: string) {
     setConnectedMentors((prev) => new Set(prev).add(mentorId));
   }
@@ -605,16 +599,28 @@ export default function CommunityPage() {
       return p.type === "discussion" || p.type === "text";
     if (activeFilter === "resources")
       return p.type === "resource" || p.type === "image";
-    if (activeFilter === "achievements") return p.type === "achievement";
     return true;
   });
 
-  const typeColors: Record<string, string> = {
-    resource: "bg-primary-100 text-primary-700",
-    discussion: "bg-secondary-100 text-secondary-700",
-    achievement: "bg-accent-100 text-accent-700",
-    image: "bg-primary-50 text-primary-600",
-    text: "bg-neutral-100 text-neutral-600",
+  const postTypeBorder: Record<string, string> = {
+    resource:    "border-l-[3px] border-l-emerald-400",
+    discussion:  "border-l-[3px] border-l-blue-400",
+    achievement: "border-l-[3px] border-l-amber-400",
+    image:       "border-l-[3px] border-l-violet-400",
+    text:        "border-l-[3px] border-l-slate-300",
+  };
+
+  const postTypeBadge: Record<string, string> = {
+    resource:    "bg-emerald-100 text-emerald-700 border border-emerald-200",
+    discussion:  "bg-blue-100 text-blue-700 border border-blue-200",
+    achievement: "bg-amber-100 text-amber-700 border border-amber-200",
+    image:       "bg-violet-100 text-violet-700 border border-violet-200",
+    text:        "bg-neutral-100 text-neutral-600 border border-neutral-200",
+  };
+
+  const typeLabel: Record<string, string> = {
+    resource: "Resource", discussion: "Discussion",
+    achievement: "Achievement", image: "Photo", text: "Update",
   };
 
   return (
@@ -627,6 +633,7 @@ export default function CommunityPage() {
         accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.png,.jpg,.jpeg,.gif,.svg,.txt,.md,.csv"
         onChange={handleFileSelect}
       />
+      {/* STATS BAR — rendered right below hero wave */}
 
       {/* ══ HERO BANNER ══════════════════════════════════════════════ */}
       <section className="relative overflow-hidden bg-primary-900">
@@ -659,21 +666,19 @@ export default function CommunityPage() {
             Social{" "}
             <span className="relative inline-block text-secondary-400 italic">
               Hub
-              <span className="absolute pointer-events-none select-none z-20" style={{ top: "calc(-0.52em - 1px)", right: "-0.45em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }} aria-hidden="true">
+              <span className="absolute pointer-events-none select-none z-20" style={{ top: "calc(-0.82em + 3px)", right: "-0.45em", transform: "rotate(12deg)", transformOrigin: "50% 100%", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }} aria-hidden="true">
                 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 md:w-16 md:h-16">
-                  <polygon points="20,7 35,15 20,23 5,15" fill="#0d1b2b" stroke="rgba(255,255,255,0.45)" strokeWidth="1.1" />
-                  <path d="M12 16 L12 24 Q20 30 28 24 L28 16" fill="#0d1b2b" fillOpacity="0.85" stroke="rgba(255,255,255,0.42)" strokeWidth="1.3" strokeLinejoin="round" />
-                  <line x1="35" y1="15" x2="35" y2="27" stroke="#b8860b" strokeWidth="1.9" strokeLinecap="round" />
-                  <circle cx="35" cy="29" r="2.5" fill="#b8860b" />
+                  <polygon points="20,9 35,17 20,25 5,17" fill="#0d1b2b" stroke="rgba(255,255,255,0.45)" strokeWidth="1.1" />
+                  <path d="M12 18 L12 26 Q20 32 28 26 L28 18" fill="#0d1b2b" fillOpacity="0.85" stroke="rgba(255,255,255,0.42)" strokeWidth="1.3" strokeLinejoin="round" />
+                  <line x1="35" y1="17" x2="35" y2="29" stroke="#b8860b" strokeWidth="1.9" strokeLinecap="round" />
+                  <circle cx="35" cy="31" r="2.5" fill="#b8860b" />
                 </svg>
               </span>
             </span>
           </h1>
-          <div className="mt-3 cream-textured border border-cream-400 rounded-xl px-5 py-3.5 max-w-xl">
-            <p className="text-primary-900 font-medium text-sm leading-relaxed">
-              Share resources, start discussions, and connect with clubs across your school community.
-            </p>
-          </div>
+          <p className="mt-3 text-sm max-w-xl leading-relaxed inline-block cream-textured border border-cream-400 text-primary-900 px-3 py-2 rounded-lg font-medium">
+            Share resources, start discussions, and connect with clubs across your school community.
+          </p>
         </div>
         <div aria-hidden className="absolute bottom-0 left-0 right-0 leading-[0]">
           <svg viewBox="0 0 1440 42" preserveAspectRatio="none" className="block w-full h-8 md:h-10">
@@ -682,29 +687,74 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* ══ COMMUNITY STATS BAR ══════════════════════════════════════ */}
+      <div className="bg-cream-200 border-b border-cream-300">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "Community Posts",  value: "128", Icon: MessageCircle, bg: "bg-white", border: "border-primary-200", iconBg: "bg-primary-900/10", iconColor: "text-primary-900", valColor: "text-primary-900" },
+              { label: "Members Active",   value: "340", Icon: Users,         bg: "bg-white", border: "border-primary-200", iconBg: "bg-primary-900/10", iconColor: "text-primary-900", valColor: "text-primary-900" },
+              { label: "Clubs Online",     value: "18",  Icon: Layers,        bg: "bg-white", border: "border-primary-200", iconBg: "bg-primary-900/10", iconColor: "text-primary-900", valColor: "text-primary-900" },
+              { label: "Mentors Available",value: "9",   Icon: GraduationCap, bg: "bg-white", border: "border-primary-200", iconBg: "bg-primary-900/10", iconColor: "text-primary-900", valColor: "text-primary-900" },
+            ].map(({ label, value, Icon, bg, border, iconBg, iconColor, valColor }) => (
+              <div key={label} className={`flex items-center gap-3 ${bg} border ${border} rounded-xl px-4 py-3`}>
+                <div className={`w-9 h-9 ${iconBg} rounded-xl flex items-center justify-center shrink-0`}>
+                  <Icon size={16} className={iconColor} />
+                </div>
+                <div>
+                  <p className={`text-xl font-bold ${valColor} leading-none`}>{value}</p>
+                  <p className="text-[10px] text-neutral-500 font-medium mt-0.5">{label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-        {/* Compact profile bar */}
-        <div className="flex items-center gap-4 bg-white/90 backdrop-blur border border-secondary-200/70 rounded-2xl px-5 py-4 mb-5 shadow-[0_10px_30px_rgba(28,53,87,0.10)]">
-          {avatarUrl ? (
-            <Image src={avatarUrl} alt={userName} width={44} height={44} className="w-11 h-11 rounded-xl object-cover border-2 border-cream-300 shrink-0" />
-          ) : (
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-900 to-primary-700 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">
-              {userInitials}
+      <div className="max-w-6xl mx-auto px-4 py-6">
+
+        {/* ══ PROFILE BAR ══ */}
+        <div className="flex items-center gap-4 bg-white border-l-4 border-l-secondary-400 rounded-2xl px-5 py-4 mb-5 shadow-[0_4px_20px_rgba(28,53,87,0.07)]">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {avatarUrl ? (
+              <Image src={avatarUrl} alt={userName} width={44} height={44} className="w-11 h-11 rounded-xl object-cover border-2 border-cream-300 shrink-0" />
+            ) : (
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-800 to-primary-600 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">
+                {userInitials}
+              </div>
+            )}
+            <div className="min-w-0">
+              <h3 className="font-bold text-sm text-primary-900 leading-tight truncate">{userName}</h3>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${isGuest ? "bg-neutral-100 text-neutral-500" : "bg-emerald-100 text-emerald-700"}`}>
+                  {isGuest ? "Guest" : "Member"}
+                </span>
+                {!isGuest && <span className="text-[10px] text-neutral-400">Active since 2024</span>}
+              </div>
             </div>
-          )}
-          <div className="min-w-0">
-            <h3 className="font-bold text-sm text-primary-900 leading-tight truncate">{userName}</h3>
-            <p className="text-[11px] text-neutral-500">{isGuest ? "Guest" : "Club Member"}</p>
           </div>
           {isGuest ? (
-            <Link href="/login" className="ml-auto text-xs font-bold text-primary-700 border border-primary-200 rounded-xl px-4 py-2 hover:bg-primary-50 transition-colors shrink-0">
+            <Link href="/login" className="ml-auto text-xs font-bold text-white bg-primary-900 rounded-xl px-4 py-2 hover:bg-primary-800 transition-colors shrink-0">
               Sign In
             </Link>
           ) : (
-            <div className="ml-auto flex items-center gap-3 text-[11px] text-neutral-600 shrink-0">
-              <span><strong className="text-primary-700">3</strong> Clubs</span>
-              <span><strong className="text-primary-700">12</strong> Posts</span>
+            <div className="ml-auto flex items-center gap-4 shrink-0">
+              <div className="flex items-center gap-3 text-center">
+                <div>
+                  <p className="text-sm font-bold text-primary-700 leading-none">3</p>
+                  <p className="text-[10px] text-neutral-400 mt-0.5">Clubs</p>
+                </div>
+                <div className="w-px h-8 bg-neutral-200" />
+                <div>
+                  <p className="text-sm font-bold text-primary-700 leading-none">12</p>
+                  <p className="text-[10px] text-neutral-400 mt-0.5">Posts</p>
+                </div>
+                <div className="w-px h-8 bg-neutral-200" />
+                <div>
+                  <p className="text-sm font-bold text-secondary-600 leading-none">47</p>
+                  <p className="text-[10px] text-neutral-400 mt-0.5">Likes</p>
+                </div>
+              </div>
               <Link href="/profile" className="text-xs font-bold text-primary-700 border border-primary-200 rounded-xl px-4 py-2 hover:bg-primary-50 transition-colors">
                 My Profile
               </Link>
@@ -712,80 +762,104 @@ export default function CommunityPage() {
           )}
         </div>
 
-        <div className="flex gap-5 items-start">
-          {/*  MAIN CONTENT  */}
-          <div className="flex-1 min-w-0 space-y-4">
+        <div className="flex gap-6 items-start">
+          {/* ══ MAIN CONTENT ══ */}
+          <div className="flex-1 min-w-0 space-y-5">
 
             {/* Tab Navigation */}
-            <div className="bg-white/90 backdrop-blur border border-primary-200 rounded-[1.5rem] overflow-hidden shadow-[0_8px_24px_rgba(28,53,87,0.08)]">
-              <div className="h-1.5 bg-gradient-to-r from-secondary-400 via-primary-500 to-accent-400" />
-              <div className="flex flex-wrap gap-2 p-2.5">
+            <div className="bg-white border border-primary-200 rounded-2xl overflow-hidden shadow-[0_4px_16px_rgba(28,53,87,0.07)]">
+              <div className="flex">
                 {([
-                  { key: "feed",     label: "Community Feed", icon: MessageCircle },
-                  { key: "mentors",  label: "Mentors",        icon: GraduationCap },
-                  { key: "stories",  label: "Stories",        icon: Trophy },
+                  { key: "feed",     label: "Community Feed",  icon: MessageCircle },
+                  { key: "mentors",  label: "Mentor Network",  icon: GraduationCap },
+                  { key: "stories",  label: "Success Stories", icon: Trophy       },
                 ] as const).map(({ key, label, icon: Icon }) => (
                   <button
                     key={key}
                     onClick={() => setCommunityTab(key)}
-                    className={`flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl transition-all border ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-bold transition-all border-b-2 ${
                       communityTab === key
-                        ? "bg-primary-900 text-white border-primary-900 shadow-sm"
-                        : "bg-primary-50/70 text-primary-700 border-primary-100 hover:bg-primary-100/80 hover:border-primary-200"
+                        ? "text-primary-900 border-primary-900 bg-primary-50/60"
+                        : "border-transparent text-neutral-500 hover:text-primary-900 hover:bg-neutral-50"
                     }`}
                   >
-                    <Icon size={14} style={key === "mentors" ? { transform: "translateY(-1px)" } : undefined} />
-                    <span>{label}</span>
+                    <Icon size={15} />
+                    <span className="hidden sm:inline">{label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* MENTORS TAB */}
+            {/* ══ MENTORS TAB ══ */}
             {communityTab === "mentors" && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-primary-900 text-lg">Mentor Network</h2>
-                  <Link href="/hub/mentors" className="text-xs font-semibold text-secondary-700 hover:underline flex items-center gap-1">
+                <div className="flex items-center justify-between bg-white border border-neutral-200 rounded-2xl px-5 py-3.5">
+                  <div>
+                    <h2 className="font-bold text-primary-900 text-base">Mentor Network</h2>
+                    <p className="text-[11px] text-neutral-500 mt-0.5">Connect with industry professionals for guidance</p>
+                  </div>
+                  <Link href="/hub/mentors" className="text-xs font-semibold text-secondary-600 hover:underline flex items-center gap-1">
                     View All <ArrowRight size={12} />
                   </Link>
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid sm:grid-cols-2 gap-6">
                   {[
-                    { id: "m1", name: "Dr. Sarah Chen",   role: "Senior Software Engineer, Microsoft",  specialty: "Software Dev & AI/ML",      available: true, img: MENTOR_PHOTOS["m1"], email: "sarah.chen@microsoft.com", areas: ["Software","AI/ML","Internships"] },
-                    { id: "m4", name: "David Park",        role: "Mechanical Engineer, Boeing",          specialty: "Robotics & Engineering",     available: true, img: MENTOR_PHOTOS["m4"], email: "david.park@boeing.com", areas: ["Robotics","Engineering","FRC"] },
-                    { id: "m3", name: "Maria Gonzalez",    role: "Community Organizer, United Way",      specialty: "Nonprofit & Leadership",     available: true, img: MENTOR_PHOTOS["m3"], email: "maria.gonzalez@unitedway.org", areas: ["Leadership","Service","Nonprofits"] },
-                    { id: "m5", name: "James Liu",         role: "Product Manager, Amazon",              specialty: "Business & Strategy",        available: false, img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80", email: "james.liu@amazon.com", areas: ["Business","DECA","Strategy"] },
-                    { id: "m6", name: "Priya Nair",        role: "Attorney, Public Defender's Office",   specialty: "Law & Public Policy",        available: true, img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80", email: "priya.nair@defenders.org", areas: ["Law","Debate","Policy"] },
-                    { id: "m7", name: "Carlos Rivera",     role: "Biology Professor, UW",                specialty: "STEM Research & Science",    available: false, img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", email: "crivera@uw.edu", areas: ["Research","Science","College"] },
+                    { id: "m1", name: "Dr. Sarah Chen",  role: "Senior Software Engineer, Microsoft", areas: ["Software","AI/ML","Internships"], available: true,  img: MENTOR_PHOTOS["m1"], email: "sarah.chen@microsoft.com",      grad: "from-primary-800 to-primary-900", sessions: 24, bio: "10+ years building ML systems at scale. Loves guiding students into tech careers." },
+                    { id: "m4", name: "David Park",       role: "Mechanical Engineer, Boeing",         areas: ["Robotics","Engineering","FRC"],   available: true,  img: MENTOR_PHOTOS["m4"], email: "david.park@boeing.com",          grad: "from-primary-800 to-primary-900", sessions: 18, bio: "FRC alumnus turned aerospace engineer. Passionate about robotics mentorship." },
+                    { id: "m3", name: "Maria Gonzalez",   role: "Community Organizer, United Way",     areas: ["Leadership","Service","Nonprofits"],available: true, img: MENTOR_PHOTOS["m3"], email: "maria.gonzalez@unitedway.org",  grad: "from-primary-800 to-primary-900", sessions: 31, bio: "Nonprofit veteran helping students discover the power of community-driven change." },
+                    { id: "m5", name: "James Liu",        role: "Product Manager, Amazon",             areas: ["Business","DECA","Strategy"],     available: false, img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80", email: "james.liu@amazon.com", grad: "from-primary-800 to-primary-900", sessions: 15, bio: "Former DECA state champion. Now leads product teams at Amazon's retail division." },
+                    { id: "m6", name: "Priya Nair",       role: "Attorney, Public Defender's Office",  areas: ["Law","Debate","Policy"],          available: true,  img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80", email: "priya.nair@defenders.org", grad: "from-primary-800 to-primary-900", sessions: 20, bio: "Debate coach turned public defender. Mentors students in argumentation and civic engagement." },
+                    { id: "m7", name: "Carlos Rivera",    role: "Biology Professor, UW",               areas: ["Research","Science","College"],   available: false, img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", email: "crivera@uw.edu", grad: "from-primary-800 to-primary-900", sessions: 9, bio: "UW professor specializing in biotech. Helps students navigate the college research pipeline." },
                   ].map(m => (
-                    <div key={m.id} className="bg-gradient-to-br from-white via-primary-50/20 to-secondary-50/20 border border-primary-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
-                      <div className="relative h-32">
-                        <Image src={m.img} alt={m.name} fill sizes="300px" className="object-cover object-top" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                        <span className={`absolute top-3 right-3 text-[9px] font-bold px-2 py-1 rounded-full ${m.available ? "bg-emerald-100 text-emerald-700" : "bg-neutral-100 text-neutral-500"}`}>
-                          {m.available ? "Available" : "Busy"}
-                        </span>
+                    <div key={m.id} className="bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all flex flex-col">
+                      {/* Photo banner */}
+                      <div className={`relative h-52 bg-gradient-to-br ${m.grad}`}>
+                        <Image src={m.img} alt={m.name} fill sizes="500px" className="object-cover object-top opacity-40 mix-blend-overlay" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        {/* Available badge top-right */}
+                        <div className="absolute top-4 right-4">
+                          <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full ${
+                            m.available ? "bg-emerald-400 text-white" : "bg-white/20 text-white/80 border border-white/30"
+                          }`}>
+                            {m.available ? "Available" : "Busy"}
+                          </span>
+                        </div>
+                        {/* Name + avatar bottom */}
+                        <div className="absolute bottom-0 left-0 right-0 p-5 flex items-end gap-4">
+                          <div className="w-20 h-20 rounded-xl border-2 border-white/60 overflow-hidden shrink-0 relative shadow-xl">
+                            <Image src={m.img} alt={m.name} fill sizes="80px" className="object-cover object-top" />
+                          </div>
+                          <div className="min-w-0 pb-1">
+                            <p className="font-heading font-bold text-white text-base leading-tight drop-shadow">{m.name}</p>
+                            <p className="text-white/75 text-xs mt-1 leading-snug drop-shadow">{m.role}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-bold text-primary-900 text-sm">{m.name}</h3>
-                        <p className="text-[11px] text-neutral-500 mt-0.5 leading-snug">{m.role}</p>
-                        <div className="flex flex-wrap gap-1 mt-3">
+                      <div className="p-5 flex flex-col flex-1 gap-4">
+                        <p className="text-sm text-neutral-600 leading-relaxed">{m.bio}</p>
+                        <div className="flex items-center gap-2">
+                          <Star size={13} className="text-amber-400 shrink-0" />
+                          <span className="text-sm font-semibold text-neutral-700">{m.sessions} mentoring sessions</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
                           {m.areas.map(a => (
-                            <span key={a} className="text-[9px] font-semibold bg-secondary-100 text-secondary-700 border border-secondary-200 px-2 py-0.5 rounded-full">{a}</span>
+                            <span key={a} className="text-xs font-semibold bg-primary-50 text-primary-700 border border-primary-100 px-3 py-1 rounded-full">{a}</span>
                           ))}
                         </div>
                         {connectedMentors.has(m.id) ? (
-                          <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-700 mb-1.5"><Check size={12} /> Connected</div>
-                            <a href={`mailto:${m.email}`} className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 break-all">{m.email}</a>
+                          <div className="mt-auto pt-2 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 mb-2"><Check size={14} /> Connected — email sent!</div>
+                            <a href={`mailto:${m.email}`} className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 break-all">{m.email}</a>
                           </div>
                         ) : (
                           <button
                             onClick={() => connectMentor(m.id)}
-                            className="mt-3 w-full py-2 rounded-xl text-xs font-bold bg-primary-900 text-white hover:bg-primary-800 transition-colors"
+                            disabled={!m.available}
+                            className={`mt-auto w-full py-3 rounded-xl text-sm font-bold transition-colors ${
+                              m.available ? "bg-primary-900 text-white hover:bg-primary-800" : "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                            }`}
                           >
-                            Connect
+                            {m.available ? "Request Connection" : "Currently Unavailable"}
                           </button>
                         )}
                       </div>
@@ -794,24 +868,86 @@ export default function CommunityPage() {
                 </div>
               </div>
             )}
-
-            {/* STORIES TAB */}
+            {/* ══ STORIES TAB ══ */}
             {communityTab === "stories" && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-primary-900 text-lg">Success Stories</h2>
-                  <Link href="/hub/stories" className="text-xs font-semibold text-secondary-700 hover:underline flex items-center gap-1">
-                    View All <ArrowRight size={12} />
-                  </Link>
+                <div className="bg-white border border-neutral-200 rounded-2xl px-5 py-3.5">
+                  <h2 className="font-bold text-primary-900 text-base">Success Stories</h2>
+                  <p className="text-[11px] text-neutral-500 mt-0.5">Milestones and achievements from our student community</p>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-5">
-                  {SUCCESS_STORIES.map(s => (
-                    <div key={s.id} className="group bg-white border border-primary-200 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow cursor-default">
-                      <div className="relative h-48">
-                        <Image src={s.image} alt={s.title} fill sizes="400px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-                        <span className={`absolute top-3 left-3 text-[9px] font-bold px-2 py-1 rounded-full ${s.tagColor}`}>{s.tag}</span>
-                        <div className="absolute bottom-3 left-3 right-3">
+
+                {/* Create your story — FIRST */}
+                <div className="bg-white border border-cream-300 rounded-2xl p-5">
+                  <h3 className="font-heading font-bold text-primary-800 text-sm mb-3">Share Your Story</h3>
+                  {storyPosted ? (
+                    <div className="flex items-center gap-2 text-sm text-emerald-700 font-medium bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                      <Check size={14} /> Story submitted! Thank you for sharing.
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      <input
+                        type="text"
+                        placeholder="Story title..."
+                        value={storyTitle}
+                        onChange={e => setStoryTitle(e.target.value)}
+                        className="w-full border border-cream-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-secondary-400/30"
+                      />
+                      <textarea
+                        placeholder="Tell us about your club's achievement..."
+                        value={storyBody}
+                        onChange={e => setStoryBody(e.target.value)}
+                        rows={3}
+                        className="w-full border border-cream-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-secondary-400/30 resize-none"
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!storyTitle.trim() || !storyBody.trim() || storySubmitting) return;
+                          setStorySubmitting(true);
+                          const { data: { user } } = await supabase.auth.getUser();
+                          if (user) {
+                            await supabase.from("success_stories").insert({ author_id: user.id, title: storyTitle.trim(), content: storyBody.trim() });
+                          }
+                          const now = new Date();
+                          const monthYear = now.toLocaleString("default", { month: "long", year: "numeric" });
+                          setUserStories(prev => [{
+                            id: Date.now(),
+                            title: storyTitle.trim(),
+                            club: "Student",
+                            image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
+                            excerpt: storyBody.trim(),
+                            author: userName,
+                            role: "Student",
+                            date: monthYear,
+                            tag: "Story",
+                            tagColor: "bg-sky-100 text-sky-700",
+                          }, ...prev]);
+                          setStoryPosted(true);
+                          setStoryTitle("");
+                          setStoryBody("");
+                          setStorySubmitting(false);
+                          setTimeout(() => setStoryPosted(false), 3500);
+                        }}
+                        disabled={storySubmitting || !storyTitle.trim() || !storyBody.trim()}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors disabled:opacity-50"
+                      >
+                        {storySubmitting ? <><Loader2 size={12} className="animate-spin" /> Submitting…</> : <><Send size={12} /> Submit Story</>}
+                      </button>
+                      {isGuest && <p className="text-[10px] text-neutral-400">Sign in to have your story saved to the community.</p>}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {[...userStories, ...SUCCESS_STORIES].map((s, idx) => (
+                    <div key={s.id} className={`group bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all cursor-default ${idx === 0 ? "sm:col-span-2" : ""}`}>
+                      <div className={`relative ${idx === 0 ? "h-56" : "h-44"}`}>
+                        <Image src={s.image} alt={s.title} fill sizes="600px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                        <div className="absolute top-3 left-3 flex gap-2">
+                          <span className={`text-[9px] font-bold px-2 py-1 rounded-full ${s.tagColor}`}>{s.tag}</span>
+                          {idx === 0 && <span className="text-[9px] font-bold px-2 py-1 rounded-full bg-secondary-400 text-primary-900">Featured</span>}
+                        </div>
+                        <div className="absolute bottom-3 left-4 right-4">
                           <span className="text-[10px] font-bold text-secondary-300 uppercase tracking-wider">{s.club}</span>
                           <h3 className="text-white font-bold text-base leading-tight mt-0.5">{s.title}</h3>
                         </div>
@@ -819,13 +955,14 @@ export default function CommunityPage() {
                       <div className="p-5">
                         <p className="text-sm text-neutral-600 leading-relaxed mb-4">{s.excerpt}</p>
                         <div className="flex items-center gap-3 border-t border-neutral-100 pt-3">
-                          <div className="w-8 h-8 rounded-xl bg-primary-900 text-white flex items-center justify-center text-xs font-bold">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-800 to-primary-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
                             {s.author.charAt(0)}
                           </div>
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold text-primary-900">{s.author}</p>
                             <p className="text-[10px] text-neutral-400">{s.role} · {s.date}</p>
                           </div>
+
                         </div>
                       </div>
                     </div>
@@ -834,245 +971,273 @@ export default function CommunityPage() {
               </div>
             )}
 
-            {/* FEED TAB */}
+            {/* ══ FEED TAB ══ */}
             {communityTab === "feed" && (<>
-            {/*  Post Composer  */}
-            <div
-              className={`bg-white/95 backdrop-blur border-2 transition-colors rounded-[1.6rem] overflow-hidden shadow-[0_12px_34px_rgba(28,53,87,0.10)] ${dragOver ? "border-primary-400 bg-primary-50/50" : "border-primary-200"}`}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-            >
-              <div className="h-1.5 bg-gradient-to-r from-secondary-400 via-primary-500 to-accent-400" />
-              <div className="flex items-start gap-3 px-5 pt-4 pb-3">
-                {avatarUrl ? (
-                  <Image src={avatarUrl} alt={userName} width={40} height={40} className="w-10 h-10 object-cover shrink-0 rounded-xl" />
-                ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-900 to-primary-700 text-white flex items-center justify-center text-sm font-bold shrink-0 rounded-xl shadow-sm">
-                    {userInitials}
-                  </div>
-                )}
-                <textarea
-                  value={postText}
-                  onChange={(e) => setPostText(e.target.value)}
-                  placeholder="Share a resource, start a discussion, or post an update..."
-                  rows={3}
-                  className="w-full border border-primary-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-primary-400 placeholder:text-neutral-400 bg-white"
-                />
-              </div>
-
-              {attachedFile && (
-                <div className="mx-5 mb-3 flex items-center gap-3 bg-gradient-to-r from-primary-50 to-secondary-50 border border-primary-200 rounded-xl px-4 py-3">
-                  <FileText size={18} className="text-primary-700 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-primary-700 truncate">{attachedFile.name}</p>
-                    <p className="text-xs text-primary-500">{(attachedFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                  </div>
-                  <button onClick={() => { setAttachedFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-neutral-400 hover:text-neutral-600">
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
-
-              {dragOver && !attachedFile && (
-                <div className="mx-5 mb-3 border-2 border-dashed border-primary-400 bg-primary-50/40 rounded-xl py-6 flex flex-col items-center gap-2 pointer-events-none">
-                  <Upload size={24} className="text-primary-400" />
-                  <p className="text-sm font-semibold text-primary-600">Drop to attach</p>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between px-5 py-3 border-t border-primary-100 bg-gradient-to-r from-white to-primary-50/30">
-                <div className="flex gap-1.5">
-                  <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-600 hover:bg-neutral-100 transition-colors">
-                    <Upload size={13} /> Attach
-                  </button>
-                  <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-600 hover:bg-neutral-100 transition-colors">
-                    <ImageIcon size={13} /> Photo
-                  </button>
-                </div>
+            {/* Filter Row */}
+            <div className="flex items-center gap-2 bg-white border border-neutral-200 rounded-2xl px-4 py-2.5 shadow-sm">
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider border-r border-neutral-200 pr-3 shrink-0">Filter</span>
+              {([
+                { key: "all",          label: "All Posts",    Icon: Layers        },
+                { key: "discussions",  label: "Discussions",  Icon: MessageCircle },
+                { key: "resources",    label: "Resources",    Icon: BookOpen      },
+              ] as const).map(({ key, label, Icon }) => (
                 <button
-                  onClick={submitPost}
-                  disabled={uploading || (!postText.trim() && !attachedFile)}
-                  className="flex items-center gap-1.5 px-5 py-2 bg-primary-900 text-white text-xs font-bold rounded-xl hover:bg-primary-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  key={key}
+                  onClick={() => setActiveFilter(key)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition-all ${activeFilter === key ? "bg-secondary-400 text-primary-900" : "text-neutral-500 hover:bg-neutral-100 hover:text-primary-700"}`}
                 >
-                  <Send size={13} /> {uploading ? "Posting…" : "Post"}
-                </button>
-              </div>
-            </div>
-
-            {/* Feed Body: posts on top, filters pinned at bottom */}
-            <div className="h-[520px] flex flex-col">
-              <div className="space-y-4 flex-1 overflow-y-auto pr-2 rounded-xl">
-            {filtered.slice(0, 4).map((post) => (
-              <div key={post.id} className={`bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow ${post.type === "discussion" ? "border-secondary-200" : post.type === "achievement" ? "border-accent-200" : "border-primary-200/70"}`}>
-                <div className={`flex items-center gap-3 px-5 pt-4 pb-2 ${post.type === "discussion" ? "bg-secondary-50/60" : post.type === "achievement" ? "bg-accent-50/60" : "bg-primary-50/50"}`}>
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-100 to-secondary-100 text-primary-700 flex items-center justify-center text-xs font-bold shrink-0 rounded-xl">
-                    {post.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-primary-700">{post.author}</span>
-                      <span className={`text-[10px] px-1.5 py-0.5 font-semibold rounded-full ${typeColors[post.type]}`}>{post.club}</span>
-                    </div>
-                    <p className="text-xs text-neutral-400">{post.time}</p>
-                  </div>
-                  <button className="text-neutral-300 hover:text-neutral-500"><MoreHorizontal size={16} /></button>
-                  <button
-                    onClick={() => deletePost(post.id)}
-                    className="text-red-300 hover:text-red-600 transition-colors"
-                    aria-label="Delete message"
-                    title="Delete message"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-
-                <div className="px-5 pb-3">
-                  <p className="text-sm text-neutral-700 leading-relaxed">{post.text}</p>
-                  {post.type === "achievement" && (
-                    <div className="mt-3 bg-accent-50 border border-accent-200 rounded-xl px-4 py-3 flex items-center gap-3">
-                      <Award size={18} className="text-accent-600 shrink-0" />
-                      <span className="text-sm font-semibold text-accent-700">Achievement Unlocked</span>
-                    </div>
-                  )}
-                  {post.fileName && (
-                    <div className="mt-3 bg-gradient-to-r from-primary-50 to-secondary-50 border border-primary-200 rounded-xl px-4 py-3 flex items-center gap-3">
-                      <FileText size={18} className="text-primary-700 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-primary-700 truncate">{post.fileName}</p>
-                        <p className="text-xs text-primary-500">{post.fileSize}</p>
-                      </div>
-                      {post.fileUrl ? (
-                        <a href={post.fileUrl} download={post.fileName} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-primary-900 text-white text-xs font-bold rounded-lg hover:bg-primary-800 transition-colors flex items-center gap-1">
-                          <Download size={12} /> Download
-                        </a>
-                      ) : (
-                        <span className="px-3 py-1.5 bg-neutral-300 text-neutral-500 text-xs font-bold rounded-lg cursor-not-allowed">Demo</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center border-t border-primary-100 px-2 bg-white/70">
-                  <button onClick={() => toggleLike(post.id)} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-colors ${post.liked ? "text-accent-600" : "text-neutral-400 hover:text-accent-500"}`}>
-                    {post.liked ? <Heart size={15} fill="currentColor" /> : <Heart size={15} />}
-                    <span>{post.likes}</span>
-                  </button>
-                  <button onClick={() => toggleReplies(post.id)} className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-neutral-400 hover:text-primary-600 transition-colors">
-                    <MessageCircle size={15} /> {post.replies.length} {post.replies.length === 1 ? "Reply" : "Replies"}
-                  </button>
-                  <button onClick={() => toggleSave(post.id)} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-colors ${post.saved ? "text-secondary-600" : "text-neutral-400 hover:text-secondary-500"}`}>
-                    {post.saved ? <Bookmark size={15} fill="currentColor" /> : <Bookmark size={15} />} Save
-                  </button>
-                  <button className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-neutral-400 hover:text-primary-600 transition-colors ml-auto">
-                    <Share2 size={15} /> Share
-                  </button>
-                </div>
-
-                {expandedReplies.has(post.id) && (
-                  <div className="border-t border-primary-100 bg-gradient-to-b from-white to-primary-50/30">
-                    <div className="flex items-center gap-3 px-5 py-3 border-b border-primary-100">
-                      {avatarUrl ? (
-                        <Image src={avatarUrl} alt={userName} width={30} height={30} className="w-8 h-8 object-cover shrink-0 rounded-lg" />
-                      ) : (
-                        <div className="w-8 h-8 bg-gradient-to-br from-primary-900 to-primary-700 text-white flex items-center justify-center text-[10px] font-bold shrink-0 rounded-lg">{userInitials}</div>
-                      )}
-                      <input
-                        value={replyInputs[post.id] || ""}
-                        onChange={(e) => setReplyInputs((prev) => ({ ...prev, [post.id]: e.target.value }))}
-                        onKeyDown={(e) => e.key === "Enter" && submitReply(post.id)}
-                        placeholder="Write a reply..."
-                        className="flex-1 bg-white border border-neutral-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-400"
-                      />
-                      <button onClick={() => submitReply(post.id)} className="px-3 py-2 bg-primary-900 text-white rounded-xl hover:bg-primary-800 transition-colors">
-                        <Send size={13} />
-                      </button>
-                    </div>
-                    <div className="max-h-[300px] overflow-y-auto">
-                      {post.replies.map((r) => (
-                        <div key={r.id} className="flex gap-3 px-5 py-3 border-b border-primary-100 last:border-b-0">
-                          <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-secondary-100 text-primary-700 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 rounded-lg">{r.avatar}</div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-bold text-primary-700">{r.author}</span>
-                              <span className="text-xs text-neutral-400">{r.time}</span>
-                              <button
-                                onClick={() => deleteReply(post.id, r.id)}
-                                className="ml-auto text-red-300 hover:text-red-600 transition-colors"
-                                aria-label="Delete reply"
-                                title="Delete reply"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                            <p className="text-sm text-neutral-600 leading-relaxed">{r.text}</p>
-                          </div>
-                        </div>
-                      ))}
-                      {post.replies.length === 0 && (
-                        <p className="text-sm text-neutral-400 px-5 py-5 text-center">No replies yet. Be the first to respond!</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {filtered.length === 0 && (
-              <div className="bg-white border border-primary-200 rounded-2xl py-12 text-center">
-                <p className="text-sm text-neutral-400">No posts match this filter.</p>
-              </div>
-            )}
-            </div>
-
-            {/*  Feed Filters (bottom)  */}
-            <div className="mt-3 flex gap-1 bg-white border border-primary-200 rounded-2xl p-1.5 shadow-sm">
-              {(["all", "discussions", "resources", "achievements"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setActiveFilter(f)}
-                  className={`flex-1 px-3 py-2 text-xs font-semibold capitalize rounded-xl transition-colors ${activeFilter === f ? "bg-primary-900 text-white" : "text-primary-700 hover:bg-primary-50"}`}
-                >
-                  {f === "all" ? "All Posts" : f}
+                  <Icon size={11} />
+                  <span>{label}</span>
                 </button>
               ))}
             </div>
+
+            {/* Feed scroll: composer + posts */}
+            <div className="h-[700px] overflow-y-auto pr-1 space-y-5">
+
+              {/* Composer */}
+              <div
+                className={`bg-white border-2 transition-colors rounded-2xl overflow-hidden shadow-sm ${dragOver ? "border-primary-400 bg-primary-50/50" : "border-neutral-200"}`}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+              >
+                <div className="flex items-start gap-3 px-5 pt-4 pb-3">
+                  {avatarUrl ? (
+                    <Image src={avatarUrl} alt={userName} width={40} height={40} className="w-10 h-10 object-cover shrink-0 rounded-xl" />
+                  ) : (
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary-800 to-primary-600 text-white flex items-center justify-center text-sm font-bold shrink-0 rounded-xl">
+                      {userInitials}
+                    </div>
+                  )}
+                  <textarea
+                    value={postText}
+                    onChange={(e) => setPostText(e.target.value)}
+                    placeholder="Share a resource, start a discussion, or post an update..."
+                    rows={3}
+                    className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-primary-400 placeholder:text-neutral-400 bg-neutral-50/50"
+                  />
+                </div>
+                {attachedFile && (
+                  <div className="mx-5 mb-3 flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                    <FileText size={18} className="text-emerald-600 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-emerald-700 truncate">{attachedFile.name}</p>
+                      <p className="text-xs text-emerald-500">{(attachedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <button onClick={() => { setAttachedFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-neutral-400 hover:text-neutral-600">
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+                {dragOver && !attachedFile && (
+                  <div className="mx-5 mb-3 border-2 border-dashed border-primary-300 bg-primary-50/40 rounded-xl py-6 flex flex-col items-center gap-2 pointer-events-none">
+                    <Upload size={24} className="text-primary-400" />
+                    <p className="text-sm font-semibold text-primary-600">Drop file to attach</p>
+                  </div>
+                )}
+                <div className="flex items-center justify-between px-5 py-3 border-t border-neutral-100 bg-neutral-50/50">
+                  <div className="flex gap-1.5">
+                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-white border border-neutral-200 rounded-xl text-neutral-600 hover:bg-neutral-100 transition-colors">
+                      <Upload size={12} /> Attach File
+                    </button>
+                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-white border border-neutral-200 rounded-xl text-neutral-600 hover:bg-neutral-100 transition-colors">
+                      <ImageIcon size={12} /> Photo
+                    </button>
+                  </div>
+                  <button
+                    onClick={submitPost}
+                    disabled={uploading || (!postText.trim() && !attachedFile)}
+                    className="flex items-center gap-1.5 px-5 py-2 bg-primary-900 text-white text-xs font-bold rounded-xl hover:bg-primary-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Send size={12} /> {uploading ? "Posting…" : "Post"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Posts — colored by type */}
+              {filtered.map((post) => (
+                <div key={post.id} className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-neutral-200 ${postTypeBorder[post.type]}`}>
+                  <div className="flex items-center gap-3 px-5 pt-4 pb-2">
+                    <div className="w-10 h-10 flex items-center justify-center text-xs font-bold shrink-0 rounded-xl bg-primary-100 text-primary-800">
+                      {post.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold text-primary-900">{post.author}</span>
+                        <span className={`text-[9px] px-2 py-0.5 font-bold rounded-full ${postTypeBadge[post.type]}`}>
+                          {typeLabel[post.type]}
+                        </span>
+                        <span className="text-[10px] font-semibold bg-primary-50 text-primary-600 border border-primary-100 px-2 py-0.5 rounded-full">{post.club}</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-400 mt-0.5">{post.time}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {(post.author === userName || post.author === "You") && (
+                        <button
+                          onClick={() => { if (confirm("Delete this post?")) setFeed((prev) => prev.filter((p) => p.id !== post.id)); }}
+                          className="text-neutral-300 hover:text-red-500 transition-colors p-1"
+                        >
+                          <MoreHorizontal size={15} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="px-5 pb-3">
+                    <p className="text-sm text-neutral-700 leading-relaxed">{post.text}</p>
+                    {post.type === "achievement" && (
+                      <div className="mt-3 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                        <Award size={18} className="text-amber-500 shrink-0" />
+                        <div>
+                          <span className="text-sm font-bold text-amber-700">Achievement Unlocked</span>
+                          <p className="text-[10px] text-amber-600 mt-0.5">This milestone was shared with the community</p>
+                        </div>
+                      </div>
+                    )}
+                    {post.fileName && (
+                      <div className="mt-3 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                        <FileText size={18} className="text-emerald-600 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-emerald-700 truncate">{post.fileName}</p>
+                          <p className="text-xs text-emerald-500">{post.fileSize} · File</p>
+                        </div>
+                        {post.fileUrl ? (
+                          <a href={post.fileUrl} download={post.fileName} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1">
+                            <Download size={12} /> Download
+                          </a>
+                        ) : (
+                          <span className="px-3 py-1.5 bg-neutral-200 text-neutral-400 text-xs font-bold rounded-lg">Demo</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center border-t border-neutral-100 px-2 bg-neutral-50/40">
+                    <button onClick={() => toggleLike(post.id)} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-colors ${post.liked ? "text-rose-500" : "text-neutral-400 hover:text-rose-400"}`}>
+                      {post.liked ? <Heart size={14} fill="currentColor" /> : <Heart size={14} />}
+                      <span>{post.likes}</span>
+                    </button>
+                    <button onClick={() => toggleReplies(post.id)} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-colors ${expandedReplies.has(post.id) ? "text-blue-600" : "text-neutral-400 hover:text-blue-500"}`}>
+                      <MessageCircle size={14} /> {post.replies.length} {post.replies.length === 1 ? "Reply" : "Replies"}
+                    </button>
+                    <button onClick={() => toggleSave(post.id)} className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-colors ${post.saved ? "text-secondary-600" : "text-neutral-400 hover:text-secondary-500"}`}>
+                      {post.saved ? <Bookmark size={14} fill="currentColor" /> : <Bookmark size={14} />} Save
+                    </button>
+                    <button className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-neutral-400 hover:text-primary-600 transition-colors ml-auto">
+                      <Share2 size={14} /> Share
+                    </button>
+                  </div>
+
+                  {expandedReplies.has(post.id) && (
+                    <div className="border-t border-neutral-100 bg-neutral-50/50">
+                      <div className="flex items-center gap-3 px-5 py-3 border-b border-neutral-100">
+                        {avatarUrl ? (
+                          <Image src={avatarUrl} alt={userName} width={30} height={30} className="w-8 h-8 object-cover shrink-0 rounded-lg" />
+                        ) : (
+                          <div className="w-8 h-8 bg-primary-900 text-white flex items-center justify-center text-[10px] font-bold shrink-0 rounded-lg">{userInitials}</div>
+                        )}
+                        <input
+                          value={replyInputs[post.id] || ""}
+                          onChange={(e) => setReplyInputs((prev) => ({ ...prev, [post.id]: e.target.value }))}
+                          onKeyDown={(e) => e.key === "Enter" && submitReply(post.id)}
+                          placeholder="Write a reply..."
+                          className="flex-1 bg-white border border-neutral-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary-300"
+                        />
+                        <button onClick={() => submitReply(post.id)} className="px-3 py-2 bg-primary-900 text-white rounded-xl hover:bg-primary-800 transition-colors">
+                          <Send size={13} />
+                        </button>
+                      </div>
+                      <div className="max-h-[260px] overflow-y-auto">
+                        {post.replies.map((r) => (
+                          <div key={r.id} className="flex gap-3 px-5 py-3 border-b border-neutral-100/80 last:border-b-0">
+                            <div className="w-8 h-8 bg-primary-100 text-primary-800 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 rounded-lg">{r.avatar}</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-bold text-primary-900">{r.author}</span>
+                                <span className="text-[10px] text-neutral-400">{r.time}</span>
+                                {(r.author === userName || r.author === "You") && (
+                                  <button
+                                    onClick={() => setFeed((prev) => prev.map((p) => p.id === post.id ? { ...p, replies: p.replies.filter((rr) => rr.id !== r.id) } : p))}
+                                    className="ml-auto text-red-300 hover:text-red-600 transition-colors"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-sm text-neutral-600 leading-relaxed">{r.text}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {post.replies.length === 0 && (
+                          <p className="text-sm text-neutral-400 px-5 py-4 text-center">No replies yet — be the first!</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {filtered.length === 0 && (
+                <div className="bg-white border border-neutral-200 rounded-2xl py-12 text-center">
+                  <MessageCircle size={32} className="text-neutral-300 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-neutral-500">No posts match this filter.</p>
+                  <p className="text-xs text-neutral-400 mt-1">Try switching to &quot;All Posts&quot;</p>
+                </div>
+              )}
             </div>
             </>)}
           </div>
 
-          {/*  RIGHT SIDEBAR — Meetings only  */}
-          <div className="hidden lg:flex lg:flex-col w-64 shrink-0 gap-4">
-            <div className="bg-white/95 backdrop-blur border border-primary-200 rounded-2xl overflow-hidden shadow-[0_10px_26px_rgba(28,53,87,0.12)]">
-              <div className="px-4 py-3 border-b border-primary-100 bg-gradient-to-r from-primary-50 to-secondary-50 flex items-center justify-between">
-                <h3 className="text-sm font-bold text-primary-700 flex items-center gap-2">
-                  <Video size={14} /> Upcoming Meetings
+          {/* ══ RIGHT SIDEBAR ══ */}
+          <div className="hidden lg:flex lg:flex-col w-72 shrink-0 gap-5 self-start sticky top-20">
+
+            {/* Upcoming Meetings */}
+            <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm">
+              <div className="px-4 py-3 bg-gradient-to-r from-primary-900 to-primary-700 flex items-center">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Video size={13} /> Upcoming Meetings
                 </h3>
-                <Link href="/events" className="text-[10px] font-semibold text-secondary-600 hover:text-secondary-700">All</Link>
               </div>
-              <div className="divide-y divide-primary-100">
-                {MEETINGS.map((mt) => (
-                  <div key={mt.id} className="px-4 py-3 hover:bg-primary-50/45 transition-colors">
-                    <div className="flex items-start gap-2 mb-2">
-                      {mt.live && <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse shrink-0 mt-1" />}
+              <div className="divide-y divide-neutral-100">
+                {MEETINGS.map((mt) => {
+                  const clubColors: Record<string, string> = {
+                    TSA: "bg-primary-50 text-primary-800 border border-primary-200",
+                    Robotics: "bg-blue-50 text-blue-800 border border-blue-200",
+                    NHS: "bg-emerald-50 text-emerald-800 border border-emerald-200",
+                    FBLA: "bg-amber-50 text-amber-800 border border-amber-200",
+                  };
+                  return (
+                    <div key={mt.id} className="px-4 py-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors">
+                      {/* Live indicator dot */}
+                      {mt.live && (
+                        <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse shrink-0" />
+                      )}
+                      {/* Info */}
                       <div className="min-w-0 flex-1">
-                        <span className="text-[9px] font-bold bg-primary-50 text-primary-700 border border-primary-100 rounded-full px-2 py-0.5">{mt.club}</span>
-                        <p className="text-xs font-semibold text-primary-700 mt-1 leading-snug">{mt.title}</p>
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-neutral-400">
-                          <Clock size={10} /> {mt.time} · {mt.attendees} attending
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${clubColors[mt.club] || "bg-neutral-100 text-neutral-600"}`}>{mt.club}</span>
+                        </div>
+                        <p className="text-[11px] font-semibold text-primary-800 leading-snug truncate">{mt.title}</p>
+                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-neutral-400">
+                          <span className="flex items-center gap-0.5"><Clock size={9} /> {mt.time}</span>
+                          <span className="flex items-center gap-0.5"><Users size={9} /> {mt.attendees}</span>
                         </div>
                       </div>
+                      {/* Join button — compact, inline */}
+                      <button
+                        onClick={() => router.push(`/call/${encodeURIComponent(`Meeting-${mt.club}-${mt.id}`)}`)}
+                        className="shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-300 transition-colors whitespace-nowrap"
+                      >
+                        Join Live
+                      </button>
                     </div>
-                    <button
-                      onClick={() => router.push(`/call/${encodeURIComponent(`Meeting-${mt.club}-${mt.id}`)}`)}
-                      className={`w-full py-1.5 rounded-xl text-[11px] font-bold transition-colors ${mt.live ? "bg-red-500 text-white hover:bg-red-600" : "bg-primary-50 text-primary-700 border border-primary-200 hover:bg-primary-100"}`}
-                    >
-                      {mt.live ? "Join Live" : "RSVP"}
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
+
+
           </div>
         </div>
       </div>

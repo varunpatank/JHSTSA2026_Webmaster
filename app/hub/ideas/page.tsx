@@ -242,8 +242,6 @@ export default function IdeasPage() {
                     <div className="mt-3 flex items-center gap-4 text-xs text-neutral-500">
                       <span>By {idea.proposedBy}</span>
                       <span>{new Date(idea.date).toLocaleDateString()}</span>
-                      <span className="flex items-center gap-1"><MessageCircle size={12} /> {idea.comments} comments</span>
-                      <span className="flex items-center gap-1"><Users size={12} /> {idea.interestCount} interested</span>
                       {idea.proposedBy === "You" && (
                         <button onClick={() => { if (confirm(`Delete "${idea.title}"?`)) setIdeas(prev => prev.filter(i => i.id !== idea.id)); }} className="ml-auto text-red-400 hover:text-red-600 transition-colors flex items-center gap-1"><Trash2 size={12} /> Delete</button>
                       )}

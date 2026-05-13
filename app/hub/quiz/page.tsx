@@ -6,6 +6,7 @@ import { chapters } from "@/lib/data";
 import {
   ArrowRight, CheckCircle, ChevronRight, Lightbulb, Star, Sparkles
 } from "lucide-react";
+import { supabase, clubFinderResultsApi } from "@/lib/api";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -62,17 +63,39 @@ export default function QuizPage() {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LS_QUIZ);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length === QUIZ_QUESTIONS.length) {
-          setAnswers(parsed); setShowResults(true);
+    let cancelled = false;
+    async function load() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (cancelled) return;
+        if (user) {
+          setUserId(user.id);
+          const { data } = await clubFinderResultsApi.getByUser(user.id);
+          if (!cancelled && data && Array.isArray(data.answers) && data.answers.length === QUIZ_QUESTIONS.length) {
+            setAnswers(data.answers as number[]);
+            setShowResults(true);
+            return;
+          }
         }
+      } catch {}
+      // Fall back to localStorage
+      if (!cancelled) {
+        try {
+          const saved = localStorage.getItem(LS_QUIZ);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length === QUIZ_QUESTIONS.length) {
+              setAnswers(parsed); setShowResults(true);
+            }
+          }
+        } catch {}
       }
-    } catch {}
+    }
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   function handleAnswer(optionIndex: number) {
@@ -82,13 +105,31 @@ export default function QuizPage() {
       setCurrent(current + 1);
     } else {
       setShowResults(true);
+      // Calculate top categories for DB storage
+      const scores: Record<string, number> = {};
+      newAnswers.forEach((optIdx, qIdx) => {
+        const selectedOption = QUIZ_QUESTIONS[qIdx]?.options[optIdx];
+        if (selectedOption) {
+          selectedOption.categories.forEach(cat => { scores[cat] = (scores[cat] || 0) + 1; });
+        }
+      });
+      const topCategories = Object.entries(scores).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([cat]) => cat);
+      // Save to localStorage as fallback
       try { localStorage.setItem(LS_QUIZ, JSON.stringify(newAnswers)); } catch {}
+      // Save to DB if logged in
+      if (userId) {
+        void (async () => { try { await clubFinderResultsApi.upsert({ user_id: userId, answers: newAnswers, top_categories: topCategories }); } catch {} })();
+      }
     }
   }
 
   function reset() {
     setCurrent(0); setAnswers([]); setShowResults(false);
     try { localStorage.removeItem(LS_QUIZ); } catch {};
+    if (userId) {
+      // Clear DB record by upserting empty state (will be overwritten on next completion)
+      void (async () => { try { await clubFinderResultsApi.upsert({ user_id: userId, answers: [], top_categories: [] }); } catch {} })();
+    }
   }
   function getResults() {
     const scores: Record<string, number> = {};

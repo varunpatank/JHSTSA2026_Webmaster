@@ -21,7 +21,7 @@ const supabase = createClient(supabaseUrl, supabasePublishableKey, {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, grade, password, bio, phone_number, school, is_adult } = body ?? {};
+    const { name, email, password } = body ?? {};
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -34,14 +34,7 @@ export async function POST(request: Request) {
       email,
       password,
       options: {
-        data: {
-          name,
-          grade: grade || null,
-          school: school || null,
-          is_adult: !!is_adult,
-          bio: bio || null,
-          phone_number: phone_number || null,
-        },
+        data: { name, is_adult: true },
       },
     });
 
@@ -56,16 +49,7 @@ export async function POST(request: Request) {
     const profileRes = await supabase
       .from("profiles")
       .upsert(
-        {
-          id: userId,
-          name,
-          email,
-          grade: grade || null,
-          school: school || null,
-          is_adult: !!is_adult,
-          bio: bio || null,
-          phone_number: phone_number || null,
-        },
+        { id: userId, name, email },
         { onConflict: "id" },
       )
       .select()

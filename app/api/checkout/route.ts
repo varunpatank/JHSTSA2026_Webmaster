@@ -23,7 +23,12 @@ export async function POST(req: NextRequest) {
       message,
       isRecurring,
       promoApplied,
+      returnPath: rawReturnPath,
     } = body;
+    // Only allow same-origin paths (no external redirects)
+    const returnPath = typeof rawReturnPath === "string" && rawReturnPath.startsWith("/") && !rawReturnPath.startsWith("//")
+      ? rawReturnPath
+      : "/donate";
 
 
     const cents = Math.round(Number(amount) * 100);
@@ -78,8 +83,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: isRecurring && !promoApplied ? "subscription" : "payment",
-      success_url: `${req.nextUrl.origin}/donate?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.nextUrl.origin}/donate?canceled=true`,
+      success_url: `${req.nextUrl.origin}${returnPath}?donated=true&amount=${(finalCents / 100).toFixed(2)}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.nextUrl.origin}${returnPath}`,
       metadata,
       ...(discounts ? { discounts } : {}),
     };

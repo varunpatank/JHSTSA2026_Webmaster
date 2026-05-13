@@ -497,7 +497,6 @@ export default function AlumniPage() {
         )}
       </div>
       </div>
-      </div>
     </div>
   );
 }

@@ -4,7 +4,6 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
-import { loginUser } from "@/lib/clientState";
 import HeroSection from "@/components/HeroSection";
 import { BookOpen, Calendar, Shield, UserPlus, Users } from "lucide-react";
 
@@ -20,11 +19,6 @@ export default function SignupFormClient({
   const [password, setPassword] = useState("");
   const [confirmedPassword, setConfirmedPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isAdult, setIsAdult] = useState(false);
-  const [grade, setGrade] = useState("");
-  const [bio, setBio] = useState("");
-  const [phone, setPhone] = useState("");
-  const [school, setSchool] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [missing, setMissing] = useState<Record<string, boolean>>({});
@@ -34,49 +28,22 @@ export default function SignupFormClient({
     e.preventDefault();
     setError(null);
 
-    const required = {
-      name: !name,
-      grade: !isAdult && !grade,
-      school: !isAdult && !school,
-      email: !email,
-      password: !password,
-      confirmedPassword: !confirmedPassword,
-    };
-
-    const missingKeys = Object.keys(required).filter(
-      (k) => (required as any)[k],
-    );
-    console.log(missingKeys);
-    if (missingKeys.length > 0) {
-      setMissing(required);
-      setError(
-        isAdult
-          ? "Please fill required fields: name, email, password"
-          : "Please fill required fields: name, email, password, school, grade.",
-      );
+    const m = { name: !name, email: !email, password: !password, confirmedPassword: !confirmedPassword };
+    if (Object.values(m).some(Boolean)) {
+      setMissing(m);
+      setError("Please fill in all fields.");
       return;
     }
 
     if (password !== confirmedPassword) {
       setMissing({ password: true, confirmedPassword: true });
-      setError(
-        "Please ensure that the password and the confirmed password are the same.",
-      );
+      setError("Passwords do not match.");
       return;
     }
 
     setLoading(true);
     try {
-      const res = await authApi.createUser({
-        name,
-        email,
-        password,
-        grade,
-        bio: bio || undefined,
-        phone_number: phone || undefined,
-        school: school || undefined,
-        is_adult: isAdult,
-      });
+      const res = await authApi.createUser({ name, email, grade: "", password });
 
       if (res.auth?.error) {
         setError(res.auth.error.message || "Sign up failed");
@@ -84,19 +51,7 @@ export default function SignupFormClient({
         return;
       }
 
-      const signInRes = await authApi.signInWithEmail(email, password);
-      if (signInRes.error) {
-        await authApi.signOut();
-        setError(
-          "Account created, but app session setup failed. Please sign in.",
-        );
-        return;
-      }
-
-      loginUser(name, email);
-      setMissing({});
-
-      router.push(redirect);
+      router.push("/portal?welcome=1");
     } catch (err: any) {
       setError(err?.message || "Unexpected error");
     } finally {
@@ -128,7 +83,7 @@ export default function SignupFormClient({
                 </p>
               </div>
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-600 p-3 bg-red-50 border border-red-200">{error}</p>}
 
             <form className="mt-6 space-y-4" onSubmit={onSubmit}>
               <div>
@@ -137,37 +92,12 @@ export default function SignupFormClient({
                 </label>
                 <input
                   value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    if (missing.name)
-                      setMissing((p) => ({ ...p, name: false }));
-                  }}
+                  onChange={(e) => { setName(e.target.value); if (missing.name) setMissing((p) => ({ ...p, name: false })); }}
                   className={`input-field ${missing.name ? "border-red-500 ring-1 ring-red-300" : ""}`}
                   required
                 />
               </div>
 
-              <div className="flex items-center gap-3">
-                <input
-                  id="isAdult"
-                  type="checkbox"
-                  checked={isAdult}
-                  onChange={(e) => {
-                    const v = e.target.checked;
-                    setIsAdult(v);
-                    if (v)
-                      setMissing((p) => ({
-                        ...p,
-                        grade: false,
-                        school: false,
-                      }));
-                  }}
-                  className="h-4 w-4"
-                />
-                <label htmlFor="isAdult" className="text-sm text-neutral-700">
-                  I'm an adult (staff/parent) — grade and school optional
-                </label>
-              </div>
               <div>
                 <label className="block text-sm font-semibold text-neutral-700 mb-1">
                   Email
@@ -175,55 +105,10 @@ export default function SignupFormClient({
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (missing.email)
-                      setMissing((p) => ({ ...p, email: false }));
-                  }}
+                  onChange={(e) => { setEmail(e.target.value); if (missing.email) setMissing((p) => ({ ...p, email: false })); }}
                   className={`input-field ${missing.email ? "border-red-500 ring-1 ring-red-300" : ""}`}
                   placeholder="student@school.edu"
                   required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-1">
-                  Phone (optional)
-                </label>
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="input-field"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-1">
-                  School
-                </label>
-                <input
-                  value={school}
-                  onChange={(e) => {
-                    setSchool(e.target.value);
-                    if (missing.school)
-                      setMissing((p) => ({ ...p, school: false }));
-                  }}
-                  className={`input-field ${missing.school ? "border-red-500 ring-1 ring-red-300" : ""}`}
-                  required={!isAdult}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-1">
-                  Grade
-                </label>
-                <input
-                  value={grade}
-                  onChange={(e) => {
-                    setGrade(e.target.value);
-                    if (missing.grade)
-                      setMissing((p) => ({ ...p, grade: false }));
-                  }}
-                  className={`input-field ${missing.grade ? "border-red-500 ring-1 ring-red-300" : ""}`}
-                  placeholder="eg. 10"
-                  required={!isAdult}
                 />
               </div>
 
@@ -234,11 +119,7 @@ export default function SignupFormClient({
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (missing.password)
-                      setMissing((p) => ({ ...p, password: false }));
-                  }}
+                  onChange={(e) => { setPassword(e.target.value); if (missing.password) setMissing((p) => ({ ...p, password: false })); }}
                   className={`input-field pr-16 ${missing.password ? "border-red-500 ring-1 ring-red-300" : ""}`}
                   placeholder="••••••••"
                   required
@@ -248,7 +129,7 @@ export default function SignupFormClient({
                   onClick={() => setShowPassword((s) => !s)}
                   aria-pressed={showPassword}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute right-3 top-1/2 text-sm text-neutral-500 hover:text-neutral-700"
+                  className="absolute right-3 top-[2.1rem] text-sm text-neutral-500 hover:text-neutral-700"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
@@ -259,27 +140,12 @@ export default function SignupFormClient({
                   Confirm Password
                 </label>
                 <input
-                  type={"password"}
+                  type="password"
                   value={confirmedPassword}
-                  onChange={(e) => {
-                    setConfirmedPassword(e.target.value);
-                    if (missing.confirmedPassword)
-                      setMissing((p) => ({ ...p, confirmedPassword: false }));
-                  }}
-                  className={`input-field pr-16 ${missing.confirmedPassword ? "border-red-500 ring-1 ring-red-300" : ""}`}
+                  onChange={(e) => { setConfirmedPassword(e.target.value); if (missing.confirmedPassword) setMissing((p) => ({ ...p, confirmedPassword: false })); }}
+                  className={`input-field ${missing.confirmedPassword ? "border-red-500 ring-1 ring-red-300" : ""}`}
                   placeholder="••••••••"
                   required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-neutral-700 mb-1">
-                  Bio (optional)
-                </label>
-                <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  className="input-field h-24"
                 />
               </div>
 
@@ -287,7 +153,6 @@ export default function SignupFormClient({
                 type="submit"
                 className="btn-primary w-full"
                 disabled={loading}
-                onClick={onSubmit}
               >
                 {loading ? "Creating account…" : "Create account"}
               </button>

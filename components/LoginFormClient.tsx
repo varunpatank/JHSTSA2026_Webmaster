@@ -2,12 +2,12 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { authApi } from "@/lib/api";
 import { loginUser } from "@/lib/clientState";
 import HeroSection from "@/components/HeroSection";
-import { BookOpen, Calendar, LogIn, Shield, Users } from "lucide-react";
+import { BookOpen, Calendar, Gavel, LogIn, Shield, Users } from "lucide-react";
 
 interface LoginFormClientProps {
   redirect: string;
@@ -22,6 +22,8 @@ export default function LoginFormClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const accountCreated = searchParams.get("created") === "1";
   const { status } = useSession();
 
   useEffect(() => {
@@ -62,6 +64,29 @@ export default function LoginFormClient({
     })();
   };
 
+  const onJudgeLogin = () => {
+    setEmail("judge@jhstsa.edu");
+    setPassword("Judge!1");
+    setError(null);
+    setSubmitting(true);
+    (async () => {
+      try {
+        const res = await authApi.signInWithEmail("judge@jhstsa.edu", "Judge!1");
+        if (res.error) {
+          setError("Judge account not found. Ask your admin to set up judge@jhstsa.edu.");
+          setSubmitting(false);
+          return;
+        }
+        loginUser(res.data?.user?.email?.split('@')[0] || "judge", "judge@jhstsa.edu");
+        router.push(redirect);
+      } catch (e: any) {
+        setError(e?.message || "Judge sign in failed");
+      } finally {
+        setSubmitting(false);
+      }
+    })();
+  };
+
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
@@ -92,6 +117,11 @@ export default function LoginFormClient({
             </div>
 
             <form className="space-y-4" onSubmit={onSubmit}>
+              {accountCreated && (
+                <div className="p-3 bg-green-50 border border-green-200 text-sm text-green-800">
+                  Account created! Please sign in.
+                </div>
+              )}
               {error && (
                 <div className="p-3  bg-red-50 border border-red-200 text-sm text-red-700">
                   {error}
@@ -125,6 +155,15 @@ export default function LoginFormClient({
               </div>
               <button type="submit" className="btn-primary w-full" disabled={submitting}>
                 {submitting ? "Signing in..." : "Sign In"}
+              </button>
+              <div className="relative flex items-center gap-3">
+                <div className="flex-1 border-t border-neutral-200" />
+                <span className="text-xs text-neutral-400 font-medium">or</span>
+                <div className="flex-1 border-t border-neutral-200" />
+              </div>
+              <button type="button" onClick={onJudgeLogin} disabled={submitting}
+                className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-secondary-400 bg-secondary-50 text-secondary-800 text-sm font-bold hover:bg-secondary-100 transition-colors disabled:opacity-50">
+                <Gavel size={15} /> Judge Quick Login
               </button>
             </form>
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { BookMarked, BookOpen, Compass, Gavel, Menu, X, Calendar, Users } from "lucide-react";
+import { BookMarked, BookOpen, Compass, Gavel, Menu, X, Calendar, Users, UserCircle } from "lucide-react";
 import { supabase, profilesApi, storageApi, authApi } from "../lib/api";
 import { loginUser, isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
 
@@ -35,7 +35,7 @@ export default function Header() {
     { href: "/resources", label: "Resources", icon: BookOpen },
     { href: "/directory", label: "Clubs", icon: Compass },
     { href: "/events", label: "Events", icon: Calendar },
-    { href: "/community", label: "Social Hub", icon: Users },
+    { href: "/community", label: "Social", icon: Users },
   ];
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -129,7 +129,7 @@ export default function Header() {
                 ClubConnect
               </span>
               <span className="text-[9px] text-amber-700/70 uppercase tracking-[0.15em] leading-none font-semibold">
-                For students, by students!
+                For students, by students
               </span>
             </div>
           </Link>
@@ -145,7 +145,11 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="inline-flex h-[60px] items-center gap-1.5 px-3 text-[12.5px] font-medium text-primary-900 hover:text-secondary-600 transition-colors relative after:absolute after:bottom-0 after:left-2.5 after:right-2.5 after:h-[2px] after:bg-secondary-500 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
+                  className={`inline-flex h-[60px] items-center gap-1.5 px-3 text-[12.5px] font-medium transition-colors relative after:absolute after:bottom-0 after:left-2.5 after:right-2.5 after:h-[2px] after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left ${
+                    (link as any).gold
+                      ? "text-secondary-600 font-bold hover:text-secondary-700 after:bg-secondary-400"
+                      : "text-primary-900 hover:text-secondary-600 after:bg-secondary-500"
+                  }`}
                 >
                   {Icon && <Icon size={14} />}
                   {link.label}
@@ -177,14 +181,12 @@ export default function Header() {
                 <BookMarked size={11} /> Portal
               </Link>
               <Link
-                href="/portal?tab=resource"
+                href="/references"
                 className="inline-flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold rounded-full bg-primary-900 text-white hover:brightness-110 transition-colors"
               >
-                <BookOpen size={11} /> Suggest Resource
+                References
               </Link>
             </div>
-
-            {/* Judge button removed per user request */}
           </div>
         </div>
 
@@ -205,7 +207,18 @@ export default function Header() {
                   {link.label}
                 </Link>
               ))}
-
+              <div className="pt-2 pb-1 border-t border-cream-200 mt-1 flex flex-col gap-1">
+                <Link href="/portal" onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 text-sm font-bold text-primary-900 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors">
+                  <BookMarked size={14} /> Portal
+                </Link>
+                {isLoggedIn && (
+                  <Link href="/portal?tab=profile" onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-primary-800 hover:bg-cream-200 rounded-lg transition-colors">
+                    <UserCircle size={14} /> My Profile
+                  </Link>
+                )}
+              </div>
             </nav>
           </div>
         )}

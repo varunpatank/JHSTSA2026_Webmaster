@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function ProfilePageRedirect() {
-  redirect("/dashboard?tab=profile");
+  redirect("/portal?tab=profile");
 }

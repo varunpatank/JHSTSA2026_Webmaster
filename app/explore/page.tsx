@@ -575,7 +575,7 @@ export default function ExplorePage() {
                   title: "Leadership Development",
                   desc: "Workshops and exercises for building strong officer teams.",
                   href: "/resources",
-                  icon: Star,
+                  icon: "🌟",
                 },
               ].map((resource) => (
                 <Link
@@ -595,7 +595,6 @@ export default function ExplorePage() {
             </div>
           </div>
         )}
-      </div>
       </div>
       </div>
     </div>

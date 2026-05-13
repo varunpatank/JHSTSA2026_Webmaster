@@ -72,7 +72,7 @@ export const RESOURCES: Resource[] = [
   { id: "ll-a1", title: "Community Impact Tracker", details: "Spreadsheet and presentation template for documenting, measuring, and showcasing your club's community contributions.", type: "template", category: "Leadership & Legacy", stage: "Active", downloads: 167, format: "DOCX", tags: ["impact", "community", "reporting"], img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80", rating: 4.7, saved: 73, downloadUrl: "/resources-pdfs/ll-a1.pdf" },
 ];
 
-export const CATEGORIES = ["All", "Getting Started", "Recruiting & Promoting", "Meetings & Operations", "Events & Funding", "Leadership & Legacy"];
+export const CATEGORIES = ["All", "Getting Started", "Recruiting & Promoting", "Meetings & Operations", "Events & Funding", "Leadership & Legacy", "Community"];
 export const STAGES = ["All Stages", "Beginner", "Growing", "Active", "Advanced"];
 
 export const TYPE_COLORS: Record<ResourceType, string> = {

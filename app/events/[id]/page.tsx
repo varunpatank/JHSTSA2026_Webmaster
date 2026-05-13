@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { events } from "@/lib/data";
+import { getCreatedEvents } from "@/lib/clientState";
 import { supabase, eventsApi, eventRegistrationsApi } from "@/lib/api";
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Share2, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, MapPin, Trash2, Users, Share2, CheckCircle, Loader2 } from "lucide-react";
 
 
 const GALLERY: Record<string, string[]> = {
@@ -49,6 +50,7 @@ const GALLERY: Record<string, string[]> = {
 
 export default function EventDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const [dbEvent, setDbEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [rsvp, setRsvp] = useState(false);
@@ -56,6 +58,7 @@ export default function EventDetailPage() {
   const [copied, setCopied] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [registrationCount, setRegistrationCount] = useState(0);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,6 +92,11 @@ export default function EventDetailPage() {
 
   const seeded = events.find((item) => item.id === params.id);
 
+  // Fallback: check user-created events in clientState
+  const userCreated = !dbEvent && !seeded
+    ? getCreatedEvents().find(e => e.id === params.id)
+    : null;
+
   const handleRsvp = useCallback(async () => {
     if (!currentUserId || rsvpLoading) return;
     setRsvpLoading(true);
@@ -112,7 +120,7 @@ export default function EventDetailPage() {
     );
   }
 
-  if (!seeded && !dbEvent) {
+  if (!seeded && !dbEvent && !userCreated) {
     return (
       <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4">
         <div className="card p-8 max-w-xl w-full text-center">
@@ -140,6 +148,13 @@ export default function EventDetailPage() {
         category: seeded.category, currentAttendees: seeded.currentAttendees,
         imageUrl: undefined as string | undefined,
       }
+    : userCreated ? {
+        title: userCreated.title, chapterName: userCreated.clubName || "Your Club", chapterId: userCreated.clubId || "",
+        location: userCreated.location, date: userCreated.date, startTime: userCreated.startTime,
+        endTime: userCreated.endTime, description: userCreated.description, isPublic: true,
+        category: (userCreated.category || "General") as string, currentAttendees: 0,
+        imageUrl: userCreated.imageUrl,
+      }
     : null;
 
   if (!event) return null;
@@ -152,6 +167,15 @@ export default function EventDetailPage() {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this event? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      await eventsApi.delete(params.id);
+    } catch {}
+    router.push("/events");
   };
 
   const bannerImgs: Record<string, string> = {
@@ -197,9 +221,19 @@ export default function EventDetailPage() {
             Hosted by{" "}
             <Link href={`/directory/${event.chapterId}`} className="text-white font-semibold hover:underline">{event.chapterName}</Link>
           </p>
-          <button onClick={handleShare} className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 text-white text-xs font-semibold hover:bg-white/25 transition-colors border border-white/20">
-            <Share2 size={12} /> {copied ? "Link copied!" : "Share event"}
-          </button>
+          {event.description && (
+            <p className="mt-2 text-sm max-w-xl leading-relaxed inline-block cream-textured border border-cream-400 text-primary-900 px-3 py-2 rounded-lg font-medium">{event.description}</p>
+          )}
+          <div className="mt-4 flex items-center gap-2 flex-wrap">
+            <button onClick={handleShare} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 text-white text-xs font-semibold hover:bg-white/25 transition-colors border border-white/20">
+              <Share2 size={12} /> {copied ? "Link copied!" : "Share event"}
+            </button>
+            {currentUserId && dbEvent?.created_by === currentUserId && (
+              <button onClick={handleDelete} disabled={deleting} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-red-500/80 text-white text-xs font-semibold hover:bg-red-600/90 transition-colors border border-red-400/40 disabled:opacity-60">
+                {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />} Delete Event
+              </button>
+            )}
+          </div>
         </div>
         <div aria-hidden className="absolute bottom-0 left-0 right-0 leading-[0]">
           <svg viewBox="0 0 1440 32" preserveAspectRatio="none" className="block w-full h-6">

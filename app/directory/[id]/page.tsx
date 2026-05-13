@@ -5,15 +5,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
-  chapters, events, RESOURCES,
+  chapters, events, resources as RESOURCES,
 } from "@/lib/data";
-import { addJoinedClub, getCreatedChapters } from "@/lib/clientState";
+import { addJoinedClub, getCreatedChapters, getCreatedEvents, removeCreatedChapter, removeJoinedClub } from "@/lib/clientState";
 import { supabase, membershipsApi, organizationsApi, profilesApi } from "@/lib/api";
 import { formatChapterLocation } from "@/lib/location";
 import {
-  ArrowLeft, ArrowRight, BookOpen, Calendar, ChevronLeft, ChevronRight,
-  Clock, FileText, Mail, MapPin, Star, Users, Video, UserPlus,
+  ArrowLeft, ArrowRight, BookOpen, CheckCircle, ChevronLeft, ChevronRight,
+  Clock, Mail, MapPin, Star, Users, Video, UserPlus, Trash2, X,
 } from "lucide-react";
+import DonationForm from "@/components/DonationForm";
 
 const CLUB_IMAGES: Record<string, string[]> = {
   Academic:  [
@@ -69,9 +70,19 @@ export default function ClubDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "events" | "resources">("overview");
+  const [donationPopup, setDonationPopup] = useState<{ amount: string; clubName: string } | null>(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("donated") === "true") {
+        const amt = sp.get("amount") || "?";
+        setDonationPopup({ amount: amt, clubName: chapter?.name || "this club" });
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, []);
 
   const allChapters = mounted ? [...chapters, ...getCreatedChapters()] : chapters;
   const clubIdx = allChapters.findIndex(c => c.id === params.id);
@@ -80,10 +91,37 @@ export default function ClubDetailPage() {
   const prevClub = clubIdx > 0 ? allChapters[clubIdx - 1] : null;
   const nextClub = clubIdx < allChapters.length - 1 ? allChapters[clubIdx + 1] : null;
 
-  const heroBgs = CLUB_IMAGES[chapter?.category ?? "General"] ?? CLUB_IMAGES.General;
-  const heroImage = heroBgs[0];
+  const defaultHero = (CLUB_IMAGES[chapter?.category ?? "General"] ?? CLUB_IMAGES.General)[0];
+  const heroImage = chapter?.photoGallery?.[0]?.startsWith("http") ? chapter.photoGallery[0] : defaultHero;
 
-  const chapterEvents = events.filter(e => e.chapterId === params.id).slice(0, 6);
+  const staticEvents = events.filter(e => e.chapterId === params.id).slice(0, 6);
+  const userEvents = mounted ? getCreatedEvents()
+    .filter(e => e.clubId === params.id)
+    .map(e => ({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      date: e.date,
+      startTime: e.startTime,
+      endTime: e.endTime,
+      location: e.location,
+      chapterId: e.clubId,
+      chapterName: e.clubName,
+      category: e.category as import("@/types").ChapterCategory,
+      isPublic: true,
+      requiresRSVP: false,
+      currentAttendees: 0,
+    })) : [];
+  const chapterEvents = [...userEvents, ...staticEvents].slice(0, 6);
+
+  const isUserCreated = mounted && getCreatedChapters().some(c => c.id === params.id);
+
+  const handleDeleteClub = () => {
+    if (!confirm(`Delete "${chapter.name}"? This cannot be undone.`)) return;
+    removeCreatedChapter(params.id);
+    removeJoinedClub(params.id);
+    router.push("/directory");
+  };
 
   const handleJoin = async () => {
     const { data: authData } = await supabase.auth.getUser();
@@ -119,6 +157,43 @@ export default function ClubDetailPage() {
   return (
     <div className="bg-cream-200 min-h-screen">
 
+      {/* ── DONATION SUCCESS POPUP ─────────────────────────── */}
+      {donationPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-cream-300 max-w-sm w-full p-8 relative">
+            <button onClick={() => setDonationPopup(null)}
+              className="absolute top-3 right-3 text-neutral-400 hover:text-neutral-700 transition-colors">
+              <X size={16} />
+            </button>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <CheckCircle size={28} className="text-green-600" />
+              </div>
+              <h2 className="text-xl font-heading font-bold text-primary-800">Thank You!</h2>
+              <p className="mt-2 text-sm text-neutral-600">Your donation has been processed successfully.</p>
+              <div className="mt-4 w-full border border-cream-300 divide-y divide-cream-300 text-sm">
+                <div className="flex justify-between px-4 py-2">
+                  <span className="text-neutral-500 font-medium">Amount</span>
+                  <span className="font-bold text-primary-800">${donationPopup.amount}</span>
+                </div>
+                <div className="flex justify-between px-4 py-2">
+                  <span className="text-neutral-500 font-medium">Recipient</span>
+                  <span className="font-bold text-primary-800">{donationPopup.clubName}</span>
+                </div>
+                <div className="flex justify-between px-4 py-2">
+                  <span className="text-neutral-500 font-medium">Processor</span>
+                  <span className="font-bold text-primary-800">Stripe</span>
+                </div>
+              </div>
+              <button onClick={() => setDonationPopup(null)}
+                className="mt-5 w-full py-2.5 bg-primary-900 hover:bg-primary-800 text-white text-sm font-bold transition-colors">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── HERO ──────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-primary-900" style={{ minHeight: "280px" }}>
         {heroImage && (
@@ -139,7 +214,7 @@ export default function ClubDetailPage() {
               <span className="px-3 py-1 text-xs font-semibold bg-green-500/20 text-green-200 border border-green-400/30 rounded-full">Active</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-heading font-bold text-white leading-tight drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]">{chapter.name}</h1>
-            <p className="mt-2 text-sm max-w-xl leading-relaxed inline-block bg-black/40 backdrop-blur-sm text-white px-3 py-2 rounded">{chapter.description}</p>
+            <p className="mt-2 text-sm max-w-xl leading-relaxed inline-block cream-textured border border-cream-400 text-primary-900 px-3 py-2 rounded-lg font-medium">{chapter.description}</p>
             <div className="mt-4 flex flex-wrap items-center gap-5 text-white/70 text-xs">
               <span className="flex items-center gap-1"><Users size={12} className="text-secondary-400" /> {chapter.memberCount} members</span>
               <span className="flex items-center gap-1"><Clock size={12} className="text-secondary-400" /> Founded {chapter.foundedYear}</span>
@@ -154,18 +229,6 @@ export default function ClubDetailPage() {
         </div>
       </section>
 
-      {/* ── TABS ──────────────────────────────────────────── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex gap-0 border-b border-cream-400">
-          {(["overview", "events", "resources"] as const).map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`px-5 py-3 text-sm font-bold capitalize transition-colors border-b-2 -mb-px ${activeTab === tab ? "border-primary-900 text-primary-900" : "border-transparent text-neutral-500 hover:text-primary-700"}`}>
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* ── CONTENT ───────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid md:grid-cols-3 gap-6">
@@ -173,16 +236,14 @@ export default function ClubDetailPage() {
           {/* ── MAIN (2/3) ── */}
           <div className="md:col-span-2 space-y-5">
 
-            {/* OVERVIEW TAB */}
-            {activeTab === "overview" && (
-              <>
-                {/* About */}
-                <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
+            {/* About */}
+
+                <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
                   <h2 className="font-heading font-bold text-primary-800 text-base mb-4 flex items-center gap-2">
                     <BookOpen size={16} className="text-secondary-500" /> About this Club
                   </h2>
-                  <p className="text-sm text-primary-700 leading-relaxed">{chapter.description}</p>
-                  <div className="mt-5 grid sm:grid-cols-2 gap-3">
+                  <p className="text-sm text-primary-700 leading-relaxed line-clamp-3">{chapter.description}</p>
+                  <dl className="mt-4 grid grid-cols-2 gap-2">
                     {[
                       { label: "Meeting Schedule", value: chapter.meetingSchedule },
                       { label: "Frequency", value: chapter.meetingFrequency },
@@ -193,20 +254,20 @@ export default function ClubDetailPage() {
                       { label: "Grade Level", value: chapter.gradeLevel },
                       { label: "Membership", value: chapter.membershipStatus },
                     ].map(item => (
-                      <div key={item.label} className="flex items-start gap-2 bg-cream-50 rounded-none px-3 py-2">
-                        <span className="text-xs font-bold text-primary-600 min-w-[110px]">{item.label}</span>
-                        <span className="text-xs text-primary-700">{item.value}</span>
+                      <div key={item.label} className="bg-cream-100 rounded-xl border border-cream-300 px-3 py-2.5">
+                        <dt className="text-[10px] font-bold uppercase tracking-wider text-primary-400 mb-0.5">{item.label}</dt>
+                        <dd className="text-xs font-semibold text-primary-800 leading-snug">{item.value}</dd>
                       </div>
                     ))}
-                  </div>
+                  </dl>
                 </div>
 
                 {/* Leadership */}
-                <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
+                <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
                   <h2 className="font-heading font-bold text-primary-800 text-base mb-4">Leadership</h2>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {chapter.officers.map(officer => (
-                      <div key={officer.email} className="flex items-center gap-3 bg-cream-50 rounded-none p-3">
+                      <div key={officer.email} className="flex items-center gap-3 bg-cream-50 rounded-xl p-3">
                         <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold shrink-0">
                           {officer.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                         </div>
@@ -218,7 +279,7 @@ export default function ClubDetailPage() {
                       </div>
                     ))}
                     {/* Advisor */}
-                    <div className="flex items-center gap-3 bg-secondary-50 rounded-none border border-secondary-100 p-3 sm:col-span-2">
+                    <div className="flex items-center gap-3 bg-secondary-50 rounded-xl border border-secondary-100 p-3 sm:col-span-2">
                       <div className="w-10 h-10 rounded-full bg-secondary-100 text-secondary-700 flex items-center justify-center shrink-0">
                         <Star size={14} />
                       </div>
@@ -234,7 +295,7 @@ export default function ClubDetailPage() {
                 </div>
 
                 {/* Membership Requirements */}
-                <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
+                <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
                   <h2 className="font-heading font-bold text-primary-800 text-base mb-3">Membership Requirements</h2>
                   <p className="text-sm text-primary-700">{chapter.membershipRequirements}</p>
                   <p className="mt-2 text-xs text-primary-500 font-semibold">
@@ -243,78 +304,13 @@ export default function ClubDetailPage() {
                       : "Application required — officers will review your membership request."}
                   </p>
                 </div>
-              </>
-            )}
 
-            {/* EVENTS TAB */}
-            {activeTab === "events" && (
-              <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
-                <h2 className="font-heading font-bold text-primary-800 text-base mb-4 flex items-center gap-2">
-                  <Calendar size={16} className="text-secondary-500" /> Upcoming Events
-                </h2>
-                {chapterEvents.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Calendar size={32} className="mx-auto text-cream-400 mb-3" />
-                    <p className="text-sm text-neutral-500">No upcoming events scheduled yet.</p>
-                    <Link href="/portal" className="mt-3 inline-block text-xs font-bold text-primary-600 hover:underline">Create an event &rarr;</Link>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {chapterEvents.map(ev => (
-                      <Link key={ev.id} href={`/events/${ev.id}`}
-                        className="flex items-start gap-4 p-4 rounded-none bg-cream-50 border border-cream-200 hover:border-primary-300 hover:bg-white transition-all group">
-                        <div className="bg-primary-800 text-white text-center px-3 py-2 rounded-none shrink-0">
-                          <p className="text-[9px] font-bold uppercase opacity-70">{new Date(ev.date).toLocaleDateString("en-US", { month: "short" })}</p>
-                          <p className="text-lg font-bold font-heading leading-none">{new Date(ev.date).getDate()}</p>
-                        </div>
-                        <div>
-                          <p className="font-heading font-bold text-primary-800 text-sm group-hover:text-primary-600 transition-colors">{ev.title}</p>
-                          <p className="text-xs text-neutral-500 mt-0.5">{ev.startTime} &ndash; {ev.endTime} &middot; {ev.location}</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* RESOURCES TAB */}
-            {activeTab === "resources" && (
-              <div className="space-y-5">
-                <div className="bg-white rounded-none border border-cream-300 p-6 shadow-sm">
-                  <h2 className="font-heading font-bold text-primary-800 text-base mb-1 flex items-center gap-2">
-                    <FileText size={16} className="text-secondary-500" /> Helpful Resources
-                  </h2>
-                  <p className="text-xs text-neutral-500 mb-5">Guides and templates curated for clubs like yours.</p>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {RESOURCE_LINKS.map(r => (
-                      <Link key={r.href} href={r.href}
-                        className="flex items-center gap-3 p-3 rounded-none border border-cream-200 hover:border-primary-300 hover:bg-cream-50 transition-all group">
-                        <div className="w-8 h-8 rounded-none bg-primary-100 flex items-center justify-center shrink-0">
-                          <BookOpen size={14} className="text-primary-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-primary-800 group-hover:text-primary-600 transition-colors leading-snug">{r.label}</p>
-                          <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold ${TYPE_PILL[r.type]}`}>{r.type}</span>
-                        </div>
-                        <ArrowRight size={12} className="text-neutral-300 group-hover:text-primary-400 transition-colors shrink-0" />
-                      </Link>
-                    ))}
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-cream-200">
-                    <Link href="/resources" className="inline-flex items-center gap-1.5 text-xs font-bold text-primary-600 hover:underline">
-                      Browse all resources <ArrowRight size={11} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* ── SIDEBAR (1/3) ── */}
-          <aside className="space-y-5 md:max-h-[620px] md:overflow-y-auto pr-1">
+          <aside className="space-y-5">
             {/* Quick Info */}
-            <div className="bg-white rounded-none border border-cream-300 p-5 shadow-sm">
+            <div className="bg-white rounded-2xl border border-cream-300 p-5 shadow-sm">
               <h3 className="font-heading font-bold text-primary-800 text-sm mb-4">Quick Info</h3>
               <div className="space-y-3 text-xs">
                 <div className="flex items-center gap-2 text-primary-700">
@@ -344,36 +340,31 @@ export default function ClubDetailPage() {
               </Link>
             </div>
 
-            {/* Tags */}
-            {chapter.tags && chapter.tags.length > 0 && (
-              <div className="bg-white rounded-none border border-cream-300 p-5 shadow-sm">
-                <h3 className="font-heading font-bold text-primary-800 text-sm mb-3">Tags</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {chapter.tags.map(tag => (
-                    <span key={tag} className="px-2.5 py-1 bg-primary-50 text-primary-700 text-[10px] font-semibold rounded-full border border-primary-100">{tag}</span>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Tags — field not on Chapter type, skip */}
 
-            {/* Contact */}
-            {chapter.contactEmail && (
-              <div className="bg-white rounded-none border border-cream-300 p-5 shadow-sm">
-                <h3 className="font-heading font-bold text-primary-800 text-sm mb-3">Contact</h3>
-                <a href={`mailto:${chapter.contactEmail}`} className="text-xs text-primary-600 hover:underline flex items-center gap-1.5">
-                  <Mail size={12} /> {chapter.contactEmail}
-                </a>
-              </div>
-            )}
+            {/* Contact — field not on Chapter type, skip */}
 
-            {/* Portal CTA */}
-            <div className="bg-primary-900 rounded-none p-5">
-              <p className="text-xs font-bold uppercase tracking-widest text-primary-300 mb-2">Want to manage a club?</p>
-              <p className="text-xs text-primary-200 leading-relaxed mb-4">Use the Portal to create events, manage members, and track your club&apos;s progress.</p>
-              <Link href="/portal" className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors">
-                Go to Portal
-              </Link>
+            {/* Portal CTA removed — see portal page */}
+
+            {/* Donation */}
+            <div className="bg-white rounded-2xl border border-cream-300 p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary-700 mb-3">Support This Club</p>
+              <DonationForm
+                selectedClub={{ id: chapter.id, name: chapter.name }}
+                compact
+                returnPath={`/directory/${chapter.id}`}
+              />
             </div>
+
+            {/* Delete (user-created clubs only) */}
+            {isUserCreated && (
+              <button
+                onClick={handleDeleteClub}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-red-300 text-red-600 text-xs font-semibold hover:bg-red-50 transition-colors rounded-xl"
+              >
+                <Trash2 size={13} /> Delete This Club
+              </button>
+            )}
           </aside>
         </div>
       </div>
@@ -383,7 +374,7 @@ export default function ClubDetailPage() {
         <div className="border-t border-cream-400 pt-6 flex items-center justify-between gap-4">
           {prevClub ? (
             <Link href={`/directory/${prevClub.id}`}
-              className="flex items-center gap-3 bg-white rounded-none border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group">
+              className="flex items-center gap-3 bg-white rounded-2xl border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group">
               <ChevronLeft size={18} className="text-primary-400 group-hover:text-primary-700 transition-colors" />
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-400">Previous Club</p>
@@ -398,7 +389,7 @@ export default function ClubDetailPage() {
 
           {nextClub ? (
             <Link href={`/directory/${nextClub.id}`}
-              className="flex items-center gap-3 bg-white rounded-none border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group text-right">
+              className="flex items-center gap-3 bg-white rounded-2xl border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group text-right">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-400">Next Club</p>
                 <p className="text-sm font-bold text-primary-800 group-hover:text-primary-600 transition-colors">{nextClub.name}</p>

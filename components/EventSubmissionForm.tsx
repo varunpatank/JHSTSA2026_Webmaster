@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, eventsApi, organizationsApi, storageApi } from "@/lib/api";
 import { chapters } from "@/lib/data";
+import { addCreatedEvent } from "@/lib/clientState";
 import { ImagePlus, FileUp, X, Calendar, MapPin, Clock, Upload, Loader2 } from "lucide-react";
 
 interface EventSubmissionFormProps {
@@ -29,6 +30,7 @@ export default function EventSubmissionForm({
   const [category, setCategory] = useState("Other");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageDragOver, setImageDragOver] = useState(false);
   const [resourceFiles, setResourceFiles] = useState<{ name: string; size: string; file: File }[]>([]);
   const [isPublic, setIsPublic] = useState(true);
   const [maxAttendees, setMaxAttendees] = useState("");
@@ -60,14 +62,16 @@ export default function EventSubmissionForm({
     return <div className="min-h-screen bg-neutral-100" />;
   }
 
+  const handleImageFile = (file: File) => {
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (ev) => setImagePreview(ev.target?.result as string);
-      reader.readAsDataURL(file);
-    }
+    if (file) handleImageFile(file);
   };
 
   const handleResourceSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,11 +120,32 @@ export default function EventSubmissionForm({
         org_id: clubId || undefined,
       };
 
-      const { error: dbErr } = await eventsApi.create(eventData);
+      const { data: newEvent, error: dbErr } = await eventsApi.create(eventData);
       if (dbErr) {
         setError(dbErr.message || "Failed to create event.");
         setSubmitting(false);
         return;
+      }
+
+      // Persist to clientState so the events list can display it immediately
+      // and the detail page can fall back to it if RLS blocks the DB read
+      if (newEvent) {
+        const club = availableClubs.find(c => c.id === clubId);
+        addCreatedEvent({
+          id: newEvent.id,
+          clubId: clubId || "",
+          clubName: club?.name || "",
+          title,
+          description,
+          date,
+          startTime,
+          endTime,
+          location,
+          imageUrl: image_url,
+          category,
+          createdBy: user.id,
+          createdAt: new Date().toISOString(),
+        });
       }
 
       if (isModal && onClose) {
@@ -178,12 +203,19 @@ export default function EventSubmissionForm({
             </button>
           </div>
         ) : (
-          <button type="button" onClick={() => imageInputRef.current?.click()}
-            className="w-full border-2 border-dashed border-neutral-300  p-6 text-center hover:border-primary-400 hover:bg-primary-50/30 transition-all group">
+            <div
+            onDragOver={(e) => { e.preventDefault(); setImageDragOver(true); }}
+            onDragLeave={() => setImageDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setImageDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleImageFile(f); }}
+            onClick={() => imageInputRef.current?.click()}
+            className={`w-full border-2 border-dashed p-6 text-center cursor-pointer transition-all group ${
+              imageDragOver ? "border-primary-500 bg-primary-50/50" : "border-neutral-300 hover:border-primary-400 hover:bg-primary-50/30"
+            }`}
+          >
             <ImagePlus size={28} className="mx-auto text-neutral-400 group-hover:text-primary-500 mb-2" />
-            <p className="text-sm font-medium text-neutral-600">Click to upload event image</p>
+            <p className="text-sm font-medium text-neutral-600">Drag &amp; drop or click to upload</p>
             <p className="text-xs text-neutral-400 mt-1">PNG, JPG, or WebP up to 5MB</p>
-          </button>
+          </div>
         )}
       </div>
 

@@ -492,7 +492,7 @@ export default function ClubGrid({
             )}
             <Link
               href={`/directory/${ch.id}`}
-              className={`flex flex-col bg-white border p-4 rounded-xl hover:border-primary-300 hover:shadow-sm transition-all group min-h-[180px] ${
+              className={`flex flex-col bg-white border p-4 rounded-xl hover:border-primary-300 hover:shadow-sm transition-all group min-h-[220px] ${
                 isHighlighted
                   ? "border-secondary-400 ring-2 ring-secondary-300 shadow-lg animate-pulse"
                   : "border-neutral-200"
@@ -515,10 +515,10 @@ export default function ClubGrid({
                   {ch.meetingFrequency}
                 </span>
               </div>
-              <h3 className="font-heading font-bold text-primary-900 group-hover:text-primary-800 transition-colors">
+              <h3 className="font-heading font-bold text-primary-900 group-hover:text-primary-800 transition-colors line-clamp-1">
                 {ch.name}
               </h3>
-              <p className="text-sm text-neutral-600 mt-1 line-clamp-2">
+              <p className="text-sm text-neutral-600 mt-1 line-clamp-3">
                 {ch.description}
               </p>
               <div className="mt-3 space-y-1 text-xs text-neutral-500">

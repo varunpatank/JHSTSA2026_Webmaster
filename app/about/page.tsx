@@ -5,7 +5,7 @@ import Link from "next/link";
 import { chapters, sponsorsData, schoolWideStats } from "@/lib/data";
 import HeroSection from "@/components/HeroSection";
 import {
-  Award, BookOpen, Calendar, CheckCircle, Globe, Heart, MapPin,
+  Award, BookOpen, Calendar, CheckCircle, Globe, Heart, MapPin, ArrowRight,
   MessageSquare, Shield, Star, Target, TrendingUp, Users, Zap,
 } from "lucide-react";
 
@@ -73,6 +73,45 @@ export default function AboutPage() {
         />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-12">
+
+        {/* ── WHAT WE BUILT ── */}
+        <Reveal>
+          <div className="bg-primary-900 rounded-2xl overflow-hidden shadow-xl">
+            <div className="h-1 bg-gradient-to-r from-secondary-500 via-secondary-300 to-secondary-500" />
+            <div className="p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-2xl font-heading font-bold text-white">What ClubConnect Does</h2>
+                  <p className="text-primary-300 text-sm mt-2 max-w-2xl leading-relaxed">
+                    ClubConnect is a <strong className="text-white">community resource hub</strong> — a central place to discover non-profits, support services, community events, and student programs all in one place.
+                  </p>
+                </div>
+              </div>
+              {/* 4 Required Components */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { num: "01", title: "Interactive Directory", desc: "Searchable, filterable resource directory", href: "/directory", done: true },
+                  { num: "02", title: "Spotlight Section", desc: "3 featured community resources profiled", href: "/#community-spotlight", done: true },
+                  { num: "03", title: "Resource Submission Form", desc: "Multi-step form to add new resources", href: "/propose", done: true },
+                  { num: "04", title: "Additional Content", desc: "Events, mentors, resource library, social feed", href: "/community", done: true },
+                ].map(({ num, title, desc, href, done }) => (
+                  <Link key={num} href={href} className="group flex flex-col bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 hover:border-secondary-400/40 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-black text-white/30 font-heading">{num}</span>
+                      {done && <CheckCircle size={13} className="text-emerald-400" />}
+                    </div>
+                    <p className="text-[13px] font-bold text-white leading-snug mb-1">{title}</p>
+                    <p className="text-[11px] text-primary-300 leading-snug flex-grow">{desc}</p>
+                    <div className="mt-3 flex items-center gap-1 text-[10px] font-semibold text-secondary-400 group-hover:text-secondary-300 transition-colors">
+                      View <ArrowRight size={9} />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
         {}
         <Reveal>
           <div className="card p-8">

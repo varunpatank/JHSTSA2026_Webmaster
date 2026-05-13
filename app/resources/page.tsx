@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 import { RESOURCES, CATEGORIES, STAGES, TYPE_COLORS, STAGE_COLORS, type ResourceType } from "@/lib/resourcesData";
+import { getCreatedResources } from "@/lib/clientState";
+import { resourcesApi } from "@/lib/api";
 
 const CAT_ICONS: Record<string, React.ElementType> = {
   "All":                    BookOpen,
@@ -19,6 +21,7 @@ const CAT_ICONS: Record<string, React.ElementType> = {
   "Meetings & Operations":  ClipboardList,
   "Events & Funding":       Calendar,
   "Leadership & Legacy":    Target,
+  "Community":              Heart,
 };
 
 const TOOLS = [
@@ -98,11 +101,80 @@ export default function ResourcesPage() {
   const [query, setQuery]       = useState("");
   const [saved, setSaved]       = useState<Set<string>>(new Set());
   const [toolInputs, setToolInputs] = useState<Record<string, string>>({});
+  const [communityResources, setCommunityResources] = useState<typeof RESOURCES>([]);
 
-  const filtered = RESOURCES.filter(r => {
-    const matchCat   = category === "All"        || r.category === category;
-    const matchStage = stage    === "All Stages" || r.stage    === stage;
-    const matchQ     = !query   || r.title.toLowerCase().includes(query.toLowerCase()) ||
+  // Auto-select "Community" from query param ?cat=Community
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get("cat");
+    if (cat && CATEGORIES.includes(cat)) setCategory(cat);
+  }, []);
+
+  // Load community resources from clientState + Supabase
+  useEffect(() => {
+    const TYPE_IMAGES: Record<string, string> = {
+      guide:     "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
+      template:  "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80",
+      checklist: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80",
+      handbook:  "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80",
+    };
+
+    const local = getCreatedResources().map(r => ({
+      id: r.id,
+      title: r.title,
+      details: r.description,
+      type: (r.type as ResourceType) || "guide",
+      category: "Community",
+      stage: "Active",
+      downloads: 0,
+      format: "PDF",
+      tags: [r.subject || "community"],
+      img: r.imageUrl || TYPE_IMAGES[r.type] || TYPE_IMAGES.guide,
+      rating: 5.0,
+      saved: 0,
+      downloadUrl: r.resourceUrl || undefined,
+    }));
+
+    // Also try Supabase
+    resourcesApi.getAll().then(({ data }) => {
+      if (data && data.length > 0) {
+        const dbCommunity = (data as any[])
+          .filter((r: any) => r.category === "Community")
+          .map((r: any) => ({
+            id: r.id,
+            title: r.name || r.title || "Untitled",
+            details: r.description || "",
+            type: (r.type as ResourceType) || "guide",
+            category: "Community",
+            stage: "Active",
+            downloads: r.downloads || 0,
+            format: r.format || "PDF",
+            tags: [],
+            img: TYPE_IMAGES[r.type] || TYPE_IMAGES.guide,
+            rating: 5.0,
+            saved: 0,
+            downloadUrl: r.resource_link || undefined,
+          }));
+        // Merge: DB entries take priority; remove local duplicates by title
+        const merged = [
+          ...dbCommunity,
+          ...local.filter(l => !dbCommunity.some((d: any) => d.title === l.title)),
+        ];
+        setCommunityResources(merged);
+      } else {
+        setCommunityResources(local);
+      }
+    }, () => setCommunityResources(local));
+  }, []);
+
+  const allResources = category === "Community"
+    ? communityResources
+    : RESOURCES;
+
+  const filtered = allResources.filter(r => {
+    const matchCat   = category === "All" || category === "Community" || r.category === category;
+    const matchStage = category === "Community" || stage === "All Stages" || r.stage === stage;
+    const matchQ     = !query || r.title.toLowerCase().includes(query.toLowerCase()) ||
                        r.tags.some(t => t.includes(query.toLowerCase()));
     return matchCat && matchStage && matchQ;
   });
@@ -131,7 +203,7 @@ export default function ResourcesPage() {
         eyebrow="Community Resources"
         title="Resource"
         highlightWord="Directory"
-        description={<>Students have a lot of ambitions and hopes. They can instill this upon others through creation of clubs, where they can create their own organization of change.</>}
+        description={<>Resources that help students create their own club at their school and take initiative of their passions.</>}
         texture="diagonal"
         images={[
           "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1600&q=75",
@@ -177,7 +249,7 @@ export default function ResourcesPage() {
               <div className="space-y-1.5">
                 {STAGES.map(s => {
                   const active = stage === s;
-                  const dotColors = {
+                  const dotColors: Record<string, string> = {
                     "All Stages": "bg-primary-900",
                     "Beginner": "bg-emerald-500",
                     "Growing": "bg-blue-500", 
@@ -433,7 +505,7 @@ export default function ResourcesPage() {
                       <p className="text-xs text-neutral-500 leading-relaxed mb-3 flex-1 line-clamp-2">{r.details}</p>
                       <div className="flex items-center justify-between border-t border-cream-200 pt-3 mt-auto">
                         <StarRow rating={r.rating} />
-                        <a href={r.downloadUrl ?? `/resources-pdfs/${r.id}.pdf`} download={`${r.id}.pdf`} className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] text-primary-600 hover:text-primary-700 hover:bg-cream-100 transition-colors" onClick={(e) => e.stopPropagation()}>
+                        <a href={`/api/resources/${r.id}/download`} download className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] text-primary-600 hover:text-primary-700 hover:bg-cream-100 transition-colors" onClick={(e) => e.stopPropagation()}>
                           <Download size={9} /> Download PDF
                         </a>
                       </div>
@@ -446,34 +518,6 @@ export default function ResourcesPage() {
                 ))}
               </div>
             )}
-
-            {/* Suggest Resources CTA */}
-            <div className="relative rounded-2xl overflow-hidden">
-              <div className="absolute inset-0 bg-primary-900" />
-              <BannerPattern patternId="resources-cta-banner-pattern" />
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-300 to-blue-500" />
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-300 to-blue-500" />
-              <div className="relative z-10 p-8 flex flex-col sm:flex-row items-center gap-6 text-white">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2 h-2 rounded-full bg-cyan-300 animate-pulse" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-300">Missing something?</p>
-                  </div>
-                  <h3 className="font-heading font-bold text-xl mb-2">Suggest a Resource</h3>
-                  <p className="text-sm text-primary-200 leading-relaxed max-w-md">Know a guide, template, or handbook that would help other clubs? Share it and help your school community grow.</p>
-                </div>
-                <div className="flex flex-col gap-3 shrink-0">
-                  <Link href="/portal?tab=resource"
-                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-blue-500 hover:bg-blue-400 text-white font-bold text-sm transition-colors shadow-lg whitespace-nowrap">
-                    <Sparkles size={15} /> Suggest a Resource
-                  </Link>
-                  <Link href="/portal"
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full border border-white/25 text-white/80 font-semibold text-sm hover:bg-white/10 hover:text-white transition-all whitespace-nowrap">
-                    Open Club Portal
-                  </Link>
-                </div>
-              </div>
-            </div>
 
           </main>
         </div>

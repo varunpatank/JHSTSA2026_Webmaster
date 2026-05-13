@@ -1,46 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { RESOURCES, TYPE_COLORS, STAGE_COLORS } from "@/lib/resourcesData";
+import { supabase } from "@/lib/api";
 import {
   ArrowLeft, ArrowRight, BookOpen, Check, ChevronLeft, Download, FileText,
-  Heart, MessageSquare, Send, Share2, Star, ThumbsUp, Users,
+  Heart, MessageSquare, Send, Share2,
 } from "lucide-react";
 
-function StarRating({ value, onChange }: { value: number; onChange?: (v: number) => void }) {
-  return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map(i => (
-        <button key={i} type="button"
-          onClick={() => onChange?.(i)}
-          className={`transition-colors ${onChange ? "hover:scale-110" : "cursor-default"}`}>
-          <Star size={16}
-            className={i <= value
-              ? "fill-amber-400 text-amber-400"
-              : "fill-neutral-200 text-neutral-200"}
-          />
-        </button>
-      ))}
-      <span className="ml-1.5 text-sm font-medium text-neutral-500">{value.toFixed(1)}</span>
-    </div>
-  );
-}
+
+const DEFAULT_COMMENTS = [
+  { name: "Alex P.", text: "This helped our club get approved in one shot. Highly recommend!", time: "2 days ago" },
+  { name: "Jordan K.", text: "Super clear structure. Used it for our STEM club and it worked perfectly.", time: "5 days ago" },
+];
 
 export default function ResourceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const resource = RESOURCES.find(r => r.id === id);
-  const [userRating, setUserRating] = useState(0);
-  const [ratingDone, setRatingDone] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveCount, setSaveCount] = useState(resource?.saved ?? 0);
+  const [userId, setUserId] = useState<string | null>(null);
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([
-    { name: "Alex P.", text: "This helped our club get approved in one shot. Highly recommend!", likes: 14, time: "2 days ago" },
-    { name: "Jordan K.", text: "Super clear structure. Used it for our STEM club and it worked perfectly.", likes: 9, time: "5 days ago" },
-  ]);
+  const [comments, setComments] = useState<{ name: string; text: string; time: string }[]>(DEFAULT_COMMENTS);
   const [commentSent, setCommentSent] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    const loadData = async () => {
+      // ── Public: comments ───────────────────────────────────────────
+      const { data: reviewData } = await supabase
+        .from("resource_reviews")
+        .select("comment, created_at, profiles(name)")
+        .eq("resource_id", id)
+        .order("created_at", { ascending: false })
+        .limit(30);
+
+      if (reviewData && reviewData.length > 0) {
+        setComments(
+          reviewData.map((r: any) => ({
+            name: r.profiles?.name ?? "Member",
+            text: r.comment,
+            time: new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          }))
+        );
+      } else {
+        try {
+          const cached = localStorage.getItem(`cc_resource_comments_${id}`);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) setComments(parsed);
+          }
+        } catch { /* ignore */ }
+      }
+
+      // ── Public: save count ─────────────────────────────────────────
+      const { count: sc } = await supabase
+        .from("resource_saves")
+        .select("*", { count: "exact", head: true })
+        .eq("resource_id", id);
+      if (sc !== null) setSaveCount(sc);
+
+
+      // ── Auth-specific ──────────────────────────────────────────────
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        const { data: savedRow } = await supabase
+          .from("resource_saves")
+          .select("resource_id")
+          .eq("resource_id", id)
+          .eq("user_id", user.id)
+          .single();
+        setSaved(!!savedRow);
+
+      }
+    };
+    loadData();
+  }, [id]);
 
   if (!resource) {
     return (
@@ -60,17 +100,39 @@ export default function ResourceDetailPage() {
   const prev = idx > 0 ? RESOURCES[idx - 1] : null;
   const next = idx < RESOURCES.length - 1 ? RESOURCES[idx + 1] : null;
 
-  const handleComment = (e: React.FormEvent) => {
+  const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
-    setComments(prev => [{ name: "You", text: comment.trim(), likes: 0, time: "just now" }, ...prev]);
+    const text = comment.trim();
+    if (userId) {
+      await supabase.from("resource_reviews").insert({ resource_id: id, user_id: userId, comment: text });
+    } else {
+      try { localStorage.setItem(`cc_resource_comments_${id}`, JSON.stringify([{ name: "You", text, time: "just now" }, ...comments])); } catch { /* ignore */ }
+    }
+    setComments(prev => [{ name: "You", text, time: "just now" }, ...prev]);
     setComment("");
     setCommentSent(true);
   };
 
-  const handleRating = (v: number) => {
-    setUserRating(v);
-    setRatingDone(true);
+  const handleSave = async () => {
+    if (!userId) { setSaved(s => !s); return; }
+    if (saved) {
+      await supabase.from("resource_saves").delete().eq("resource_id", id).eq("user_id", userId);
+      setSaved(false);
+      setSaveCount(c => Math.max(0, c - 1));
+    } else {
+      await supabase.from("resource_saves").insert({ resource_id: id, user_id: userId });
+      setSaved(true);
+      setSaveCount(c => c + 1);
+    }
+  };
+
+  const handleShare = () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    navigator.clipboard.writeText(url).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    }).catch(() => {});
   };
 
   return (
@@ -92,10 +154,10 @@ export default function ResourceDetailPage() {
             <span className="px-3 py-1 text-[10px] font-semibold rounded-full bg-white/15 text-white">{resource.format}</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-heading font-bold text-white leading-tight">{resource.title}</h1>
-          <p className="mt-2 text-primary-200 text-sm max-w-xl leading-relaxed">Resources that help students create clubs and/or organizations at their school and take initiative. {resource.details}</p>
+          <p className="mt-2 text-sm max-w-xl leading-relaxed inline-block cream-textured border border-cream-400 text-primary-900 px-3 py-2 rounded-lg font-medium">{resource.details}</p>
           <div className="mt-4 flex flex-wrap items-center gap-5 text-white/70 text-xs">
             <span className="flex items-center gap-1"><Download size={12} className="text-secondary-400" /> {resource.downloads} downloads</span>
-            <span className="flex items-center gap-1"><Heart size={12} className="text-secondary-400" /> {resource.saved + (saved ? 1 : 0)} saved</span>
+            <span className="flex items-center gap-1"><Heart size={12} className="text-secondary-400" /> {saveCount} saved</span>
           </div>
         </div>
         <div aria-hidden className="absolute bottom-0 left-0 right-0 leading-[0]">
@@ -123,24 +185,6 @@ export default function ResourceDetailPage() {
                 falling under the <span className="font-semibold text-primary-700">{resource.category}</span> category.
                 Available in {resource.format} format — ready to download and adapt for your club immediately.
               </p>
-            </div>
-
-            {/* Rating */}
-            <div className="bg-white rounded-2xl border border-cream-300 p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-heading font-bold text-primary-800 text-base">Community Rating</h2>
-                <StarRating value={resource.rating} />
-              </div>
-              {ratingDone ? (
-                <div className="flex items-center gap-2 py-3 px-4 bg-emerald-50 rounded-xl border border-emerald-200 text-sm text-emerald-700 font-medium">
-                  <Check size={14} /> Thanks for rating! You gave this {userRating} star{userRating !== 1 ? "s" : ""}.
-                </div>
-              ) : (
-                <div>
-                  <p className="text-xs text-neutral-500 mb-3">Rate this resource:</p>
-                  <StarRating value={userRating} onChange={handleRating} />
-                </div>
-              )}
             </div>
 
             {/* Feedback / Comments */}
@@ -177,9 +221,6 @@ export default function ResourceDetailPage() {
                         <p className="text-[10px] text-neutral-400">{c.time}</p>
                       </div>
                       <p className="text-xs text-neutral-600 mt-1 leading-relaxed">{c.text}</p>
-                      <button className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-neutral-400 hover:text-primary-600 transition-colors">
-                        <ThumbsUp size={10} /> {c.likes}
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -194,16 +235,18 @@ export default function ResourceDetailPage() {
               <FileText size={28} className="mx-auto text-secondary-400 mb-3" />
               <p className="font-heading font-bold text-white text-sm mb-1">{resource.title}</p>
               <p className="text-xs text-primary-300 mb-4">{resource.format} format</p>
-              <button className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-full bg-secondary-500 hover:bg-secondary-600 text-white text-xs font-bold transition-colors">
+              <a href={`/api/resources/${resource.id}/download`} download
+                className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-full bg-secondary-500 hover:bg-secondary-600 text-white text-xs font-bold transition-colors">
                 <Download size={13} /> Download {resource.format}
-              </button>
-              <button onClick={() => setSaved(s => !s)}
+              </a>
+              <button onClick={handleSave}
                 className={`mt-2 w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-full border text-xs font-bold transition-colors ${saved ? "border-red-400/40 text-red-300 hover:bg-red-500/10" : "border-white/20 text-white/80 hover:bg-white/10"}`}>
                 <Heart size={12} className={saved ? "fill-red-400 text-red-400" : ""} />
                 {saved ? "Saved" : "Save for later"}
               </button>
-              <button className="mt-2 w-full inline-flex items-center justify-center gap-2 py-2 rounded-full border border-white/15 text-white/60 text-xs hover:bg-white/5 transition-colors">
-                <Share2 size={11} /> Share
+              <button onClick={handleShare}
+                className={`mt-2 w-full inline-flex items-center justify-center gap-2 py-2 rounded-full text-xs font-bold transition-colors ${shareCopied ? "bg-emerald-500 hover:bg-emerald-400 text-white" : "bg-blue-500 hover:bg-blue-400 text-white"}`}>
+                <Share2 size={11} /> {shareCopied ? "Copied!" : "Share Resource"}
               </button>
             </div>
 
@@ -217,7 +260,6 @@ export default function ResourceDetailPage() {
                   { label: "Stage", value: resource.stage },
                   { label: "Format", value: resource.format },
                   { label: "Downloads", value: resource.downloads.toLocaleString() },
-                  { label: "Rating", value: `${resource.rating} / 5` },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between">
                     <span className="text-neutral-500 font-medium">{label}</span>
@@ -237,14 +279,6 @@ export default function ResourceDetailPage() {
               </div>
             </div>
 
-            {/* Portal CTA */}
-            <div className="bg-secondary-50 rounded-2xl border border-secondary-200 p-5">
-              <p className="text-xs font-bold text-secondary-700 mb-2">Know a great resource?</p>
-              <p className="text-xs text-secondary-700 leading-relaxed mb-3">Help other clubs by suggesting it through the Portal.</p>
-              <Link href="/portal" className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-full bg-secondary-500 hover:bg-secondary-600 text-white text-xs font-bold transition-colors">
-                Suggest a Resource
-              </Link>
-            </div>
           </aside>
         </div>
 
@@ -285,7 +319,7 @@ export default function ResourceDetailPage() {
               </div>
             </Link>
           ) : <div />}
-          <Link href="/resources" className="text-xs font-bold text-primary-500 hover:text-primary-700 transition-colors">All Resources</Link>
+          <div />
           {next ? (
             <Link href={`/resources/${next.id}`}
               className="flex items-center gap-3 bg-white rounded-2xl border border-cream-300 px-5 py-3 hover:border-primary-300 hover:shadow-sm transition-all group text-right">

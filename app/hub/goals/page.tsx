@@ -7,6 +7,7 @@ import {
   Target, TrendingUp, Trophy, Trash2, Zap
 } from "lucide-react";
 import StageBannerPattern from "@/components/StageBannerPattern";
+import { supabase, goalsApi } from "@/lib/api";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -74,37 +75,108 @@ export default function GoalsPage() {
   const [newDate, setNewDate] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newPriority, setNewPriority] = useState<"high" | "medium" | "low">("medium");
+  const [userId, setUserId] = useState<string | null>(null);
 
-  useEffect(() => { setGoals(loadGoals()); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      // Try loading from DB first
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (cancelled) return;
+        if (user) {
+          setUserId(user.id);
+          const { data } = await goalsApi.getByUser(user.id);
+          if (!cancelled && data && data.length > 0) {
+            setGoals(data.map((row: any) => ({
+              id: row.id,
+              title: row.title,
+              club: row.club,
+              category: row.category,
+              description: row.description,
+              targetDate: row.target_date ?? "",
+              progress: row.progress,
+              milestones: Array.isArray(row.milestones) ? row.milestones : [],
+              priority: row.priority as Goal["priority"],
+              status: row.status as Goal["status"],
+            })));
+            return;
+          }
+        }
+      } catch {}
+      // Fall back to localStorage / seed data
+      if (!cancelled) setGoals(loadGoals());
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
-  const persist = useCallback((next: Goal[]) => { setGoals(next); saveGoals(next); }, []);
+  const persist = useCallback((next: Goal[]) => {
+    setGoals(next);
+    saveGoals(next);
+  }, []);
 
-  const handleCreateGoal = useCallback(() => {
+  const handleCreateGoal = useCallback(async () => {
     if (!newTitle.trim() || !newClub.trim()) return;
+    const targetDate = newDate || new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10);
+    let newId = `g-${Date.now()}`;
+
+    if (userId) {
+      try {
+        const { data } = await goalsApi.create({
+          user_id: userId,
+          title: newTitle.trim(),
+          club: newClub.trim(),
+          category: newCategory,
+          description: newDesc.trim(),
+          target_date: targetDate,
+          progress: 0,
+          milestones: [],
+          priority: newPriority,
+          status: "on-track",
+        });
+        if (data?.id) newId = data.id;
+      } catch {}
+    }
+
     const goal: Goal = {
-      id: `g-${Date.now()}`, title: newTitle.trim(), club: newClub.trim(),
+      id: newId, title: newTitle.trim(), club: newClub.trim(),
       category: newCategory, description: newDesc.trim(),
-      targetDate: newDate || new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10),
+      targetDate: targetDate,
       progress: 0, milestones: [], priority: newPriority, status: "on-track",
     };
     persist([goal, ...goals]);
     setNewTitle(""); setNewClub(""); setNewDesc(""); setNewDate(""); setShowNew(false);
-  }, [newTitle, newClub, newCategory, newDate, newDesc, newPriority, goals, persist]);
+  }, [newTitle, newClub, newCategory, newDate, newDesc, newPriority, goals, persist, userId]);
 
   const toggleMilestone = useCallback((goalId: string, mIdx: number) => {
-    persist(goals.map(g => {
+    const next = goals.map(g => {
       if (g.id !== goalId) return g;
       const milestones = g.milestones.map((m, i) => i === mIdx ? { ...m, done: !m.done } : m);
       const doneCount = milestones.filter(m => m.done).length;
       const progress = milestones.length > 0 ? Math.round((doneCount / milestones.length) * 100) : g.progress;
       const status = progress >= 100 ? "completed" as const : g.status;
       return { ...g, milestones, progress, status };
-    }));
-  }, [goals, persist]);
+    });
+    persist(next);
+    if (userId) {
+      const updated = next.find(g => g.id === goalId);
+      if (updated) {
+        void (async () => { try {
+          await goalsApi.update(goalId, {
+            milestones: updated.milestones,
+            progress: updated.progress,
+            status: updated.status,
+          });
+        } catch {} })();
+      }
+    }
+  }, [goals, persist, userId]);
 
   const deleteGoal = useCallback((goalId: string) => {
     persist(goals.filter(g => g.id !== goalId));
-  }, [goals, persist]);
+    if (userId) void (async () => { try { await goalsApi.delete(goalId); } catch {} })();
+  }, [goals, persist, userId]);
 
   const active = goals.filter(g => g.status !== "completed");
   const completed = goals.filter(g => g.status === "completed");

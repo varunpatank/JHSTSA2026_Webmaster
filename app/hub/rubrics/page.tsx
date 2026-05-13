@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { CheckCircle, ChevronDown, Download, FileText, Search, Star, Trophy } from "lucide-react";
+import { supabase, rubricProgressApi } from "@/lib/api";
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -136,8 +137,35 @@ export default function RubricsPage() {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [progress, setProgress] = useState<RubricProgress[]>(() => loadProgress());
+  const [progress, setProgress] = useState<RubricProgress[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (cancelled) return;
+        if (user) {
+          setUserId(user.id);
+          const { data } = await rubricProgressApi.getByUser(user.id);
+          if (!cancelled && data && data.length > 0) {
+            setProgress(data.map((row: any) => ({
+              rubricId: row.rubric_id,
+              selfScores: (row.scores as Record<string, number>) ?? {},
+              notes: row.notes ?? "",
+            })));
+            return;
+          }
+        }
+      } catch {}
+      if (!cancelled) setProgress(loadProgress());
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Persist to localStorage on progress change
   useEffect(() => { try { localStorage.setItem(RUBRICS_LS_KEY, JSON.stringify(progress)); } catch {} }, [progress]);
 
   const categories = ["All", ...Array.from(new Set(RUBRICS.map(r => r.category)))];
@@ -156,18 +184,28 @@ export default function RubricsPage() {
   }
 
   function updateSelfScore(rubricId: string, criteriaName: string, score: number) {
+    let updatedScores: Record<string, number> = {};
     setProgress(prev => {
       const existing = prev.find(p => p.rubricId === rubricId);
       if (existing) {
-        return prev.map(p => p.rubricId === rubricId ? { ...p, selfScores: { ...p.selfScores, [criteriaName]: score } } : p);
+        updatedScores = { ...existing.selfScores, [criteriaName]: score };
+        return prev.map(p => p.rubricId === rubricId ? { ...p, selfScores: updatedScores } : p);
       }
-      return [...prev, { rubricId, selfScores: { [criteriaName]: score }, notes: "" }];
+      updatedScores = { [criteriaName]: score };
+      return [...prev, { rubricId, selfScores: updatedScores, notes: "" }];
     });
+    if (userId) {
+      void (async () => { try { await rubricProgressApi.upsert({ user_id: userId, rubric_id: rubricId, scores: updatedScores }); } catch {} })();
+    }
   }
 
   function updateNotes(rubricId: string, notes: string) {
     setProgress(prev => {
       const existing = prev.find(p => p.rubricId === rubricId);
+      const scores = existing?.selfScores ?? {};
+      if (userId) {
+        void (async () => { try { await rubricProgressApi.upsert({ user_id: userId, rubric_id: rubricId, scores, notes }); } catch {} })();
+      }
       if (existing) {
         return prev.map(p => p.rubricId === rubricId ? { ...p, notes } : p);
       }

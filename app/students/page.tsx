@@ -10,7 +10,7 @@ import {
 import { supabase, uploadsApi, uploadLikesApi, storageApi } from "@/lib/api";
 import type { Upload } from "@/lib/apiTypes";
 import {
-  ArrowRight, Calendar, Clock, GraduationCap, Heart,
+  ArrowRight, Bot, Calendar, Clock, GraduationCap, Heart,
   Loader2, MapPin, MessageCircle, MessageSquare, Paperclip, Plus,
   Search, Send, Sparkles, ThumbsUp,
   TrendingUp, Upload as UploadIcon, Users, X,
@@ -69,6 +69,30 @@ function formatTimeAgo(date: Date): string {
 }
 
 export default function SocialPage() {
+  const [showAi, setShowAi] = useState(false);
+  const [aiChat, setAiChat] = useState<{ role: "user" | "assistant"; text: string }[]>([]);
+  const [aiInput, setAiInput] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const aiScrollRef = useRef<HTMLDivElement>(null);
+
+  async function sendAi(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || aiLoading) return;
+    setAiInput("");
+    setAiChat(prev => [...prev, { role: "user", text: trimmed }]);
+    setAiLoading(true);
+    await new Promise(r => setTimeout(r, 700));
+    const reply = trimmed.toLowerCase().includes("club")
+      ? "You can browse all clubs in the Clubs directory. Use the filters to find one that matches your interests!"
+      : trimmed.toLowerCase().includes("mentor")
+      ? "Visit the Social Hub's Mentor Network tab to connect with industry professionals."
+      : trimmed.toLowerCase().includes("competition")
+      ? "Check the Events page for upcoming competitions, or explore the Hub for competition prep resources."
+      : "Great question! Browse the Resource Directory or ask in the Community Feed for more help.";
+    setAiChat(prev => [...prev, { role: "assistant", text: reply }]);
+    setAiLoading(false);
+    setTimeout(() => aiScrollRef.current?.scrollTo({ top: 9999, behavior: "smooth" }), 50);
+  }
 
   const [messages, setMessages] = useState(SEED_MESSAGES);
   const [msgInput, setMsgInput] = useState("");

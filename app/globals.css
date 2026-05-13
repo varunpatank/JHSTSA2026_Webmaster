@@ -67,6 +67,8 @@ body {
   font-size: 0.9375rem;
   line-height: 1.6;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* ── Global page-wrapper texture — normalises all neutral/cream min-h-screen containers
@@ -98,6 +100,12 @@ h6 {
 html {
   scroll-behavior: auto;
   zoom: 1.25;
+}
+
+/* Prevent horizontal overflow on all screen sizes */
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 @keyframes kenBurns {
@@ -768,6 +776,40 @@ textarea:focus-visible {
     transform: translateY(0);
   }
 }
+
+/* ── Hero graduation cap animations ─────────────────── */
+@keyframes hatHeroFloat {
+  0%   { transform: rotate(12deg) translateY(0px)   scale(1);    }
+  15%  { transform: rotate(14deg) translateY(-7px)  scale(1.04); }
+  30%  { transform: rotate(10deg) translateY(-3px)  scale(1.01); }
+  45%  { transform: rotate(13deg) translateY(-9px)  scale(1.03); }
+  60%  { transform: rotate(11deg) translateY(-4px)  scale(1.01); }
+  75%  { transform: rotate(14deg) translateY(-6px)  scale(1.02); }
+  90%  { transform: rotate(10deg) translateY(-2px)  scale(1);    }
+  100% { transform: rotate(12deg) translateY(0px)   scale(1);    }
+}
+/* Periodic cap-toss: floats + spins up every 6 s */
+@keyframes hatHeroToss {
+  0%, 55%, 100% { transform: rotate(12deg) translateY(0px)   scale(1);    }
+  60%            { transform: rotate(22deg) translateY(-12px) scale(1.08); }
+  66%            { transform: rotate(-8deg) translateY(-30px) scale(1.18); }
+  72%            { transform: rotate(28deg) translateY(-22px) scale(1.12); }
+  80%            { transform: rotate(13deg) translateY(-6px)  scale(1.03); }
+  90%            { transform: rotate(11deg) translateY(-2px)  scale(1.01); }
+}
+/* Gold shimmer sweep across the board */
+@keyframes hatShimmer {
+  0%   { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 0px #F2C75C); }
+  60%  { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 0px #F2C75C); }
+  68%  { filter: drop-shadow(0 4px 16px rgba(0,0,0,0.9)) drop-shadow(0 0 14px #F2C75C); }
+  76%  { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 0px #F2C75C); }
+  100% { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)) drop-shadow(0 0 0px #F2C75C); }
+}
+.hat-hero-wrap {
+  transform: rotate(12deg);
+  filter: drop-shadow(0 2px 10px rgba(0,0,0,0.75)) drop-shadow(0 0 6px rgba(242,199,92,0.35));
+}
+/* ── end hat animations ─────────────────────────────── */
 
 @keyframes mortarboardFly {
   0% {
