@@ -1,6 +1,7 @@
 {
   "name": "clubconnect",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.4.1",
   "description": "ClubConnect - Where School Chapters Thrive",
   "scripts": {
     "dev": "next dev",
