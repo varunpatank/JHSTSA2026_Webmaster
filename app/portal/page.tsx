@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { chapters } from "@/lib/data";
 import { getJoinedClubs, logoutUser, addCreatedChapter, addJoinedClub, removeJoinedClub, addCreatedEvent, addCreatedResource } from "@/lib/clientState";
-import { supabase, resourcesApi, storageApi } from "@/lib/api";
+import { supabase, organizationsApi, resourcesApi, storageApi } from "@/lib/api";
 
 type Tab = "clubs" | "event" | "resource" | "profile";
 
@@ -182,6 +182,7 @@ function MyClubs({ justJoined }: { justJoined?: boolean }) {
 
 function CreateClub() {
   const router = useRouter();
+  const bannerInputRef = useRef<HTMLInputElement>(null);
   const [name,            setName]            = useState("");
   const [category,        setCategory]        = useState("Academic");
   const [desc,            setDesc]            = useState("");
@@ -194,38 +195,89 @@ function CreateClub() {
   const [membership,      setMembership]      = useState("Open Enrollment");
   const [requirements,    setRequirements]    = useState("");
   const [dues,            setDues]            = useState("");
-  const [bannerUrl,       setBannerUrl]       = useState("");
+  const [imageFile,       setImageFile]       = useState<File | null>(null);
+  const [imagePreview,    setImagePreview]    = useState<string>("");
+  const [imageDragOver,   setImageDragOver]   = useState(false);
+  const [submitting,      setSubmitting]      = useState(false);
+  const [error,           setError]           = useState("");
   const [done,            setDone]            = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const handleImageDrop = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setError("Please attach a JPG, PNG, or WebP image for the banner.");
+      return;
+    }
+    setError("");
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = `user-club-${Date.now()}`;
-    const chapter: import("@/types").Chapter = {
-      id,
-      name,
-      description: desc,
-      category: category as import("@/types").ChapterCategory,
-      meetingFrequency: "Weekly",
-      membershipStatus: membership as import("@/types").MembershipStatus,
-      gradeLevel: gradeLevel as import("@/types").GradeLevel,
-      meetingTime: "After School",
-      advisor: { name: advisorName, email: advisorEmail, department: advisorDept || "Staff" },
-      officers: [],
-      meetingSchedule,
-      meetingLocation: { lat: 0, lng: 0, room: meetingRoom },
-      membershipRequirements: requirements,
-      dues,
-      socialLinks: {},
-      achievements: [],
-      photoGallery: bannerUrl.startsWith("http") ? [bannerUrl] : [],
-      memberCount: 0,
-      foundedYear: new Date().getFullYear(),
-      isActive: true,
-    };
-    addCreatedChapter(chapter);
-    addJoinedClub({ id, name, status: "member" });
-    setDone(true);
-    setTimeout(() => router.push(`/directory/${id}`), 1500);
+    setSubmitting(true);
+    setError("");
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      let bannerUrl = "";
+      if (imageFile && user) {
+        const uploadRes = await storageApi.uploadFile(user.id, imageFile, "uploads");
+        if (uploadRes.data) bannerUrl = uploadRes.data.publicUrl;
+      }
+
+      if (user) {
+        await organizationsApi.create({
+          name,
+          description: desc,
+          category,
+          meeting_schedule: meetingSchedule,
+          meeting_location: meetingRoom,
+          membership_status: membership,
+          grade_level: gradeLevel,
+          dues,
+          membership_requirements: requirements,
+          advisor_name: advisorName,
+          contact_email: advisorEmail,
+          banner_url: bannerUrl || undefined,
+          is_active: true,
+          is_published: true,
+          founded_year: new Date().getFullYear(),
+          created_by: user.id,
+        });
+      }
+
+      const id = `user-club-${Date.now()}`;
+      const chapter: import("@/types").Chapter = {
+        id,
+        name,
+        description: desc,
+        category: category as import("@/types").ChapterCategory,
+        meetingFrequency: "Weekly",
+        membershipStatus: membership as import("@/types").MembershipStatus,
+        gradeLevel: gradeLevel as import("@/types").GradeLevel,
+        meetingTime: "After School",
+        advisor: { name: advisorName, email: advisorEmail, department: advisorDept || "Staff" },
+        officers: [],
+        meetingSchedule,
+        meetingLocation: { lat: 0, lng: 0, room: meetingRoom },
+        membershipRequirements: requirements,
+        dues,
+        socialLinks: {},
+        achievements: [],
+        photoGallery: bannerUrl ? [bannerUrl] : [],
+        memberCount: 0,
+        foundedYear: new Date().getFullYear(),
+        isActive: true,
+      };
+      addCreatedChapter(chapter);
+      addJoinedClub({ id, name, status: "member" });
+      setDone(true);
+      setTimeout(() => router.push(`/directory/${id}`), 1500);
+    } catch (err: unknown) {
+      setError((err as { message?: string })?.message || "Something went wrong. Please try again.");
+    }
+    setSubmitting(false);
   };
 
   if (done) return (
@@ -292,11 +344,38 @@ function CreateClub() {
       <Field label="Membership Requirements">
         <textarea value={requirements} onChange={e => setRequirements(e.target.value)} rows={2} className={inputCls + " resize-none rounded-xl"} placeholder="Any requirements to join..." />
       </Field>
-      <Field label="Banner Image URL (optional)">
-        <input value={bannerUrl} onChange={e => setBannerUrl(e.target.value)} className={inputCls + " rounded-xl"} placeholder="https://images.unsplash.com/..." />
+      <Field label="Banner Image (optional)">
+        <input ref={bannerInputRef} type="file" accept="image/*" className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleImageDrop(f); }} />
+        {imagePreview ? (
+          <div className="relative rounded-xl overflow-hidden border border-cream-300">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={imagePreview} alt="Banner preview" className="w-full h-32 object-cover" />
+            <button type="button" onClick={() => { setImageFile(null); setImagePreview(""); }}
+              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors">
+              <X size={12} />
+            </button>
+          </div>
+        ) : (
+          <div
+            onDragOver={e => { e.preventDefault(); setImageDragOver(true); }}
+            onDragLeave={() => setImageDragOver(false)}
+            onDrop={e => { e.preventDefault(); setImageDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleImageDrop(f); }}
+            onClick={() => bannerInputRef.current?.click()}
+            className={`w-full border-2 border-dashed p-5 text-center cursor-pointer rounded-xl transition-all ${
+              imageDragOver ? "border-secondary-400 bg-secondary-50/20" : "border-cream-300 hover:border-primary-300 hover:bg-cream-100/50"
+            }`}
+          >
+            <Upload size={20} className="mx-auto text-neutral-400 mb-1.5" />
+            <p className="text-sm font-medium text-neutral-600">Drag &amp; drop or click to upload banner</p>
+            <p className="text-xs text-neutral-400 mt-1">JPG, PNG, or WebP</p>
+          </div>
+        )}
       </Field>
-      <button type="submit" className="w-full py-2.5 rounded-xl bg-primary-900 text-white text-sm font-bold hover:bg-primary-800 transition-colors">
-        Create Club
+      {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
+      <button type="submit" disabled={submitting}
+        className="w-full py-2.5 rounded-xl bg-primary-900 text-white text-sm font-bold hover:bg-primary-800 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+        {submitting ? <><Loader2 size={14} className="animate-spin" /> Creating&hellip;</> : "Create Club"}
       </button>
     </form>
   );

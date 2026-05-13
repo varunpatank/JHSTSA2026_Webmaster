@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { events } from "@/lib/data";
-import { getCreatedEvents } from "@/lib/clientState";
+import { getCreatedEvents, removeCreatedEvent } from "@/lib/clientState";
 import { supabase, eventsApi, eventRegistrationsApi } from "@/lib/api";
 import { ArrowLeft, Calendar, Clock, MapPin, Trash2, Users, Share2, CheckCircle, Loader2 } from "lucide-react";
 
@@ -175,6 +175,7 @@ export default function EventDetailPage() {
     try {
       await eventsApi.delete(params.id);
     } catch {}
+    removeCreatedEvent(params.id);
     router.push("/events");
   };
 
@@ -228,11 +229,11 @@ export default function EventDetailPage() {
             <button onClick={handleShare} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 text-white text-xs font-semibold hover:bg-white/25 transition-colors border border-white/20">
               <Share2 size={12} /> {copied ? "Link copied!" : "Share event"}
             </button>
-            {currentUserId && dbEvent?.created_by === currentUserId && (
+            {(currentUserId && dbEvent?.created_by === currentUserId) || userCreated ? (
               <button onClick={handleDelete} disabled={deleting} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-red-500/80 text-white text-xs font-semibold hover:bg-red-600/90 transition-colors border border-red-400/40 disabled:opacity-60">
                 {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />} Delete Event
               </button>
-            )}
+            ) : null}
           </div>
         </div>
         <div aria-hidden className="absolute bottom-0 left-0 right-0 leading-[0]">
