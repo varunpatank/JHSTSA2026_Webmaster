@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Award, BookOpen, ChevronDown, Heart, Loader2, Quote, Search, Star, Trophy, Users
@@ -47,6 +48,7 @@ function loadStories(): SuccessStory[] {
 }
 
 export default function StoriesPage() {
+  const router = useRouter();
   const [stories, setStories] = useState<SuccessStory[]>(loadStories);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -92,7 +94,7 @@ export default function StoriesPage() {
   }, []);
 
   async function handleSubmitStory() {
-    if (!currentUserId) { alert("Please sign in to submit stories."); return; }
+    if (!currentUserId) { router.push("/login"); return; }
     if (!storyTitle.trim() || !storyContent.trim() || submitting) return;
     setSubmitting(true);
     const newStory: SuccessStory = {

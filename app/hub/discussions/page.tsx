@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowUp, CheckCircle, ChevronDown, Clock, Filter, Loader2, MessageCircle,
@@ -51,6 +52,7 @@ function loadDiscussions(): Discussion[] {
 }
 
 export default function DiscussionsPage() {
+  const router = useRouter();
   const [discussions, setDiscussions] = useState<Discussion[]>(loadDiscussions);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -125,7 +127,7 @@ export default function DiscussionsPage() {
   const totalReplies = discussions.reduce((s, d) => s + d.replies, 0);
 
   async function handlePostDiscussion() {
-    if (!currentUserId) { alert("Please sign in to post discussions."); return; }
+    if (!currentUserId) { router.push("/login"); return; }
     if (!newTitle.trim() || !newContent.trim() || submitting) return;
     setSubmitting(true);
     const tags = newTags.split(",").map(t => t.trim()).filter(Boolean);

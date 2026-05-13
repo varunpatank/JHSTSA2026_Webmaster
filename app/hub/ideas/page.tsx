@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowUp, ArrowDown, ChevronDown, Filter, Lightbulb, Loader2, MessageCircle, Plus,
@@ -58,6 +59,7 @@ function loadIdeas(): ClubIdea[] {
 }
 
 export default function IdeasPage() {
+  const router = useRouter();
   const [ideas, setIdeas] = useState<ClubIdea[]>(loadIdeas);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -123,7 +125,7 @@ export default function IdeasPage() {
   });
 
   async function handleVote(id: string) {
-    if (!currentUserId) { alert("Please sign in to vote."); return; }
+    if (!currentUserId) { router.push("/login"); return; }
     const wasVoted = myVotes.has(id);
     setMyVotes(prev => { const n = new Set(prev); wasVoted ? n.delete(id) : n.add(id); return n; });
     setIdeas(prev => prev.map(i => i.id === id ? { ...i, upvotes: wasVoted ? i.upvotes - 1 : i.upvotes + 1 } : i));
@@ -132,7 +134,7 @@ export default function IdeasPage() {
   }
 
   async function handleSubmitIdea() {
-    if (!currentUserId) { alert("Please sign in to submit ideas."); return; }
+    if (!currentUserId) { router.push("/login"); return; }
     if (!formTitle.trim() || !formDescription.trim() || submitting) return;
     setSubmitting(true);
     const newIdea: ClubIdea = {
