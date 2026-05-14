@@ -37,6 +37,31 @@ function writeArray<T>(key: string, value: T[]) {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
+function mergeRecordsById<T extends { id: string }>(current: T[], incoming: T[]) {
+  const seen = new Set(current.map((item) => item.id));
+  return [...current, ...incoming.filter((item) => !seen.has(item.id))];
+}
+
+function migrateAnonRecords(email: string) {
+  if (!canUseStorage() || !email || email === "anon") return;
+
+  const migrations = [
+    [joinedKey("anon"), joinedKey(email)],
+    [createdKey("anon"), createdKey(email)],
+    [eventsKey("anon"), eventsKey(email)],
+    [resourcesKey("anon"), resourcesKey(email)],
+  ] as const;
+
+  migrations.forEach(([fromKey, toKey]) => {
+    const anonRecords = readArray<{ id: string }>(fromKey);
+    if (anonRecords.length === 0) return;
+
+    const existingRecords = readArray<{ id: string }>(toKey);
+    writeArray(toKey, mergeRecordsById(existingRecords, anonRecords));
+    window.localStorage.removeItem(fromKey);
+  });
+}
+
 function getCurrentEmail(): string {
   if (!canUseStorage()) return "anon";
   return window.localStorage.getItem(USER_EMAIL_KEY) || "anon";
@@ -64,6 +89,7 @@ export function setLoggedInState(loggedIn: boolean, identity?: { name?: string |
 
   if (identity?.email) {
     window.localStorage.setItem(USER_EMAIL_KEY, identity.email);
+    migrateAnonRecords(identity.email);
   }
 }
 

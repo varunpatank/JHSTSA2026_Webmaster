@@ -136,7 +136,12 @@ export default function ClubDetailPage() {
       if (!profile) {
         await profilesApi.create({ id: authData.user.id, name: authData.user.email?.split("@")[0] || "Student", email: authData.user.email || "" });
       }
-      const { data: matchedOrg } = await organizationsApi.getBySlug(chapter.id);
+      const { data: slugOrg } = await organizationsApi.getBySlug(chapter.id);
+      let matchedOrg = slugOrg;
+      if (!matchedOrg) {
+        const { data: organizations } = await organizationsApi.getAll();
+        matchedOrg = ((organizations as any[]) || []).find((org: any) => org.slug === chapter.id || org.name === chapter.name) || null;
+      }
       if (matchedOrg) await membershipsApi.create({ org_id: matchedOrg.id, user_id: authData.user.id });
     } catch (e) { console.error("Join error:", e); }
     router.push("/portal?tab=clubs&joined=true");

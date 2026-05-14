@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { chapters } from "@/lib/data";
 import { getJoinedClubs, logoutUser, addCreatedChapter, addJoinedClub, removeJoinedClub, addCreatedEvent, addCreatedResource } from "@/lib/clientState";
-import { eventsApi, supabase, organizationsApi, resourcesApi, storageApi } from "@/lib/api";
+import { eventsApi, membershipsApi, supabase, organizationsApi, resourcesApi, storageApi } from "@/lib/api";
 
 type Tab = "clubs" | "event" | "resource" | "profile";
 
@@ -125,17 +125,101 @@ function ProfileSettings({ onSignOut }: { onSignOut: () => void }) {
 
 // ── Tabs ──────────────────────────────────────────────────────
 function MyClubs({ justJoined }: { justJoined?: boolean }) {
-  const [enrolled, setEnrolled] = useState<ReturnType<typeof getJoinedClubs>>([]);
+  const [enrolled, setEnrolled] = useState<Array<{
+    id: string;
+    name: string;
+    status: "member" | "pending";
+    slug?: string;
+    category?: string;
+    memberCount: number;
+    membershipId?: string;
+  }>>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    setEnrolled(getJoinedClubs());
+    let mounted = true;
+
+    const loadEnrolled = async () => {
+      const localClubs = getJoinedClubs();
+      const localMapped = localClubs.map((club) => {
+        const chapter = chapters.find((entry) => entry.id === club.id);
+        return {
+          id: club.id,
+          name: club.name,
+          status: club.status,
+          slug: club.id,
+          category: chapter?.category,
+          memberCount: chapter?.memberCount ?? 0,
+        };
+      });
+
+      const membershipRes: any = await membershipsApi.getForCurrentUser();
+      if (!mounted) return;
+
+      if (membershipRes.error || !membershipRes.data) {
+        setEnrolled(localMapped);
+        return;
+      }
+
+      const dbJoined = (membershipRes.data as any[])
+        .filter((membership: any) => membership.organizations)
+        .map((membership: any) => {
+          const chapter = chapters.find((entry) => entry.id === membership.organizations.slug);
+          return {
+            id: membership.organizations.id,
+            name: membership.organizations.name,
+            status: "member" as const,
+            slug: membership.organizations.slug || membership.organizations.id,
+            category: membership.organizations.category || chapter?.category,
+            memberCount: chapter?.memberCount ?? 0,
+            membershipId: membership.id,
+          };
+        });
+
+      const dbKeys = new Set(dbJoined.map((club) => club.slug || club.id));
+      setEnrolled([
+        ...dbJoined,
+        ...localMapped.filter((club) => !dbKeys.has(club.slug || club.id)),
+      ]);
+    };
+
+    loadEnrolled().catch(() => {
+      if (!mounted) return;
+      setEnrolled(
+        getJoinedClubs().map((club) => {
+          const chapter = chapters.find((entry) => entry.id === club.id);
+          return {
+            id: club.id,
+            name: club.name,
+            status: club.status,
+            slug: club.id,
+            category: chapter?.category,
+            memberCount: chapter?.memberCount ?? 0,
+          };
+        }),
+      );
+    });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Enrich with chapter metadata where available
-  const enriched = enrolled.map(rec => {
-    const chapter = chapters.find(c => c.id === rec.id);
-    return { ...rec, category: chapter?.category ?? "", memberCount: chapter?.memberCount ?? 0 };
-  });
+  const handleLeave = async (club: { id: string; name: string; slug?: string; membershipId?: string }) => {
+    if (!confirm(`Remove "${club.name}" from your clubs?`)) return;
+    setError("");
+
+    if (club.membershipId) {
+      const { error: membershipError } = await membershipsApi.delete(club.membershipId);
+      if (membershipError) {
+        setError(membershipError.message || "Could not remove this membership right now.");
+        return;
+      }
+    }
+
+    removeJoinedClub(club.slug || club.id);
+    setEnrolled((prev) => prev.filter((entry) => entry.id !== club.id && (entry.slug || entry.id) !== (club.slug || club.id)));
+  };
 
   return (
     <div>
@@ -147,16 +231,17 @@ function MyClubs({ justJoined }: { justJoined?: boolean }) {
       )}
       <h2 className="font-heading font-bold text-primary-800 text-lg mb-1">Your Enrolled Clubs</h2>
       <p className="text-sm text-neutral-500 mb-6">Clubs you&apos;ve joined or are currently a member of.</p>
-      {enriched.length === 0 ? (
+      {error && <p className="mb-4 text-sm font-medium text-red-600">{error}</p>}
+      {enrolled.length === 0 ? (
         <div className="text-center py-16 bg-cream-100 rounded-xl border border-dashed border-cream-400">
           <p className="text-neutral-500 text-sm">You haven&apos;t joined any clubs yet.</p>
           <Link href="/directory" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary-600 hover:underline">Browse Clubs <ArrowRight size={13} /></Link>
         </div>
       ) : (
         <div className="space-y-3">
-          {enriched.map(club => (
-            <Link key={club.id} href={`/directory/${club.id}`}
-              className="flex items-center gap-4 bg-white border border-cream-300 px-5 py-4 rounded-xl hover:border-primary-300 hover:shadow-sm transition-all group">
+          {enrolled.map(club => (
+            <div key={club.id} className="flex items-center gap-4 bg-white border border-cream-300 px-5 py-4 rounded-xl hover:border-primary-300 hover:shadow-sm transition-all group">
+            <Link href={`/directory/${club.slug || club.id}`} className="flex items-center gap-4 flex-1 min-w-0">
               <div className="w-10 h-10 bg-primary-100 flex items-center justify-center shrink-0 text-primary-700">
                 <Users size={16} />
               </div>
@@ -170,6 +255,14 @@ function MyClubs({ justJoined }: { justJoined?: boolean }) {
               </div>
               <ChevronRight size={15} className="text-neutral-300 shrink-0" />
             </Link>
+            <button
+              onClick={() => handleLeave(club)}
+              className="ml-2 shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 border border-red-200 hover:bg-red-50 transition-colors"
+              title="Remove from my clubs"
+            >
+              Leave
+            </button>
+            </div>
           ))}
           <Link href="/directory" className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:underline">
             Browse all clubs <ArrowRight size={11} />
