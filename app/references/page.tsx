@@ -93,7 +93,7 @@ export default function ReferencesPage() {
               <p className="text-xs font-bold text-primary-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <FileText size={12} /> Webmaster Work Log
               </p>
-              <div className="border-2 border-primary-200 bg-white overflow-hidden rounded-sm">
+              <div className="border-2 border-primary-200 bg-white overflow-hidden rounded-2xl">
                 <iframe
                   src="/references/Webmaster_Work_Log_Updated.pdf"
                   className="w-full"
@@ -116,7 +116,7 @@ export default function ReferencesPage() {
               <p className="text-xs font-bold text-primary-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <Scale size={12} /> Copyright Checklist
               </p>
-              <div className="border-2 border-primary-200 bg-white overflow-hidden rounded-sm">
+              <div className="border-2 border-primary-200 bg-white overflow-hidden rounded-2xl">
                 <iframe
                   src="/references/National%20Webmaster%20Copyright.pdf"
                   className="w-full"
@@ -151,7 +151,7 @@ export default function ReferencesPage() {
               { letter: "M", bg: "bg-orange-600",   name: "MapLibre GL + Leaflet",   desc: "Interactive 3D club directory map for multi-school location discovery" },
               { letter: "A", bg: "bg-primary-700",  name: "NextAuth v4",             desc: "JWT session strategy, credentials provider, server-side auth for API routes" },
             ].map((t) => (
-              <div key={t.name} className="flex items-start gap-3 p-4 bg-white border border-cream-300 shadow-sm">
+              <div key={t.name} className="flex items-start gap-3 p-4 bg-white border border-cream-300 shadow-sm rounded-2xl">
                 <span className={`w-7 h-7 ${t.bg} text-white flex items-center justify-center text-[10px] font-bold shrink-0`}>{t.letter}</span>
                 <div>
                   <p className="text-xs font-bold text-primary-800">{t.name}</p>
@@ -196,7 +196,7 @@ export default function ReferencesPage() {
             ClubConnect connects to a live Supabase backend for core functionality and Stripe for payments. Other pages use hard-coded demo data to showcase the full resource hub without requiring content creation.
           </p>
           <div className="grid sm:grid-cols-3 gap-4">
-            <div className="p-4 border-2 border-emerald-300 bg-emerald-50">
+            <div className="p-4 border-2 border-emerald-300 bg-emerald-50 rounded-2xl">
               <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <Server size={11} className="text-emerald-600" /> Supabase — Live
               </h4>
@@ -209,7 +209,7 @@ export default function ReferencesPage() {
                 <li className="flex gap-1.5"><CheckCircle size={10} className="text-emerald-500 shrink-0 mt-0.5" /> Community posts &amp; discussions</li>
               </ul>
             </div>
-            <div className="p-4 border-2 border-purple-300 bg-purple-50">
+            <div className="p-4 border-2 border-purple-300 bg-purple-50 rounded-2xl">
               <h4 className="text-[10px] font-bold text-purple-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <Globe size={11} className="text-purple-600" /> Stripe — Live
               </h4>
@@ -221,7 +221,7 @@ export default function ReferencesPage() {
                 <li className="flex gap-1.5"><CheckCircle size={10} className="text-purple-500 shrink-0 mt-0.5" /> Per-club fundraising progress</li>
               </ul>
             </div>
-            <div className="p-4 border-2 border-neutral-300 bg-neutral-50">
+            <div className="p-4 border-2 border-neutral-300 bg-neutral-50 rounded-2xl">
               <h4 className="text-[10px] font-bold text-neutral-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <Layers size={11} className="text-neutral-500" /> Hard-Coded Demo
               </h4>
@@ -278,7 +278,7 @@ export default function ReferencesPage() {
                 ],
               },
             ].map((sec) => (
-              <div key={sec.title} className="bg-white border border-cream-300 p-5 shadow-sm">
+              <div key={sec.title} className="bg-white border border-cream-300 p-5 shadow-sm rounded-2xl">
                 <p className="text-xs font-bold text-primary-800 mb-3" dangerouslySetInnerHTML={{ __html: sec.title }} />
                 <ul className="space-y-1.5">
                   {sec.items.map((item) => (
@@ -307,7 +307,7 @@ export default function ReferencesPage() {
               "Accessibility Statement page listing compliance measures",
               "FAQ page with searchable, categorized expandable answers",
             ].map((item) => (
-              <div key={item} className="flex items-start gap-2.5 text-sm text-neutral-700 bg-white border border-cream-300 px-4 py-3 shadow-sm">
+              <div key={item} className="flex items-start gap-2.5 text-sm text-neutral-700 bg-white border border-cream-300 px-4 py-3 shadow-sm rounded-2xl">
                 <CheckCircle size={13} className="text-emerald-500 mt-0.5 shrink-0" />
                 {item}
               </div>
@@ -325,7 +325,7 @@ export default function ReferencesPage() {
             <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer" className="text-primary-600 font-semibold hover:underline">Unsplash License</a>
             , which permits free use for commercial and non-commercial purposes with no attribution required.
           </p>
-          <div className="bg-white border border-cream-300 overflow-hidden shadow-sm">
+          <div className="bg-white border border-cream-300 overflow-hidden shadow-sm rounded-2xl">
             <div className="overflow-x-auto">
               <table className="w-full text-[11px]">
                 <thead>
@@ -361,7 +361,7 @@ export default function ReferencesPage() {
         </section>
 
         {/* ── Student Work Declaration ── */}
-        <div className="bg-primary-900 text-white px-6 py-5 rounded-sm">
+        <div className="bg-primary-900 text-white px-6 py-5 rounded-2xl">
           <p className="text-sm font-medium">
             <strong className="text-secondary-400">Student Work Declaration:</strong>{" "}
             All code, design, content, and documentation was created by the JHSTSA Webmaster team for the 2025–2026 school year. No copyrighted material was used without proper licensing. All Unsplash images are used under the Unsplash License.
@@ -372,7 +372,7 @@ export default function ReferencesPage() {
         <div className="pb-4 text-center">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-800 transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-800 transition-colors rounded-full px-4 py-2 bg-white border border-cream-300"
           >
             ← Back to Homepage
           </Link>

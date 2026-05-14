@@ -14,45 +14,48 @@ const WORDS = ["Community.", "Connection.", "Leadership.", "Belonging.", "Friend
 
 function RotatingWord() {
   const [idx, setIdx] = useState(0);
-  const [prev, setPrev] = useState<number | null>(null);
+  const [count, setCount] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
   useEffect(() => {
-    const t = setInterval(() => {
-      setIdx((i) => { setPrev(i); return (i + 1) % WORDS.length; });
-    }, 2800);
-    return () => clearInterval(t);
-  }, []);
+    const word = WORDS[idx];
+
+    // Type forward more slowly, pause, then delete for a smoother loop.
+    if (!isDeleting && count < word.length) {
+      const t = window.setTimeout(() => setCount((c) => c + 1), 145);
+      return () => window.clearTimeout(t);
+    }
+
+    if (!isDeleting && count === word.length) {
+      const hold = window.setTimeout(() => setIsDeleting(true), 1200);
+      return () => window.clearTimeout(hold);
+    }
+
+    if (isDeleting && count > 0) {
+      const t = window.setTimeout(() => setCount((c) => c - 1), 95);
+      return () => window.clearTimeout(t);
+    }
+
+    const next = window.setTimeout(() => {
+      setIsDeleting(false);
+      setIdx((i) => (i + 1) % WORDS.length);
+    }, 280);
+    return () => window.clearTimeout(next);
+  }, [idx, count, isDeleting]);
+
+  const activeWord = WORDS[idx].slice(0, count);
+
   return (
     <span
-      className="relative inline-block overflow-hidden"
+      className="relative inline-block"
       style={{ height: "1.16em", minWidth: "9em", verticalAlign: "0.02em" }}
     >
-      <span aria-live="polite">
-        {WORDS.map((word, i) => {
-          const isCurrent = i === idx;
-          const isPrev = i === prev;
-          return (
-            <span
-              key={word}
-              className="absolute left-0 font-heading leading-[1.12] whitespace-nowrap"
-              style={{
-                color: "#F2C75C",
-                fontStyle: "italic",
-                opacity: isCurrent ? 1 : 0,
-                transform: isCurrent
-                  ? "translateX(0%)"
-                  : isPrev
-                    ? "translateX(-60%)"
-                    : "translateX(60%)",
-                transition: isCurrent || isPrev
-                  ? "opacity 0.5s ease, transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)"
-                  : "none",
-                pointerEvents: "none",
-              }}
-            >
-              {word}
-            </span>
-          );
-        })}
+      <span
+        aria-live="polite"
+        className="absolute left-0 font-heading leading-[1.12] whitespace-nowrap"
+        style={{ color: "#F2C75C", fontStyle: "italic" }}
+      >
+        {activeWord}
+        <span className="opacity-70 animate-pulse">|</span>
       </span>
     </span>
   );

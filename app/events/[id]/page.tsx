@@ -240,6 +240,14 @@ export default function EventDetailPage() {
   };
 
   const bannerImgs: Record<string, string> = {
+    Academic:    "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1400&q=80",
+    STEM:        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1400&q=80",
+    Service:     "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1400&q=80",
+    Arts:        "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1400&q=80",
+    Cultural:    "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
+    Leadership:  "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1400&q=80",
+    Sports:      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=80",
+    General:     "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=80",
     Competition: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1400&q=80",
     Social:      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1400&q=80",
     Workshop:    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1400&q=80",
@@ -250,6 +258,7 @@ export default function EventDetailPage() {
   };
   const bannerImg = event.imageUrl || bannerImgs[event.category] || bannerImgs.Other;
   const gallery = GALLERY_BY_ID[params.id] || GALLERY[event.category] || GALLERY.Other;
+  const showGallery = !!seeded;
 
   const relatedEvents = events
     .filter((e) => e.id !== params.id && (e.chapterId === event.chapterId || e.category === event.category))
@@ -332,17 +341,19 @@ export default function EventDetailPage() {
           <p className="text-sm text-neutral-600 leading-relaxed">{event.description}</p>
         </div>
 
-        {/* Image gallery */}
-        <div className="bg-white border border-cream-300 rounded-2xl p-6">
-          <h2 className="font-heading font-bold text-primary-800 text-lg mb-4">Event Gallery</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {gallery.map((src, i) => (
-              <div key={i} className="relative aspect-video rounded-xl overflow-hidden bg-neutral-200">
-                <Image src={src} alt="" fill className="object-cover hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 33vw, 250px" />
-              </div>
-            ))}
+        {/* Image gallery (static seeded events only) */}
+        {showGallery && (
+          <div className="bg-white border border-cream-300 rounded-2xl p-6">
+            <h2 className="font-heading font-bold text-primary-800 text-lg mb-4">Event Gallery</h2>
+            <div className="grid grid-cols-3 gap-3">
+              {gallery.map((src, i) => (
+                <div key={i} className="relative aspect-video rounded-xl overflow-hidden bg-neutral-200">
+                  <Image src={src} alt="" fill className="object-cover hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 33vw, 250px" />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Sign-up section */}
         <div className="bg-white border border-cream-300 rounded-2xl p-6">

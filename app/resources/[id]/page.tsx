@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { RESOURCES, TYPE_COLORS, STAGE_COLORS } from "@/lib/resourcesData";
+import { getCreatedResources } from "@/lib/clientState";
 import { supabase } from "@/lib/api";
 import {
   ArrowLeft, ArrowRight, BookOpen, Check, ChevronLeft, Download, FileText,
@@ -19,9 +20,9 @@ const DEFAULT_COMMENTS = [
 
 export default function ResourceDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const resource = RESOURCES.find(r => r.id === id);
+  const [resource, setResource] = useState<(typeof RESOURCES)[number] | null>(RESOURCES.find(r => r.id === id) ?? null);
   const [saved, setSaved] = useState(false);
-  const [saveCount, setSaveCount] = useState(resource?.saved ?? 0);
+  const [saveCount, setSaveCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<{ name: string; text: string; time: string }[]>(DEFAULT_COMMENTS);
@@ -31,6 +32,133 @@ export default function ResourceDetailPage() {
   useEffect(() => {
     if (!id) return;
     const loadData = async () => {
+      // Resolve resource from static data, local submissions, or DB.
+      let resolved = RESOURCES.find(r => r.id === id) ?? null;
+
+      if (!resolved) {
+        const local = getCreatedResources().find((r) => r.id === id);
+        if (local) {
+          resolved = {
+            id: local.id,
+            title: local.title,
+            details: local.description,
+            type: (local.type as any) || "guide",
+            category: "Community",
+            stage: "Active",
+            downloads: 0,
+            format: "PDF",
+            tags: [local.subject || "community"],
+            img: local.imageUrl || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
+            rating: 5,
+            saved: 0,
+            downloadUrl: local.resourceUrl || undefined,
+          } as (typeof RESOURCES)[number];
+        }
+      }
+
+      if (!resolved && typeof window !== "undefined") {
+        try {
+          const localKeys = Object.keys(window.localStorage).filter((k) => k.startsWith("clubconnect_created_resources_"));
+          for (const key of localKeys) {
+            const raw = window.localStorage.getItem(key);
+            if (!raw) continue;
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) continue;
+            const hit = parsed.find((r: any) => r?.id === id);
+            if (hit) {
+              resolved = {
+                id: hit.id,
+                title: hit.title,
+                details: hit.description,
+                type: (hit.type as any) || "guide",
+                category: "Community",
+                stage: "Active",
+                downloads: 0,
+                format: "PDF",
+                tags: [hit.subject || "community"],
+                img: hit.imageUrl || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
+                rating: 5,
+                saved: 0,
+                downloadUrl: hit.resourceUrl || undefined,
+              } as (typeof RESOURCES)[number];
+              break;
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (!resolved) {
+        const { data: dbRes } = await supabase
+          .from("resources")
+          .select("id, name, description, type, category, format, downloads, resource_link")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (dbRes) {
+          const TYPE_IMAGES: Record<string, string> = {
+            guide: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
+            template: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80",
+            checklist: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80",
+            handbook: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80",
+          };
+          resolved = {
+            id: dbRes.id,
+            title: dbRes.name || "Untitled",
+            details: dbRes.description || "",
+            type: (dbRes.type as any) || "guide",
+            category: dbRes.category || "Community",
+            stage: "Active",
+            downloads: dbRes.downloads || 0,
+            format: dbRes.format || "PDF",
+            tags: ["community"],
+            img: (typeof dbRes.resource_link === "string" && /\.(png|jpe?g|webp|gif)(\?|$)/i.test(dbRes.resource_link))
+              ? dbRes.resource_link
+              : (TYPE_IMAGES[dbRes.type || "guide"] || TYPE_IMAGES.guide),
+            rating: 5,
+            saved: 0,
+            downloadUrl: dbRes.resource_link || undefined,
+          } as (typeof RESOURCES)[number];
+        }
+      }
+
+      if (!resolved) {
+        const { data: allDb } = await supabase
+          .from("resources")
+          .select("id, name, description, type, category, format, downloads, resource_link")
+          .limit(200);
+        const dbRes = (allDb || []).find((r: any) => r.id === id);
+        if (dbRes) {
+          const TYPE_IMAGES: Record<string, string> = {
+            guide: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
+            template: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&q=80",
+            checklist: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80",
+            handbook: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=600&q=80",
+          };
+          resolved = {
+            id: dbRes.id,
+            title: dbRes.name || "Untitled",
+            details: dbRes.description || "",
+            type: (dbRes.type as any) || "guide",
+            category: dbRes.category || "Community",
+            stage: "Active",
+            downloads: dbRes.downloads || 0,
+            format: dbRes.format || "PDF",
+            tags: ["community"],
+            img: (typeof dbRes.resource_link === "string" && /\.(png|jpe?g|webp|gif)(\?|$)/i.test(dbRes.resource_link))
+              ? dbRes.resource_link
+              : (TYPE_IMAGES[dbRes.type || "guide"] || TYPE_IMAGES.guide),
+            rating: 5,
+            saved: 0,
+            downloadUrl: dbRes.resource_link || undefined,
+          } as (typeof RESOURCES)[number];
+        }
+      }
+
+      setResource(resolved);
+      setSaveCount(resolved?.saved ?? 0);
+
       // ── Public: comments ───────────────────────────────────────────
       const { data: reviewData } = await supabase
         .from("resource_reviews")
@@ -98,7 +226,7 @@ export default function ResourceDetailPage() {
   const related = RESOURCES.filter(r => r.id !== id && (r.category === resource.category || r.type === resource.type)).slice(0, 3);
   const idx = RESOURCES.findIndex(r => r.id === id);
   const prev = idx > 0 ? RESOURCES[idx - 1] : null;
-  const next = idx < RESOURCES.length - 1 ? RESOURCES[idx + 1] : null;
+  const next = idx >= 0 && idx < RESOURCES.length - 1 ? RESOURCES[idx + 1] : null;
 
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,7 +363,7 @@ export default function ResourceDetailPage() {
               <FileText size={28} className="mx-auto text-secondary-400 mb-3" />
               <p className="font-heading font-bold text-white text-sm mb-1">{resource.title}</p>
               <p className="text-xs text-primary-300 mb-4">{resource.format} format</p>
-              <a href={`/api/resources/${resource.id}/download`} download
+              <a href={resource.downloadUrl || `/api/resources/${resource.id}/download`} download
                 className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-full bg-secondary-500 hover:bg-secondary-600 text-white text-xs font-bold transition-colors">
                 <Download size={13} /> Download {resource.format}
               </a>

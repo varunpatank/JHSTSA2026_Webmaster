@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -96,18 +96,51 @@ function BannerPattern({ patternId }: { patternId: string }) {
 
 export default function ResourcesPage() {
   const router = useRouter();
+  const resourcesSectionRef = useRef<HTMLDivElement | null>(null);
   const [category, setCategory] = useState("All");
   const [stage, setStage]       = useState("Beginner");
   const [query, setQuery]       = useState("");
   const [saved, setSaved]       = useState<Set<string>>(new Set());
   const [toolInputs, setToolInputs] = useState<Record<string, string>>({});
-  const [communityResources, setCommunityResources] = useState<typeof RESOURCES>([]);
+  const [communityResources, setCommunityResources] = useState<Array<(typeof RESOURCES)[number] & { source?: "local" | "db" }>>([]);
+  const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem("cc_deleted_resources");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setDeletedIds(new Set(parsed));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("cc_deleted_resources", JSON.stringify(Array.from(deletedIds)));
+  }, [deletedIds]);
 
   // Auto-select "Community" from query param ?cat=Community
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const cat = params.get("cat");
     if (cat && CATEGORIES.includes(cat)) setCategory(cat);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shouldScroll = params.get("scroll") === "community";
+    const cat = params.get("cat");
+    if (!shouldScroll || cat !== "Community") return;
+
+    const timer = window.setTimeout(() => {
+      resourcesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 220);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Load community resources from clientState + Supabase
@@ -133,7 +166,9 @@ export default function ResourcesPage() {
       rating: 5.0,
       saved: 0,
       downloadUrl: r.resourceUrl || undefined,
-    }));
+      source: "local" as const,
+    })).filter((r) => !deletedIds.has(r.id));
+    setCreatedIds(new Set(local.map(r => r.id)));
 
     // Also try Supabase
     resourcesApi.getAll().then(({ data }) => {
@@ -150,11 +185,15 @@ export default function ResourcesPage() {
             downloads: r.downloads || 0,
             format: r.format || "PDF",
             tags: [],
-            img: TYPE_IMAGES[r.type] || TYPE_IMAGES.guide,
+            img: (typeof r.resource_link === "string" && /\.(png|jpe?g|webp|gif)(\?|$)/i.test(r.resource_link))
+              ? r.resource_link
+              : (TYPE_IMAGES[r.type] || TYPE_IMAGES.guide),
             rating: 5.0,
             saved: 0,
             downloadUrl: r.resource_link || undefined,
-          }));
+            source: "db" as const,
+          }))
+          .filter((r) => !deletedIds.has(r.id));
         // Merge: DB entries take priority; remove local duplicates by title
         const merged = [
           ...dbCommunity,
@@ -165,7 +204,7 @@ export default function ResourcesPage() {
         setCommunityResources(local);
       }
     }, () => setCommunityResources(local));
-  }, []);
+  }, [deletedIds]);
 
   const allResources = category === "Community"
     ? communityResources
@@ -243,7 +282,7 @@ export default function ResourcesPage() {
               )}
             </div>
 
-            {/* Stage filter � above category */}
+            {/* Stage filter above category */}
             <div className="bg-white rounded-2xl border border-cream-300 p-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400 mb-3">Club Stage</p>
               <div className="space-y-1.5">
@@ -452,11 +491,11 @@ export default function ResourcesPage() {
             </div>
 
             {/* Divider + count */}
-            <div className="flex items-center gap-3">
+            <div ref={resourcesSectionRef} className="flex items-center gap-3 scroll-mt-28">
               <div className="flex-1 h-px bg-cream-400" />
               <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                 {filtered.length} Resource{filtered.length !== 1 ? "s" : ""}
-                {category !== "All" && ` � ${category}`}
+                {category !== "All" && ` | ${category}`}
               </p>
               <div className="flex-1 h-px bg-cream-400" />
               <Link
@@ -466,7 +505,6 @@ export default function ResourcesPage() {
                 <span className="text-base leading-none">+</span> Add Resource
               </Link>
             </div>
-
             {/* Resource grid */}
             {filtered.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-2xl border border-cream-300">
@@ -484,12 +522,6 @@ export default function ResourcesPage() {
                       <Image src={r.img} alt={r.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90" />
                       <div className="absolute inset-0 bg-gradient-to-t from-primary-900/65 to-transparent" />
                       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 45%, rgba(28,53,87,0.75) 72%, #1c3557 100%)" }} />
-                      <span className={`absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold ${TYPE_COLORS[r.type]}`}>
-                        {TYPE_ICONS[r.type]} {r.type.charAt(0).toUpperCase() + r.type.slice(1)}
-                      </span>
-                      <span className={`absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ${STAGE_COLORS[r.stage] ?? "bg-neutral-100 text-neutral-600"}`}>
-                        {r.stage}
-                      </span>
                       <button
                         onClick={() => toggleSave(r.id)}
                         className={`absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center transition-colors text-xs font-bold ${
@@ -505,7 +537,7 @@ export default function ResourcesPage() {
                       <p className="text-xs text-neutral-500 leading-relaxed mb-3 flex-1 line-clamp-2">{r.details}</p>
                       <div className="flex items-center justify-between border-t border-cream-200 pt-3 mt-auto">
                         <StarRow rating={r.rating} />
-                        <a href={`/api/resources/${r.id}/download`} download className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] text-primary-600 hover:text-primary-700 hover:bg-cream-100 transition-colors" onClick={(e) => e.stopPropagation()}>
+                        <a href={r.downloadUrl || `/api/resources/${r.id}/download`} download className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] text-primary-600 hover:text-primary-700 hover:bg-cream-100 transition-colors" onClick={(e) => e.stopPropagation()}>
                           <Download size={9} /> Download PDF
                         </a>
                       </div>

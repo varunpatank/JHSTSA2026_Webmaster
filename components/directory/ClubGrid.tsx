@@ -448,14 +448,14 @@ export default function ClubGrid({
   }
 
   return (
-    <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
+    <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3 auto-rows-fr">
       {clubs.map((ch) => {
         const isHighlighted = highlightId === ch.id;
         return (
           <div
             key={ch.id}
             ref={isHighlighted ? highlightRef : undefined}
-            className="relative"
+            className="relative h-full"
           >
             {isHighlighted && (
               <>
@@ -492,7 +492,7 @@ export default function ClubGrid({
             )}
             <Link
               href={`/directory/${ch.id}`}
-              className={`flex flex-col bg-white border p-4 rounded-xl hover:border-primary-300 hover:shadow-sm transition-all group min-h-[220px] ${
+              className={`flex flex-col bg-white border p-4 rounded-xl hover:border-primary-300 hover:shadow-sm transition-all group h-full min-h-[240px] ${
                 isHighlighted
                   ? "border-secondary-400 ring-2 ring-secondary-300 shadow-lg animate-pulse"
                   : "border-neutral-200"

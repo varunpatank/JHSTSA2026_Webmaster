@@ -188,6 +188,9 @@ export default function DonationForm({
           onBlur={() => { const v = promoCode.toLowerCase().trim(); if (["test","judge2026"].includes(v)) { setPromoApplied(true); setPromoError(""); } else if (promoCode) setPromoError("Invalid code"); }}
           className="w-full border border-cream-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary-400"
         />
+        <p className="text-[10px] text-neutral-500">
+          Judges: use code <strong>JUDGE2026</strong> for free.
+        </p>
         {promoApplied && <p className="text-[10px] text-green-600 font-medium flex items-center gap-1"><CheckCircle size={10} /> Code applied — $0 charge</p>}
         {promoError && <p className="text-[10px] text-red-600">{promoError}</p>}
         <button type="submit" disabled={processing}
@@ -316,6 +319,9 @@ export default function DonationForm({
             Apply
           </button>
         </div>
+        <p className="mt-2 text-xs text-neutral-500">
+          Judges: use code <strong>JUDGE2026</strong> for free.
+        </p>
         {promoApplied && (
           <p className="mt-2 text-sm text-green-600 font-medium flex items-center gap-1">
             <CheckCircle size={14} /> Demo code applied — $0 charge

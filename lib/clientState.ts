@@ -214,3 +214,8 @@ export function addCreatedResource(resource: CreatedResource) {
   const existing = readArray<CreatedResource>(key);
   writeArray(key, [resource, ...existing]);
 }
+
+export function removeCreatedResource(id: string) {
+  const key = resourcesKey(getCurrentEmail());
+  writeArray(key, readArray<CreatedResource>(key).filter(r => r.id !== id));
+}
