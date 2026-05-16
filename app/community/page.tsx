@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import HeroSection from "@/components/HeroSection";
-import { supabase, profilesApi, storageApi } from "@/lib/api";
+import { supabase, profilesApi, storageApi, successStoriesApi, communityPostsApi } from "@/lib/api";
 import {
   Download,
   FileText,
@@ -33,7 +33,6 @@ import {
   Users,
   Star,
   TrendingUp,
-  BookOpen,
   Layers,
 } from "lucide-react";
 
@@ -48,6 +47,8 @@ interface FeedReply {
 
 interface FeedPost {
   id: number;
+  dbId?: string;
+  authorId?: string;
   author: string;
   avatar: string;
   club: string;
@@ -63,6 +64,22 @@ interface FeedPost {
   replies: FeedReply[];
 }
 
+interface StoryCard {
+  id: number | string;
+  title: string;
+  club: string;
+  image: string;
+  excerpt: string;
+  author: string;
+  role: string;
+  date: string;
+  tag: string;
+  tagColor: string;
+  dbId?: string;
+  createdBy?: string;
+  source?: "seed" | "db" | "local";
+}
+
 /*  Seed Data  */
 const INITIAL_FEED: FeedPost[] = [
   {
@@ -75,6 +92,7 @@ const INITIAL_FEED: FeedPost[] = [
     type: "resource",
     fileName: "TSA_Presentation_Templates.zip",
     fileSize: "4.2 MB",
+    fileUrl: "/resources-pdfs/mc-4.pdf",
     likes: 24,
     liked: false,
     saved: false,
@@ -139,6 +157,7 @@ const INITIAL_FEED: FeedPost[] = [
     type: "resource",
     fileName: "FBLA_Fundraiser_Tracker.xlsx",
     fileSize: "1.8 MB",
+    fileUrl: "/resources-pdfs/ex-3.pdf",
     likes: 31,
     liked: false,
     saved: false,
@@ -175,6 +194,7 @@ const INITIAL_FEED: FeedPost[] = [
     type: "resource",
     fileName: "Debate_Evidence_Briefs.pdf",
     fileSize: "2.5 MB",
+    fileUrl: "/resources-pdfs/mc-3.pdf",
     likes: 19,
     liked: false,
     saved: false,
@@ -301,7 +321,7 @@ const MENTOR_PHOTOS: Record<string, string> = {
   "m3": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80",
 };
 
-const SUCCESS_STORIES = [
+const SUCCESS_STORIES: StoryCard[] = [
   {
     id: 1,
     title: "From Regionals to Nationals",
@@ -313,6 +333,7 @@ const SUCCESS_STORIES = [
     date: "March 2026",
     tag: "Competition",
     tagColor: "bg-violet-100 text-violet-700",
+    source: "seed",
   },
   {
     id: 2,
@@ -325,6 +346,7 @@ const SUCCESS_STORIES = [
     date: "February 2026",
     tag: "Service",
     tagColor: "bg-green-100 text-green-700",
+    source: "seed",
   },
   {
     id: 3,
@@ -337,6 +359,7 @@ const SUCCESS_STORIES = [
     date: "November 2025",
     tag: "Hackathon",
     tagColor: "bg-blue-100 text-blue-700",
+    source: "seed",
   },
   {
     id: 4,
@@ -349,6 +372,7 @@ const SUCCESS_STORIES = [
     date: "April 2026",
     tag: "Arts",
     tagColor: "bg-amber-100 text-amber-700",
+    source: "seed",
   },
 ];
 
@@ -390,9 +414,11 @@ const MEETINGS = [
 export default function CommunityPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const storyImageInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [userName, setUserName] = useState("Guest123");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isGuest, setIsGuest] = useState(true);
   const { data: session, status } = useSession();
 
@@ -426,6 +452,7 @@ export default function CommunityPage() {
         }
         return;
       }
+      setCurrentUserId(data.user.id);
       setIsGuest(false);
       const res = await profilesApi.getById(data.user.id);
       if (!res.error && res.data) {
@@ -449,19 +476,22 @@ export default function CommunityPage() {
 
   const [feed, setFeed] = useState<FeedPost[]>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("clubconnect_community_feed");
+      const saved = localStorage.getItem("clubconnect_community_feed_v2");
       if (saved)
         try {
-          return JSON.parse(saved);
+          const parsed: FeedPost[] = JSON.parse(saved);
+          // Always patch hardcoded posts with latest data (e.g. fileUrl updates)
+          const seedMap = new Map(INITIAL_FEED.map((p) => [p.id, p]));
+          return parsed.map((p) => {
+            const seed = seedMap.get(p.id as number);
+            return seed ? { ...p, fileUrl: seed.fileUrl, fileName: seed.fileName, fileSize: seed.fileSize } : p;
+          });
         } catch {}
     }
     return INITIAL_FEED;
   });
   const [postText, setPostText] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [activeFilter, setActiveFilter] = useState<
-    "all" | "discussions" | "resources"
-  >("all");
   const [connectedMentors, setConnectedMentors] = useState<Set<string>>(
     new Set(),
   );
@@ -474,13 +504,111 @@ export default function CommunityPage() {
   const [communityTab, setCommunityTab] = useState<"feed" | "mentors" | "stories">("feed");
   const [storyTitle, setStoryTitle] = useState("");
   const [storyBody, setStoryBody] = useState("");
+  const [storyImageFile, setStoryImageFile] = useState<File | null>(null);
+  const [storyImagePreview, setStoryImagePreview] = useState("");
+  const [storyDragOver, setStoryDragOver] = useState(false);
+  const [storyError, setStoryError] = useState("");
   const [storySubmitting, setStorySubmitting] = useState(false);
   const [storyPosted, setStoryPosted] = useState(false);
-  const [userStories, setUserStories] = useState<typeof SUCCESS_STORIES>([]);
+  const [dbStories, setDbStories] = useState<StoryCard[]>([]);
+  const [userStories, setUserStories] = useState<StoryCard[]>([]);
 
   useEffect(() => {
-    localStorage.setItem("clubconnect_community_feed", JSON.stringify(feed));
+    localStorage.setItem("clubconnect_community_feed_v2", JSON.stringify(feed));
   }, [feed]);
+
+  // Load DB posts and merge (skip ones already in local state by dbId)
+  useEffect(() => {
+    communityPostsApi.getAll().then(({ data, error }: any) => {
+      if (error || !data) return;
+      setFeed((prev) => {
+        const existingDbIds = new Set(prev.map((p) => p.dbId).filter(Boolean));
+        const newPosts: FeedPost[] = (data as any[])
+          .filter((row) => !existingDbIds.has(row.id))
+          .map((row) => ({
+            id: new Date(row.created_at).getTime(),
+            dbId: row.id,
+            authorId: row.author_id,
+            author: row.author_name,
+            avatar: row.author_initials,
+            club: row.club,
+            time: new Date(row.created_at).toLocaleString("default", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+            text: row.text,
+            type: row.type as FeedPost["type"],
+            fileName: row.file_name ?? undefined,
+            fileSize: row.file_size ?? undefined,
+            fileUrl: row.file_url ?? undefined,
+            likes: row.likes ?? 0,
+            liked: false,
+            saved: false,
+            replies: (row.community_post_replies ?? []).map((r: any) => ({
+              id: new Date(r.created_at).getTime(),
+              author: r.author_name,
+              avatar: r.author_initials,
+              text: r.text,
+              time: new Date(r.created_at).toLocaleString("default", { month: "short", day: "numeric" }),
+            })),
+          }));
+        if (newPosts.length === 0) return prev;
+        return [...prev, ...newPosts];
+      });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    successStoriesApi.getAll().then(({ data, error }: any) => {
+      if (!mounted || error || !data) return;
+      const mapped = (data as any[])
+        .filter((row) => row.title && row.content)
+        .map((row, index) => ({
+          id: row.id || `db-${index}`,
+          title: row.title,
+          club: row.organizations?.name || row.club_name || "Student",
+          image: row.image_url || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
+          excerpt: row.content,
+          author: row.profiles?.name || "Student",
+          role: "Student Contributor",
+          date: row.created_at
+            ? new Date(row.created_at).toLocaleString("default", { month: "long", year: "numeric" })
+            : "Recent",
+          tag: row.tag || "Story",
+          tagColor: "bg-sky-100 text-sky-700",
+          dbId: row.id,
+          createdBy: row.author_id,
+          source: "db" as const,
+        }));
+      setDbStories(mapped);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  function setStoryImageFromFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+      setStoryError("Please attach an image file.");
+      return;
+    }
+    setStoryError("");
+    setStoryImageFile(file);
+    setStoryImagePreview(URL.createObjectURL(file));
+  }
+
+  async function handleDeleteStory(story: StoryCard) {
+    if (!story.dbId || !currentUserId || story.createdBy !== currentUserId) return;
+    if (!confirm("Delete this inspiration story?")) return;
+
+    const { error } = await supabase.from("success_stories").delete().eq("id", story.dbId).eq("author_id", currentUserId);
+    if (error) {
+      setStoryError(error.message || "Could not delete story.");
+      return;
+    }
+
+    setUserStories((prev) => prev.filter((s) => String(s.id) !== String(story.id)));
+    setDbStories((prev) => prev.filter((s) => String(s.id) !== String(story.id)));
+  }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) setAttachedFile(e.target.files[0]);
@@ -512,8 +640,9 @@ export default function CommunityPage() {
         setUploading(false);
       }
     }
+    const localId = Date.now();
     const newPost: FeedPost = {
-      id: Date.now(),
+      id: localId,
       author: userName || "You",
       avatar: userInitials,
       club: "General",
@@ -534,6 +663,22 @@ export default function CommunityPage() {
     setPostText("");
     setAttachedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    // Persist to DB
+    communityPostsApi.create({
+      author_id: currentUserId ?? undefined,
+      author_name: userName || "Member",
+      author_initials: userInitials,
+      club: "General",
+      text: newPost.text,
+      type: newPost.type,
+      file_name: newPost.fileName,
+      file_size: newPost.fileSize,
+      file_url: fileUrl,
+    }).then(({ data: dbRow, error: dbErr }: any) => {
+      if (!dbErr && dbRow?.id) {
+        setFeed((prev) => prev.map((p) => p.id === localId ? { ...p, dbId: dbRow.id, authorId: dbRow.author_id } : p));
+      }
+    });
   }
 
   function toggleLike(id: number) {
@@ -593,15 +738,6 @@ export default function CommunityPage() {
     setConnectedMentors((prev) => new Set(prev).add(mentorId));
   }
 
-  const filtered = feed.filter((p) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "discussions")
-      return p.type === "discussion" || p.type === "text";
-    if (activeFilter === "resources")
-      return p.type === "resource" || p.type === "image";
-    return true;
-  });
-
   const postTypeBorder: Record<string, string> = {
     resource:    "border-l-[3px] border-l-emerald-400",
     discussion:  "border-l-[3px] border-l-blue-400",
@@ -622,6 +758,17 @@ export default function CommunityPage() {
     resource: "Resource", discussion: "Discussion",
     achievement: "Achievement", image: "Photo", text: "Update",
   };
+
+  const orderedFeed = [
+    ...feed.filter((post) => !(typeof post.id === "number" && post.id <= INITIAL_FEED.length)),
+    ...feed.filter((post) => typeof post.id === "number" && post.id <= INITIAL_FEED.length),
+  ];
+
+  const orderedStories = [
+    ...userStories,
+    ...dbStories,
+    ...SUCCESS_STORIES,
+  ];
 
   return (
     <div className="relative">
@@ -798,9 +945,7 @@ export default function CommunityPage() {
                     <h2 className="font-bold text-primary-900 text-base">Mentor Network</h2>
                     <p className="text-[11px] text-neutral-500 mt-0.5">Connect with industry professionals for guidance</p>
                   </div>
-                  <Link href="/hub/mentors" className="text-xs font-semibold text-secondary-600 hover:underline flex items-center gap-1">
-                    View All <ArrowRight size={12} />
-                  </Link>
+
                 </div>
                 <div className="grid sm:grid-cols-2 gap-6">
                   {[
@@ -886,12 +1031,65 @@ export default function CommunityPage() {
                   ) : (
                     <div className="space-y-2.5">
                       <input
+                        ref={storyImageInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setStoryImageFromFile(file);
+                        }}
+                      />
+                      <input
                         type="text"
                         placeholder="Story title..."
                         value={storyTitle}
                         onChange={e => setStoryTitle(e.target.value)}
                         className="w-full border border-cream-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-secondary-400/30"
                       />
+                      <div
+                        className={`border-2 border-dashed rounded-xl p-4 transition-colors ${storyDragOver ? "border-primary-400 bg-primary-50" : "border-cream-300 bg-cream-100/40"}`}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setStoryDragOver(true);
+                        }}
+                        onDragLeave={() => setStoryDragOver(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setStoryDragOver(false);
+                          const file = e.dataTransfer.files?.[0];
+                          if (!file) return;
+                          setStoryImageFromFile(file);
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <p className="text-xs font-semibold text-neutral-600">Drop story image here or choose file</p>
+                          <button
+                            type="button"
+                            onClick={() => storyImageInputRef.current?.click()}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary-200 bg-white text-primary-700 text-xs font-bold hover:bg-primary-50 transition-colors"
+                          >
+                            <ImageIcon size={12} /> Upload Image
+                          </button>
+                        </div>
+                      </div>
+                      {storyImagePreview && (
+                        <div className="relative h-36 rounded-xl overflow-hidden border border-cream-300">
+                          <Image src={storyImagePreview} alt="Story preview" fill className="object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStoryImageFile(null);
+                              setStoryImagePreview("");
+                              if (storyImageInputRef.current) storyImageInputRef.current.value = "";
+                            }}
+                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/65 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      )}
                       <textarea
                         placeholder="Tell us about your club's achievement..."
                         value={storyBody}
@@ -899,35 +1097,69 @@ export default function CommunityPage() {
                         rows={3}
                         className="w-full border border-cream-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-secondary-400/30 resize-none"
                       />
+                      {storyError && <p className="text-xs font-semibold text-red-600">{storyError}</p>}
                       <button
                         onClick={async () => {
-                          if (!storyTitle.trim() || !storyBody.trim() || storySubmitting) return;
-                          setStorySubmitting(true);
-                          const { data: { user } } = await supabase.auth.getUser();
-                          if (user) {
-                            await supabase.from("success_stories").insert({ author_id: user.id, title: storyTitle.trim(), content: storyBody.trim() });
+                          if (!storyTitle.trim() || !storyBody.trim() || !storyImageFile || storySubmitting) {
+                            setStoryError("Story title, image, and content are required.");
+                            return;
                           }
+                          setStorySubmitting(true);
+                          setStoryError("");
+                          const { data: { user } } = await supabase.auth.getUser();
+                          if (!user) {
+                            setStoryError("Please sign in before submitting a story.");
+                            setStorySubmitting(false);
+                            return;
+                          }
+
+                          const uploadRes = await storageApi.uploadFile(user.id, storyImageFile, "uploads");
+                          if (uploadRes.error || !uploadRes.data?.publicUrl) {
+                            setStoryError(uploadRes.error?.message || "Story image upload failed.");
+                            setStorySubmitting(false);
+                            return;
+                          }
+
+                          const imageUrl = uploadRes.data.publicUrl;
+                          const { data: createdStory, error: createError } = await successStoriesApi.create({
+                            author_id: user.id,
+                            title: storyTitle.trim(),
+                            content: storyBody.trim(),
+                            image_url: imageUrl,
+                          });
+                          if (createError || !createdStory) {
+                            setStoryError(createError?.message || "Could not save story to database.");
+                            setStorySubmitting(false);
+                            return;
+                          }
+
                           const now = new Date();
                           const monthYear = now.toLocaleString("default", { month: "long", year: "numeric" });
                           setUserStories(prev => [{
-                            id: Date.now(),
+                            id: createdStory.id || Date.now(),
                             title: storyTitle.trim(),
                             club: "Student",
-                            image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
+                            image: imageUrl,
                             excerpt: storyBody.trim(),
                             author: userName,
                             role: "Student",
                             date: monthYear,
                             tag: "Story",
                             tagColor: "bg-sky-100 text-sky-700",
+                            dbId: createdStory.id,
+                            createdBy: user.id,
+                            source: "local",
                           }, ...prev]);
                           setStoryPosted(true);
                           setStoryTitle("");
                           setStoryBody("");
+                          setStoryImageFile(null);
+                          setStoryImagePreview("");
+                          if (storyImageInputRef.current) storyImageInputRef.current.value = "";
                           setStorySubmitting(false);
                           setTimeout(() => setStoryPosted(false), 3500);
                         }}
-                        disabled={storySubmitting || !storyTitle.trim() || !storyBody.trim()}
+                        disabled={storySubmitting || !storyTitle.trim() || !storyBody.trim() || !storyImageFile}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors disabled:opacity-50"
                       >
                         {storySubmitting ? <><Loader2 size={12} className="animate-spin" /> Submitting…</> : <><Send size={12} /> Submit Story</>}
@@ -938,7 +1170,7 @@ export default function CommunityPage() {
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
-                  {[...userStories, ...SUCCESS_STORIES].map((s, idx) => (
+                  {orderedStories.map((s, idx) => (
                     <div key={s.id} className={`group bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all cursor-default ${idx === 0 ? "sm:col-span-2" : ""}`}>
                       <div className={`relative ${idx === 0 ? "h-56" : "h-44"}`}>
                         <Image src={s.image} alt={s.title} fill sizes="600px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -947,6 +1179,15 @@ export default function CommunityPage() {
                           <span className={`text-[9px] font-bold px-2 py-1 rounded-full ${s.tagColor}`}>{s.tag}</span>
                           {idx === 0 && <span className="text-[9px] font-bold px-2 py-1 rounded-full bg-secondary-400 text-primary-900">Featured</span>}
                         </div>
+                        {!!currentUserId && s.createdBy === currentUserId && s.dbId && (
+                          <button
+                            onClick={() => handleDeleteStory(s)}
+                            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/65 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                            title="Delete your story"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                         <div className="absolute bottom-3 left-4 right-4">
                           <span className="text-[10px] font-bold text-secondary-300 uppercase tracking-wider">{s.club}</span>
                           <h3 className="text-white font-bold text-base leading-tight mt-0.5">{s.title}</h3>
@@ -973,25 +1214,6 @@ export default function CommunityPage() {
 
             {/* ══ FEED TAB ══ */}
             {communityTab === "feed" && (<>
-            {/* Filter Row */}
-            <div className="flex items-center gap-2 bg-white border border-neutral-200 rounded-2xl px-4 py-2.5 shadow-sm">
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider border-r border-neutral-200 pr-3 shrink-0">Filter</span>
-              {([
-                { key: "all",          label: "All Posts",    Icon: Layers        },
-                { key: "discussions",  label: "Discussions",  Icon: MessageCircle },
-                { key: "resources",    label: "Resources",    Icon: BookOpen      },
-              ] as const).map(({ key, label, Icon }) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveFilter(key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition-all ${activeFilter === key ? "bg-secondary-400 text-primary-900" : "text-neutral-500 hover:bg-neutral-100 hover:text-primary-700"}`}
-                >
-                  <Icon size={11} />
-                  <span>{label}</span>
-                </button>
-              ))}
-            </div>
-
             {/* Feed scroll: composer + posts */}
             <div className="h-[700px] overflow-y-auto pr-1 space-y-5">
 
@@ -1056,7 +1278,7 @@ export default function CommunityPage() {
               </div>
 
               {/* Posts — colored by type */}
-              {filtered.map((post) => (
+              {orderedFeed.map((post) => (
                 <div key={post.id} className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-neutral-200 ${postTypeBorder[post.type]}`}>
                   <div className="flex items-center gap-3 px-5 pt-4 pb-2">
                     <div className="w-10 h-10 flex items-center justify-center text-xs font-bold shrink-0 rounded-xl bg-primary-100 text-primary-800">
@@ -1075,10 +1297,15 @@ export default function CommunityPage() {
                     <div className="flex items-center gap-1">
                       {(post.author === userName || post.author === "You") && (
                         <button
-                          onClick={() => { if (confirm("Delete this post?")) setFeed((prev) => prev.filter((p) => p.id !== post.id)); }}
+                          onClick={() => {
+                              if (!confirm("Delete this post?")) return;
+                              if (post.dbId) communityPostsApi.delete(post.dbId);
+                              setFeed((prev) => prev.filter((p) => p.id !== post.id));
+                            }}
                           className="text-neutral-300 hover:text-red-500 transition-colors p-1"
+                          title="Delete your comment"
                         >
-                          <MoreHorizontal size={15} />
+                          <Trash2 size={15} />
                         </button>
                       )}
                     </div>
@@ -1158,8 +1385,12 @@ export default function CommunityPage() {
                                 <span className="text-[10px] text-neutral-400">{r.time}</span>
                                 {(r.author === userName || r.author === "You") && (
                                   <button
-                                    onClick={() => setFeed((prev) => prev.map((p) => p.id === post.id ? { ...p, replies: p.replies.filter((rr) => rr.id !== r.id) } : p))}
+                                    onClick={() => {
+                                      if (!confirm("Delete this comment?")) return;
+                                      setFeed((prev) => prev.map((p) => p.id === post.id ? { ...p, replies: p.replies.filter((rr) => rr.id !== r.id) } : p));
+                                    }}
                                     className="ml-auto text-red-300 hover:text-red-600 transition-colors"
+                                    title="Delete your comment"
                                   >
                                     <Trash2 size={12} />
                                   </button>
@@ -1178,11 +1409,11 @@ export default function CommunityPage() {
                 </div>
               ))}
 
-              {filtered.length === 0 && (
+              {orderedFeed.length === 0 && (
                 <div className="bg-white border border-neutral-200 rounded-2xl py-12 text-center">
                   <MessageCircle size={32} className="text-neutral-300 mx-auto mb-3" />
-                  <p className="text-sm font-semibold text-neutral-500">No posts match this filter.</p>
-                  <p className="text-xs text-neutral-400 mt-1">Try switching to &quot;All Posts&quot;</p>
+                  <p className="text-sm font-semibold text-neutral-500">No posts yet.</p>
+                  <p className="text-xs text-neutral-400 mt-1">Be the first to start the chat.</p>
                 </div>
               )}
             </div>
@@ -1193,13 +1424,14 @@ export default function CommunityPage() {
           <div className="hidden lg:flex lg:flex-col w-72 shrink-0 gap-5 self-start sticky top-20">
 
             {/* Upcoming Meetings */}
-            <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm">
-              <div className="px-4 py-3 bg-gradient-to-r from-primary-900 to-primary-700 flex items-center">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <div className="bg-white rounded-2xl shadow-sm border-2 border-secondary-300 overflow-hidden">
+              <div className="px-4 py-3 border-b border-neutral-200 bg-neutral-50/80">
+                <h3 className="text-sm font-bold text-primary-900 flex items-center gap-2">
                   <Video size={13} /> Upcoming Meetings
                 </h3>
+                <p className="text-[11px] text-neutral-500 mt-1">Quick join active club calls</p>
               </div>
-              <div className="divide-y divide-neutral-100">
+              <div className="divide-y divide-neutral-100 overflow-hidden rounded-b-2xl">
                 {MEETINGS.map((mt) => {
                   const clubColors: Record<string, string> = {
                     TSA: "bg-primary-50 text-primary-800 border border-primary-200",
@@ -1208,29 +1440,28 @@ export default function CommunityPage() {
                     FBLA: "bg-amber-50 text-amber-800 border border-amber-200",
                   };
                   return (
-                    <div key={mt.id} className="px-4 py-3 flex items-center gap-3 hover:bg-neutral-50 transition-colors">
+                    <div key={mt.id} className="px-4 py-3.5 flex items-start gap-3 hover:bg-neutral-50 transition-colors">
                       {/* Live indicator dot */}
                       {mt.live && (
-                        <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse shrink-0" />
+                        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse shrink-0 mt-1.5" />
                       )}
                       {/* Info */}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${clubColors[mt.club] || "bg-neutral-100 text-neutral-600"}`}>{mt.club}</span>
                         </div>
-                        <p className="text-[11px] font-semibold text-primary-800 leading-snug truncate">{mt.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-neutral-400">
+                        <p className="text-[11px] font-semibold text-primary-800 leading-snug line-clamp-2">{mt.title}</p>
+                        <div className="flex items-center gap-2 mt-1 text-[10px] text-neutral-500">
                           <span className="flex items-center gap-0.5"><Clock size={9} /> {mt.time}</span>
                           <span className="flex items-center gap-0.5"><Users size={9} /> {mt.attendees}</span>
                         </div>
+                        <button
+                          onClick={() => router.push(`/call/${encodeURIComponent(`Meeting-${mt.club}-${mt.id}`)}`)}
+                          className="mt-2 px-3 py-1.5 rounded-lg text-[10px] font-bold border border-primary-200 text-primary-700 bg-primary-50 hover:bg-primary-100 hover:border-primary-300 transition-colors"
+                        >
+                          Join Live
+                        </button>
                       </div>
-                      {/* Join button — compact, inline */}
-                      <button
-                        onClick={() => router.push(`/call/${encodeURIComponent(`Meeting-${mt.club}-${mt.id}`)}`)}
-                        className="shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-300 transition-colors whitespace-nowrap"
-                      >
-                        Join Live
-                      </button>
                     </div>
                   );
                 })}

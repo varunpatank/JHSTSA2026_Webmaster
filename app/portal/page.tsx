@@ -558,7 +558,7 @@ function SubmitEvent() {
 
       window.scrollTo({ top: 0, behavior: "smooth" });
       setDone(true);
-      setTimeout(() => router.push(`/events?from=created`), 1500);
+      setTimeout(() => router.push(`/events?from=created&id=${encodeURIComponent(createdEventId)}`), 1500);
     } catch (err: any) {
       setError(err?.message || "Something went wrong. Please try again.");
     }

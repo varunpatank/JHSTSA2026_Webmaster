@@ -845,6 +845,45 @@ export const uploadLikesApi = {
 
 
 
+export const communityPostsApi = {
+    getAll: () =>
+        supabase
+            .from('community_posts')
+            .select('*, community_post_replies(*)')
+            .order('created_at', { ascending: false })
+            .limit(100),
+
+    create: (data: {
+        author_id?: string;
+        author_name: string;
+        author_initials: string;
+        club: string;
+        text: string;
+        type: string;
+        file_name?: string;
+        file_size?: string;
+        file_url?: string;
+    }) =>
+        supabase.from('community_posts').insert(data).select().single(),
+
+    delete: (id: string) =>
+        supabase.from('community_posts').delete().eq('id', id),
+
+    addReply: (data: {
+        post_id: string;
+        author_id?: string;
+        author_name: string;
+        author_initials: string;
+        text: string;
+    }) =>
+        supabase.from('community_post_replies').insert(data).select().single(),
+
+    deleteReply: (id: string) =>
+        supabase.from('community_post_replies').delete().eq('id', id),
+}
+
+
+
 export const achievementsApi = {
     getAll: () =>
         supabase.from('achievements').select('*').order('points', { ascending: false }).limit(50),

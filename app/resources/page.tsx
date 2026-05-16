@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation";
 import {
   ArrowRight, BarChart2, BookOpen, Calendar, CheckSquare, ClipboardList,
   Download, FileText, Heart, HelpCircle, Lightbulb, MessageCircle,
-  Search, Sparkles, Star, Target, Users, X,
+  Search, Sparkles, Star, Target, Trash2, Users, X,
 } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 import { RESOURCES, CATEGORIES, STAGES, TYPE_COLORS, STAGE_COLORS, type ResourceType } from "@/lib/resourcesData";
-import { getCreatedResources } from "@/lib/clientState";
-import { resourcesApi } from "@/lib/api";
+import { getCreatedResources, removeCreatedResource } from "@/lib/clientState";
+import { resourcesApi, supabase } from "@/lib/api";
 
 const CAT_ICONS: Record<string, React.ElementType> = {
   "All":                    BookOpen,
@@ -97,14 +97,20 @@ function BannerPattern({ patternId }: { patternId: string }) {
 export default function ResourcesPage() {
   const router = useRouter();
   const resourcesSectionRef = useRef<HTMLDivElement | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [category, setCategory] = useState("All");
   const [stage, setStage]       = useState("Beginner");
   const [query, setQuery]       = useState("");
   const [saved, setSaved]       = useState<Set<string>>(new Set());
   const [toolInputs, setToolInputs] = useState<Record<string, string>>({});
-  const [communityResources, setCommunityResources] = useState<Array<(typeof RESOURCES)[number] & { source?: "local" | "db" }>>([]);
+  const [communityResources, setCommunityResources] = useState<Array<(typeof RESOURCES)[number] & { source?: "local" | "db"; createdBy?: string | null }>>([]);
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  const [deleteError, setDeleteError] = useState("");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -192,6 +198,7 @@ export default function ResourcesPage() {
             saved: 0,
             downloadUrl: r.resource_link || undefined,
             source: "db" as const,
+            createdBy: r.created_by || null,
           }))
           .filter((r) => !deletedIds.has(r.id));
         // Merge: DB entries take priority; remove local duplicates by title
@@ -223,6 +230,27 @@ export default function ResourcesPage() {
     n.has(id) ? n.delete(id) : n.add(id);
     return n;
   });
+
+  const handleDeleteCreatedResource = async (resource: (typeof communityResources)[number]) => {
+    if (!confirm(`Delete \"${resource.title}\"?`)) return;
+    setDeleteError("");
+
+    if (resource.source === "db") {
+      const { error } = await resourcesApi.delete(resource.id);
+      if (error) {
+        setDeleteError(error.message || "Could not delete this resource right now.");
+        return;
+      }
+    }
+
+    removeCreatedResource(resource.id);
+    setDeletedIds((prev) => {
+      const next = new Set(prev);
+      next.add(resource.id);
+      return next;
+    });
+    setCommunityResources((prev) => prev.filter((item) => item.id !== resource.id));
+  };
 
   const hasFilters = category !== "All" || stage !== "All Stages" || !!query;
   const stageToolLabels = stage === "All Stages"
@@ -505,6 +533,7 @@ export default function ResourcesPage() {
                 <span className="text-base leading-none">+</span> Add Resource
               </Link>
             </div>
+            {deleteError && <p className="text-xs font-semibold text-red-600">{deleteError}</p>}
             {/* Resource grid */}
             {filtered.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-2xl border border-cream-300">
@@ -522,6 +551,19 @@ export default function ResourcesPage() {
                       <Image src={r.img} alt={r.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-90" />
                       <div className="absolute inset-0 bg-gradient-to-t from-primary-900/65 to-transparent" />
                       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 45%, rgba(28,53,87,0.75) 72%, #1c3557 100%)" }} />
+                      {(category === "Community" && ((r as any).source === "local" || (((r as any).source === "db") && (r as any).createdBy === currentUserId))) && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteCreatedResource(r as any);
+                          }}
+                          className="absolute top-3 left-3 w-7 h-7 rounded-full flex items-center justify-center bg-red-500/90 text-white hover:bg-red-600 transition-colors"
+                          title="Delete resource"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      )}
                       <button
                         onClick={() => toggleSave(r.id)}
                         className={`absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center transition-colors text-xs font-bold ${

@@ -96,6 +96,7 @@ export default function EventsClient({ events: staticEvents }: { events: Event[]
   const [events, setEvents] = useState<Event[]>(staticEvents);
   const [userEventIds, setUserEventIds] = useState<Set<string>>(new Set());
   const [fromCreated, setFromCreated] = useState(false);
+  const [createdEventId, setCreatedEventId] = useState<string | null>(null);
   const scheduleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,6 +125,8 @@ export default function EventsClient({ events: staticEvents }: { events: Event[]
     const params = new URLSearchParams(window.location.search);
     if (params.get("from") === "created") {
       setFromCreated(true);
+      const createdId = params.get("id");
+      if (createdId) setCreatedEventId(createdId);
       setTimeout(() => scheduleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
     }
   }, [staticEvents]);
@@ -136,7 +139,14 @@ export default function EventsClient({ events: staticEvents }: { events: Event[]
     return matchCat && matchDate;
   }), [filter, selectedDate, events]);
 
-  const schedule = filtered.slice(0, 12);
+  const ordered = useMemo(() => {
+    if (!createdEventId) return filtered;
+    const target = filtered.find((event) => event.id === createdEventId);
+    if (!target) return filtered;
+    return [target, ...filtered.filter((event) => event.id !== createdEventId)];
+  }, [filtered, createdEventId]);
+
+  const schedule = ordered.slice(0, 12);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-10">

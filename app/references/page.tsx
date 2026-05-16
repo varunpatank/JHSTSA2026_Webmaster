@@ -67,12 +67,9 @@ export default function ReferencesPage() {
       {/* ── Navy Header ── */}
       <div className="bg-primary-900 text-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-4">
-            <FileText size={11} className="text-secondary-400" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">Documentation &amp; Citations</span>
-          </div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary-400 mb-2">Reference Page</p>
           <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-3">
-            References &amp; <span className="text-secondary-400">Documentation</span>
+            Reference Page: <span className="text-secondary-400">Sources &amp; Documentation</span>
           </h1>
           <p className="text-sm text-primary-200 max-w-2xl leading-relaxed">
             Complete documentation for ClubConnect — work log, copyright checklist, tech stack, libraries, data architecture, feature walkthrough, and all image attributions.
@@ -86,6 +83,9 @@ export default function ReferencesPage() {
         {/* ── 1. Documents ── */}
         <section>
           <SectionHeading icon={FileText} title="Project Documents" />
+          <p className="text-sm text-neutral-600 mb-4">
+            Required documentation links are provided here, including the Student Copyright Checklist PDF and the team Work Log PDF.
+          </p>
           <div className="grid md:grid-cols-2 gap-6">
 
             {/* Work Log PDF */}
@@ -93,6 +93,14 @@ export default function ReferencesPage() {
               <p className="text-xs font-bold text-primary-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <FileText size={12} /> Webmaster Work Log
               </p>
+              <a
+                href="/references/Webmaster_Work_Log_Updated.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mb-2 text-[11px] font-bold text-primary-700 underline decoration-2 underline-offset-2 hover:text-primary-900"
+              >
+                Link to PDF
+              </a>
               <div className="border-2 border-primary-200 bg-white overflow-hidden rounded-2xl">
                 <iframe
                   src="/references/Webmaster_Work_Log_Updated.pdf"
@@ -101,14 +109,6 @@ export default function ReferencesPage() {
                   title="Webmaster Work Log PDF"
                 />
               </div>
-              <a
-                href="/references/Webmaster_Work_Log_Updated.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-primary-600 hover:text-primary-800"
-              >
-                ↗ Open in new tab
-              </a>
             </div>
 
             {/* Copyright Checklist */}
@@ -116,6 +116,14 @@ export default function ReferencesPage() {
               <p className="text-xs font-bold text-primary-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <Scale size={12} /> Copyright Checklist
               </p>
+              <a
+                href="/references/National%20Webmaster%20Copyright.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mb-2 text-[11px] font-bold text-primary-700 underline decoration-2 underline-offset-2 hover:text-primary-900"
+              >
+                Link to PDF
+              </a>
               <div className="border-2 border-primary-200 bg-white overflow-hidden rounded-2xl">
                 <iframe
                   src="/references/National%20Webmaster%20Copyright.pdf"
@@ -124,14 +132,6 @@ export default function ReferencesPage() {
                   title="National Webmaster Copyright PDF"
                 />
               </div>
-              <a
-                href="/references/National%20Webmaster%20Copyright.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-primary-600 hover:text-primary-800"
-              >
-                ↗ Open in new tab
-              </a>
             </div>
           </div>
         </section>
@@ -140,7 +140,7 @@ export default function ReferencesPage() {
         <section>
           <SectionHeading icon={Layers} title="Framework &amp; Tech Stack" />
           <p className="text-sm text-neutral-700 leading-relaxed mb-5">
-            ClubConnect is built on <strong className="text-primary-700">Next.js 16</strong> (App Router, Turbopack) with <strong className="text-primary-700">TypeScript</strong> and <strong className="text-primary-700">Tailwind CSS</strong>. <strong className="text-primary-700">Supabase</strong> handles authentication, PostgreSQL database (with Row-Level Security), and file storage. <strong className="text-primary-700">Stripe</strong> powers donation checkout. The design system follows WCAG AA/AAA contrast standards.
+            ClubConnect is built on <strong className="text-primary-700">Next.js 16</strong> (App Router, Turbopack) with <strong className="text-primary-700">TypeScript</strong> and <strong className="text-primary-700">Tailwind CSS</strong>. <strong className="text-primary-700">Supabase</strong> handles authentication, PostgreSQL database (with Row-Level Security), and file storage. <strong className="text-primary-700">Stripe</strong> powers donation checkout. The design system follows WCAG AA/AAA contrast standards. The team designed and built this site theme/template ourselves, and no pre-built website templates were used.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
