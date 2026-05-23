@@ -558,7 +558,7 @@ function SubmitEvent() {
 
       window.scrollTo({ top: 0, behavior: "smooth" });
       setDone(true);
-      setTimeout(() => router.push(`/events?from=created&id=${encodeURIComponent(createdEventId)}`), 1500);
+      setTimeout(() => router.push(`/events/${encodeURIComponent(createdEventId)}`), 1500);
     } catch (err: any) {
       setError(err?.message || "Something went wrong. Please try again.");
     }
@@ -569,7 +569,7 @@ function SubmitEvent() {
     <div className="bg-white rounded-2xl border border-cream-300 p-8 max-w-lg mx-auto text-center">
       <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-3"><Check size={20} className="text-emerald-600" /></div>
       <h3 className="font-heading font-bold text-primary-800 text-base mb-1">Event Submitted!</h3>
-      <p className="text-sm text-neutral-500">Taking you to the events page&hellip;</p>
+      <p className="text-sm text-neutral-500">Taking you to your event page&hellip;</p>
     </div>
   );
 

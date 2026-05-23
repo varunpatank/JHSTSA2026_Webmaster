@@ -29,23 +29,23 @@ interface CalendarEvent {
 
 const CALENDAR_EVENTS: CalendarEvent[] = [
   ...events.map(e => ({
-    id: e.id, title: e.title, date: e.date || "2026-03-15", time: "3:30 PM",
+    id: e.id, title: e.title, date: e.date || "2026-05-15", time: "3:30 PM",
     club: chapters.find(c => c.id === e.chapterId)?.name || "School-Wide",
     category: e.category || "General", location: e.location || "TBD",
     type: "meeting" as const,
   })),
-  { id: "ce1", title: "Robotics Build Session", date: "2026-03-05", time: "3:30 PM", club: "Robotics Club", category: "STEM", location: "Room 204", type: "workshop" },
-  { id: "ce2", title: "Model UN Practice", date: "2026-03-07", time: "3:30 PM", club: "Model United Nations", category: "Academic", location: "Room 115", type: "meeting" },
-  { id: "ce3", title: "Art Club Open Studio", date: "2026-03-10", time: "3:00 PM", club: "Art Club", category: "Arts", location: "Art Room", type: "social" },
-  { id: "ce4", title: "Beach Cleanup", date: "2026-03-12", time: "9:00 AM", club: "Environmental Club", category: "Service", location: "Juanita Beach", type: "service" },
-  { id: "ce5", title: "Spring Dance Committee", date: "2026-03-14", time: "12:00 PM", club: "Student Council", category: "Social", location: "Cafeteria", type: "meeting" },
-  { id: "ce6", title: "Science Olympiad Invitational", date: "2026-03-08", time: "8:00 AM", club: "Science Olympiad", category: "STEM", location: "Off-Site", type: "competition" },
-  { id: "ce7", title: "Debate Qualifier Deadline", date: "2026-03-10", time: "11:59 PM", club: "Debate Team", category: "Academic", location: "Online", type: "deadline" },
-  { id: "ce8", title: "Cultural Food Festival", date: "2026-03-20", time: "5:00 PM", club: "Cultural Exchange", category: "Cultural", location: "Commons", type: "social" },
-  { id: "ce9", title: "CS Club Hackathon Prep", date: "2026-03-18", time: "3:30 PM", club: "CS Club", category: "STEM", location: "Computer Lab", type: "workshop" },
-  { id: "ce10", title: "Drama Rehearsal", date: "2026-03-22", time: "4:00 PM", club: "Drama Club", category: "Arts", location: "Auditorium", type: "meeting" },
-  { id: "ce11", title: "Key Club Volunteering", date: "2026-03-25", time: "10:00 AM", club: "Key Club", category: "Service", location: "Community Center", type: "service" },
-  { id: "ce12", title: "TSA Regional Entry Deadline", date: "2026-03-20", time: "11:59 PM", club: "TSA", category: "STEM", location: "Online", type: "deadline" },
+  { id: "ce1", title: "Robotics Build Session", date: "2026-05-05", time: "3:30 PM", club: "Robotics Club", category: "STEM", location: "Room 204", type: "workshop" },
+  { id: "ce2", title: "Model UN Practice", date: "2026-05-07", time: "3:30 PM", club: "Model United Nations", category: "Academic", location: "Room 115", type: "meeting" },
+  { id: "ce3", title: "Art Club Open Studio", date: "2026-05-10", time: "3:00 PM", club: "Art Club", category: "Arts", location: "Art Room", type: "social" },
+  { id: "ce4", title: "Beach Cleanup", date: "2026-05-12", time: "9:00 AM", club: "Environmental Club", category: "Service", location: "Juanita Beach", type: "service" },
+  { id: "ce5", title: "Spring Dance Committee", date: "2026-05-14", time: "12:00 PM", club: "Student Council", category: "Social", location: "Cafeteria", type: "meeting" },
+  { id: "ce6", title: "Science Olympiad Invitational", date: "2026-05-08", time: "8:00 AM", club: "Science Olympiad", category: "STEM", location: "Off-Site", type: "competition" },
+  { id: "ce7", title: "Debate Qualifier Deadline", date: "2026-05-20", time: "11:59 PM", club: "Debate Team", category: "Academic", location: "Online", type: "deadline" },
+  { id: "ce8", title: "Cultural Food Festival", date: "2026-05-22", time: "5:00 PM", club: "Cultural Exchange", category: "Cultural", location: "Commons", type: "social" },
+  { id: "ce9", title: "CS Club Hackathon Prep", date: "2026-05-18", time: "3:30 PM", club: "CS Club", category: "STEM", location: "Computer Lab", type: "workshop" },
+  { id: "ce10", title: "Drama Rehearsal", date: "2026-05-26", time: "4:00 PM", club: "Drama Club", category: "Arts", location: "Auditorium", type: "meeting" },
+  { id: "ce11", title: "Key Club Volunteering", date: "2026-05-29", time: "10:00 AM", club: "Key Club", category: "Service", location: "Community Center", type: "service" },
+  { id: "ce12", title: "TSA Regional Entry Deadline", date: "2026-05-30", time: "11:59 PM", club: "TSA", category: "STEM", location: "Online", type: "deadline" },
 ];
 
 const TYPE_COLORS: Record<string, string> = {
@@ -68,7 +68,7 @@ function loadCalendarEvents(): CalendarEvent[] {
 
 export default function CalendarPage() {
   const [calEvents, setCalEvents] = useState<CalendarEvent[]>(() => loadCalendarEvents());
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 1));
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 4, 1));
   const [view, setView] = useState<"month" | "list">("month");
   const [typeFilter, setTypeFilter] = useState("All");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);

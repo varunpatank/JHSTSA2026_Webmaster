@@ -37,9 +37,8 @@ function MiniCalendar({ events, selectedDate, onSelect }: {
   selectedDate: string | null;
   onSelect: (d: string | null) => void;
 }) {
-  const today = new Date(2026, 3, 25);
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
-  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(new Date().getMonth());
+  const [viewYear, setViewYear] = useState(new Date().getFullYear());
 
   const eventDates = new Set(events.map(e => e.date));
   const firstDay = new Date(viewYear, viewMonth, 1).getDay();
@@ -65,14 +64,13 @@ function MiniCalendar({ events, selectedDate, onSelect }: {
           if (!day) return <div key={idx} />;
           const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
           const hasEvent = eventDates.has(dateStr);
-          const isToday = viewYear === today.getFullYear() && viewMonth === today.getMonth() && day === today.getDate();
           const isSelected = selectedDate === dateStr;
           return (
             <button
               key={idx}
               onClick={() => onSelect(isSelected ? null : dateStr)}
               className={`relative flex flex-col items-center justify-center h-8 rounded-lg text-xs font-medium transition-all
-                ${isSelected ? "bg-primary-800 text-white" : isToday ? "bg-secondary-100 text-secondary-700 font-bold" : "text-neutral-600 hover:bg-cream-200"}`}
+                ${isSelected ? "bg-primary-800 text-white" : "text-neutral-600 hover:bg-cream-200"}`}
             >
               {day}
               {hasEvent && !isSelected && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-secondary-500" />}
@@ -202,9 +200,6 @@ export default function EventsClient({ events: staticEvents }: { events: Event[]
                     className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary-800 text-white text-xs font-bold hover:bg-primary-700 transition-colors">
                     View Details
                   </Link>
-                  <button className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-primary-200 text-primary-700 text-xs font-semibold hover:bg-cream-200 transition-colors">
-                    <Calendar size={12} /> Add to Calendar
-                  </button>
                 </div>
               </div>
               <div className="relative min-h-[200px] md:min-h-0 bg-primary-900">

@@ -1667,7 +1667,7 @@ export const events: Event[] = [
     title: "Model UN Practice Session",
     description:
       "Weekly practice session focusing on resolution writing and debate skills.",
-    date: "2026-01-14",
+    date: "2026-05-14",
     startTime: "3:30 PM",
     endTime: "5:00 PM",
     location: "Room 204, Social Studies Wing",
@@ -1683,7 +1683,7 @@ export const events: Event[] = [
     title: "Robotics Build Night",
     description:
       "Extended build session for upcoming regional competition. All team members expected.",
-    date: "2026-01-15",
+    date: "2026-05-15",
     startTime: "3:30 PM",
     endTime: "7:00 PM",
     location: "Engineering Lab, Building C",
@@ -1700,7 +1700,7 @@ export const events: Event[] = [
     title: "Community Food Drive",
     description:
       "Partner event with local food bank. Volunteers needed for sorting and distribution.",
-    date: "2026-01-18",
+    date: "2026-05-28",
     startTime: "9:00 AM",
     endTime: "2:00 PM",
     location: "Community Center",
@@ -1717,7 +1717,7 @@ export const events: Event[] = [
     title: "Winter Drama Production Auditions",
     description:
       'Auditions for the spring musical "Into the Woods". Prepare a 1-minute monologue and 16 bars of a song.',
-    date: "2026-01-16",
+    date: "2026-05-27",
     startTime: "3:30 PM",
     endTime: "6:00 PM",
     location: "Auditorium",
@@ -1733,7 +1733,7 @@ export const events: Event[] = [
     title: "Debate Tournament Prep",
     description:
       "Intensive preparation session for upcoming state qualifiers. Mock debates and feedback.",
-    date: "2026-01-14",
+    date: "2026-05-21",
     startTime: "3:30 PM",
     endTime: "5:00 PM",
     location: "Room 301, English Wing",
@@ -1749,7 +1749,7 @@ export const events: Event[] = [
     title: "Cultural Heritage Celebration",
     description:
       "Monthly cultural showcase featuring food, performances, and presentations from different cultures.",
-    date: "2026-01-20",
+    date: "2026-05-30",
     startTime: "12:00 PM",
     endTime: "1:00 PM",
     location: "Cafeteria",

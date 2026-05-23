@@ -151,7 +151,7 @@ export default function EventSubmissionForm({
       if (isModal && onClose) {
         onClose();
       } else {
-        router.push("/events?from=created");
+        router.push(newEvent?.id ? `/events/${newEvent.id}` : "/events");
       }
     } catch (err: any) {
       setError(err?.message || "Something went wrong.");
