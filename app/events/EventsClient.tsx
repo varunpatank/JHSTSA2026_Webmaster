@@ -307,9 +307,6 @@ export default function EventsClient({ events: staticEvents }: { events: Event[]
                             className="px-3.5 py-1.5 rounded-full border border-primary-200 text-primary-700 text-xs font-semibold hover:bg-cream-100 transition-colors">
                             View Details
                           </Link>
-                          <button className="px-3.5 py-1.5 rounded-full border border-cream-300 text-neutral-500 text-xs font-semibold hover:bg-cream-100 transition-colors">
-                            + Calendar
-                          </button>
                         </div>
                       </div>
                     </div>
