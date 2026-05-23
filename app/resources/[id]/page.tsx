@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { RESOURCES, TYPE_COLORS, STAGE_COLORS } from "@/lib/resourcesData";
 import { getCreatedResources } from "@/lib/clientState";
 import { supabase } from "@/lib/api";
@@ -20,10 +20,12 @@ const DEFAULT_COMMENTS = [
 
 export default function ResourceDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [resource, setResource] = useState<(typeof RESOURCES)[number] | null>(RESOURCES.find(r => r.id === id) ?? null);
   const [saved, setSaved] = useState(false);
   const [saveCount, setSaveCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<{ name: string; text: string; time: string }[]>(DEFAULT_COMMENTS);
   const [commentSent, setCommentSent] = useState(false);
@@ -204,8 +206,8 @@ export default function ResourceDetailPage() {
           .eq("user_id", user.id)
           .single();
         setSaved(!!savedRow);
-
       }
+      setAuthLoaded(true);
     };
     loadData();
   }, [id]);
@@ -230,13 +232,13 @@ export default function ResourceDetailPage() {
 
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userId) {
+      router.push(`/portal?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/resources")}`);
+      return;
+    }
     if (!comment.trim()) return;
     const text = comment.trim();
-    if (userId) {
-      await supabase.from("resource_reviews").insert({ resource_id: id, user_id: userId, comment: text });
-    } else {
-      try { localStorage.setItem(`cc_resource_comments_${id}`, JSON.stringify([{ name: "You", text, time: "just now" }, ...comments])); } catch { /* ignore */ }
-    }
+    await supabase.from("resource_reviews").insert({ resource_id: id, user_id: userId, comment: text });
     setComments(prev => [{ name: "You", text, time: "just now" }, ...prev]);
     setComment("");
     setCommentSent(true);
@@ -320,18 +322,29 @@ export default function ResourceDetailPage() {
               <h2 className="font-heading font-bold text-primary-800 text-base mb-4 flex items-center gap-2">
                 <MessageSquare size={16} className="text-secondary-500" /> Feedback
               </h2>
-              <form onSubmit={handleComment} className="flex gap-3 mb-5">
-                <input
-                  value={comment}
-                  onChange={e => setComment(e.target.value)}
-                  placeholder="Share your experience with this resource..."
-                  className="flex-1 border border-cream-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-secondary-400/30"
-                />
-                <button type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors shrink-0">
-                  <Send size={12} /> Send
-                </button>
-              </form>
+              {authLoaded && !userId ? (
+                <div className="flex items-center justify-between gap-4 mb-5 p-4 bg-primary-50 border border-primary-100 rounded-xl">
+                  <p className="text-sm text-primary-700 font-medium">Sign in to leave a comment — your feedback helps other clubs.</p>
+                  <Link
+                    href={`/portal?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/resources")}`}
+                    className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors">
+                    Sign in
+                  </Link>
+                </div>
+              ) : (
+                <form onSubmit={handleComment} className="flex gap-3 mb-5">
+                  <input
+                    value={comment}
+                    onChange={e => setComment(e.target.value)}
+                    placeholder="Share your experience with this resource..."
+                    className="flex-1 border border-cream-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-secondary-400/30"
+                  />
+                  <button type="submit"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary-900 hover:bg-primary-800 text-white text-xs font-bold transition-colors shrink-0">
+                    <Send size={12} /> Send
+                  </button>
+                </form>
+              )}
               {commentSent && (
                 <div className="flex items-center gap-2 py-2 px-3 mb-4 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-700 font-medium">
                   <Check size={12} /> Comment posted!

@@ -887,12 +887,15 @@ export default function PortalPage() {
   const userName = session?.user?.name || session?.user?.email?.split("@")[0] || "Student";
 
   // Read initial tab + welcome flag from URL query params
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState("");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const t = params.get("tab") as Tab;
     if (t && TABS.some((x) => x.id === t)) setTab(t);
     if (params.get("welcome") === "1") setIsWelcome(true);
     if (params.get("joined") === "true") { setJustJoined(true); setTab("clubs"); }
+    const r = params.get("redirect");
+    if (r) setRedirectAfterLogin(r);
   }, []);
 
   // For unauthenticated users: gate tabs that require an account
@@ -966,7 +969,7 @@ export default function PortalPage() {
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-secondary-400/40 text-secondary-300 text-sm font-bold hover:bg-secondary-500/10 transition-colors disabled:opacity-60">
                     <Gavel size={13} /> {judgeLoading ? "Signing in…" : "Judge Sign In"}
                   </button>
-                  <Link href="/login"
+                  <Link href={`/login${redirectAfterLogin ? `?redirect=${encodeURIComponent(redirectAfterLogin)}` : ""}`}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition-colors">
                     <LogIn size={13} /> Log In
                   </Link>
@@ -1018,7 +1021,7 @@ export default function PortalPage() {
                   <Link href="/signup" className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-900 text-white text-sm font-bold hover:brightness-110 transition-colors">
                     Create Account
                   </Link>
-                  <Link href="/login" className="inline-flex items-center gap-2 px-5 py-2.5 border border-primary-200 text-primary-700 text-sm font-semibold hover:bg-primary-50 transition-colors">
+                  <Link href={`/login${redirectAfterLogin ? `?redirect=${encodeURIComponent(redirectAfterLogin)}` : ""}`} className="inline-flex items-center gap-2 px-5 py-2.5 border border-primary-200 text-primary-700 text-sm font-semibold hover:bg-primary-50 transition-colors">
                     Sign In
                   </Link>
                 </div>
