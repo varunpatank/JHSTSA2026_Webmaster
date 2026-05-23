@@ -203,7 +203,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-10 items-start">
 
             {/* LEFT — headline + subtext + search + CTA */}
-            <div className="py-4 hero-anim-left">
+            <div className="py-4 pl-2 sm:pl-0 hero-anim-left">
               {/* Eyebrow badge — cream pill */}
               <div className="mb-5 inline-flex items-center cream-textured border border-cream-400 rounded-full px-5 py-2">
                 <span className="text-[13px] font-extrabold text-primary-900 uppercase tracking-[0.2em]">For Students, By Students</span>
@@ -214,7 +214,7 @@ export default function HomePage() {
                 <span className="relative inline-block">
                   for
                   <span
-                    className="absolute pointer-events-none select-none z-20 hat-hero-wrap"
+                    className="hidden sm:block absolute pointer-events-none select-none z-20 hat-hero-wrap"
                     style={{ top: "calc(0.15em - 32px)", right: "calc(-0.8em + 12px)", transformOrigin: "50% 100%" }}
                     aria-hidden="true"
                   >
@@ -317,7 +317,7 @@ export default function HomePage() {
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-8">
           {/* Eyebrow */}
           <div className="flex items-center mb-5">
-            <p className="text-[13px] font-bold uppercase tracking-[0.22em] text-white/75">Upcoming Events</p>
+            <p className="text-[13px] font-bold uppercase tracking-[0.22em] text-primary-700 sm:text-white/75">Upcoming Events</p>
           </div>
 
           {/* Card */}
