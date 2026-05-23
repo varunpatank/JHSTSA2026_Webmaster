@@ -978,7 +978,7 @@ export default function PortalPage() {
 
         {/* Tab bar */}
         <div className="bg-white border-b border-cream-300 sticky top-[60px] z-30">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 flex gap-3 py-4">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 flex gap-3 py-4 overflow-x-auto">
             {TABS.map(t => {
               const Icon = t.icon;
               const active = tab === t.id;
@@ -987,7 +987,7 @@ export default function PortalPage() {
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 text-[15px] font-semibold rounded-full transition-colors ${
+                  className={`shrink-0 sm:flex-1 flex items-center justify-center gap-2 px-6 py-3 text-[15px] font-semibold rounded-full transition-colors whitespace-nowrap ${
                     active
                       ? "bg-primary-900 text-white"
                       : "bg-cream-100 text-neutral-600 hover:bg-cream-200 hover:text-primary-800"

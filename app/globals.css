@@ -99,7 +99,12 @@ h6 {
 
 html {
   scroll-behavior: auto;
-  zoom: 1.25;
+}
+
+@media (min-width: 1024px) {
+  html {
+    zoom: 1.25;
+  }
 }
 
 /* Prevent horizontal overflow on all screen sizes */

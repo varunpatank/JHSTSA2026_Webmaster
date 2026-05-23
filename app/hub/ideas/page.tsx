@@ -164,7 +164,7 @@ export default function IdeasPage() {
         <StageBannerPattern patternId="ideas-tool-banner-pattern" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative z-10">
           <Link href="/hub" className="text-sm text-white/90 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><Lightbulb size={36} /> Club Ideas</h1>
+          <h1 className="mt-2 text-2xl sm:text-4xl md:text-5xl font-heading font-bold flex items-start gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><Lightbulb size={28} className="sm:w-9 sm:h-9 shrink-0" /> Club Ideas</h1>
           <p className="mt-3 max-w-2xl text-white/90 text-lg">Propose new clubs, vote on ideas, and help shape the future of our school community.</p>
           <div className="mt-6 flex gap-3">
             <div className="bg-white/15 px-4 py-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{ideas.length}</p><p className="text-xs text-white/85">Ideas</p></div>

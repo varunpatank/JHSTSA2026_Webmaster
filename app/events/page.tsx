@@ -36,7 +36,7 @@ export default function EventsPage() {
             <span className="inline-block cream-textured border border-cream-400 text-primary-900 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4">
               Community Gatherings &amp; Workshops
             </span>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold text-white leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-heading font-bold text-white leading-tight">
               Upcoming Community{" "}
               <span className="relative inline-block text-secondary-400 italic">
                 Events

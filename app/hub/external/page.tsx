@@ -224,7 +224,7 @@ export default function ExternalResourcesPage() {
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
             ← Back to Hub
           </Link>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-6 text-white">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold font-heading mb-6 text-white">
             🌐 External Resources Library
           </h1>
           <p className="text-xl text-white/90 mb-8 max-w-2xl">

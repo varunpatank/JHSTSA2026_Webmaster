@@ -288,10 +288,10 @@ export default function ResourcesPage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <div className="flex gap-8 items-start">
+        <div className="flex flex-col md:flex-row gap-8 items-start">
 
           {/* -- LEFT SIDEBAR -- */}
-          <aside className="w-[240px] shrink-0 sticky top-20 space-y-4">
+          <aside className="w-full md:w-[240px] md:shrink-0 md:sticky top-20 space-y-4">
 
             {/* Search */}
             <div className="relative">

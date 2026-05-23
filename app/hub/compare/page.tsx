@@ -93,7 +93,7 @@ export default function ComparePage() {
         <StageBannerPattern patternId="compare-tool-banner-pattern" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative z-10">
           <Link href="/hub" className="text-sm text-white/90 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><ArrowLeftRight size={36} /> Club Comparison</h1>
+          <h1 className="mt-2 text-2xl sm:text-4xl md:text-5xl font-heading font-bold flex items-start gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><ArrowLeftRight size={28} className="sm:w-9 sm:h-9 shrink-0" /> Club Comparison</h1>
           <p className="mt-3 max-w-2xl text-white/90 text-lg">Compare up to 4 clubs side-by-side across key metrics to find your best fit.</p>
         </div>
       </section>

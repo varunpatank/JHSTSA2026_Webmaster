@@ -193,7 +193,7 @@ export default function GoalsPage() {
         <StageBannerPattern patternId="goals-tool-banner-pattern" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 relative z-10">
           <Link href="/hub" className="text-sm text-white/90 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><Target size={36} /> Goal Tracker</h1>
+          <h1 className="mt-2 text-2xl sm:text-4xl md:text-5xl font-heading font-bold flex items-start gap-3 drop-shadow-[0_3px_10px_rgba(0,0,0,0.45)]"><Target size={28} className="sm:w-9 sm:h-9 shrink-0" /> Goal Tracker</h1>
           <p className="mt-3 max-w-2xl text-white/90 text-lg">Set club goals, track milestones, and celebrate achievements together.</p>
           <div className="mt-6 grid grid-cols-4 gap-3 max-w-lg">
             <div className="bg-white/15 p-3 text-center rounded-2xl border border-white/25"><p className="text-xl font-bold">{goals.length}</p><p className="text-xs text-white/85">Total Goals</p></div>

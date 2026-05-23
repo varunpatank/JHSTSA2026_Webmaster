@@ -47,7 +47,7 @@ function RotatingWord() {
   return (
     <span
       className="relative inline-block"
-      style={{ height: "1.16em", minWidth: "9em", verticalAlign: "0.02em" }}
+      style={{ height: "1.16em", minWidth: "min(9em, 70vw)", verticalAlign: "0.02em" }}
     >
       <span
         aria-live="polite"
@@ -209,7 +209,7 @@ export default function HomePage() {
                 <span className="text-[13px] font-extrabold text-primary-900 uppercase tracking-[0.2em]">For Students, By Students</span>
               </div>
 
-              <h1 className="text-[2.6rem] md:text-[3.2rem] font-heading font-bold text-white leading-[1.06] tracking-tight">
+              <h1 className="text-[1.85rem] sm:text-[2.6rem] md:text-[3.2rem] font-heading font-bold text-white leading-[1.06] tracking-tight">
                 Find your place{" "}
                 <span className="relative inline-block">
                   for
@@ -250,7 +250,7 @@ export default function HomePage() {
               </div>
 
               {/* Search bar */}
-              <form onSubmit={handleSearch} className="mt-6 flex gap-2 max-w-[480px]">
+              <form onSubmit={handleSearch} className="mt-6 flex flex-wrap gap-2 max-w-[480px]">
                 <div className="flex-1 relative">
                   <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
                   <input
@@ -313,7 +313,7 @@ export default function HomePage() {
       </section>
 
       {/* UPCOMING EVENTS */}
-      <div className="relative -mt-[92px]">
+      <div className="relative sm:-mt-[92px]">
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-8">
           {/* Eyebrow */}
           <div className="flex items-center mb-5">
@@ -417,7 +417,7 @@ export default function HomePage() {
           {/* Header */}
           <Reveal variant="flip">
           <div className="text-center mb-10">
-            <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-white leading-tight drop-shadow-[0_2px_16px_rgba(0,0,0,0.8)]">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-white leading-tight drop-shadow-[0_2px_16px_rgba(0,0,0,0.8)]">
               <TypedTitle prefix="Start Your " highlight="Journey" />
             </h2>
             <div className="w-14 h-[3px] bg-secondary-400 rounded-full mx-auto mt-3 mb-1" />
@@ -568,7 +568,7 @@ export default function HomePage() {
 
               {/* Left: title + description + stat tiles */}
               <div>
-                <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-white tracking-tight drop-shadow-[0_2px_16px_rgba(0,0,0,0.8)]">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-white tracking-tight drop-shadow-[0_2px_16px_rgba(0,0,0,0.8)]">
                   <TypedTitle prefix="Students Love " highlight="ClubConnect." />
                 </h2>
                 <div className="w-14 h-[3px] bg-secondary-400 rounded-full mt-3 mb-1" />

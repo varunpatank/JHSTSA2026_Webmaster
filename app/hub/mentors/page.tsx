@@ -331,8 +331,8 @@ function MentorsPageContent() {
           >
             ← Back to Hub
           </Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3">
-            <GraduationCap size={36} /> Mentor Network
+          <h1 className="mt-2 text-2xl sm:text-4xl md:text-5xl font-heading font-bold flex items-start gap-3">
+            <GraduationCap size={28} className="sm:w-9 sm:h-9 shrink-0" /> Mentor Network
           </h1>
           <p className="mt-3 max-w-2xl text-teal-50 text-lg">
             Connect with experienced professionals and alumni for guidance,

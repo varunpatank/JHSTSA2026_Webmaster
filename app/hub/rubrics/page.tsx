@@ -220,7 +220,7 @@ export default function RubricsPage() {
       <section className="bg-primary-900 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-blue-200 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Trophy size={36} /> TSA Rubrics & Scoring</h1>
+          <h1 className="mt-2 text-2xl sm:text-4xl md:text-5xl font-heading font-bold flex items-start gap-3"><Trophy size={28} className="sm:w-9 sm:h-9 shrink-0" /> TSA Rubrics &amp; Scoring</h1>
           <p className="mt-3 max-w-2xl text-blue-100 text-lg">Study competition rubrics, track your self-assessment scores, and prepare to win.</p>
           <div className="mt-6 grid grid-cols-3 gap-4 max-w-md">
             <div className="bg-white/10 p-3 text-center"><p className="text-xl font-bold">{RUBRICS.length}</p><p className="text-xs text-blue-200">Events</p></div>

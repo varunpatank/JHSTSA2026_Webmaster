@@ -86,7 +86,7 @@ export default function CompetitionsPage() {
       <section className="bg-primary-900 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-purple-200 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Trophy size={36} /> Competitions Hub</h1>
+          <h1 className="mt-2 text-2xl sm:text-4xl md:text-5xl font-heading font-bold flex items-start gap-3"><Trophy size={28} className="sm:w-9 sm:h-9 shrink-0" /> Competitions Hub</h1>
           <p className="mt-3 max-w-2xl text-purple-100 text-lg">Browse upcoming competitions, register your team, and access preparation resources.</p>
           <div className="mt-6 grid grid-cols-3 gap-4 max-w-md">
             <div className="bg-white/10  p-3 text-center"><p className="text-xl font-bold">{COMPETITIONS.length}</p><p className="text-xs text-purple-200">Competitions</p></div>

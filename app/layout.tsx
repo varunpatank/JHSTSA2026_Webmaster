@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Lora, Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   description:
     "Discover clubs, request membership, start new clubs, and manage club events through a structured school community workflow.",
   icons: { icon: "/icon.svg", shortcut: "/icon.svg" },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

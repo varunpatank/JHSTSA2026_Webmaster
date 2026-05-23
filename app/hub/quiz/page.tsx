@@ -153,7 +153,7 @@ export default function QuizPage() {
       <section className="bg-primary-900 text-white border-b-4 border-secondary-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
           <Link href="/hub" className="text-sm text-fuchsia-100 hover:underline mb-2 inline-block">← Back to Hub</Link>
-          <h1 className="mt-2 text-4xl md:text-5xl font-heading font-bold flex items-center gap-3"><Sparkles size={36} /> Club Finder Quiz</h1>
+          <h1 className="mt-2 text-2xl sm:text-4xl md:text-5xl font-heading font-bold flex items-start gap-3"><Sparkles size={28} className="sm:w-9 sm:h-9 shrink-0" /> Club Finder Quiz</h1>
           <p className="mt-3 max-w-2xl text-fuchsia-50 text-lg">Answer 5 quick questions and we&rsquo;ll match you with the perfect clubs for your interests.</p>
         </div>
       </section>

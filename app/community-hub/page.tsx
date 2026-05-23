@@ -177,17 +177,30 @@ export default function CommunityHubPage() {
             })}
 
             {}
-            <div className="ml-auto flex items-center gap-2 py-2">
+            <div className="hidden md:flex ml-auto items-center gap-2 py-2">
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search hub�"
+                  placeholder="Search hub&#xFFFD;"
                   className="pl-9 pr-3 py-2 text-sm border border-neutral-200 bg-neutral-50 w-56 focus:outline-none focus:border-primary-400 focus:bg-white transition-colors"
                 />
               </div>
+            </div>
+          </div>
+          {}
+          <div className="md:hidden border-t border-neutral-100 py-2">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search hub&#xFFFD;"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-neutral-200 bg-neutral-50 focus:outline-none focus:border-primary-400 focus:bg-white transition-colors"
+              />
             </div>
           </div>
         </div>

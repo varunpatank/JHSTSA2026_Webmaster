@@ -278,7 +278,7 @@ export default function MyCollectionsPage() {
           <Link href="/hub" className="text-white/80 hover:text-white text-sm mb-4 inline-flex items-center gap-2">
             ← Back to Hub
           </Link>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading mb-4 text-white">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold font-heading mb-4 text-white">
             📂 My Collections
           </h1>
           <p className="text-xl text-white/90 max-w-2xl">
