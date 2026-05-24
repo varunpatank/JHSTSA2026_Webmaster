@@ -166,9 +166,40 @@ export default function ClubDetailPage() {
     if (!confirm(`Delete "${chapter?.name}"? This cannot be undone.`)) return;
     removeCreatedChapter(params.id);
     removeJoinedClub(params.id);
+
+    // Persist deleted org ID in localStorage so directory hides it immediately
+    // even if the router cache is stale.
+    try {
+      const raw = window.localStorage.getItem("cc_deleted_org_ids");
+      const existing: string[] = raw ? JSON.parse(raw) : [];
+      if (!existing.includes(params.id)) {
+        window.localStorage.setItem(
+          "cc_deleted_org_ids",
+          JSON.stringify([...existing, params.id])
+        );
+      }
+    } catch { /* ignore */ }
+
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id);
-    if (isUUID) await organizationsApi.delete(params.id);
-    router.push("/directory");
+    if (isUUID) {
+      // getUser() validates + auto-refreshes the token; getSession() then returns
+      // the fresh access token to pass to the server route.
+      await supabase.auth.getUser();
+      const { data: { session: supaSession } } = await supabase.auth.getSession();
+      const res = await fetch(`/api/clubs/${params.id}`, {
+        method: "DELETE",
+        headers: supaSession?.access_token
+          ? { Authorization: `Bearer ${supaSession.access_token}` }
+          : {},
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.error("Club delete failed:", body.error);
+      }
+    }
+
+    // Full navigation bypasses Next.js router cache so directory re-fetches DB
+    window.location.href = "/directory";
   };
 
   const handleJoin = async () => {

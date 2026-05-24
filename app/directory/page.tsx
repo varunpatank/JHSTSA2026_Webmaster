@@ -98,6 +98,19 @@ function DirectoryPageContent() {
   const [chapterVersion, setChapterVersion] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [dbChapters, setDbChapters] = useState<Chapter[]>([]);
+  const [deletedOrgIds, setDeletedOrgIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Load locally-tracked deleted org IDs so stale router-cache entries are hidden
+    try {
+      const raw = window.localStorage.getItem("cc_deleted_org_ids");
+      if (raw) {
+        const parsed: string[] = JSON.parse(raw);
+        if (Array.isArray(parsed)) setDeletedOrgIds(new Set(parsed));
+      }
+    } catch { /* ignore */ }
+  }, []);
+
   useEffect(() => {
     setMounted(true);
     organizationsApi.getAll().then(({ data }) => {
@@ -131,16 +144,24 @@ function DirectoryPageContent() {
     if (!mounted) return [...staticChapters];
     const created = getCreatedChapters();
     const staticIds = new Set(staticChapters.map((c) => c.id));
-    const unique = created.filter((c) => !staticIds.has(c.id));
+    const unique = created.filter((c) => !staticIds.has(c.id) && !deletedOrgIds.has(c.id));
     const allIds = new Set([...staticChapters.map(c => c.id), ...unique.map(c => c.id)]);
-    const fromDb = dbChapters.filter((c) => !allIds.has(c.id));
+    const fromDb = dbChapters.filter((c) => !allIds.has(c.id) && !deletedOrgIds.has(c.id));
     return [...unique, ...fromDb, ...staticChapters];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapterVersion, mounted, dbChapters]);
+  }, [chapterVersion, mounted, dbChapters, deletedOrgIds]);
 
   const handleDeleteClub = useCallback((id: string) => {
     removeCreatedChapter(id);
+    try {
+      const raw = window.localStorage.getItem("cc_deleted_org_ids");
+      const existing: string[] = raw ? JSON.parse(raw) : [];
+      if (!existing.includes(id)) {
+        window.localStorage.setItem("cc_deleted_org_ids", JSON.stringify([...existing, id]));
+      }
+    } catch { /* ignore */ }
     setChapterVersion((v) => v + 1);
+    setDeletedOrgIds((prev) => new Set([...prev, id]));
   }, []);
 
   // Scroll to highlighted club after render

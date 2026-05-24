@@ -235,10 +235,22 @@ export default function ResourcesPage() {
     if (!confirm(`Delete \"${resource.title}\"?`)) return;
     setDeleteError("");
 
-    if (resource.source === "db") {
-      const { error } = await resourcesApi.delete(resource.id);
-      if (error) {
-        setDeleteError(error.message || "Could not delete this resource right now.");
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resource.id ?? "");
+
+    if (resource.source === "db" && isUUID) {
+      // getUser() validates + auto-refreshes the token; getSession() then returns
+      // the fresh access token to pass to the server route.
+      await supabase.auth.getUser();
+      const { data: { session: supaSession } } = await supabase.auth.getSession();
+      const res = await fetch(`/api/resources/${resource.id}`, {
+        method: "DELETE",
+        headers: supaSession?.access_token
+          ? { Authorization: `Bearer ${supaSession.access_token}` }
+          : {},
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setDeleteError(body.error || "Could not delete this resource right now.");
         return;
       }
     }

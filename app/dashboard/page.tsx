@@ -44,7 +44,7 @@ import {
   membershipsApi,
   authApi,
 } from "@/lib/api";
-import { getJoinedClubs, getUserIdentity, isLoggedIn as isLocalLoggedIn } from "@/lib/clientState";
+import { getJoinedClubs, getUserIdentity, isLoggedIn as isLocalLoggedIn, removeCreatedChapter } from "@/lib/clientState";
 
 interface SavedItem {
   id: string;
@@ -634,7 +634,24 @@ function DashboardContent() {
 
   const handleDeleteClub = async (clubId: string) => {
     if (!confirm("Are you sure you want to delete this club?")) return;
-    await organizationsApi.delete(clubId);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clubId);
+    if (isUUID) {
+      await supabase.auth.getUser(); // force token refresh
+      const { data: { session: supaSession } } = await supabase.auth.getSession();
+      await fetch(`/api/clubs/${clubId}`, {
+        method: "DELETE",
+        headers: supaSession?.access_token
+          ? { Authorization: `Bearer ${supaSession.access_token}` }
+          : {},
+      });
+    }
+    try {
+      const raw = window.localStorage.getItem("cc_deleted_org_ids");
+      const existing: string[] = raw ? JSON.parse(raw) : [];
+      if (!existing.includes(clubId))
+        window.localStorage.setItem("cc_deleted_org_ids", JSON.stringify([...existing, clubId]));
+    } catch {}
+    removeCreatedChapter(clubId);
     setAdminClubs((prev) => prev.filter((c) => c.id !== clubId));
     setJoinedClubs((prev) => prev.filter((c) => c.id !== clubId));
   };
