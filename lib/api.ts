@@ -181,7 +181,7 @@ export const membershipsApi = {
 export const organizationsApi = {
 
     getAll: () =>
-        supabase.from('organizations').select('*'),
+        supabase.from('organizations').select('*').order('created_at', { ascending: false }),
 
     getBySlug: (slug: string) =>
         supabase.from('organizations').select('*').eq('slug', slug).maybeSingle(),
