@@ -355,7 +355,7 @@ function CreateClub() {
         advisor: { name: advisorName, email: advisorEmail, department: advisorDept || "Staff" },
         officers: [],
         meetingSchedule,
-        meetingLocation: { lat: 0, lng: 0, room: meetingRoom },
+        meetingLocation: { lat: 47.705, lng: -122.14, parentOrg: "Other Clubs", room: meetingRoom },
         membershipRequirements: requirements,
         dues,
         socialLinks: {},

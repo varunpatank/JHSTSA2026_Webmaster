@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
+import { loginUser } from "@/lib/clientState";
 import HeroSection from "@/components/HeroSection";
 import { BookOpen, Calendar, Shield, UserPlus, Users } from "lucide-react";
 
@@ -50,6 +51,11 @@ export default function SignupFormClient({
         setLoading(false);
         return;
       }
+
+      // Anchor this browser session to the new user so localStorage data
+      // (created clubs, joined clubs, etc.) is keyed to their account and
+      // not accidentally shared with the next person who signs up.
+      loginUser(name, email);
 
       router.push("/portal?welcome=1");
     } catch (err: any) {

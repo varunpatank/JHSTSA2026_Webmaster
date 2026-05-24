@@ -12,8 +12,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { chapters as staticChapters, quizQuestions } from "@/lib/data";
-import { getCreatedChapters, removeCreatedChapter } from "@/lib/clientState";
-import { organizationsApi } from "@/lib/api";
+import { getCreatedChapters, removeCreatedChapter, removeJoinedClub } from "@/lib/clientState";
+import { organizationsApi, supabase } from "@/lib/api";
 import type { Chapter } from "@/types";
 import type { Organization } from "@/lib/apiTypes";
 import { getLocationScopeKey } from "@/lib/location";
@@ -151,8 +151,9 @@ function DirectoryPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterVersion, mounted, dbChapters, deletedOrgIds]);
 
-  const handleDeleteClub = useCallback((id: string) => {
+  const handleDeleteClub = useCallback(async (id: string) => {
     removeCreatedChapter(id);
+    removeJoinedClub(id);
     try {
       const raw = window.localStorage.getItem("cc_deleted_org_ids");
       const existing: string[] = raw ? JSON.parse(raw) : [];
@@ -162,6 +163,17 @@ function DirectoryPageContent() {
     } catch { /* ignore */ }
     setChapterVersion((v) => v + 1);
     setDeletedOrgIds((prev) => new Set([...prev, id]));
+
+    // Also delete from DB if it's a UUID (real org, not a local-only club)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    if (isUUID) {
+      await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      fetch(`/api/clubs/${id}`, {
+        method: "DELETE",
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+      }).catch(() => { /* silent — local state already updated */ });
+    }
   }, []);
 
   // Scroll to highlighted club after render
