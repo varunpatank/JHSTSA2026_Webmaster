@@ -75,8 +75,11 @@ export default function ClubDetailPage() {
   const [donationPopup, setDonationPopup] = useState<{ amount: string; clubName: string } | null>(null);
   const [dbChapter, setDbChapter] = useState<Chapter | null>(null);
   const [dbLoading, setDbLoading] = useState(true);
+  const [orgCreatedBy, setOrgCreatedBy] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
     setMounted(true);
     if (typeof window !== "undefined") {
       const sp = new URLSearchParams(window.location.search);
@@ -98,7 +101,8 @@ export default function ClubDetailPage() {
     organizationsApi.getById(params.id).then(({ data }) => {
       if (data) {
         const org = data as Organization;
-        setDbChapter({
+        setOrgCreatedBy(org.created_by || null);
+      setDbChapter({
           id: org.id,
           name: org.name,
           description: org.description || "",
@@ -153,12 +157,17 @@ export default function ClubDetailPage() {
     })) : [];
   const chapterEvents = [...userEvents, ...staticEvents].slice(0, 6);
 
-  const isUserCreated = mounted && getCreatedChapters().some(c => c.id === params.id);
+  const isUserCreated = mounted && (
+    getCreatedChapters().some(c => c.id === params.id) ||
+    (orgCreatedBy !== null && orgCreatedBy === currentUserId)
+  );
 
-  const handleDeleteClub = () => {
-    if (!confirm(`Delete "${chapter.name}"? This cannot be undone.`)) return;
+  const handleDeleteClub = async () => {
+    if (!confirm(`Delete "${chapter?.name}"? This cannot be undone.`)) return;
     removeCreatedChapter(params.id);
     removeJoinedClub(params.id);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id);
+    if (isUUID) await organizationsApi.delete(params.id);
     router.push("/directory");
   };
 
