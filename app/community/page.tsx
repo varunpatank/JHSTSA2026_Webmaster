@@ -732,6 +732,17 @@ export default function CommunityPage() {
       ),
     );
     setReplyInputs((prev) => ({ ...prev, [postId]: "" }));
+    // Persist to DB
+    const post = feed.find((p) => p.id === postId);
+    if (post?.dbId) {
+      communityPostsApi.addReply({
+        post_id: post.dbId,
+        author_id: currentUserId ?? undefined,
+        author_name: userName || "Member",
+        author_initials: userInitials,
+        text,
+      });
+    }
   }
 
   function connectMentor(mentorId: string) {

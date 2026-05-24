@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Calendar, ChevronLeft, ChevronRight, Check, MapPin, Clock, Users } from "lucide-react";
 import type { Event } from "@/types";
 import { getCreatedEvents } from "@/lib/clientState";
+import { eventsApi } from "@/lib/api";
 
 const EVENT_IMGS: Record<string, string> = {
   Academic: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80",
@@ -114,10 +115,36 @@ export default function EventsClient({ events: staticEvents }: { events: Event[]
       currentAttendees: 0,
     } as Event));
     const staticIds = new Set(staticEvents.map(e => e.id));
-    const fresh = userCreated.filter(e => !staticIds.has(e.id));
-    setUserEventIds(new Set(fresh.map(e => e.id)));
-    // Append user events after static events so they don't hijack featured
-    setEvents([...staticEvents, ...fresh]);
+    const freshLocal = userCreated.filter(e => !staticIds.has(e.id));
+    setUserEventIds(new Set(freshLocal.map(e => e.id)));
+
+    // Without DB results yet, show local-created first then static
+    setEvents([...freshLocal, ...staticEvents]);
+
+    // Also fetch DB events so other accounts' events are visible
+    eventsApi.getAll().then(({ data }) => {
+      const dbEvents: Event[] = ((data as any[]) || []).map((ev: any) => ({
+        id: ev.id,
+        title: ev.name || "",
+        description: ev.description || "",
+        date: ev.time ? ev.time.split("T")[0] : (ev.date || ""),
+        startTime: ev.start_time || "",
+        endTime: ev.end_time || "",
+        location: ev.location_text || "",
+        chapterId: ev.org_id || "",
+        chapterName: "",
+        category: (ev.category || "General") as Event["category"],
+        isPublic: ev.is_public ?? true,
+        requiresRSVP: ev.requires_rsvp ?? false,
+        maxAttendees: ev.max_attendees,
+        currentAttendees: ev.current_attendees || 0,
+      }));
+      const allKnownIds = new Set([...staticIds, ...freshLocal.map(e => e.id)]);
+      const freshDb = dbEvents.filter(e => !allKnownIds.has(e.id));
+      setUserEventIds(prev => new Set([...prev, ...freshDb.map(e => e.id)]));
+      // User-created first, then other DB events, then static
+      setEvents([...freshLocal, ...freshDb, ...staticEvents]);
+    });
 
     // Scroll to schedule section if redirected after creation
     const params = new URLSearchParams(window.location.search);

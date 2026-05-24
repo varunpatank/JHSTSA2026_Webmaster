@@ -9,6 +9,8 @@ import {
 } from "@/lib/data";
 import { addJoinedClub, getCreatedChapters, getCreatedEvents, removeCreatedChapter, removeJoinedClub } from "@/lib/clientState";
 import { supabase, membershipsApi, organizationsApi, profilesApi } from "@/lib/api";
+import type { Organization } from "@/lib/apiTypes";
+import type { Chapter } from "@/types";
 import { formatChapterLocation } from "@/lib/location";
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle, ChevronLeft, ChevronRight,
@@ -71,6 +73,8 @@ export default function ClubDetailPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [donationPopup, setDonationPopup] = useState<{ amount: string; clubName: string } | null>(null);
+  const [dbChapter, setDbChapter] = useState<Chapter | null>(null);
+  const [dbLoading, setDbLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -86,7 +90,42 @@ export default function ClubDetailPage() {
 
   const allChapters = mounted ? [...chapters, ...getCreatedChapters()] : chapters;
   const clubIdx = allChapters.findIndex(c => c.id === params.id);
-  const chapter = allChapters[clubIdx];
+
+  // Fallback: fetch from DB if not found in local/static data
+  useEffect(() => {
+    if (!mounted) return;
+    if (allChapters[clubIdx]) { setDbLoading(false); return; }
+    organizationsApi.getById(params.id).then(({ data }) => {
+      if (data) {
+        const org = data as Organization;
+        setDbChapter({
+          id: org.id,
+          name: org.name,
+          description: org.description || "",
+          category: (org.category || "General") as Chapter["category"],
+          meetingFrequency: (org.meeting_frequency || "Weekly") as Chapter["meetingFrequency"],
+          membershipStatus: (org.membership_status || "Open Enrollment") as Chapter["membershipStatus"],
+          gradeLevel: (org.grade_level || "All Grades") as Chapter["gradeLevel"],
+          meetingTime: (org.meeting_time || "After School") as Chapter["meetingTime"],
+          advisor: { name: org.advisor_name || "", email: org.contact_email || "", department: "Staff" },
+          officers: [],
+          meetingSchedule: org.meeting_schedule || "",
+          meetingLocation: { lat: 0, lng: 0, room: org.meeting_location || "" },
+          membershipRequirements: org.membership_requirements || "",
+          dues: org.dues || "",
+          socialLinks: (org.social_links as Record<string, string>) || {},
+          achievements: [],
+          photoGallery: org.banner_url ? [org.banner_url] : [],
+          memberCount: org.member_count || 0,
+          foundedYear: org.founded_year || new Date().getFullYear(),
+          isActive: org.is_active ?? true,
+        });
+      }
+      setDbLoading(false);
+    });
+  }, [mounted, clubIdx, params.id]);
+
+  const chapter = allChapters[clubIdx] ?? dbChapter;
 
   const prevClub = clubIdx > 0 ? allChapters[clubIdx - 1] : null;
   const nextClub = clubIdx < allChapters.length - 1 ? allChapters[clubIdx + 1] : null;
@@ -136,19 +175,25 @@ export default function ClubDetailPage() {
       if (!profile) {
         await profilesApi.create({ id: authData.user.id, name: authData.user.email?.split("@")[0] || "Student", email: authData.user.email || "" });
       }
-      const { data: slugOrg } = await organizationsApi.getBySlug(chapter.id);
-      let matchedOrg = slugOrg;
-      if (!matchedOrg) {
-        const { data: organizations } = await organizationsApi.getAll();
-        matchedOrg = ((organizations as any[]) || []).find((org: any) => org.slug === chapter.id || org.name === chapter.name) || null;
+      // If chapter.id is already a UUID (DB-created club), use it directly
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(chapter.id);
+      if (isUUID) {
+        await membershipsApi.create({ org_id: chapter.id, user_id: authData.user.id });
+      } else {
+        const { data: slugOrg } = await organizationsApi.getBySlug(chapter.id);
+        let matchedOrg = slugOrg;
+        if (!matchedOrg) {
+          const { data: organizations } = await organizationsApi.getAll();
+          matchedOrg = ((organizations as any[]) || []).find((org: any) => org.slug === chapter.id || org.name === chapter.name) || null;
+        }
+        if (matchedOrg) await membershipsApi.create({ org_id: matchedOrg.id, user_id: authData.user.id });
       }
-      if (matchedOrg) await membershipsApi.create({ org_id: matchedOrg.id, user_id: authData.user.id });
     } catch (e) { console.error("Join error:", e); }
     router.push("/portal?tab=clubs&joined=true");
   };
 
   if (!chapter) {
-    if (!mounted) return <div className="min-h-screen flex items-center justify-center bg-cream-200"><p className="text-neutral-400">Loading&hellip;</p></div>;
+    if (!mounted || dbLoading) return <div className="min-h-screen flex items-center justify-center bg-cream-200"><p className="text-neutral-400">Loading&hellip;</p></div>;
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream-200 px-4">
         <div className="bg-white rounded-none shadow p-8 max-w-md w-full text-center">

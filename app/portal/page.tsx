@@ -319,8 +319,9 @@ function CreateClub() {
         if (uploadRes.data) bannerUrl = uploadRes.data.publicUrl;
       }
 
+      let id = `user-club-${Date.now()}`;
       if (user) {
-        await organizationsApi.create({
+        const { data: dbOrg } = await organizationsApi.create({
           name,
           description: desc,
           category,
@@ -338,9 +339,8 @@ function CreateClub() {
           founded_year: new Date().getFullYear(),
           created_by: user.id,
         });
+        if (dbOrg?.id) id = dbOrg.id;
       }
-
-      const id = `user-club-${Date.now()}`;
       const chapter: import("@/types").Chapter = {
         id,
         name,

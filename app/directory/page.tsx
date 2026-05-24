@@ -13,6 +13,9 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { chapters as staticChapters, quizQuestions } from "@/lib/data";
 import { getCreatedChapters, removeCreatedChapter } from "@/lib/clientState";
+import { organizationsApi } from "@/lib/api";
+import type { Chapter } from "@/types";
+import type { Organization } from "@/lib/apiTypes";
 import { getLocationScopeKey } from "@/lib/location";
 import { inferDay, matchesSize } from "@/lib/directoryConstants";
 import DirectoryFilters, {
@@ -91,20 +94,49 @@ function DirectoryPageContent() {
   const highlightId = searchParams.get("highlight");
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  // Merge static chapters with user-created chapters
+  // Merge static chapters with user-created chapters and DB orgs
   const [chapterVersion, setChapterVersion] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [dbChapters, setDbChapters] = useState<Chapter[]>([]);
   useEffect(() => {
     setMounted(true);
+    organizationsApi.getAll().then(({ data }) => {
+      if (!data) return;
+      const orgs = (data as Organization[]).map((org): Chapter => ({
+        id: org.id,
+        name: org.name,
+        description: org.description || "",
+        category: (org.category || "General") as Chapter["category"],
+        meetingFrequency: (org.meeting_frequency || "Weekly") as Chapter["meetingFrequency"],
+        membershipStatus: (org.membership_status || "Open Enrollment") as Chapter["membershipStatus"],
+        gradeLevel: (org.grade_level || "All Grades") as Chapter["gradeLevel"],
+        meetingTime: (org.meeting_time || "After School") as Chapter["meetingTime"],
+        advisor: { name: org.advisor_name || "", email: org.contact_email || "", department: "Staff" },
+        officers: [],
+        meetingSchedule: org.meeting_schedule || "",
+        meetingLocation: { lat: 0, lng: 0, room: org.meeting_location || "" },
+        membershipRequirements: org.membership_requirements || "",
+        dues: org.dues || "",
+        socialLinks: (org.social_links as Record<string, string>) || {},
+        achievements: [],
+        photoGallery: org.banner_url ? [org.banner_url] : [],
+        memberCount: org.member_count || 0,
+        foundedYear: org.founded_year || new Date().getFullYear(),
+        isActive: org.is_active ?? true,
+      }));
+      setDbChapters(orgs);
+    });
   }, []);
   const chapters = useMemo(() => {
     if (!mounted) return [...staticChapters];
     const created = getCreatedChapters();
     const staticIds = new Set(staticChapters.map((c) => c.id));
     const unique = created.filter((c) => !staticIds.has(c.id));
-    return [...unique, ...staticChapters];
+    const allIds = new Set([...staticChapters.map(c => c.id), ...unique.map(c => c.id)]);
+    const fromDb = dbChapters.filter((c) => !allIds.has(c.id));
+    return [...unique, ...fromDb, ...staticChapters];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapterVersion, mounted]);
+  }, [chapterVersion, mounted, dbChapters]);
 
   const handleDeleteClub = useCallback((id: string) => {
     removeCreatedChapter(id);
