@@ -237,7 +237,7 @@ export default function ResourcesPage() {
 
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resource.id ?? "");
 
-    if (resource.source === "db" && isUUID) {
+    if (isUUID) {
       // getUser() validates + auto-refreshes the token; getSession() then returns
       // the fresh access token to pass to the server route.
       await supabase.auth.getUser();
@@ -256,12 +256,15 @@ export default function ResourcesPage() {
     }
 
     removeCreatedResource(resource.id);
-    setDeletedIds((prev) => {
-      const next = new Set(prev);
-      next.add(resource.id);
-      return next;
-    });
-    setCommunityResources((prev) => prev.filter((item) => item.id !== resource.id));
+    // Persist deleted ID to localStorage so it stays hidden before the hard reload
+    try {
+      const raw = window.localStorage.getItem("cc_deleted_resources");
+      const existing: string[] = raw ? JSON.parse(raw) : [];
+      if (!existing.includes(resource.id)) {
+        window.localStorage.setItem("cc_deleted_resources", JSON.stringify([...existing, resource.id]));
+      }
+    } catch { /* ignore */ }
+    window.location.href = "/resources?cat=Community";
   };
 
   const hasFilters = category !== "All" || stage !== "All Stages" || !!query;

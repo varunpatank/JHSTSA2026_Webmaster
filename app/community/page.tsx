@@ -474,22 +474,7 @@ export default function CommunityPage() {
         .slice(0, 2)
         .toUpperCase() || "G";
 
-  const [feed, setFeed] = useState<FeedPost[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("clubconnect_community_feed_v2");
-      if (saved)
-        try {
-          const parsed: FeedPost[] = JSON.parse(saved);
-          // Always patch hardcoded posts with latest data (e.g. fileUrl updates)
-          const seedMap = new Map(INITIAL_FEED.map((p) => [p.id, p]));
-          return parsed.map((p) => {
-            const seed = seedMap.get(p.id as number);
-            return seed ? { ...p, fileUrl: seed.fileUrl, fileName: seed.fileName, fileSize: seed.fileSize } : p;
-          });
-        } catch {}
-    }
-    return INITIAL_FEED;
-  });
+  const [feed, setFeed] = useState<FeedPost[]>(INITIAL_FEED);
   const [postText, setPostText] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [connectedMentors, setConnectedMentors] = useState<Set<string>>(
@@ -513,45 +498,36 @@ export default function CommunityPage() {
   const [dbStories, setDbStories] = useState<StoryCard[]>([]);
   const [userStories, setUserStories] = useState<StoryCard[]>([]);
 
-  useEffect(() => {
-    localStorage.setItem("clubconnect_community_feed_v2", JSON.stringify(feed));
-  }, [feed]);
-
-  // Load DB posts and merge (skip ones already in local state by dbId)
+  // Load DB posts — DB is source of truth; seed posts always stay at end
   useEffect(() => {
     communityPostsApi.getAll().then(({ data, error }: any) => {
       if (error || !data) return;
-      setFeed((prev) => {
-        const existingDbIds = new Set(prev.map((p) => p.dbId).filter(Boolean));
-        const newPosts: FeedPost[] = (data as any[])
-          .filter((row) => !existingDbIds.has(row.id))
-          .map((row) => ({
-            id: new Date(row.created_at).getTime(),
-            dbId: row.id,
-            authorId: row.author_id,
-            author: row.author_name,
-            avatar: row.author_initials,
-            club: row.club,
-            time: new Date(row.created_at).toLocaleString("default", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
-            text: row.text,
-            type: row.type as FeedPost["type"],
-            fileName: row.file_name ?? undefined,
-            fileSize: row.file_size ?? undefined,
-            fileUrl: row.file_url ?? undefined,
-            likes: row.likes ?? 0,
-            liked: false,
-            saved: false,
-            replies: (row.community_post_replies ?? []).map((r: any) => ({
-              id: new Date(r.created_at).getTime(),
-              author: r.author_name,
-              avatar: r.author_initials,
-              text: r.text,
-              time: new Date(r.created_at).toLocaleString("default", { month: "short", day: "numeric" }),
-            })),
-          }));
-        if (newPosts.length === 0) return prev;
-        return [...prev, ...newPosts];
-      });
+      const dbPosts: FeedPost[] = (data as any[]).map((row) => ({
+        id: new Date(row.created_at).getTime(),
+        dbId: row.id,
+        authorId: row.author_id,
+        author: row.author_name || "Member",
+        avatar: row.author_initials || "?",
+        club: row.club || "General",
+        time: new Date(row.created_at).toLocaleString("default", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+        text: row.text || "",
+        type: (row.type || "text") as FeedPost["type"],
+        fileName: row.file_name ?? undefined,
+        fileSize: row.file_size ?? undefined,
+        fileUrl: row.file_url ?? undefined,
+        likes: row.likes ?? 0,
+        liked: false,
+        saved: false,
+        replies: (row.community_post_replies ?? []).map((r: any) => ({
+          id: new Date(r.created_at).getTime(),
+          author: r.author_name || "Member",
+          avatar: r.author_initials || "?",
+          text: r.text || "",
+          time: new Date(r.created_at).toLocaleString("default", { month: "short", day: "numeric" }),
+        })),
+      }));
+      // DB posts first (newest), then seed posts
+      setFeed([...dbPosts, ...INITIAL_FEED]);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -663,22 +639,43 @@ export default function CommunityPage() {
     setPostText("");
     setAttachedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
-    // Persist to DB
-    communityPostsApi.create({
-      author_id: currentUserId ?? undefined,
-      author_name: userName || "Member",
-      author_initials: userInitials,
-      club: "General",
-      text: newPost.text,
-      type: newPost.type,
-      file_name: newPost.fileName,
-      file_size: newPost.fileSize,
-      file_url: fileUrl,
-    }).then(({ data: dbRow, error: dbErr }: any) => {
-      if (!dbErr && dbRow?.id) {
-        setFeed((prev) => prev.map((p) => p.id === localId ? { ...p, dbId: dbRow.id, authorId: dbRow.author_id } : p));
+    // Persist to DB via server API route (handles both schema versions + proper auth)
+    (async () => {
+      await supabase.auth.getUser();
+      const { data: { session: supaSession } } = await supabase.auth.getSession();
+      const res = await fetch("/api/community-posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(supaSession?.access_token
+            ? { Authorization: `Bearer ${supaSession.access_token}` }
+            : {}),
+        },
+        body: JSON.stringify({
+          author_id: currentUserId ?? null,
+          author_name: userName || "Member",
+          author_initials: userInitials,
+          club: "General",
+          text: newPost.text,
+          type: newPost.type,
+          file_name: newPost.fileName,
+          file_size: newPost.fileSize,
+          file_url: fileUrl,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body.data?.id) {
+        setFeed((prev) =>
+          prev.map((p) =>
+            p.id === localId
+              ? { ...p, dbId: body.data.id, authorId: body.data.author_id }
+              : p
+          )
+        );
+      } else {
+        console.error("[CommunityPost] save failed:", body.error ?? body);
       }
-    });
+    })();
   }
 
   function toggleLike(id: number) {
@@ -1308,9 +1305,24 @@ export default function CommunityPage() {
                     <div className="flex items-center gap-1">
                       {(post.author === userName || post.author === "You") && (
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                               if (!confirm("Delete this post?")) return;
-                              if (post.dbId) communityPostsApi.delete(post.dbId);
+                              if (post.dbId) {
+                                await supabase.auth.getUser();
+                                const { data: { session: supaSession } } = await supabase.auth.getSession();
+                                const res = await fetch(`/api/community-posts/${post.dbId}`, {
+                                  method: "DELETE",
+                                  headers: supaSession?.access_token
+                                    ? { Authorization: `Bearer ${supaSession.access_token}` }
+                                    : {},
+                                });
+                                if (!res.ok) {
+                                  const body = await res.json().catch(() => ({}));
+                                  console.error("[DeletePost] failed:", body.error);
+                                  alert("Could not delete post: " + (body.error ?? "unknown error"));
+                                  return;
+                                }
+                              }
                               setFeed((prev) => prev.filter((p) => p.id !== post.id));
                             }}
                           className="text-neutral-300 hover:text-red-500 transition-colors p-1"
