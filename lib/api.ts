@@ -181,7 +181,7 @@ export const membershipsApi = {
 export const organizationsApi = {
 
     getAll: () =>
-        supabase.from('organizations').select('*').limit(50),
+        supabase.from('organizations').select('*'),
 
     getBySlug: (slug: string) =>
         supabase.from('organizations').select('*').eq('slug', slug).maybeSingle(),

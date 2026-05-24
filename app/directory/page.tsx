@@ -114,7 +114,7 @@ function DirectoryPageContent() {
         advisor: { name: org.advisor_name || "", email: org.contact_email || "", department: "Staff" },
         officers: [],
         meetingSchedule: org.meeting_schedule || "",
-        meetingLocation: { lat: 0, lng: 0, room: org.meeting_location || "" },
+        meetingLocation: { lat: 47.705, lng: -122.14, parentOrg: "Other Clubs", room: org.meeting_location || "" },
         membershipRequirements: org.membership_requirements || "",
         dues: org.dues || "",
         socialLinks: (org.social_links as Record<string, string>) || {},

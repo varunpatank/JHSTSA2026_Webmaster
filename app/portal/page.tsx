@@ -176,10 +176,12 @@ function MyClubs({ justJoined }: { justJoined?: boolean }) {
           };
         });
 
-      const dbKeys = new Set(dbJoined.map((club) => club.slug || club.id));
+      const dbKeys = new Set(
+        dbJoined.flatMap((club) => [club.id, club.slug].filter(Boolean) as string[])
+      );
       setEnrolled([
         ...dbJoined,
-        ...localMapped.filter((club) => !dbKeys.has(club.slug || club.id)),
+        ...localMapped.filter((club) => !dbKeys.has(club.id) && !dbKeys.has(club.slug || "")),
       ]);
     };
 
@@ -1038,7 +1040,7 @@ export default function PortalPage() {
               {tab === "clubs"    && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                   <div className="bg-white rounded-2xl border border-cream-300 p-6">
-                    <MyClubs justJoined={justJoined} />
+                    <MyClubs key={justJoined ? "joined" : "normal"} justJoined={justJoined} />
                   </div>
                   <div className="bg-white rounded-2xl border border-cream-300 p-6">
                     <CreateClub />
