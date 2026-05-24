@@ -613,7 +613,13 @@ export default function DirectoryLeafletMap({
             </button>
           )}
         </div>
-        {schools.map((school) => {
+        {[...schools].sort((a, b) => {
+          const aOther = a.name === "Other" || a.name === "Other Clubs";
+          const bOther = b.name === "Other" || b.name === "Other Clubs";
+          if (aOther && !bOther) return 1;
+          if (!aOther && bOther) return -1;
+          return 0;
+        }).map((school) => {
           const isActive = activeSchool === school.name;
           return (
             <button
@@ -685,6 +691,7 @@ export default function DirectoryLeafletMap({
         scrollZoom
         touchZoomRotate
         doubleClickZoom
+        attributionControl={false}
         style={{ height: 520, width: "100%" }}
       >
         <NavigationControl position="top-right" showCompass={false} />

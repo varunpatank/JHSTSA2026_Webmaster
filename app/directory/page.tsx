@@ -164,16 +164,23 @@ function DirectoryPageContent() {
     setChapterVersion((v) => v + 1);
     setDeletedOrgIds((prev) => new Set([...prev, id]));
 
-    // Also delete from DB if it's a UUID (real org, not a local-only club)
+    // Delete from DB if it's a UUID, then hard-reload to flush Next.js router cache
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     if (isUUID) {
       await supabase.auth.getUser();
       const { data: { session } } = await supabase.auth.getSession();
-      fetch(`/api/clubs/${id}`, {
+      const res = await fetch(`/api/clubs/${id}`, {
         method: "DELETE",
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
-      }).catch(() => { /* silent — local state already updated */ });
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.error("Club delete failed:", body.error);
+      }
     }
+
+    // Force a full reload so the DB query re-runs and the club can't reappear
+    window.location.href = "/directory";
   }, []);
 
   // Scroll to highlighted club after render
