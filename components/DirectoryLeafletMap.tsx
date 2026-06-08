@@ -303,7 +303,11 @@ export default function DirectoryLeafletMap({
 
   const schools = useMemo<SchoolGroup[]>(() => {
     const bySchool = new Map<string, SchoolGroup>();
-    for (const chapter of chapters) {
+    const filtered = chapters.filter((c) => {
+      const parent = (c.meetingLocation.parentOrg || "").trim().toLowerCase();
+      return parent !== "seattle high school";
+    });
+    for (const chapter of filtered) {
       const schoolName = chapter.meetingLocation.parentOrg || "Other";
       const existing = bySchool.get(schoolName);
       if (!existing) {
@@ -337,7 +341,11 @@ export default function DirectoryLeafletMap({
   }, [chapters]);
 
   const markers = useMemo<ClubMarker[]>(() => {
-    return chapters.map((chapter) => {
+    const filtered = chapters.filter((c) => {
+      const parent = (c.meetingLocation.parentOrg || "").trim().toLowerCase();
+      return parent !== "seattle high school";
+    });
+    return filtered.map((chapter) => {
       const room = getPrimaryLocation(chapter.meetingLocation);
       const building =
         chapter.meetingLocation.internalLocation ||
@@ -404,6 +412,14 @@ export default function DirectoryLeafletMap({
     (item) => item.id === popupBuildingId,
   );
 
+  const activeMarkerPosition =
+    popupChapterPosition ||
+    (activeMarker
+      ? (groupedBuildingsWithAnchors.find((g) =>
+          g.clubs.some((c) => c.chapter.id === activeMarker.chapter.id),
+        )?.center ?? activeMarker.coordinates)
+      : null);
+
   const showSchoolMarkers =
     viewState.zoom < DIRECTORY_MAP_CONFIG.zoom.schoolMarkersMax;
   const showClubMarkers =
@@ -465,12 +481,17 @@ export default function DirectoryLeafletMap({
     clubMarker: ClubMarker,
     popupPosition: LatLng = clubMarker.coordinates,
   ) {
+    const buildingAnchor = groupedBuildingsWithAnchors.find(
+      (g) => g.id === clubMarker.building,
+    )?.center;
+    const resolvedPosition =
+      popupPosition || buildingAnchor || clubMarker.coordinates;
     setPopupChapterId(clubMarker.chapter.id);
-    setPopupChapterPosition(popupPosition);
+    setPopupChapterPosition(resolvedPosition);
     setPopupBuildingId(null);
     onSelectRoom(clubMarker.room);
     flyToCoordinates(
-      popupPosition,
+      resolvedPosition,
       Math.max(viewState.zoom, DIRECTORY_MAP_CONFIG.zoom.focusClub),
       DIRECTORY_MAP_CONFIG.animation.focusDurationMs,
     );
@@ -613,67 +634,69 @@ export default function DirectoryLeafletMap({
             </button>
           )}
         </div>
-        {[...schools].sort((a, b) => {
-          const aOther = a.name === "Other" || a.name === "Other Clubs";
-          const bOther = b.name === "Other" || b.name === "Other Clubs";
-          if (aOther && !bOther) return 1;
-          if (!aOther && bOther) return -1;
-          return 0;
-        }).map((school) => {
-          const isActive = activeSchool === school.name;
-          return (
-            <button
-              key={school.name}
-              type="button"
-              onClick={() => focusSchool(school)}
-              onMouseEnter={() => setHoveredSchool(school.name)}
-              onMouseLeave={() => setHoveredSchool(null)}
-              className={`w-full text-left px-3 py-2 border-b border-neutral-800/50 transition-colors ${isActive ? "bg-primary-900/40" : "hover:bg-neutral-800/60"}`}
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-7 h-7 flex items-center justify-center text-[9px] font-bold shrink-0 ${isActive ? "bg-secondary-500 text-white" : "bg-primary-900 text-white"}`}
-                >
-                  {getSchoolAbbrev(school.name)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-[11px] font-semibold truncate ${isActive ? "text-secondary-300" : "text-neutral-200"}`}
+        {[...schools]
+          .sort((a, b) => {
+            const aOther = a.name === "Other" || a.name === "Other Clubs";
+            const bOther = b.name === "Other" || b.name === "Other Clubs";
+            if (aOther && !bOther) return 1;
+            if (!aOther && bOther) return -1;
+            return 0;
+          })
+          .map((school) => {
+            const isActive = activeSchool === school.name;
+            return (
+              <button
+                key={school.name}
+                type="button"
+                onClick={() => focusSchool(school)}
+                onMouseEnter={() => setHoveredSchool(school.name)}
+                onMouseLeave={() => setHoveredSchool(null)}
+                className={`w-full text-left px-3 py-2 border-b border-neutral-800/50 transition-colors ${isActive ? "bg-primary-900/40" : "hover:bg-neutral-800/60"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-7 h-7 flex items-center justify-center text-[9px] font-bold shrink-0 ${isActive ? "bg-secondary-500 text-white" : "bg-primary-900 text-white"}`}
                   >
-                    {school.name}
-                  </p>
-                  <p className="text-[9px] text-primary-200">
-                    {school.clubs.length} club
-                    {school.clubs.length !== 1 ? "s" : ""}
-                  </p>
-                </div>
-              </div>
-              {hoveredSchool === school.name && (
-                <div className="mt-1.5 pl-9 space-y-0.5">
-                  {school.clubs.slice(0, 8).map((club) => (
-                    <div key={club.id} className="flex items-center gap-1.5">
-                      <span
-                        className="w-1.5 h-1.5 shrink-0"
-                        style={{
-                          backgroundColor:
-                            categoryDotColors[club.category] || "#2b4c73",
-                        }}
-                      />
-                      <span className="text-[10px] text-primary-100 truncate">
-                        {club.name}
-                      </span>
-                    </div>
-                  ))}
-                  {school.clubs.length > 8 && (
-                    <p className="text-[9px] text-primary-200">
-                      +{school.clubs.length - 8} more
+                    {getSchoolAbbrev(school.name)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-[11px] font-semibold truncate ${isActive ? "text-secondary-300" : "text-neutral-200"}`}
+                    >
+                      {school.name}
                     </p>
-                  )}
+                    <p className="text-[9px] text-primary-200">
+                      {school.clubs.length} club
+                      {school.clubs.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
                 </div>
-              )}
-            </button>
-          );
-        })}
+                {hoveredSchool === school.name && (
+                  <div className="mt-1.5 pl-9 space-y-0.5">
+                    {school.clubs.slice(0, 8).map((club) => (
+                      <div key={club.id} className="flex items-center gap-1.5">
+                        <span
+                          className="w-1.5 h-1.5 shrink-0"
+                          style={{
+                            backgroundColor:
+                              categoryDotColors[club.category] || "#2b4c73",
+                          }}
+                        />
+                        <span className="text-[10px] text-primary-100 truncate">
+                          {club.name}
+                        </span>
+                      </div>
+                    ))}
+                    {school.clubs.length > 8 && (
+                      <p className="text-[9px] text-primary-200">
+                        +{school.clubs.length - 8} more
+                      </p>
+                    )}
+                  </div>
+                )}
+              </button>
+            );
+          })}
       </div>
 
       <MapView
@@ -836,8 +859,8 @@ export default function DirectoryLeafletMap({
             return (
               <Marker
                 key={singleClub.chapter.id}
-                latitude={singleClub.coordinates.lat}
-                longitude={singleClub.coordinates.lng}
+                latitude={buildingGroup.center.lat}
+                longitude={buildingGroup.center.lng}
               >
                 <button
                   type="button"
@@ -851,10 +874,10 @@ export default function DirectoryLeafletMap({
             );
           })}
 
-        {activeMarker && (
+        {activeMarker && activeMarkerPosition && (
           <Popup
-            latitude={(popupChapterPosition || activeMarker.coordinates).lat}
-            longitude={(popupChapterPosition || activeMarker.coordinates).lng}
+            latitude={activeMarkerPosition.lat}
+            longitude={activeMarkerPosition.lng}
             anchor="top"
             closeButton
             closeOnClick={false}
